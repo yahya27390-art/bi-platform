@@ -3,10 +3,11 @@ import { useFinancials, useFinancialsTrend, useTargets, usePeriods } from '../ho
 import { formatSAR, formatPercent } from '../lib/kpiEngine';
 import { TrendAreaChart, ComparisonBarChart } from '../components/charts/Charts';
 import { MetricRing } from '../components/charts/Charts';
+import WaterfallChart from '../components/charts/WaterfallChart';
 import { CardSkeleton, SectionHeader, StatRow } from '../components/shared/SharedComponents';
 import { BIRoleGuard } from '../components/shared/BIRoleGuard';
 import { GrowthChip } from '../components/shared/SharedComponents';
-import { DollarSign, TrendingUp, TrendingDown, PieChart } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, PieChart, GitCommit } from 'lucide-react';
 
 export default function Financials() {
   const [periodId, setPeriodId] = useState('p-2026-09');
@@ -21,8 +22,8 @@ export default function Financials() {
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-white">الأداء المالي</h1>
-            <p className="text-slate-400 text-sm mt-1">{currentPeriod?.label} · قائمة الأرباح والخسائر</p>
+            <h1 className="text-2xl font-black text-white">الأداء المالي وحساب الأرباح والخسائر (P&L Intelligence)</h1>
+            <p className="text-slate-400 text-sm mt-1">{currentPeriod?.label} · تحليل تفصيلي للإيرادات، التكاليف، وهامش الربحية</p>
           </div>
           <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
             {periods?.slice(0, 3).map(p => (
@@ -40,7 +41,31 @@ export default function Financials() {
           </div>
         ) : fin ? (
           <>
+            {/* Waterfall P&L Walkthrough */}
+            <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#0c162a] to-[#080d18] p-6 space-y-4 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                    <GitCommit className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-black text-white">
+                      مخطط التدفق التتابعي للشلال المالي (P&L Waterfall Walkthrough)
+                    </h2>
+                    <p className="text-xs text-slate-400">
+                      توضيح خطوة بخطوة لكيفية تحول إجمالي الإيرادات إلى صافي ربح نهائي بعد خصم تكلفة البضاعة (COGS) والمصاريف التشغيلية والإعلانية
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs text-purple-400 font-mono bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-full">
+                  ECharts Waterfall
+                </span>
+              </div>
+              <WaterfallChart height={330} />
+            </div>
+
             {/* Revenue Summary */}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* P&L Summary card */}
               <div className="lg:col-span-2 rounded-2xl border border-white/5 bg-[#111827]/80 p-6">

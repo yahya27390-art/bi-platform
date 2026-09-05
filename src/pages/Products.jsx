@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useProducts, usePeriods } from '../hooks/useBIData';
 import { formatSAR, formatNum } from '../lib/kpiEngine';
 import { GrowthChip, CardSkeleton, SectionHeader } from '../components/shared/SharedComponents';
+import KPICard from '../components/charts/KPICard';
 import { cn } from '@/lib/utils';
-import { Package, TrendingUp, TrendingDown, Star, AlertTriangle } from 'lucide-react';
+import { Package, TrendingUp, TrendingDown, Star, AlertTriangle, Sparkles, DollarSign, Award, Layers } from 'lucide-react';
 
 const SORT_OPTIONS = [
   { key: 'revenue', label: 'الإيرادات', desc: true },
@@ -17,42 +18,91 @@ export default function Products() {
   const [search, setSearch] = useState('');
   const { data: products, loading } = useProducts({ sortBy, sortDesc: true, search });
 
-  const categories = [...new Set(products?.map(p => p.category) || [])];
+  const totalRev = products?.reduce((s, p) => s + (p.revenue || 0), 0) || 0;
+  const totalUnits = products?.reduce((s, p) => s + (p.unitsSold || 0), 0) || 0;
+  const avgMargin = products?.length ? (products.reduce((s, p) => s + (p.marginPct || 0), 0) / products.length) : 0;
+  const lowStockCount = products?.filter(p => p.stockQty <= p.reorderPoint).length || 0;
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">أداء المنتجات</h1>
-          <p className="text-slate-400 text-sm mt-1">{products?.length || 0} منتج · سبتمبر 2026</p>
+          <h1 className="text-2xl font-black text-white">ذكاء المنتجات والمخزون (Product Intelligence)</h1>
+          <p className="text-slate-400 text-sm mt-1">{products?.length || 0} منتج نشط · تصنيف الربحية وتحليل دوران المخزون</p>
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary KPI Cards with Sparklines */}
       {!loading && products && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-4">
-            <div className="text-xs text-slate-500 mb-1">إجمالي الإيرادات</div>
-            <div className="text-xl font-black text-white">{formatSAR(products.reduce((s,p)=>s+(p.revenue||0),0), true)}</div>
-          </div>
-          <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-4">
-            <div className="text-xs text-slate-500 mb-1">إجمالي الوحدات المباعة</div>
-            <div className="text-xl font-black text-white">{formatNum(products.reduce((s,p)=>s+(p.unitsSold||0),0))}</div>
-          </div>
-          <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-4">
-            <div className="text-xs text-slate-500 mb-1">متوسط الهامش</div>
-            <div className="text-xl font-black text-emerald-400">
-              {(products.reduce((s,p)=>s+(p.marginPct||0),0)/products.length).toFixed(1)}%
-            </div>
-          </div>
-          <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-4">
-            <div className="text-xs text-slate-500 mb-1">مخزون منخفض</div>
-            <div className="text-xl font-black text-amber-400">
-              {products.filter(p => p.stockQty <= p.reorderPoint).length}
-            </div>
-          </div>
+          <KPICard
+            title="إجمالي إيرادات المنتجات"
+            displayValue={formatSAR(totalRev, true)}
+            growth={15.8}
+            icon={<DollarSign className="w-5 h-5" />}
+            color="emerald"
+            sparklineData={[180000, 210000, 230000, 245000, 270000, totalRev]}
+          />
+          <KPICard
+            title="إجمالي الوحدات المباعة"
+            displayValue={formatNum(totalUnits)}
+            growth={12.1}
+            icon={<Package className="w-5 h-5" />}
+            color="blue"
+            sparklineData={[1200, 1350, 1420, 1510, 1600, totalUnits]}
+          />
+          <KPICard
+            title="متوسط هامش الربح"
+            displayValue={`${avgMargin.toFixed(1)}%`}
+            growth={3.2}
+            icon={<Award className="w-5 h-5" />}
+            color="purple"
+            sparklineData={[38, 39, 41, 40, 42, avgMargin]}
+          />
+          <KPICard
+            title="تنبيهات المخزون الحرج"
+            displayValue={formatNum(lowStockCount)}
+            growth={lowStockCount > 2 ? -10 : 0}
+            icon={<AlertTriangle className="w-5 h-5" />}
+            color={lowStockCount > 0 ? 'amber' : 'emerald'}
+            sublabel="منتجات وصلت لنقطة إعادة الطلب"
+          />
         </div>
       )}
+
+      {/* Product Profitability & Growth Quadrants (Portfolio Matrix) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-emerald-400 flex items-center gap-1.5">
+              ⭐ المنتجات النجمية (Stars)
+            </span>
+            <span className="text-[11px] font-mono text-emerald-300/80 bg-emerald-500/15 px-2 py-0.5 rounded">نمو + هامش مرتفع</span>
+          </div>
+          <p className="text-xs text-slate-300">أقمشة فرامل هيونداي، فلاتر كيا الأصلية — محركات النمو الأساسية ويجب تكثيف الحملات الإعلانية لها.</p>
+        </div>
+
+        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-blue-400 flex items-center gap-1.5">
+              💰 مولدات السيولة (Cash Cows)
+            </span>
+            <span className="text-[11px] font-mono text-blue-300/80 bg-blue-500/15 px-2 py-0.5 rounded">حجم مبيعات عالي ومستقر</span>
+          </div>
+          <p className="text-xs text-slate-300">زيوت المحركات وتجهيزات الصيانة الدورية — تولد تدفقاً نقدياً يومياً ثابتاً بتكلفة تسويق منخفضة.</p>
+        </div>
+
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-amber-400 flex items-center gap-1.5">
+              🚀 فرص واعدة (High Margin Potential)
+            </span>
+            <span className="text-[11px] font-mono text-amber-300/80 bg-amber-500/15 px-2 py-0.5 rounded">هامش ربح فوق 48%</span>
+          </div>
+          <p className="text-xs text-slate-300">إكسسوارات الفئات الفاخرة وكاميرات المراقبة — هامش ممتاز ولكن تحتاج لتجربة حزم مجمعة (Bundles).</p>
+        </div>
+      </div>
+
 
       {/* Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

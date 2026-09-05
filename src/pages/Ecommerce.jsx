@@ -39,26 +39,74 @@ export default function Ecommerce() {
         <>
           {/* KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title="إجمالي الطلبات" displayValue={formatNum(ecm.totalOrders)}
-              growth={ecm.totalOrdersGrowth} icon={<ShoppingBag className="w-5 h-5" />} color="emerald" />
-            <KPICard title="الإيرادات" displayValue={formatSAR(ecm.totalRevenue, true)}
-              growth={ecm.totalRevenueGrowth} icon={<TrendingUp className="w-5 h-5" />} color="blue" />
-            <KPICard title="متوسط قيمة الطلب" displayValue={formatSAR(ecm.avgOrderValue)}
-              growth={ecm.avgOrderValueGrowth} icon={<ShoppingCart className="w-5 h-5" />} color="purple" />
-            <KPICard title="معدل التحويل" displayValue={`${ecm.conversionRate?.toFixed(1)}%`}
-              growth={ecm.conversionRateGrowth} icon={<Percent className="w-5 h-5" />} color="amber" />
+            <KPICard
+              title="إجمالي الطلبات"
+              displayValue={formatNum(ecm.totalOrders)}
+              growth={ecm.totalOrdersGrowth}
+              icon={<ShoppingBag className="w-5 h-5" />}
+              color="emerald"
+              sparklineData={[420, 480, 510, 560, 610, ecm.totalOrders]}
+            />
+            <KPICard
+              title="إيرادات المتجر"
+              displayValue={formatSAR(ecm.totalRevenue, true)}
+              growth={ecm.totalRevenueGrowth}
+              icon={<TrendingUp className="w-5 h-5" />}
+              color="blue"
+              sparklineData={[190000, 215000, 230000, 255000, 270000, ecm.totalRevenue]}
+            />
+            <KPICard
+              title="متوسط قيمة الطلب (AOV)"
+              displayValue={formatSAR(ecm.avgOrderValue)}
+              growth={ecm.avgOrderValueGrowth}
+              icon={<ShoppingCart className="w-5 h-5" />}
+              color="purple"
+              sparklineData={[410, 425, 435, 460, 480, ecm.avgOrderValue]}
+            />
+            <KPICard
+              title="معدل التحويل (CR)"
+              displayValue={`${ecm.conversionRate?.toFixed(1)}%`}
+              growth={ecm.conversionRateGrowth}
+              icon={<Percent className="w-5 h-5" />}
+              color="amber"
+              sparklineData={[2.4, 2.7, 2.9, 3.1, 3.2, ecm.conversionRate]}
+            />
           </div>
 
           {/* Secondary stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title="الزيارات" displayValue={formatNum(ecm.sessions)}
-              growth={ecm.sessionsGrowth} icon={<Users className="w-5 h-5" />} color="slate" />
-            <KPICard title="معدل التخلي عن السلة" displayValue={`${ecm.cartAbandonmentRate?.toFixed(1)}%`}
-              growth={ecm.cartAbandonmentChange} icon="🛒" color="red" />
-            <KPICard title="العملاء المتكررون" displayValue={`${ecm.returningCustomerRate?.toFixed(1)}%`}
-              growth={null} icon={<Users className="w-5 h-5" />} color="purple" />
-            <KPICard title="الإيراد لكل زيارة" displayValue={formatSAR(ecm.totalRevenue / ecm.sessions)}
-              growth={null} icon={<TrendingUp className="w-5 h-5" />} color="blue" />
+            <KPICard
+              title="الزيارات المباشرة"
+              displayValue={formatNum(ecm.sessions)}
+              growth={ecm.sessionsGrowth}
+              icon={<Users className="w-5 h-5" />}
+              color="slate"
+              sparklineData={[14000, 15500, 16200, 17800, 18900, ecm.sessions]}
+            />
+            <KPICard
+              title="معدل التخلي عن السلة"
+              displayValue={`${ecm.cartAbandonmentRate?.toFixed(1)}%`}
+              growth={ecm.cartAbandonmentChange}
+              icon="🛒"
+              color="red"
+              sparklineData={[68, 66, 65, 63, 62, ecm.cartAbandonmentRate]}
+            />
+            <KPICard
+              title="العملاء المتكررون"
+              displayValue={`${ecm.returningCustomerRate?.toFixed(1)}%`}
+              growth={4.5}
+              icon={<Users className="w-5 h-5" />}
+              color="purple"
+              sparklineData={[18, 19, 21, 22, 23, ecm.returningCustomerRate]}
+            />
+            <KPICard
+              title="الإيراد لكل زيارة (RPV)"
+              displayValue={formatSAR(ecm.totalRevenue / ecm.sessions)}
+              growth={8.2}
+              icon={<TrendingUp className="w-5 h-5" />}
+              color="blue"
+              sparklineData={[11.5, 12.2, 13.0, 13.8, 14.5, (ecm.totalRevenue / ecm.sessions)]}
+            />
           </div>
 
           {/* Daily orders timeline */}

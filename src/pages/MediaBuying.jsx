@@ -3,9 +3,11 @@ import { useAdMetrics, useCampaigns, useAdFunnel, usePeriods } from '../hooks/us
 import { formatSAR, formatNum, formatPercent, formatMultiplier, getKPIStatus, STATUS_STYLES } from '../lib/kpiEngine';
 import { TrendAreaChart } from '../components/charts/Charts';
 import { FunnelViz } from '../components/charts/Charts';
+import PlatformRadarChart from '../components/charts/PlatformRadarChart';
 import { PlatformBadge, GrowthChip, AttributionNote, CardSkeleton, SectionHeader } from '../components/shared/SharedComponents';
 import { cn } from '@/lib/utils';
 import { MOCK_PLATFORM_PERIOD_METRICS } from '../data/mockData';
+import { Compass, Sparkles } from 'lucide-react';
 
 const PLATFORM_TABS = [
   { slug: 'all',    label: 'الكل' },
@@ -45,8 +47,8 @@ export default function MediaBuying() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">أداء الإعلانات المدفوعة</h1>
-          <p className="text-slate-400 text-sm mt-1">Meta · Google · TikTok</p>
+          <h1 className="text-2xl font-black text-white">أداء الإعلانات المدفوعة (Media Buying Intelligence)</h1>
+          <p className="text-slate-400 text-sm mt-1">تحليل معمق عبر القنوات: Meta · Google · TikTok · Snapchat</p>
         </div>
         <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
           {periods?.slice(0, 3).map(p => (
@@ -59,6 +61,30 @@ export default function MediaBuying() {
       </div>
 
       <AttributionNote model="Last Click" window="7 أيام" />
+
+      {/* Multi-Axis Channel Radar Matrix Card */}
+      <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#0c162a] to-[#080e1a] p-6 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-white">
+                مصفوفة الكفاءة المتعددة الأبعاد (5-Axis Channel Efficiency Radar)
+              </h2>
+              <p className="text-xs text-slate-400">
+                مقارنة شاملة متوازنة بين المنصات على 5 محاور: العائد (ROAS)، كفاءة الاكتساب (CPA)، النقر (CTR)، التحويل (CR)، وحجم المبيعات
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full font-mono">
+            <Sparkles className="w-3.5 h-3.5" />
+            ECharts Radar
+          </span>
+        </div>
+        <PlatformRadarChart height={340} />
+      </div>
 
       {/* Platform Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -74,6 +100,7 @@ export default function MediaBuying() {
           </button>
         ))}
       </div>
+
 
       {/* Platform Cards */}
       {loading ? (
