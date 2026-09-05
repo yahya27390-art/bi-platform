@@ -11,7 +11,7 @@ console.log('🚀 Starting deployment to GitHub Pages...');
 try {
   // 1. Build project
   console.log('📦 Building production bundle...');
-  execSync('npm run build', { stdio: 'inherit', cwd: __dirname });
+  execSync('npm.cmd run build', { stdio: 'inherit', cwd: __dirname });
 
   const distDir = path.join(__dirname, 'dist');
   const indexHtml = path.join(distDir, 'index.html');
@@ -30,6 +30,7 @@ try {
   execSync('git init', { cwd: distDir, stdio: 'ignore' });
   execSync('git config user.name "yahya27390-art"', { cwd: distDir, stdio: 'ignore' });
   execSync('git config user.email "yahya9031@gmail.com"', { cwd: distDir, stdio: 'ignore' });
+  execSync('git config http.postBuffer 524288000', { cwd: distDir, stdio: 'ignore' });
   execSync('git checkout -B gh-pages', { cwd: distDir, stdio: 'ignore' });
   execSync('git add -A', { cwd: distDir, stdio: 'ignore' });
   execSync('git commit -m "deploy: automated live release to GitHub Pages"', { cwd: distDir, stdio: 'ignore' });
