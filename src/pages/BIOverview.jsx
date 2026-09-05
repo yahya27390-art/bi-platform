@@ -194,7 +194,10 @@ export default function BIOverview() {
       <DataHealthBar periodLabel={currentPeriod?.label || 'سبتمبر 2026'} />
 
       {/* Multi-Source Reconciliation & Discrepancy Detector */}
-      <ReconciliationCenter />
+      <ReconciliationCenter
+        periodId={periodId}
+        onInspectDocument={(docId) => setActiveDocId(docId)}
+      />
 
       {/* Section 12: Data Reconciliation Banner (Anti Double-Counting) */}
       {displayedKpis && (
@@ -319,6 +322,7 @@ export default function BIOverview() {
 
       {/* SECTION: Payment Method Mix (Cash, Card, Bank Transfer, Tabby, Tamara, Credit) */}
       <PaymentMethodMix
+        periodId={periodId}
         onInspectDocument={(docId) => setActiveDocId(docId)}
       />
 

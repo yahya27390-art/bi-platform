@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatSAR } from '../../lib/kpiEngine';
-import { ShieldCheck, AlertTriangle, CheckCircle2, ArrowRightLeft } from 'lucide-react';
-import { DORA_RECONCILIATION_LOGS } from '../../data/doraSchema';
+import { ShieldCheck, AlertTriangle, CheckCircle2, ArrowRightLeft, FileText, Calendar } from 'lucide-react';
+import { DORA_RECONCILIATION_LOGS, DORA_PERIODS } from '../../data/doraSchema';
 
-export default function ReconciliationCenter({ logs = DORA_RECONCILIATION_LOGS }) {
-  const currentLogs = logs.filter(l => l.periodId === 'p-2026-09');
-  const allMatched = currentLogs.every(l => !l.hasDiscrepancy);
+export default function ReconciliationCenter({
+  logs = DORA_RECONCILIATION_LOGS,
+  periodId: propPeriodId,
+  onInspectDocument
+}) {
+  const [activePeriod, setActivePeriod] = useState(propPeriodId || 'p-2026-08');
+
+  const currentLogs = logs.filter(l => l.periodId === activePeriod);
+  const allMatched = currentLogs.length > 0 && currentLogs.every(l => !l.hasDiscrepancy);
 
   return (
     <div className="rounded-3xl border border-white/10 bg-[#0c1527] p-6 space-y-4 shadow-xl">
@@ -34,6 +40,24 @@ export default function ReconciliationCenter({ logs = DORA_RECONCILIATION_LOGS }
             </p>
           </div>
         </div>
+
+        {/* Period Switcher */}
+        <div className="flex items-center gap-1.5 bg-white/5 p-1 rounded-2xl border border-white/10">
+          <Calendar className="w-3.5 h-3.5 text-slate-400 mr-1 ml-1" />
+          {DORA_PERIODS.slice(0, 2).map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setActivePeriod(p.id)}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                activePeriod === p.id
+                  ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              {p.labelAr}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Comparison Cards */}
@@ -48,27 +72,27 @@ export default function ReconciliationCenter({ logs = DORA_RECONCILIATION_LOGS }
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white">{log.title}</span>
+              <span className="text-xs font-bold text-white leading-snug">{log.title}</span>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
                   log.hasDiscrepancy
                     ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                     : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                 }`}
               >
-                {log.hasDiscrepancy ? '⚠️ فارق قيد المراجعة' : '✓ متطابق'}
+                {log.hasDiscrepancy ? '⚠️ فارق قيد المراجعة' : '✓ تطابق قطعي 100%'}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs bg-black/30 p-3 rounded-xl">
               <div>
-                <div className="text-[11px] text-slate-400">{log.sourceALabel}</div>
+                <div className="text-[11px] text-slate-400 leading-tight mb-1">{log.sourceALabel}</div>
                 <div className="text-sm font-black text-white font-mono mt-0.5" dir="ltr">
                   {formatSAR(log.sourceAAmount, true)}
                 </div>
               </div>
               <div>
-                <div className="text-[11px] text-slate-400">{log.sourceBLabel}</div>
+                <div className="text-[11px] text-slate-400 leading-tight mb-1">{log.sourceBLabel}</div>
                 <div className="text-sm font-black text-white font-mono mt-0.5" dir="ltr">
                   {formatSAR(log.sourceBAmount, true)}
                 </div>
@@ -87,7 +111,7 @@ export default function ReconciliationCenter({ logs = DORA_RECONCILIATION_LOGS }
               </span>
             </div>
 
-            <p className="text-[11px] text-slate-400 leading-relaxed border-t border-white/5 pt-2">
+            <p className="text-[11px] text-slate-300/90 leading-relaxed border-t border-white/5 pt-2">
               {log.notes}
             </p>
           </div>

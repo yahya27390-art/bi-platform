@@ -26,3 +26,7 @@ dist-ssr
 # Environment files
 .env.local
 .env.*.local
+
+# Local Archives & extraction
+*.rar
+august_data_samples/

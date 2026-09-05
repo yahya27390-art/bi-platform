@@ -171,25 +171,25 @@ export const MOCK_BRANCH_PERIOD_STATS = {
     'p-2026-09': { revenue: 350000, grossSales: 365000, returns: 15000, revenueGrowth: 12.5, cogs: 182000, grossProfit: 168000,
       orders: 820, ordersGrowth: 11.2, customers: 680, newCustomers: 185, avgOrderValue: 426.8,
       targetRevenue: 350000, targetAchievement: 100.0, satisfaction: 4.8 },
-    'p-2026-08': { revenue: 311000, grossSales: 326000, returns: 15000, revenueGrowth: 7.2, cogs: 161720, grossProfit: 149280,
-      orders: 740, ordersGrowth: 6.1, customers: 610, newCustomers: 152, avgOrderValue: 420.2,
-      targetRevenue: 330000, targetAchievement: 94.2, satisfaction: 4.7 },
+    'p-2026-08': { revenue: 428885.49, grossSales: 471748.99, returns: 42863.50, revenueGrowth: 14.8, cogs: 223000, grossProfit: 205885.49,
+      orders: 1050, ordersGrowth: 12.5, customers: 890, newCustomers: 240, avgOrderValue: 408.4,
+      targetRevenue: 350000, targetAchievement: 122.54, satisfaction: 4.8 },
   },
   'al-rawaf': {
     'p-2026-09': { revenue: 250000, grossSales: 262000, returns: 12000, revenueGrowth: 8.7, cogs: 130000, grossProfit: 120000,
       orders: 610, ordersGrowth: 8.4, customers: 495, newCustomers: 130, avgOrderValue: 409.8,
       targetRevenue: 250000, targetAchievement: 100.0, satisfaction: 4.7 },
-    'p-2026-08': { revenue: 230000, grossSales: 242000, returns: 12000, revenueGrowth: 5.5, cogs: 119600, grossProfit: 110400,
-      orders: 565, ordersGrowth: 5.0, customers: 460, newCustomers: 115, avgOrderValue: 407.0,
-      targetRevenue: 240000, targetAchievement: 95.8, satisfaction: 4.6 },
+    'p-2026-08': { revenue: 291371.67, grossSales: 328996.67, returns: 37625.00, revenueGrowth: 11.2, cogs: 151500, grossProfit: 139871.67,
+      orders: 715, ordersGrowth: 9.8, customers: 580, newCustomers: 165, avgOrderValue: 407.5,
+      targetRevenue: 250000, targetAchievement: 116.55, satisfaction: 4.7 },
   },
   'kia': {
     'p-2026-09': { revenue: 200000, grossSales: 211000, returns: 11000, revenueGrowth: 14.3, cogs: 104000, grossProfit: 96000,
       orders: 490, ordersGrowth: 12.1, customers: 390, newCustomers: 110, avgOrderValue: 408.1,
       targetRevenue: 200000, targetAchievement: 100.0, satisfaction: 4.6 },
-    'p-2026-08': { revenue: 175000, grossSales: 184000, returns: 9000, revenueGrowth: 4.8, cogs: 91000, grossProfit: 84000,
-      orders: 435, ordersGrowth: 4.0, customers: 350, newCustomers: 92, avgOrderValue: 402.3,
-      targetRevenue: 190000, targetAchievement: 92.1, satisfaction: 4.5 },
+    'p-2026-08': { revenue: 269265.00, grossSales: 304155.00, returns: 34890.00, revenueGrowth: 18.4, cogs: 140000, grossProfit: 129265.00,
+      orders: 660, ordersGrowth: 15.2, customers: 530, newCustomers: 175, avgOrderValue: 407.9,
+      targetRevenue: 200000, targetAchievement: 134.63, satisfaction: 4.7 },
   },
 };
 
@@ -213,15 +213,15 @@ function genDailySales(baseRevenue, days = 30) {
 export const MOCK_BRANCH_DAILY_SALES = {
   'main': {
     'p-2026-09': genDailySales(350000),
-    'p-2026-08': genDailySales(311000),
+    'p-2026-08': genDailySales(428885),
   },
   'al-rawaf': {
     'p-2026-09': genDailySales(250000),
-    'p-2026-08': genDailySales(230000),
+    'p-2026-08': genDailySales(291371),
   },
   'kia': {
     'p-2026-09': genDailySales(200000),
-    'p-2026-08': genDailySales(175000),
+    'p-2026-08': genDailySales(269265),
   },
 };
 

@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatSAR } from '../lib/kpiEngine';
+import { DORA_DOCUMENTS } from '../data/doraSchema';
+import EvidenceViewerModal from '../components/shared/EvidenceViewerModal';
 
 const IMPORT_CATEGORIES = [
   { id: 'branch_sales', label: 'مبيعات الفروع المادية', icon: '🏪', formats: '.png, .jpg, .xlsx, .pdf', desc: 'سكرين شوت تقرير نقاط البيع (Z-Report) أو إكسل فروع درة للسيارات' },
@@ -36,6 +38,7 @@ export default function DataImport() {
     notes: 'سكرين شوت تقرير Z-Report معتمد لشهر سبتمبر',
   });
   const [commitSuccess, setCommitSuccess] = useState(false);
+  const [activeEvidenceDoc, setActiveEvidenceDoc] = useState(null);
 
   const { data: history } = useImportHistory();
   const { data: periods } = usePeriods();
@@ -234,6 +237,93 @@ export default function DataImport() {
           </div>
         </div>
 
+        {/* 5. Uploaded August 2026 Documents Archive */}
+        <div className="rounded-3xl border border-emerald-500/20 bg-[#0e172a] p-6 space-y-5 shadow-2xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-black text-white">الأرشيف الرقمي لعينات مستندات شهر 8 المرفوعة (August 2026 Source Archive)</h3>
+                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                  10 مستندات معتمدة
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                المستندات الرسمية المرفوعة في الأرشيف (سكرين شوت الكاشير + ملفات التحويلات والتقسيط) المدققة والمطابقة 100%
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-400">
+              <ShieldCheck className="w-4 h-4" />
+              <span>مطابقة القوائم المالية: مكتملة ✓</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {DORA_DOCUMENTS.filter(d => d.periodId === 'p-2026-08').map((doc) => {
+              const isImg = doc.fileName?.match(/\.(png|jpe?g)$/i);
+              return (
+                <div
+                  key={doc.id}
+                  className="rounded-2xl border border-white/5 bg-white/2 hover:border-emerald-500/30 hover:bg-white/4 p-4 space-y-3 transition-all group"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
+                        {isImg ? <Image className="w-5 h-5" /> : <FileSpreadsheet className="w-5 h-5" />}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-black text-white truncate" title={doc.fileName}>{doc.fileName}</h4>
+                        <div className="text-[10px] text-slate-400 mt-0.5">{doc.uploadedBy}</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
+                      {doc.verificationStatus}
+                    </span>
+                  </div>
+
+                  {/* Summary metric if available */}
+                  {(doc.grossSales || doc.returnsAmount || doc.amount) && (
+                    <div className="flex items-center justify-between text-xs bg-black/30 px-3 py-2 rounded-xl">
+                      <span className="text-slate-400 text-[11px]">
+                        {doc.grossSales ? 'المبيعات الصافية بالمحلي:' : doc.returnsAmount ? 'إجمالي المردود:' : 'المبلغ الإجمالي:'}
+                      </span>
+                      <span className="font-mono font-black text-emerald-400" dir="ltr">
+                        {formatSAR(doc.grossSales || doc.returnsAmount || doc.amount, true)}
+                      </span>
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                    {doc.notes}
+                  </p>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                    <button
+                      type="button"
+                      onClick={() => setActiveEvidenceDoc(doc)}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      معاينة الإثبات
+                    </button>
+                    {doc.fileUrl && (
+                      <a
+                        href={(import.meta.env.BASE_URL ? import.meta.env.BASE_URL : '/') + doc.fileUrl.replace(/^\//, '')}
+                        download={doc.fileName}
+                        className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-xs flex items-center gap-1"
+                        title="تحميل الملف"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span className="text-[11px]">تحميل</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Human Verification Modal (Preview Before Commit) */}
         {showVerificationModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
@@ -354,6 +444,14 @@ export default function DataImport() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Evidence Document Modal */}
+        {activeEvidenceDoc && (
+          <EvidenceViewerModal
+            document={activeEvidenceDoc}
+            onClose={() => setActiveEvidenceDoc(null)}
+          />
         )}
       </div>
     </BIRoleGuard>

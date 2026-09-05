@@ -2,16 +2,11 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import { formatSAR, formatNum } from '../../lib/kpiEngine';
 import { CreditCard, Banknote, Landmark, Smartphone, FileCheck } from 'lucide-react';
+import { DORA_SALES_BY_PAYMENT_METHOD } from '../../data/doraSchema';
 
-export default function PaymentMethodMix({ payments, onInspectDocument }) {
-  const paymentList = payments || [
-    { paymentMethodId: 'card', nameAr: 'شبكة / مدى (POS Card)', amount: 360000, orderCount: 840, sharePct: 45.0, color: '#3B82F6' },
-    { paymentMethodId: 'cash', nameAr: 'نقداً (Cash)', amount: 140000, orderCount: 410, sharePct: 17.5, color: '#10B981' },
-    { paymentMethodId: 'bank_transfer', nameAr: 'تحويل بنكي (Transfer)', amount: 120000, orderCount: 95, sharePct: 15.0, color: '#8B5CF6', documentId: 'doc-sep-04' },
-    { paymentMethodId: 'tabby', nameAr: 'تقسيط تابي (Tabby)', amount: 85000, orderCount: 110, sharePct: 10.625, color: '#06B6D4', documentId: 'doc-sep-05' },
-    { paymentMethodId: 'tamara', nameAr: 'تقسيط تمارا (Tamara)', amount: 65000, orderCount: 82, sharePct: 8.125, color: '#F59E0B', documentId: 'doc-sep-05' },
-    { paymentMethodId: 'credit', nameAr: 'آجل شركات (Corporate Credit)', amount: 30000, orderCount: 12, sharePct: 3.75, color: '#64748B' },
-  ];
+export default function PaymentMethodMix({ payments, periodId = 'p-2026-08', onInspectDocument }) {
+  const filteredFromSchema = DORA_SALES_BY_PAYMENT_METHOD.filter(p => p.periodId === periodId);
+  const paymentList = payments || (filteredFromSchema.length > 0 ? filteredFromSchema : DORA_SALES_BY_PAYMENT_METHOD.filter(p => p.periodId === 'p-2026-08'));
 
   const totalAmount = paymentList.reduce((s, p) => s + (p.amount || 0), 0);
   const totalOrders = paymentList.reduce((s, p) => s + (p.orderCount || 0), 0);
