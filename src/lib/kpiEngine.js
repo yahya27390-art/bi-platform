@@ -183,6 +183,57 @@ export function calcGrowth(current, previous) {
 }
 
 /**
+ * Net Sales — Formula: Gross Sales - Returns
+ * Formula: Gross Sales - Returns
+ * Unit:    SAR
+ */
+export function calcNetSales(grossSales, returns) {
+  return (grossSales || 0) - (returns || 0);
+}
+
+/**
+ * Return Rate %
+ * Formula: (Returns / Gross Sales) × 100
+ * Unit:    %
+ */
+export function calcReturnRate(returns, grossSales) {
+  if (!grossSales || grossSales === 0) return 0;
+  return (returns / grossSales) * 100;
+}
+
+/**
+ * Sales Target Variance
+ * Formula: Net Sales - Target
+ * Unit:    SAR
+ */
+export function calcVariance(netSales, target) {
+  return (netSales || 0) - (target || 0);
+}
+
+/**
+ * Branch Target Achievement %
+ * Formula: (Net Sales / Target) × 100
+ * Unit:    %
+ */
+export function calcBranchAchievement(netSales, target) {
+  if (!target || target === 0) return 0;
+  return (netSales / target) * 100;
+}
+
+/**
+ * Payment Method Mix Calculation
+ * Calculates amounts, counts, and shares %
+ */
+export function calcPaymentMix(methods) {
+  if (!methods || !methods.length) return [];
+  const total = methods.reduce((acc, m) => acc + (m.amount || 0), 0) || 1;
+  return methods.map(m => ({
+    ...m,
+    sharePct: ((m.amount || 0) / total) * 100,
+  }));
+}
+
+/**
  * Target Achievement %
  * Formula: (Actual / Target) × 100 — capped at 150%
  * Unit:    %
@@ -203,6 +254,7 @@ export function calcAggregateAdMetrics(platforms) {
     totalClicks: 0, totalImpressions: 0, roas: 0,
     cpa: 0, ctr: 0, cpm: 0, convRate: 0,
   };
+
 
   const totalSpend          = active.reduce((s, p) => s + (p.spend || 0), 0);
   const attributedRevenue   = active.reduce((s, p) => s + (p.revenue || 0), 0);

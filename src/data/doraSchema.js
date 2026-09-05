@@ -1,0 +1,480 @@
+// ============================================================
+// DORA CARS BI PLATFORM — NORMALIZED BUSINESS DATA SCHEMA
+// Standalone Business Intelligence Engine for Dora Cars
+// ============================================================
+
+export const DORA_BRANCHES = [
+  {
+    id: 'main',
+    code: 'BR-01',
+    nameAr: 'الفرع الرئيسي',
+    nameEn: 'Main Branch',
+    city: 'بريدة',
+    defaultTarget: 350000,
+    currency: 'SAR',
+    manager: 'أحمد التميمي',
+    phone: '+966 16 381 0001',
+    address: 'طريق الملك عبد العزيز، بريدة',
+  },
+  {
+    id: 'al-rawaf',
+    code: 'BR-02',
+    nameAr: 'فرع الرواف',
+    nameEn: 'Al Rawaf Branch',
+    city: 'بريدة',
+    defaultTarget: 250000,
+    currency: 'SAR',
+    manager: 'سليمان الرواف',
+    phone: '+966 16 382 0002',
+    address: 'حي الرواف، بريدة',
+  },
+  {
+    id: 'kia',
+    code: 'BR-03',
+    nameAr: 'فرع كيا',
+    nameEn: 'Kia Branch',
+    city: 'بريدة',
+    defaultTarget: 200000,
+    currency: 'SAR',
+    manager: 'خالد المنصور',
+    phone: '+966 16 383 0003',
+    address: 'طريق الملك فهد، بريدة',
+  },
+];
+
+export const DORA_PERIODS = [
+  {
+    id: 'p-2026-09',
+    year: 2026,
+    month: 9,
+    labelAr: 'سبتمبر 2026',
+    labelEn: 'September 2026',
+    startDate: '2026-09-01',
+    endDate: '2026-09-30',
+    status: 'REVIEW', // OPEN | REVIEW | APPROVED | LOCKED
+    approvedBy: 'يحيى الحربي (المالك)',
+    approvedAt: '2026-09-05T18:00:00Z',
+  },
+  {
+    id: 'p-2026-08',
+    year: 2026,
+    month: 8,
+    labelAr: 'أغسطس 2026',
+    labelEn: 'August 2026',
+    startDate: '2026-08-01',
+    endDate: '2026-08-31',
+    status: 'LOCKED',
+    approvedBy: 'يحيى الحربي (المالك)',
+    approvedAt: '2026-09-01T10:00:00Z',
+    lockedBy: 'يحيى الحربي (المالك)',
+    lockedAt: '2026-09-01T12:00:00Z',
+  },
+  {
+    id: 'p-2026-07',
+    year: 2026,
+    month: 7,
+    labelAr: 'يوليو 2026',
+    labelEn: 'July 2026',
+    startDate: '2026-07-01',
+    endDate: '2026-07-31',
+    status: 'LOCKED',
+    approvedBy: 'يحيى الحربي (المالك)',
+    approvedAt: '2026-08-01T09:00:00Z',
+  },
+];
+
+// Configurable targets (not hardcoded)
+export const DORA_TARGETS = [
+  // September 2026
+  { periodId: 'p-2026-09', branchId: 'main', targetType: 'net_sales', targetValue: 350000, currency: 'SAR' },
+  { periodId: 'p-2026-09', branchId: 'al-rawaf', targetType: 'net_sales', targetValue: 250000, currency: 'SAR' },
+  { periodId: 'p-2026-09', branchId: 'kia', targetType: 'net_sales', targetValue: 200000, currency: 'SAR' },
+  { periodId: 'p-2026-09', branchId: 'all', targetType: 'total_branch_net_sales', targetValue: 800000, currency: 'SAR' },
+
+  // August 2026
+  { periodId: 'p-2026-08', branchId: 'main', targetType: 'net_sales', targetValue: 330000, currency: 'SAR' },
+  { periodId: 'p-2026-08', branchId: 'al-rawaf', targetType: 'net_sales', targetValue: 240000, currency: 'SAR' },
+  { periodId: 'p-2026-08', branchId: 'kia', targetType: 'net_sales', targetValue: 190000, currency: 'SAR' },
+  { periodId: 'p-2026-08', branchId: 'all', targetType: 'total_branch_net_sales', targetValue: 760000, currency: 'SAR' },
+];
+
+// Evidence & Source documents
+export const DORA_DOCUMENTS = [
+  {
+    id: 'doc-sep-01',
+    periodId: 'p-2026-09',
+    branchId: 'main',
+    category: 'branch_sales_screenshot',
+    fileName: 'Main_Branch_Sales_Sep2026.png',
+    fileUrl: '/evidence/Main_Branch_Sales_Sep2026.png',
+    uploadedBy: 'أحمد التميمي (مدير الفرع)',
+    uploadedAt: '2026-09-03T14:20:00Z',
+    verificationStatus: 'VERIFIED',
+    notes: 'سكرين شوت تقرير نقاط البيع Z-Report متضمن الإجمالي والمرتجعات',
+  },
+  {
+    id: 'doc-sep-02',
+    periodId: 'p-2026-09',
+    branchId: 'al-rawaf',
+    category: 'branch_sales_screenshot',
+    fileName: 'AlRawaf_Sales_Report_Sep2026.png',
+    fileUrl: '/evidence/AlRawaf_Sales_Report_Sep2026.png',
+    uploadedBy: 'سليمان الرواف',
+    uploadedAt: '2026-09-03T15:10:00Z',
+    verificationStatus: 'VERIFIED',
+    notes: 'تقرير مبيعات شهر سبتمبر فرع الرواف المعتمد',
+  },
+  {
+    id: 'doc-sep-03',
+    periodId: 'p-2026-09',
+    branchId: 'kia',
+    category: 'branch_sales_screenshot',
+    fileName: 'Kia_Branch_Sales_Sep2026.png',
+    fileUrl: '/evidence/Kia_Branch_Sales_Sep2026.png',
+    uploadedBy: 'خالد المنصور',
+    uploadedAt: '2026-09-03T16:00:00Z',
+    verificationStatus: 'VERIFIED',
+    notes: 'تقرير مبيعات ومرتجعات فرع كيا',
+  },
+  {
+    id: 'doc-sep-04',
+    periodId: 'p-2026-09',
+    branchId: null,
+    category: 'bank_transfers_excel',
+    fileName: 'Bank_Transfers_Consolidated_Sep2026.xlsx',
+    fileUrl: '/evidence/Bank_Transfers_Consolidated_Sep2026.xlsx',
+    uploadedBy: 'المحاسب المالي',
+    uploadedAt: '2026-09-04T09:30:00Z',
+    verificationStatus: 'VERIFIED',
+    notes: 'كشف الحوالات البنكية المباشرة عبر مصرف الراجحي والبنك الأهلي',
+  },
+  {
+    id: 'doc-sep-05',
+    periodId: 'p-2026-09',
+    branchId: null,
+    category: 'tabby_tamara_excel',
+    fileName: 'Tabby_Tamara_Settlements_Sep2026.xlsx',
+    fileUrl: '/evidence/Tabby_Tamara_Settlements_Sep2026.xlsx',
+    uploadedBy: 'المحاسب المالي',
+    uploadedAt: '2026-09-04T11:00:00Z',
+    verificationStatus: 'VERIFIED',
+    notes: 'كشف تسويات مبيعات تابي وتمارا لجميع الفروع لشهر سبتمبر',
+  },
+];
+
+// Physical Branch Sales (Gross, Returns, Net)
+export const DORA_BRANCH_SALES = [
+  // September 2026
+  {
+    periodId: 'p-2026-09',
+    branchId: 'main',
+    branchNameAr: 'الفرع الرئيسي',
+    grossSales: 365000,
+    returnsAmount: 15000,
+    netSales: 350000, // 365,000 - 15,000
+    confidence: 'VERIFIED',
+    documentId: 'doc-sep-01',
+    returnRate: 4.11, // (15,000 / 365,000) * 100
+    target: 350000,
+    variance: 0,
+    achievementPct: 100.0,
+    growthVsLastMonth: 12.5,
+  },
+  {
+    periodId: 'p-2026-09',
+    branchId: 'al-rawaf',
+    branchNameAr: 'فرع الرواف',
+    grossSales: 262000,
+    returnsAmount: 12000,
+    netSales: 250000, // 262,000 - 12,000
+    confidence: 'VERIFIED',
+    documentId: 'doc-sep-02',
+    returnRate: 4.58,
+    target: 250000,
+    variance: 0,
+    achievementPct: 100.0,
+    growthVsLastMonth: 8.7,
+  },
+  {
+    periodId: 'p-2026-09',
+    branchId: 'kia',
+    branchNameAr: 'فرع كيا',
+    grossSales: 211000,
+    returnsAmount: 11000,
+    netSales: 200000, // 211,000 - 11,000
+    confidence: 'VERIFIED',
+    documentId: 'doc-sep-03',
+    returnRate: 5.21,
+    target: 200000,
+    variance: 0,
+    achievementPct: 100.0,
+    growthVsLastMonth: 14.3,
+  },
+
+  // August 2026
+  {
+    periodId: 'p-2026-08',
+    branchId: 'main',
+    branchNameAr: 'الفرع الرئيسي',
+    grossSales: 326000,
+    returnsAmount: 15000,
+    netSales: 311000,
+    confidence: 'VERIFIED',
+    target: 330000,
+    variance: -19000,
+    achievementPct: 94.2,
+    growthVsLastMonth: 4.2,
+  },
+  {
+    periodId: 'p-2026-08',
+    branchId: 'al-rawaf',
+    branchNameAr: 'فرع الرواف',
+    grossSales: 242000,
+    returnsAmount: 12000,
+    netSales: 230000,
+    confidence: 'VERIFIED',
+    target: 240000,
+    variance: -10000,
+    achievementPct: 95.8,
+    growthVsLastMonth: 2.1,
+  },
+  {
+    periodId: 'p-2026-08',
+    branchId: 'kia',
+    branchNameAr: 'فرع كيا',
+    grossSales: 184000,
+    returnsAmount: 9000,
+    netSales: 175000,
+    confidence: 'VERIFIED',
+    target: 190000,
+    variance: -15000,
+    achievementPct: 92.1,
+    growthVsLastMonth: 5.0,
+  },
+];
+
+// Payment Methods lookup
+export const DORA_PAYMENT_METHODS = [
+  { id: 'cash', nameAr: 'نقداً (Cash)', nameEn: 'Cash', category: 'cash', color: '#10B981' },
+  { id: 'card', nameAr: 'شبكة / مدى (POS Card)', nameEn: 'Card / Mada', category: 'card', color: '#3B82F6' },
+  { id: 'bank_transfer', nameAr: 'تحويل بنكي (Transfer)', nameEn: 'Bank Transfer', category: 'transfer', color: '#8B5CF6' },
+  { id: 'tabby', nameAr: 'تقسيط تابي (Tabby)', nameEn: 'Tabby Installment', category: 'installment', color: '#06B6D4' },
+  { id: 'tamara', nameAr: 'تقسيط تمارا (Tamara)', nameEn: 'Tamara Installment', category: 'installment', color: '#F59E0B' },
+  { id: 'credit', nameAr: 'آجل شركات (Corporate Credit)', nameEn: 'Credit / Deferred', category: 'credit', color: '#64748B' },
+];
+
+// Payment Method Mix for September 2026
+export const DORA_SALES_BY_PAYMENT_METHOD = [
+  {
+    periodId: 'p-2026-09',
+    paymentMethodId: 'card',
+    nameAr: 'شبكة / مدى (POS Card)',
+    amount: 360000,
+    orderCount: 840,
+    sharePct: 45.0,
+    color: '#3B82F6',
+    confidence: 'VERIFIED',
+  },
+  {
+    periodId: 'p-2026-09',
+    paymentMethodId: 'cash',
+    nameAr: 'نقداً (Cash)',
+    amount: 140000,
+    orderCount: 410,
+    sharePct: 17.5,
+    color: '#10B981',
+    confidence: 'VERIFIED',
+  },
+  {
+    periodId: 'p-2026-09',
+    paymentMethodId: 'bank_transfer',
+    nameAr: 'تحويل بنكي (Transfer)',
+    amount: 120000,
+    orderCount: 95,
+    sharePct: 15.0,
+    color: '#8B5CF6',
+    confidence: 'VERIFIED',
+    documentId: 'doc-sep-04',
+  },
+  {
+    periodId: 'p-2026-09',
+    paymentMethodId: 'tabby',
+    nameAr: 'تقسيط تابي (Tabby)',
+    amount: 85000,
+    orderCount: 110,
+    sharePct: 10.625,
+    color: '#06B6D4',
+    confidence: 'VERIFIED',
+    documentId: 'doc-sep-05',
+  },
+  {
+    periodId: 'p-2026-09',
+    paymentMethodId: 'tamara',
+    nameAr: 'تقسيط تمارا (Tamara)',
+    amount: 65000,
+    orderCount: 82,
+    sharePct: 8.125,
+    color: '#F59E0B',
+    confidence: 'VERIFIED',
+    documentId: 'doc-sep-05',
+  },
+  {
+    periodId: 'p-2026-09',
+    paymentMethodId: 'credit',
+    nameAr: 'آجل شركات (Corporate Credit)',
+    amount: 30000,
+    orderCount: 12,
+    sharePct: 3.75,
+    color: '#64748B',
+    confidence: 'VERIFIED',
+  },
+];
+
+// Bank Transfer Details
+export const DORA_BANK_TRANSFERS = [
+  {
+    periodId: 'p-2026-09',
+    bank: 'مصرف الراجحي',
+    accountNumber: '**** 8842',
+    amount: 78000,
+    transfersCount: 62,
+    documentId: 'doc-sep-04',
+  },
+  {
+    periodId: 'p-2026-09',
+    bank: 'البنك الأهلي السعودي (SNB)',
+    accountNumber: '**** 1190',
+    amount: 42000,
+    transfersCount: 33,
+    documentId: 'doc-sep-04',
+  },
+];
+
+// Google Ads vs Physical Branch Sales Correlation Layer
+export const DORA_GOOGLE_CORRELATION = {
+  periodId: 'p-2026-09',
+  googleSpend: 40000,
+  googleConversions: 420,
+  googleAttributedRev: 180000,
+  physicalBranchesNetSales: 800000,
+  branchBreakdown: [
+    { branchId: 'main', nameAr: 'الفرع الرئيسي', netSales: 350000, target: 350000 },
+    { branchId: 'al-rawaf', nameAr: 'فرع الرواف', netSales: 250000, target: 250000 },
+    { branchId: 'kia', nameAr: 'فرع كيا', netSales: 200000, target: 200000 },
+  ],
+  analyticalSummary: {
+    relationship: 'Correlation (ارتباط متزامن وليس سببية مطلقة)',
+    strength: 'قوي إيجابي (+14.2% نمو متزامن في المبيعات الميدانية مع ذروة حملات Google Search)',
+    keyObservation:
+      'تزامنت زيادة الإنفاق في إعلانات Google Ads خلال أسبوع عروض اليوم الوطني (40 ألف ر.س) مع ارتفاع ملحوظ في الزيارات الفعلية للفرع الرئيسي وفرع الرواف، مما ساهم في استيفاء مستهدف الفروع بالكامل (800 ألف ر.س).',
+    recommendation: 'الحفاظ على حملات بحث Google المحلية الموجهة لبريدة والقصيم مع ربط خرائط Google Business Profile.',
+  },
+};
+
+// City / Geographic Performance with confidence labels
+export const DORA_GEO_PERFORMANCE = [
+  {
+    cityAr: 'بريدة',
+    cityEn: 'Buraydah',
+    region: 'منطقة القصيم',
+    sales: 640000,
+    spend: 18500,
+    roas: 4.82,
+    conversions: 520,
+    confidence: 'Known', // Known physical store POS
+    isPhysicalHub: true,
+  },
+  {
+    cityAr: 'عنيزة',
+    cityEn: 'Unaizah',
+    region: 'منطقة القصيم',
+    sales: 110000,
+    spend: 5200,
+    roas: 4.25,
+    conversions: 115,
+    confidence: 'Known',
+    isPhysicalHub: false,
+  },
+  {
+    cityAr: 'الرياض',
+    cityEn: 'Riyadh',
+    region: 'منطقة الرياض',
+    sales: 180000,
+    spend: 12000,
+    roas: 3.85,
+    conversions: 210,
+    confidence: 'Estimated', // Ecommerce deliveries & ad targeting
+    isPhysicalHub: false,
+  },
+  {
+    cityAr: 'جدة',
+    cityEn: 'Jeddah',
+    region: 'منطقة مكة المكرمة',
+    sales: 65000,
+    spend: 4500,
+    roas: 3.20,
+    conversions: 68,
+    confidence: 'Estimated',
+    isPhysicalHub: false,
+  },
+  {
+    cityAr: 'الدمام والخبر',
+    cityEn: 'Dammam & Khobar',
+    region: 'المنطقة الشرقية',
+    sales: 35000,
+    spend: 2600,
+    roas: 3.10,
+    conversions: 35,
+    confidence: 'Estimated',
+    isPhysicalHub: false,
+  },
+];
+
+// Reconciliation Records (Discrepancy Checks)
+export const DORA_RECONCILIATION_LOGS = [
+  {
+    id: 'rec-01',
+    periodId: 'p-2026-09',
+    type: 'branch_sales_vs_payment_methods',
+    title: 'مطابقة مبيعات الفروع الإجمالية مقابل مجموع وسائل الدفع',
+    sourceALabel: 'مجموع صافي مبيعات الفروع الثلاثة',
+    sourceAAmount: 800000,
+    sourceBLabel: 'مجموع دفاتر وسائل الدفع (كاش، شبكة، حوالات، تابي، تمارا)',
+    sourceBAmount: 800000,
+    discrepancy: 0,
+    hasDiscrepancy: false,
+    severity: 'SUCCESS',
+    status: 'RESOLVED',
+    notes: 'تطابق تام بنسبة 100% بين تقارير الفروع ودفاتر التحصيل لسبتمبر 2026.',
+  },
+  {
+    id: 'rec-02',
+    periodId: 'p-2026-09',
+    type: 'payment_transfers_vs_bank_statements',
+    title: 'مطابقة بند التحويلات البنكية مقابل كشف الحساب المصرفي',
+    sourceALabel: 'بند التحويلات البنكية في تقرير المبيعات',
+    sourceAAmount: 120000,
+    sourceBLabel: 'كشف الحوالات الواردة لمصرف الراجحي والبنك الأهلي',
+    sourceBAmount: 120000,
+    discrepancy: 0,
+    hasDiscrepancy: false,
+    severity: 'SUCCESS',
+    status: 'RESOLVED',
+    notes: 'تمت مطابقة 95 عملية تحويل بنكي بدقة دون أي فروقات.',
+  },
+  {
+    id: 'rec-03',
+    periodId: 'p-2026-08',
+    type: 'branch_sales_vs_payment_methods',
+    title: 'مطابقة مبيعات شهر أغسطس 2026',
+    sourceALabel: 'مبيعات فروع أغسطس',
+    sourceAAmount: 745000,
+    sourceBLabel: 'مجموع وسائل الدفع لأغسطس',
+    sourceBAmount: 741200,
+    discrepancy: 3800,
+    hasDiscrepancy: true,
+    severity: 'WARNING',
+    status: 'ACCEPTED_VARIANCE',
+    notes: 'فارق 3,800 ر.س ناتج عن تسوية فواتير كاش نهاية الشهر تم ترحيلها ليوليو.',
+  },
+];

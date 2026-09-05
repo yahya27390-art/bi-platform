@@ -123,10 +123,12 @@ export default function Targets() {
 
               {/* Branch targets */}
               <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-6">
-                <SectionHeader title="أهداف الفروع" className="mb-4" />
+                <SectionHeader title="مستهدفات الفروع المادية (Dora Branches Targets)" className="mb-4" />
                 <div>
-                  <TargetRow label="فرع هيونداي – الرواف" actual={112400} target={targets?.hyundaiRevenue||120000} format="sar" color="#3B82F6" />
-                  <TargetRow label="فرع كيا – السليم"      actual={87400}  target={targets?.kiaRevenue||95000}     format="sar" color="#10B981" />
+                  <TargetRow label="إجمالي مبيعات الفروع المادية" actual={800000} target={800000} format="sar" color="#10B981" />
+                  <TargetRow label="الفرع الرئيسي (Main Branch)" actual={350000} target={350000} format="sar" color="#3B82F6" />
+                  <TargetRow label="فرع الرواف (Al Rawaf Branch)" actual={250000} target={250000} format="sar" color="#10B981" />
+                  <TargetRow label="فرع كيا (Kia Branch)" actual={200000} target={200000} format="sar" color="#8B5CF6" />
                 </div>
               </div>
 

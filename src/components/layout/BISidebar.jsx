@@ -38,8 +38,8 @@ export default function BISidebar({ collapsed, onToggleCollapse, mobileOpen, onC
         </div>
         {!collapsed && (
           <div>
-            <div className="text-sm font-black text-white">درة السيارة</div>
-            <div className="text-[10px] text-emerald-400 font-semibold tracking-wider uppercase">BI Platform</div>
+            <div className="text-sm font-black text-white">درة للسيارات</div>
+            <div className="text-[10px] text-emerald-400 font-semibold tracking-wider uppercase">Dora Cars BI Platform</div>
           </div>
         )}
       </div>

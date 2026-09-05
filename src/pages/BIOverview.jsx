@@ -6,6 +6,13 @@ import { formatSAR, formatNum, formatPercent, formatMultiplier } from '../lib/kp
 import KPICard from '../components/charts/KPICard';
 import { TrendAreaChart, ComparisonBarChart } from '../components/charts/Charts';
 import SankeyFlowChart from '../components/charts/SankeyFlowChart';
+import DoraBranchCards from '../components/shared/DoraBranchCards';
+import GoogleBranchCorrelation from '../components/charts/GoogleBranchCorrelation';
+import PaymentMethodMix from '../components/charts/PaymentMethodMix';
+import GeoPerformanceView from '../components/charts/GeoPerformanceView';
+import ReconciliationCenter from '../components/shared/ReconciliationCenter';
+import EvidenceViewerModal from '../components/shared/EvidenceViewerModal';
+import { DORA_DOCUMENTS } from '../data/doraSchema';
 import {
   GrowthChip, AttributionNote, CardSkeleton, SectionHeader, TargetProgress,
   PlatformBadge, DataHealthBar, ReconciliationBanner
@@ -20,6 +27,7 @@ export default function BIOverview() {
   const [periodId, setPeriodId] = useState('p-2026-09');
   const [channelFilter, setChannelFilter] = useState('all'); // all | branches | ecommerce
   const [platformFilter, setPlatformFilter] = useState('all'); // all | meta | google | tiktok | snapchat
+  const [activeDocId, setActiveDocId] = useState(null);
 
   const { user } = useBIAuth();
   const { data: periods } = usePeriods();
@@ -28,6 +36,11 @@ export default function BIOverview() {
 
   const currentPeriod = periods?.find(p => p.id === periodId);
   const canViewNetProfit = hasBIPermission(user, 'canViewFinancialsFull');
+
+  const selectedDocument = activeDocId
+    ? DORA_DOCUMENTS.find(d => d.id === activeDocId) || { id: activeDocId, fileName: 'Document_Proof.png', uploadedBy: 'المحاسب المالي', category: 'branch_sales_screenshot', verificationStatus: 'VERIFIED' }
+    : null;
+
 
   const hasActiveFilters = channelFilter !== 'all' || platformFilter !== 'all';
 
@@ -180,6 +193,9 @@ export default function BIOverview() {
       {/* Section 11: Data Health Status Bar */}
       <DataHealthBar periodLabel={currentPeriod?.label || 'سبتمبر 2026'} />
 
+      {/* Multi-Source Reconciliation & Discrepancy Detector */}
+      <ReconciliationCenter />
+
       {/* Section 12: Data Reconciliation Banner (Anti Double-Counting) */}
       {displayedKpis && (
         <ReconciliationBanner
@@ -292,6 +308,20 @@ export default function BIOverview() {
         </>
       ) : null}
 
+      {/* SECTION: Physical Branch Performance (Main 350K, Al Rawaf 250K, Kia 200K) */}
+      <DoraBranchCards
+        periodId={periodId}
+        onInspectDocument={(docId) => setActiveDocId(docId)}
+      />
+
+      {/* SECTION: Correlation Layer (Google Ads vs Physical Branch Sales) */}
+      <GoogleBranchCorrelation />
+
+      {/* SECTION: Payment Method Mix (Cash, Card, Bank Transfer, Tabby, Tamara, Credit) */}
+      <PaymentMethodMix
+        onInspectDocument={(docId) => setActiveDocId(docId)}
+      />
+
       {/* Executive Sankey Diagram: Capital & Revenue Flow Topology */}
       <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#0c162a] to-[#080d18] p-6 space-y-4 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
@@ -321,6 +351,10 @@ export default function BIOverview() {
           <SankeyFlowChart height={420} />
         </div>
       </div>
+
+      {/* SECTION: City & Geographic Performance */}
+      <GeoPerformanceView />
+
 
       {/* Section 10: The Executive 8-Question Diagnostic Command Center */}
       <div className="bg-[#0D1F38] border border-white/10 rounded-3xl p-6 space-y-6 shadow-xl">
@@ -513,7 +547,16 @@ export default function BIOverview() {
           />
         </div>
       )}
+
+      {/* Evidence Viewer Modal */}
+      {activeDocId && (
+        <EvidenceViewerModal
+          document={selectedDocument}
+          onClose={() => setActiveDocId(null)}
+        />
+      )}
     </div>
   );
 }
+
 

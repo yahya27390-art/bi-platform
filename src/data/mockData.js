@@ -148,41 +148,48 @@ export const MOCK_PLATFORM_PERIOD_METRICS = {
 
 // ── BRANCHES ──────────────────────────────────────────────────
 export const MOCK_BRANCHES = [
-  { id: 'hyundai-rawaf', businessUnitId: 'bu-retail', name: 'فرع هيونداي – الرواف',
-    nameEn: 'Hyundai Branch – Al Rawaf', brand: 'hyundai', region: 'القصيم',
-    city: 'بريدة', address: 'طريق الرواف، بريدة', latitude: 26.3597, longitude: 43.9756,
-    status: 'active', phone: '0530051360', managerName: 'أحمد محمد', openingDate: '2018-03-01',
-    color: '#3B82F6' },
-  { id: 'kia-sullaim', businessUnitId: 'bu-retail', name: 'فرع كيا – السليم',
-    nameEn: 'Kia Branch – Al Sullaim', brand: 'kia', region: 'القصيم',
-    city: 'بريدة', address: 'حي السليم، بريدة', latitude: 26.3280, longitude: 43.9512,
-    status: 'active', phone: '0539454377', managerName: 'خالد إبراهيم', openingDate: '2019-07-15',
-    color: '#10B981' },
+  { id: 'main', businessUnitId: 'bu-retail', name: 'الفرع الرئيسي',
+    nameEn: 'Main Branch', brand: 'all', region: 'القصيم',
+    city: 'بريدة', address: 'طريق الملك عبد العزيز، بريدة', latitude: 26.3450, longitude: 43.9630,
+    status: 'active', phone: '0530051001', managerName: 'أحمد التميمي', openingDate: '2016-01-10',
+    color: '#3B82F6', targetRevenue: 350000 },
+  { id: 'al-rawaf', businessUnitId: 'bu-retail', name: 'فرع الرواف',
+    nameEn: 'Al Rawaf Branch', brand: 'hyundai', region: 'القصيم',
+    city: 'بريدة', address: 'طريق الرواف، حي الرواف، بريدة', latitude: 26.3597, longitude: 43.9756,
+    status: 'active', phone: '0530051360', managerName: 'سليمان الرواف', openingDate: '2018-03-01',
+    color: '#10B981', targetRevenue: 250000 },
+  { id: 'kia', businessUnitId: 'bu-retail', name: 'فرع كيا',
+    nameEn: 'Kia Branch', brand: 'kia', region: 'القصيم',
+    city: 'بريدة', address: 'طريق الملك فهد، بريدة', latitude: 26.3280, longitude: 43.9512,
+    status: 'active', phone: '0539454377', managerName: 'خالد المنصور', openingDate: '2019-07-15',
+    color: '#8B5CF6', targetRevenue: 200000 },
 ];
 
-// ── BRANCH PERIOD STATS (aggregated from daily) ───────────────
+// ── BRANCH PERIOD STATS (Gross, Returns, Net, Targets) ───────────────
 export const MOCK_BRANCH_PERIOD_STATS = {
-  'hyundai-rawaf': {
-    'p-2026-09': { revenue: 112400, revenueGrowth: 14.2, cogs: 58448, grossProfit: 53952,
-      orders: 387, ordersGrowth: 10.8, customers: 312, newCustomers: 89, avgOrderValue: 290.4,
-      targetRevenue: 120000, targetAchievement: 93.7, satisfaction: 4.7 },
-    'p-2026-08': { revenue: 98400, revenueGrowth: 8.1, cogs: 52136, grossProfit: 46264,
-      orders: 349, ordersGrowth: 5.8, customers: 284, newCustomers: 72, avgOrderValue: 282.0,
-      targetRevenue: 100000, targetAchievement: 98.4, satisfaction: 4.6 },
-    'p-2026-07': { revenue: 91000, revenueGrowth: 4.2, cogs: 48230, grossProfit: 42770,
-      orders: 330, ordersGrowth: 3.4, customers: 267, newCustomers: 64, avgOrderValue: 275.8,
-      targetRevenue: 95000, targetAchievement: 95.8, satisfaction: 4.7 },
+  'main': {
+    'p-2026-09': { revenue: 350000, grossSales: 365000, returns: 15000, revenueGrowth: 12.5, cogs: 182000, grossProfit: 168000,
+      orders: 820, ordersGrowth: 11.2, customers: 680, newCustomers: 185, avgOrderValue: 426.8,
+      targetRevenue: 350000, targetAchievement: 100.0, satisfaction: 4.8 },
+    'p-2026-08': { revenue: 311000, grossSales: 326000, returns: 15000, revenueGrowth: 7.2, cogs: 161720, grossProfit: 149280,
+      orders: 740, ordersGrowth: 6.1, customers: 610, newCustomers: 152, avgOrderValue: 420.2,
+      targetRevenue: 330000, targetAchievement: 94.2, satisfaction: 4.7 },
   },
-  'kia-sullaim': {
-    'p-2026-09': { revenue: 87400, revenueGrowth: 8.9, cogs: 46682, grossProfit: 40718,
-      orders: 332, ordersGrowth: 7.4, customers: 271, newCustomers: 74, avgOrderValue: 263.3,
-      targetRevenue: 95000, targetAchievement: 92.0, satisfaction: 4.5 },
-    'p-2026-08': { revenue: 80300, revenueGrowth: 6.2, cogs: 43361, grossProfit: 36939,
-      orders: 309, ordersGrowth: 4.7, customers: 251, newCustomers: 58, avgOrderValue: 259.9,
-      targetRevenue: 90000, targetAchievement: 89.2, satisfaction: 4.4 },
-    'p-2026-07': { revenue: 75600, revenueGrowth: 2.7, cogs: 40824, grossProfit: 34776,
-      orders: 295, ordersGrowth: 1.9, customers: 239, newCustomers: 51, avgOrderValue: 256.3,
-      targetRevenue: 85000, targetAchievement: 88.9, satisfaction: 4.5 },
+  'al-rawaf': {
+    'p-2026-09': { revenue: 250000, grossSales: 262000, returns: 12000, revenueGrowth: 8.7, cogs: 130000, grossProfit: 120000,
+      orders: 610, ordersGrowth: 8.4, customers: 495, newCustomers: 130, avgOrderValue: 409.8,
+      targetRevenue: 250000, targetAchievement: 100.0, satisfaction: 4.7 },
+    'p-2026-08': { revenue: 230000, grossSales: 242000, returns: 12000, revenueGrowth: 5.5, cogs: 119600, grossProfit: 110400,
+      orders: 565, ordersGrowth: 5.0, customers: 460, newCustomers: 115, avgOrderValue: 407.0,
+      targetRevenue: 240000, targetAchievement: 95.8, satisfaction: 4.6 },
+  },
+  'kia': {
+    'p-2026-09': { revenue: 200000, grossSales: 211000, returns: 11000, revenueGrowth: 14.3, cogs: 104000, grossProfit: 96000,
+      orders: 490, ordersGrowth: 12.1, customers: 390, newCustomers: 110, avgOrderValue: 408.1,
+      targetRevenue: 200000, targetAchievement: 100.0, satisfaction: 4.6 },
+    'p-2026-08': { revenue: 175000, grossSales: 184000, returns: 9000, revenueGrowth: 4.8, cogs: 91000, grossProfit: 84000,
+      orders: 435, ordersGrowth: 4.0, customers: 350, newCustomers: 92, avgOrderValue: 402.3,
+      targetRevenue: 190000, targetAchievement: 92.1, satisfaction: 4.5 },
   },
 };
 
@@ -194,7 +201,7 @@ function genDailySales(baseRevenue, days = 30) {
     const isWeekend = [5, 6].includes((d - 1) % 7); // Fri/Sat higher
     const factor = isWeekend ? 1.3 : (0.8 + Math.random() * 0.4);
     const rev = Math.round(avgDaily * factor);
-    const orders = Math.round(rev / 280);
+    const orders = Math.round(rev / 380);
     daily.push({
       day: d, revenue: rev, cogs: Math.round(rev * 0.52),
       grossProfit: Math.round(rev * 0.48), orders, customers: Math.round(orders * 0.9),
@@ -204,13 +211,17 @@ function genDailySales(baseRevenue, days = 30) {
 }
 
 export const MOCK_BRANCH_DAILY_SALES = {
-  'hyundai-rawaf': {
-    'p-2026-09': genDailySales(112400),
-    'p-2026-08': genDailySales(98400),
+  'main': {
+    'p-2026-09': genDailySales(350000),
+    'p-2026-08': genDailySales(311000),
   },
-  'kia-sullaim': {
-    'p-2026-09': genDailySales(87400),
-    'p-2026-08': genDailySales(80300),
+  'al-rawaf': {
+    'p-2026-09': genDailySales(250000),
+    'p-2026-08': genDailySales(230000),
+  },
+  'kia': {
+    'p-2026-09': genDailySales(200000),
+    'p-2026-08': genDailySales(175000),
   },
 };
 
