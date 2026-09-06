@@ -5,11 +5,13 @@ export const META_STORAGE_KEY = 'dora_meta_config';
 
 export const DEFAULT_META_CONFIG = {
   accountName: 'Ads Dora',
-  adAccountId: '182033807210',
-  fullAdAccountId: 'act_182033807210',
+  adAccountId: '1820338072104640',
+  fullAdAccountId: 'act_1820338072104640',
+  businessPortfolioName: 'doracars22',
+  businessPortfolioId: '626984876564725',
   currency: 'SAR',
   isConnected: true,
-  lastSync: '2026-09-06T19:37:00.000Z',
+  lastSync: '2026-09-06T19:49:00.000Z',
   autoSync: true,
 
   // Primary active Dataset / Pixel

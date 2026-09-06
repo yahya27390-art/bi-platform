@@ -30,7 +30,7 @@ export default function MetaIntegrationModal({ isOpen, onClose, onSyncComplete, 
   if (!isOpen) return null;
 
   const [metaConfig, setMetaConfig] = useState(loadMetaConfig);
-  const [adAccountId, setAdAccountId] = useState(metaConfig.adAccountId || '182033807210');
+  const [adAccountId, setAdAccountId] = useState(metaConfig.adAccountId || '1820338072104640');
   const [primaryPixelId, setPrimaryPixelId] = useState(metaConfig.primaryPixelId || '1581120113149357');
   const [secondaryPixelId, setSecondaryPixelId] = useState(metaConfig.secondaryPixelId || '1285376456874397');
   const [accessToken, setAccessToken] = useState(metaConfig.accessToken || '');
