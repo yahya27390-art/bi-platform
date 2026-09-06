@@ -23,6 +23,7 @@ import {
   loadMetaConfig,
   saveMetaConfig,
   testMetaConnection,
+  inspectMetaToken,
   DEFAULT_META_CONFIG
 } from '../../lib/metaIntegration';
 
@@ -38,9 +39,19 @@ export default function MetaIntegrationModal({ isOpen, onClose, onSyncComplete, 
       'EAAUaLFoDrJABSVbiAAMoR7wNS2j8zNUwTDL3AqmE9xSvDBlva3m8tye1y5C9VETiA6annvgNxg8lnOa5Vw82Of7KxjcMGXZCirHM2DZAU9PhA8tZCGZBM60X28MW4063OEhyyfe4KgmQmAVhXE7bapkOG3xnBKhkkwZALrGScAgogQxLeijeEYluyvRcqxAZDZD'
   );
   const [showToken, setShowToken] = useState(false);
-  const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'guide' | 'preview'
+  const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'messaging_keys' | 'guide' | 'preview'
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Messaging API Keys State
+  const [whatsappPhoneId, setWhatsappPhoneId] = useState(metaConfig.messaging?.whatsappPhoneNumberId || '');
+  const [whatsappWabaId, setWhatsappWabaId] = useState(metaConfig.messaging?.whatsappWabaId || '');
+  const [messagingToken, setMessagingToken] = useState(metaConfig.messaging?.messagingAccessToken || '');
+  const [instagramBizId, setInstagramBizId] = useState(metaConfig.messaging?.instagramBusinessId || '');
+  const [facebookPageId, setFacebookPageId] = useState(metaConfig.messaging?.facebookPageId || '');
+  const [isInspectingToken, setIsInspectingToken] = useState(false);
+  const [tokenInspectionResult, setTokenInspectionResult] = useState(null);
+
   const [connectionStatus, setConnectionStatus] = useState(
     metaConfig.isConnected
       ? { type: 'success', msg: 'متصل حياً بـ Meta CAPI Quality API و Datasets درة (174,000 حدث مسجل)' }
@@ -113,6 +124,47 @@ export default function MetaIntegrationModal({ isOpen, onClose, onSyncComplete, 
     } catch (e) {}
   };
 
+  const handleInspectMessagingToken = async () => {
+    const tokenToTest = messagingToken.trim() || accessToken.trim();
+    if (!tokenToTest) {
+      setTokenInspectionResult({ isValid: false, error: 'يرجى إدخال التوكن أولاً لفحصه.' });
+      return;
+    }
+    setIsInspectingToken(true);
+    setTokenInspectionResult(null);
+
+    try {
+      const report = await inspectMetaToken(tokenToTest);
+      setTokenInspectionResult(report);
+    } catch (e) {
+      setTokenInspectionResult({ isValid: false, error: e.message });
+    } finally {
+      setIsInspectingToken(false);
+    }
+  };
+
+  const handleSaveMessagingKeys = (e) => {
+    e?.preventDefault();
+    const updated = {
+      ...metaConfig,
+      messaging: {
+        whatsappPhoneNumberId: whatsappPhoneId.trim(),
+        whatsappWabaId: whatsappWabaId.trim(),
+        messagingAccessToken: messagingToken.trim(),
+        instagramBusinessId: instagramBizId.trim(),
+        facebookPageId: facebookPageId.trim(),
+        isMessagingConnected: !!(whatsappPhoneId.trim() && messagingToken.trim()),
+      },
+    };
+    setMetaConfig(updated);
+    saveMetaConfig(updated);
+    setConnectionStatus({
+      type: 'success',
+      msg: 'تم حفظ مفاتيح وتكوينات رسائل ميتا وواتساب بنجاح! 🚀',
+    });
+    if (onSyncComplete) onSyncComplete(updated);
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto animate-fadeIn"
@@ -176,7 +228,20 @@ export default function MetaIntegrationModal({ isOpen, onClose, onSyncComplete, 
             }`}
           >
             <Key className="w-3.5 h-3.5" />
-            <span>بيانات الربط والمفاتيح</span>
+            <span>الإعلانات والبكسل (CAPI)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('messaging_keys')}
+            className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+              activeTab === 'messaging_keys'
+                ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-slate-950 font-black shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <MessageCircle className="w-3.5 h-3.5 text-teal-400" />
+            <span>مفاتيح الرسائل والواتساب 💬</span>
           </button>
 
           <button
@@ -189,7 +254,7 @@ export default function MetaIntegrationModal({ isOpen, onClose, onSyncComplete, 
             }`}
           >
             <HelpCircle className="w-3.5 h-3.5" />
-            <span>استخراج رمز CAPI من ميتا</span>
+            <span>دليل الاستخراج من ميتا</span>
           </button>
 
           <button
@@ -201,8 +266,8 @@ export default function MetaIntegrationModal({ isOpen, onClose, onSyncComplete, 
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>محادثات الواتساب والأداء</span>
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>أداء الحملات والواتساب</span>
           </button>
         </div>
 
@@ -393,6 +458,188 @@ export default function MetaIntegrationModal({ isOpen, onClose, onSyncComplete, 
               </div>
             </form>
           </div>
+        )}
+
+        {/* TAB 2: LIVE MESSAGING API KEYS (WhatsApp Cloud API & Instagram/Facebook) */}
+        {activeTab === 'messaging_keys' && (
+          <form onSubmit={handleSaveMessagingKeys} className="space-y-5">
+            {/* Header Alert / Explanation */}
+            <div className="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/30 text-teal-200 text-xs leading-relaxed space-y-1.5">
+              <div className="flex items-center gap-2 font-bold text-white text-sm">
+                <MessageCircle className="w-4 h-4 text-teal-400" />
+                <span>المفاتيح والصلاحيات الحقيقية المطلوبة للرسائل في ميتا</span>
+              </div>
+              <p className="text-slate-300">
+                توكن إعلانات وبكسل سلة الحالي (CAPI) مخصص للأحداث والإحصائيات فقط. لسحب رسائل ومحادثات العملاء وقراءتها والرد عليها برمجياً، يتطلب ميتا مفاتيح **WhatsApp Cloud API** و **Instagram Messaging** الموضحة أدناه:
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {/* WhatsApp Cloud API Box */}
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-teal-500/30 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <span className="font-bold text-teal-300 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>1. مفاتيح واتساب (WhatsApp Business Cloud API)</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">1,617 محادثة في حملاتكم</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-200 block">
+                      Phone Number ID (معرف رقم هاتف الواتساب)
+                    </label>
+                    <input
+                      type="text"
+                      value={whatsappPhoneId}
+                      onChange={(e) => setWhatsappPhoneId(e.target.value)}
+                      placeholder="مثال: 104829384729102 (من WhatsApp > API Setup)"
+                      className="w-full p-2.5 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-200 block">
+                      WABA ID (معرف حساب واتساب للأعمال)
+                    </label>
+                    <input
+                      type="text"
+                      value={whatsappWabaId}
+                      onChange={(e) => setWhatsappWabaId(e.target.value)}
+                      placeholder="مثال: 626984876564725 (من Business Manager)"
+                      className="w-full p-2.5 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Instagram & Facebook Box */}
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-purple-500/30 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <span className="font-bold text-purple-300 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-400" />
+                    <span>2. مفاتيح انستقرام وفيسبوك (Instagram DMs & Messenger)</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">الرسائل الخاصة والتعليقات</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-200 block">
+                      Instagram Business Account ID (معرف انستقرام)
+                    </label>
+                    <input
+                      type="text"
+                      value={instagramBizId}
+                      onChange={(e) => setInstagramBizId(e.target.value)}
+                      placeholder="مثال: 1784140029384729"
+                      className="w-full p-2.5 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs font-mono text-purple-300 placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-200 block">
+                      Facebook Page ID (معرف صفحة فيسبوك)
+                    </label>
+                    <input
+                      type="text"
+                      value={facebookPageId}
+                      onChange={(e) => setFacebookPageId(e.target.value)}
+                      placeholder="مثال: 108392817294827"
+                      className="w-full p-2.5 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Permanent Messaging Access Token & Live Inspector */}
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-blue-500/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Key className="w-3.5 h-3.5 text-blue-400" />
+                    <span>3. رمز الوصول الدائم للرسائل (System User Access Token)</span>
+                  </label>
+                  <span className="text-[10px] text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded font-mono">
+                    Never Expiring Token
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={messagingToken}
+                    onChange={(e) => setMessagingToken(e.target.value)}
+                    placeholder="الصق توكن مستخدم النظام (System User Token) هنا لفحصه"
+                    className="flex-1 p-2.5 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleInspectMessagingToken}
+                    disabled={isInspectingToken}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shrink-0 transition-all flex items-center gap-1.5 shadow"
+                  >
+                    {isInspectingToken ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                    <span>فحص الصلاحيات حياً 🔍</span>
+                  </button>
+                </div>
+
+                {/* Token Live Inspection Results */}
+                {tokenInspectionResult && (
+                  <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white">تقرير فحص صلاحيات التوكن في Meta Graph API:</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${tokenInspectionResult.isValid ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`}>
+                        {tokenInspectionResult.isValid ? 'توكن نشط وصحيح' : 'خطأ في التوكن'}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-300">{tokenInspectionResult.summary || tokenInspectionResult.error}</p>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
+                      <div className={`p-2 rounded-lg border text-center ${tokenInspectionResult.hasWhatsAppMessaging ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                        <span className="block font-bold text-[11px]">رسائل واتساب</span>
+                        <span className="text-[10px] font-mono">{tokenInspectionResult.hasWhatsAppMessaging ? '✅ مفعلة' : '❌ غير مفعلة'}</span>
+                      </div>
+                      <div className={`p-2 rounded-lg border text-center ${tokenInspectionResult.hasInstagramMessaging ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                        <span className="block font-bold text-[11px]">رسائل انستقرام</span>
+                        <span className="text-[10px] font-mono">{tokenInspectionResult.hasInstagramMessaging ? '✅ مفعلة' : '❌ غير مفعلة'}</span>
+                      </div>
+                      <div className={`p-2 rounded-lg border text-center ${tokenInspectionResult.hasFacebookMessaging ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                        <span className="block font-bold text-[11px]">ماسنجر فيسبوك</span>
+                        <span className="text-[10px] font-mono">{tokenInspectionResult.hasFacebookMessaging ? '✅ مفعلة' : '❌ غير مفعلة'}</span>
+                      </div>
+                      <div className={`p-2 rounded-lg border text-center ${tokenInspectionResult.hasAdsAccess ? 'bg-blue-500/10 border-blue-500/40 text-blue-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                        <span className="block font-bold text-[11px]">الإعلانات والبكسل</span>
+                        <span className="text-[10px] font-mono">{tokenInspectionResult.hasAdsAccess ? '✅ مفعلة' : '❌ غير مفعلة'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+              <button
+                type="submit"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-teal-500/20 transition-all flex items-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>حفظ وتفعيل مفاتيح الرسائل الحية 💾</span>
+              </button>
+
+              <a
+                href="https://developers.facebook.com/apps/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-slate-400 hover:text-white inline-flex items-center gap-1 font-medium"
+              >
+                <span>فتح Meta for Developers</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </form>
         )}
 
         {/* TAB 2: STEP BY STEP GUIDE */}
