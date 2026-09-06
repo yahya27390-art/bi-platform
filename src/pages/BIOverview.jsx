@@ -318,7 +318,7 @@ export default function BIOverview() {
       />
 
       {/* SECTION: Correlation Layer (Google Ads vs Physical Branch Sales) */}
-      <GoogleBranchCorrelation />
+      <GoogleBranchCorrelation periodId={periodId} />
 
       {/* SECTION: Payment Method Mix (Cash, Card, Bank Transfer, Tabby, Tamara, Credit) */}
       <PaymentMethodMix
