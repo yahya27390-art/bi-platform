@@ -56,7 +56,8 @@ import {
   generateSmartSocialReply,
   analyzeCustomerText,
   QUICK_REPLY_TEMPLATES,
-  DORA_SOCIAL_KNOWLEDGE
+  DORA_SOCIAL_KNOWLEDGE,
+  DORA_PARTS_OFFICIAL_SYSTEM_PROMPT
 } from '../lib/socialResponderAgent';
 import { loadMetaConfig } from '../lib/metaIntegration';
 import { loadTikTokConfig } from '../lib/tiktokIntegration';
@@ -86,6 +87,7 @@ export default function SocialResponderLab() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showMetaModal, setShowMetaModal] = useState(false);
   const [showTikTokModal, setShowTikTokModal] = useState(false);
+  const [showPromptModal, setShowPromptModal] = useState(false);
 
   // Training Studio State
   const [rules, setRules] = useState(loadTrainingRules());
@@ -341,16 +343,25 @@ export default function SocialResponderLab() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-wide flex items-center gap-3">
-              <span>إيجنت الرد المباشر واستوديو التدريب الذكي</span>
+              <span>درة السيارة لقطع الغيار · مساعد خدمة العملاء الذكي</span>
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
-              ربط حي ومباشر مع حسابات ميتا وتيك توك الرسمية لدرة للسيارات، مع استوديو تفاعلي لتعليم وتدريب الإيجنت على قواعد العمل وأسلوب الرد المعتمد.
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl">
+              المساعد الذكي الرسمي لخدمة عملاء «درة السيارة لقطع الغيار» المتخصص في قطع غيار هيونداي، كيا، السيارات الكورية ومحركات الديزل، مع نظام توجيه ذكي للفروع الثلاثة المعتمدة.
             </p>
           </div>
 
           {/* Master Live Sync Button & Modals */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              onClick={() => setShowPromptModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow"
+              title="عرض نص البرومبت والنظام التشغيلي المعتمد (17 بنداً)"
+            >
+              <BookOpen className="w-4 h-4 text-amber-400" />
+              <span>دستور وسياسات الإيجنت (17 بنداً) 📜</span>
+            </button>
+
             <button
               onClick={handleLiveSync}
               disabled={isSyncingLive}
@@ -394,6 +405,69 @@ export default function SocialResponderLab() {
             <span>{syncStatusMsg}</span>
           </div>
         )}
+
+        {/* 3 Official Customer Service Destinations */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+          {/* 1. Kia Branch */}
+          <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-teal-500/30 space-y-1 relative overflow-hidden">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-teal-300 flex items-center gap-1.5">
+                <Car className="w-3.5 h-3.5 text-teal-400" />
+                <span>1) فرع كيا</span>
+              </span>
+              <a
+                href="tel:0539454377"
+                className="font-mono text-white text-[11px] font-bold bg-slate-950 hover:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-800 transition-colors"
+              >
+                0539454377
+              </a>
+            </div>
+            <p className="text-[11px] text-slate-400 line-clamp-1">
+              أوبتيما، سيراتو، سبورتاج، كادنزا، سورينتو، ريو...
+            </p>
+          </div>
+
+          {/* 2. Al-Rawaf Hyundai */}
+          <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-blue-500/30 space-y-1 relative overflow-hidden">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-blue-300 flex items-center gap-1.5">
+                <Car className="w-3.5 h-3.5 text-blue-400" />
+                <span>2) فرع الرواف هيونداي</span>
+              </span>
+              <a
+                href="tel:0530051360"
+                className="font-mono text-white text-[11px] font-bold bg-slate-950 hover:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-800 transition-colors"
+              >
+                0530051360
+              </a>
+            </div>
+            <p className="text-[11px] text-slate-400 line-clamp-1">
+              سوناتا، إلنترا، أكسنت، توسان، سنتافي، أزيرا...
+            </p>
+          </div>
+
+          {/* 3. Online Store */}
+          <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 space-y-1 relative overflow-hidden">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-purple-300 flex items-center gap-1.5">
+                <ShoppingCart className="w-3.5 h-3.5 text-purple-400" />
+                <span>3) المتجر الإلكتروني</span>
+              </span>
+              <a
+                href="https://doracars.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="font-mono text-white text-[11px] font-bold bg-slate-950 hover:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-800 transition-colors flex items-center gap-1"
+              >
+                <span>doracars.com</span>
+                <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
+              </a>
+            </div>
+            <p className="text-[11px] text-slate-400 line-clamp-1">
+              هاتف: 0538834212 | شحن لجميع مناطق المملكة
+            </p>
+          </div>
+        </div>
 
         {/* Master View Tabs: Inbox vs Training Studio */}
         <div className="flex items-center gap-2 border-t border-slate-800/80 pt-4">
@@ -1009,9 +1083,48 @@ export default function SocialResponderLab() {
                       rows={2}
                       value={coachQuery}
                       onChange={(e) => setCoachQuery(e.target.value)}
-                      placeholder="اكتب سؤالاً هنا (مثال: هل أقدر أشتري هايلوكس بدون دفعة أولى وأنا بالرياض؟)"
+                      placeholder="اكتب سؤالاً هنا (مثال: أحتاج كمبروسر سوناتا 2017 أو فحمات كيا)..."
                       className="w-full bg-slate-950 border border-slate-700/80 rounded-xl p-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
                     />
+                  </div>
+
+                  {/* Quick sample chips */}
+                  <div className="flex flex-wrap gap-1.5 text-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => setCoachQuery('أحتاج كمبروسر سوناتا 2017')}
+                      className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                    >
+                      🚗 كمبروسر سوناتا 2017
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCoachQuery('عندكم فحمات كيا سبورتاج 2020؟')}
+                      className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                    >
+                      🟢 فحمات كيا سبورتاج
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCoachQuery('المكيف ما يبرد هل الكمبروسر خربان؟')}
+                      className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                    >
+                      ❄️ المكيف ما يبرد
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCoachQuery('أنا بالرياض وأبغى أطلب هوبات أونلاين')}
+                      className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                    >
+                      🛒 شحن هوبات أونلاين
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCoachQuery('متوفرة قطع غيار محركات الديزل للكوري؟')}
+                      className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                    >
+                      ⚙️ محركات ديزل
+                    </button>
                   </div>
 
                   <button
@@ -1092,19 +1205,18 @@ export default function SocialResponderLab() {
                   onChange={(e) => setSettings({ ...settings, responseTone: e.target.value })}
                   className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white"
                 >
-                  <option value="saudi_friendly">سعودي راقٍ وودود (أهلاً بك يا غالي ونورتنا 🤍)</option>
+                  <option value="saudi_friendly">سعودي راقٍ وودود بمصطلحات السوق (فحمات، هوبات، ركبة...)</option>
                   <option value="formal_business">رسمي تجاري (عميلنا العزيز، تشرفنا بخدمتكم)</option>
-                  <option value="quick_sales">تسويقي سريع مع تحويل مباشر للواتساب</option>
+                  <option value="quick_sales">تسويقي سريع مع تحويل مباشر للفروع</option>
                 </select>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                <div className="font-bold text-teal-300">بيانات درة المتصلة حياً:</div>
+                <div className="font-bold text-teal-300">الفروع الـ 3 المعتمدة في التوجيه:</div>
                 <ul className="space-y-1 text-[11px] text-slate-300 list-disc pr-4">
-                  <li>المعرض: بريدة، القصيم (طريق الملك عبدالعزيز)</li>
-                  <li>المتجر: سلة لقطع الغيار والشحن (salla.sa/doracars)</li>
-                  <li>عروض اليوم الوطني 94 المعتمدة</li>
-                  <li>واتساب المبيعات الرسمي: 0555123456</li>
+                  <li>فرع كيا: 0539454377 (أوبتيما، سيراتو، سبورتاج، كادنزا...)</li>
+                  <li>فرع الرواف هيونداي: 0530051360 (سوناتا، إلنترا، أكسنت، توسان...)</li>
+                  <li>المتجر الإلكتروني: 0538834212 | doracars.com (شحن لكافة المدن)</li>
                 </ul>
               </div>
             </div>
@@ -1121,9 +1233,58 @@ export default function SocialResponderLab() {
         </div>
       )}
 
+      {/* Official Prompt Constitution Modal */}
+      {showPromptModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-3xl max-h-[85vh] rounded-3xl border border-amber-500/40 bg-[#0d1527] p-6 space-y-4 shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-amber-400" />
+                <h3 className="font-bold text-white text-base">
+                  دستور وسياسات العمل الرسمية لنشاط «درة السيارة لقطع الغيار» (17 بنداً)
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(DORA_PARTS_OFFICIAL_SYSTEM_PROMPT);
+                    setCopiedId('prompt');
+                    setTimeout(() => setCopiedId(null), 2000);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs flex items-center gap-1 border border-slate-700"
+                >
+                  {copiedId === 'prompt' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedId === 'prompt' ? 'تم النسخ' : 'نسخ النص'}</span>
+                </button>
+                <button
+                  onClick={() => setShowPromptModal(false)}
+                  className="text-slate-400 hover:text-white text-sm p-1"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-2 text-xs text-slate-200 leading-relaxed space-y-4 font-mono whitespace-pre-wrap bg-slate-950/80 p-4 rounded-2xl border border-slate-800">
+              {DORA_PARTS_OFFICIAL_SYSTEM_PROMPT}
+            </div>
+
+            <div className="pt-2 border-t border-slate-800 flex justify-end shrink-0">
+              <button
+                onClick={() => setShowPromptModal(false)}
+                className="px-5 py-2 rounded-xl bg-teal-500 text-slate-950 font-bold text-xs"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Meta & TikTok modals */}
       <MetaIntegrationModal isOpen={showMetaModal} onClose={() => setShowMetaModal(false)} />
       <TikTokIntegrationModal isOpen={showTikTokModal} onClose={() => setShowTikTokModal(false)} />
     </div>
   );
 }
+
