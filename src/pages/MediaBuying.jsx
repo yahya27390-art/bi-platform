@@ -7,10 +7,12 @@ import PlatformRadarChart from '../components/charts/PlatformRadarChart';
 import { PlatformBadge, GrowthChip, AttributionNote, CardSkeleton, SectionHeader } from '../components/shared/SharedComponents';
 import { cn } from '@/lib/utils';
 import { MOCK_PLATFORM_PERIOD_METRICS } from '../data/mockData';
-import { Compass, Sparkles, Video } from 'lucide-react';
+import { Compass, Sparkles, Video, Facebook } from 'lucide-react';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
 import TikTokIntegrationModal from '../components/shared/TikTokIntegrationModal';
 import { loadTikTokConfig } from '../lib/tiktokIntegration';
+import MetaIntegrationModal from '../components/shared/MetaIntegrationModal';
+import { loadMetaConfig } from '../lib/metaIntegration';
 
 const PLATFORM_TABS = [
   { slug: 'all',    label: 'الكل' },
@@ -34,6 +36,8 @@ export default function MediaBuying() {
   const [activePlatform, setActivePlatform] = useState('all');
   const [showTikTokModal, setShowTikTokModal] = useState(false);
   const [tiktokConfig, setTikTokConfig] = useState(loadTikTokConfig);
+  const [showMetaModal, setShowMetaModal] = useState(false);
+  const [metaConfig, setMetaConfig] = useState(loadMetaConfig);
   const { data: platforms, loading }    = useAdMetrics(periodId);
   const { data: campaigns }             = useCampaigns({ periodId, platform: activePlatform === 'all' ? undefined : activePlatform });
   const { data: funnels }               = useAdFunnel(periodId, activePlatform === 'all' ? 'meta' : activePlatform);
@@ -53,10 +57,22 @@ export default function MediaBuying() {
           <h1 className="text-2xl font-black text-slate-900">أداء الإعلانات المدفوعة (Media Buying Intelligence)</h1>
           <p className="text-slate-500 text-sm mt-1">تحليل معمق عبر القنوات: Meta · Google · TikTok مع توزيع الإنفاق والعائد</p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Meta Integration Button */}
+          <button
+            onClick={() => setShowMetaModal(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 font-bold text-xs transition-all shadow-sm"
+            title="ربط حساب Meta Ads Manager & CAPI"
+          >
+            <Facebook className="w-4 h-4 text-[#1877f2]" />
+            <span>{metaConfig.isConnected ? 'ميتا: متصل حياً' : 'ربط إعلانات ميتا'}</span>
+            <span className={`w-2 h-2 rounded-full ${metaConfig.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-blue-400'}`} />
+          </button>
+
+          {/* TikTok Integration Button */}
           <button
             onClick={() => setShowTikTokModal(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs transition-all shadow-sm"
+            className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs transition-all shadow-sm"
             title="ربط حساب TikTok Ads Manager"
           >
             <Video className="w-4 h-4 text-[#ff0050]" />
@@ -239,6 +255,13 @@ export default function MediaBuying() {
         isOpen={showTikTokModal}
         onClose={() => setShowTikTokModal(false)}
         onSyncComplete={(updated) => setTikTokConfig(updated)}
+      />
+
+      {/* Meta Integration Modal */}
+      <MetaIntegrationModal
+        isOpen={showMetaModal}
+        onClose={() => setShowMetaModal(false)}
+        onSyncComplete={(updated) => setMetaConfig(updated)}
       />
     </div>
   );

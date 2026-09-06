@@ -50,7 +50,8 @@ import {
   Pin,
   Image as ImageIcon,
   ShoppingCart,
-  Video
+  Video,
+  Facebook
 } from 'lucide-react';
 import { formatSAR, formatNum } from '../lib/kpiEngine';
 import ga4Snapshot from '../data/ga4LiveSnapshot.json';
@@ -72,6 +73,8 @@ import SallaIntegrationModal from '../components/shared/SallaIntegrationModal';
 import { loadSallaConfig, formatSallaForAgentPrompt } from '../lib/sallaIntegration';
 import TikTokIntegrationModal from '../components/shared/TikTokIntegrationModal';
 import { loadTikTokConfig, formatTikTokForAgentPrompt } from '../lib/tiktokIntegration';
+import MetaIntegrationModal from '../components/shared/MetaIntegrationModal';
+import { loadMetaConfig, formatMetaForAgentPrompt } from '../lib/metaIntegration';
 
 // System prompt grounding the AI Agent in real Dora Cars data
 const DORA_SYSTEM_PROMPT = `أنت المساعد الذكي والخبير التسويقي الرقمي الخاص لشركة "درة السيارة" (Dora Cars) في المملكة العربية السعودية.
@@ -345,6 +348,36 @@ ${fileList}
 3. **استخدام كود خصم خاص بجمهور تيك توك:** كود \`TIK10\` لتتبع المبيعات المباشرة ورفع معدل التحويل (CR).`;
   }
 
+  // Meta Ads Intelligence & WhatsApp Campaigns
+  if (lower.includes('ميتا') || lower.includes('meta') || lower.includes('فيسبوك') || lower.includes('facebook') || lower.includes('واتساب') || lower.includes('whatsapp') || lower.includes('انستجرام') || lower.includes('instagram')) {
+    return `🔵 **تحليل ذكي لحملات ميتا إعلانات (Meta Ads & WhatsApp) من واقع تقرير شهر أغسطس 2026 الحقيقي لدرة السيارة:**
+
+📊 **مؤشرات أداء ميتا المعتمدة:**
+- **إجمالي الإنفاق:** 3,221.60 ر.س
+- **محادثات الواتساب المحققة:** **1,617 محادثة عميل** 💬
+- **تكلفة المحادثة (CAC):** **1.82 - 1.99 ر.س** فقط لكل محادثة (كفاءة استثنائية جداً لقطاع قطع الغيار بالمملكة)!
+- **إجمالي الوصول:** 236,648 مستخدم عبر فيسبوك وانستجرام
+- **مرات الظهور:** 752,961 ظهور (تكرار الظهور Frequency: 3.18)
+- **نقرات الرابط للمتجر:** 3,467 نقرة (متوسط تكلفة النقرة CPC: 0.35 ر.س)
+
+💬 **تفاصيل الحملات المعتمدة:**
+1. **حملة تفاعل واتساب 14/4/2026:**
+   - الإنفاق: 2,930.42 ر.س | محادثات: **1,614 محادثة عميل مهتم** | تكلفة المحادثة: **1.82 ر.س**
+   - تعتبر هذه الحملة **الحصان الرابح** لدرة السيارة في جذب طلبات الشراء المباشرة وتسعير القطع برقم الهيكل (VIN).
+2. **حملة وعي لبريدة:**
+   - الإنفاق: 291.18 ر.س | وصول: 95,126 مستخدم في القصيم وبريدة | ظهور: 298,085
+
+🛡️ **بيانات بكسل سلة وميتا CAPI المربوطة:**
+- **doracars,salla:** مسجل **78,900 حدث** خلال 28 يوماً.
+- **Test Salla Website connect:** مسجل **95,100 حدث**.
+- الإجمالي يتجاوز **174,000 حدث** جاهزة لإعادة الاستهداف (Retargeting).
+
+💡 **توصيات الإيجنت لحملات ميتا واليوم الوطني:**
+1. **مضاعفة ميزانية إعلانات Click-to-WhatsApp:** العملاء في السعودية يفضلون طلب وتأكيد قطع الغيار عبر الواتساب، وتكلفة 1.82 ر.س ممتازة لتحقيق صفقات تتراوح بين 300 و 2,000 ر.س.
+2. **استهداف زوار بكسل سلة الـ 78.9K بإعلان ريتارجتنج على انستجرام وفيسبوك:** تقديم كود خصم اليوم الوطني أو شحن مجاني للطلبات فوق 300 ر.س.
+3. **أتمتة الردود السريعة في واتساب درة:** رسالة ترحيب آلية تطلب: "موديل السيارة + سنة الصنع + رقم الهيكل VIN + القطعة المطلوبة" لتسريع إتمام الطلب في أقل من دقيقتين.`;
+  }
+
   // Memory or Remember check
   if (lower.includes('ذاكر') || lower.includes('فاكر') || lower.includes('تتذكر') || lower.includes('اتعلمت') || lower.includes('افتكر')) {
     if (memories && memories.length > 0) {
@@ -501,6 +534,10 @@ export default function PrivateCampaignLab() {
   // TikTok Integration State
   const [showTikTokModal, setShowTikTokModal] = useState(false);
   const [tiktokConfig, setTikTokConfig] = useState(loadTikTokConfig);
+
+  // Meta Integration State
+  const [showMetaModal, setShowMetaModal] = useState(false);
+  const [metaConfig, setMetaConfig] = useState(loadMetaConfig);
 
   // New campaign modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -884,7 +921,8 @@ export default function PrivateCampaignLab() {
 
     const sallaContext = formatSallaForAgentPrompt(sallaConfig);
     const tiktokContext = formatTikTokForAgentPrompt(tiktokConfig);
-    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${sallaContext}\n\n${tiktokContext}\n\n${memoriesContext}\n\n${tasksContext}`;
+    const metaContext = formatMetaForAgentPrompt(metaConfig);
+    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${sallaContext}\n\n${tiktokContext}\n\n${metaContext}\n\n${memoriesContext}\n\n${tasksContext}`;
 
     // Append textual content of documents (csv, txt, json) to prompt
     let fullUserQueryText = userQuery;
@@ -1144,6 +1182,16 @@ export default function PrivateCampaignLab() {
               <Video className="w-4 h-4 text-[#00f2fe]" />
               <span>{tiktokConfig.isConnected ? 'تيك توك: متصل حياً' : 'ربط تيك توك (TikTok Ads)'}</span>
               <span className={`w-2 h-2 rounded-full ${tiktokConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-[#ff0050]'}`} />
+            </button>
+
+            <button
+              onClick={() => setShowMetaModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600/20 hover:bg-blue-600/35 border border-blue-500/40 text-blue-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
+              title="ربط ومزامنة إعلانات ميتا وواتساب وبكسل سلة (Meta Ads & CAPI)"
+            >
+              <Facebook className="w-4 h-4 text-[#1877f2]" />
+              <span>{metaConfig.isConnected ? 'ميتا: متصل حياً' : 'ربط ميتا (Meta Ads)'}</span>
+              <span className={`w-2 h-2 rounded-full ${metaConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-[#1877f2]'}`} />
             </button>
 
             <button
@@ -1475,6 +1523,13 @@ export default function PrivateCampaignLab() {
                 >
                   <Video className="w-3 h-3 text-[#00f2fe]" />
                   <span>📱 حملات تيك توك وتكلفة النقرة</span>
+                </button>
+                <button
+                  onClick={() => handleSendQuery('حلل لي حملات ميتا ومحادثات الواتساب الـ 1,617 وكيف نستغلها في مبيعات قطع الغيار وعروض اليوم الوطني؟')}
+                  className="px-3 py-1.5 rounded-xl bg-blue-500/20 hover:bg-blue-500/35 text-blue-200 border border-blue-500/40 transition-all whitespace-nowrap text-xs font-medium flex items-center gap-1"
+                >
+                  <Facebook className="w-3 h-3 text-[#1877f2]" />
+                  <span>💬 محادثات واتساب وإعلانات ميتا</span>
                 </button>
                 <button
                   onClick={() => handleSendQuery('نظم نفسك وبورد المهام الموكلة إليك واقترح أولويات العمل')}
@@ -3062,6 +3117,17 @@ export default function PrivateCampaignLab() {
         isOpen={showTikTokModal}
         onClose={() => setShowTikTokModal(false)}
         onSyncComplete={(updatedCfg) => setTikTokConfig(updatedCfg)}
+        onConsultAgent={(query) => {
+          setActiveSubTab('chat_lab');
+          handleSendQuery(query);
+        }}
+      />
+
+      {/* Meta Integration Modal */}
+      <MetaIntegrationModal
+        isOpen={showMetaModal}
+        onClose={() => setShowMetaModal(false)}
+        onSyncComplete={(updatedCfg) => setMetaConfig(updatedCfg)}
         onConsultAgent={(query) => {
           setActiveSubTab('chat_lab');
           handleSendQuery(query);
