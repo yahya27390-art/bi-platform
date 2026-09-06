@@ -10,6 +10,7 @@ import DoraBranchCards from '../components/shared/DoraBranchCards';
 import GoogleBranchCorrelation from '../components/charts/GoogleBranchCorrelation';
 import PaymentMethodMix from '../components/charts/PaymentMethodMix';
 import GA4LiveAnalytics from '../components/charts/GA4LiveAnalytics';
+import GSCLiveAnalytics from '../components/charts/GSCLiveAnalytics';
 import GeoPerformanceView from '../components/charts/GeoPerformanceView';
 import ReconciliationCenter from '../components/shared/ReconciliationCenter';
 import EvidenceViewerModal from '../components/shared/EvidenceViewerModal';
@@ -329,6 +330,9 @@ export default function BIOverview() {
 
       {/* SECTION: Google Analytics 4 (GA4) Live API Data */}
       <GA4LiveAnalytics periodId={periodId} />
+
+      {/* SECTION: Google Search Console (GSC) Live SEO & Keyword Data */}
+      <GSCLiveAnalytics periodId={periodId} />
 
       {/* Executive Sankey Diagram: Capital & Revenue Flow Topology */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm relative overflow-hidden">
