@@ -6,12 +6,15 @@ export const TIKTOK_STORAGE_KEY = 'dora_tiktok_config';
 export const DEFAULT_TIKTOK_CONFIG = {
   advertiserId: '7344310111864799234',
   secondaryAdvertiserId: '7340501740470173697',
-  pixelId: 'CH91827409281736',
+  pixelId: 'CT82DF3C77UF2P2A5GNG',
+  pixelName: 'DoraCars Pixel',
+  pixelCreatedAt: '2024-12-04 12:54:00',
+  pixelEventsCount: 13733,
   accessToken: '',
   accountName: 'شركة درة السيارة لقطع غيار السيارات0524',
   currency: 'SAR',
   isConnected: true,
-  lastSync: '2026-09-06T18:50:00.000Z',
+  lastSync: '2026-09-06T19:22:00.000Z',
   autoSync: true,
   liveSummary: {
     availableBalance: 198.63,
@@ -21,6 +24,7 @@ export const DEFAULT_TIKTOK_CONFIG = {
     cpm: 1.41,
     ctr: 3.55,
     activeAdGroupsCount: 3,
+    pixelTotalEvents: 13733,
   },
   stats: {
     totalSpend: 1521.13,
@@ -186,6 +190,8 @@ export function formatTikTokForAgentPrompt(config) {
 - حالة الاتصال: ${isConnected ? '🟢 متصل حياً بحساب TikTok Ads (ID: ' + (config.advertiserId || '7344310111864799234') + ')' : '⚪ غير مربوط حياً'}
 - اسم الحساب الإعلاني: ${config.accountName || 'شركة درة السيارة لقطع غيار السيارات0524'}
 - معرف الحساب الإعلاني: ${config.advertiserId || '7344310111864799234'}
+- بيكسل تيك توك النشط: **${config.pixelName || 'DoraCars Pixel'}** (معرف: \`${config.pixelId || 'CT82DF3C77UF2P2A5GNG'}\`)
+- إجمالي أحداث البيكسل المسجلة: **${(config.pixelEventsCount || 13733).toLocaleString()}** حدث (نشط ومثبت بالمتجر منذ ديسمبر 2024)
 - الرصيد المتاح الحالي: ${live.availableBalance} ر.س
 - إنفاق اليوم: ${live.todaySpend} ر.س | إنفاق الأسبوع الحالي: ${live.currentWeekSpend} ر.س
 - مرات الظهور اللحظية: ${live.currentWeekImpressions.toLocaleString()} ظهور
@@ -195,6 +201,6 @@ export function formatTikTokForAgentPrompt(config) {
 - أهم الحملات النشطة:
   1. حملة المبيعات 3/8/2026 (قطع كورية أصلية): إنفاق ${config.campaigns[0].spend} ر.س | عائد ROAS: ${config.campaigns[0].roas}x | مبيعات ${config.campaigns[0].revenue} ر.س
   2. حملة Traffic 22/7/2026: إنفاق ${config.campaigns[1].spend} ر.س | نقرات: ${config.campaigns[1].clicks.toLocaleString()} | عائد ROAS: ${config.campaigns[1].roas}x
-*توجيه للإيجنت:* استغل نسبة النقر الممتازة (CTR: ${live.ctr}%) وتكلفة الألف ظهور المنخفضة (${live.cpm} ر.س) لتقديم استراتيجيات رفع العائد وتحويل زيارات تيك توك إلى طلبات مؤكدة على سلة وفروع بريدة.
+*توجيه للإيجنت:* البيكسل جامع 13,733 حدث لزوار المتجر ومهيأ لإعلانات إعادة الاستهداف (Retargeting) المباشرة للسلات والأحداث. استغل نسبة النقر الممتازة (CTR: ${live.ctr}%) وتكلفة الألف ظهور المنخفضة (${live.cpm} ر.س) لتقديم استراتيجيات رفع العائد.
 `;
 }

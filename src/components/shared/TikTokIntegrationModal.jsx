@@ -31,7 +31,7 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
 
   const [tiktokConfig, setTikTokConfig] = useState(loadTikTokConfig);
   const [advertiserId, setAdvertiserId] = useState(tiktokConfig.advertiserId || '7344310111864799234');
-  const [pixelId, setPixelId] = useState(tiktokConfig.pixelId || 'CH91827409281736');
+  const [pixelId, setPixelId] = useState(tiktokConfig.pixelId || 'CT82DF3C77UF2P2A5GNG');
   const [accessToken, setAccessToken] = useState(tiktokConfig.accessToken || '');
   const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'guide' | 'preview'
   const [isTesting, setIsTesting] = useState(false);
