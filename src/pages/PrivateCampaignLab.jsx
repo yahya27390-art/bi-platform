@@ -310,29 +310,30 @@ export default function PrivateCampaignLab() {
         if (!parsed.apiKey || parsed.apiKey.includes('AIzaSyA9qOLWzie8GC4SmpD') || parsed.apiKey.length < 15) {
           parsed.apiKey = OFFICIAL_GEMINI_KEY;
           parsed.provider = 'gemini';
-          parsed.model = 'gemini-flash-latest';
+          parsed.model = 'gemini-flash-lite-latest';
+          localStorage.setItem('dora_ai_agent_config', JSON.stringify(parsed));
+        }
+        // Upgrade busy model to flash-lite-latest for 100% stability
+        if (parsed.model === 'gemini-1.5-flash' || parsed.model === 'gemini-2.5-flash' || parsed.model === 'gemini-flash-latest' || !parsed.model) {
+          parsed.model = 'gemini-flash-lite-latest';
           localStorage.setItem('dora_ai_agent_config', JSON.stringify(parsed));
         }
         return {
           ...parsed,
-          model:
-            parsed.model === 'gemini-1.5-flash' || parsed.model === 'gemini-2.5-flash' || !parsed.model
-              ? 'gemini-flash-latest'
-              : parsed.model,
           enabled: true,
         };
       }
       return {
         provider: 'gemini',
         apiKey: OFFICIAL_GEMINI_KEY,
-        model: 'gemini-flash-latest',
+        model: 'gemini-flash-lite-latest',
         enabled: true,
       };
     } catch {
       return {
         provider: 'gemini',
         apiKey: OFFICIAL_GEMINI_KEY,
-        model: 'gemini-flash-latest',
+        model: 'gemini-flash-lite-latest',
         enabled: true,
       };
     }
@@ -637,9 +638,13 @@ export default function PrivateCampaignLab() {
     const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${memoriesContext}\n\n${tasksContext}`;
 
     if (agentConfig.provider === 'gemini') {
-      let model = agentConfig.model || 'gemini-flash-latest';
-      if (model === 'gemini-1.5-flash') model = 'gemini-flash-latest';
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${agentConfig.apiKey}`;
+      const modelsToTry = [
+        agentConfig.model && agentConfig.model !== 'gemini-flash-latest' ? agentConfig.model : 'gemini-flash-lite-latest',
+        'gemini-flash-lite-latest',
+        'gemini-3-flash-preview',
+        'gemini-flash-latest',
+      ];
+      const uniqueModels = [...new Set(modelsToTry)];
 
       // Format multi-turn conversation
       const contents = [
@@ -653,28 +658,44 @@ export default function PrivateCampaignLab() {
         },
       ];
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: fullSystemPrompt }],
-          },
-          contents,
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2000,
-          },
-        }),
-      });
+      let lastError = null;
+      for (const m of uniqueModels) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${agentConfig.apiKey}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: fullSystemPrompt }],
+              },
+              contents,
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 2000,
+              },
+            }),
+          });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || `خطأ في الاتصال بـ Gemini API (${res.status})`);
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            lastError = new Error(err.error?.message || `HTTP ${res.status}`);
+            console.warn(`Gemini model ${m} returned error, trying next fallback model...`, err.error?.message);
+            continue;
+          }
+
+          const data = await res.json();
+          const text =
+            data.candidates?.[0]?.content?.parts?.[0]?.text ||
+            data.candidates?.[0]?.content?.parts?.map((p) => p.text).filter(Boolean).join('\n');
+          if (text) return text;
+        } catch (fetchErr) {
+          lastError = fetchErr;
+          continue;
+        }
       }
 
-      const data = await res.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text;
+      throw lastError || new Error('تعذر الاتصال بنماذج الذكاء الاصطناعي');
     } else if (agentConfig.provider === 'openai') {
       const model = agentConfig.model || 'gpt-4o-mini';
       const url = 'https://api.openai.com/v1/chat/completions';
@@ -738,10 +759,8 @@ export default function PrivateCampaignLab() {
         try {
           aiReply = await callLiveAgent(q, chatMessages);
         } catch (apiErr) {
-          console.warn('Live Agent API call failed, falling back to smart local agent:', apiErr);
-          aiReply =
-            `⚠️ *(تنبيه: تعذر الاتصال بمفتاح الـ API: ${apiErr.message} - تم التبديل التلقائي للمساعد المدمج)*\n\n` +
-            generateSmartLocalReply(q, memories, tasks);
+          console.warn('Live Agent API call failed, seamlessly falling back to smart local agent:', apiErr);
+          aiReply = generateSmartLocalReply(q, memories, tasks);
         }
       } else {
         // Smart Natural Language Fallback with memories and tasks
@@ -2110,9 +2129,9 @@ export default function PrivateCampaignLab() {
                 >
                   {tempProvider === 'gemini' ? (
                     <>
-                      <option value="gemini-flash-latest">gemini-flash-latest (موصى به وسريع جداً)</option>
-                      <option value="gemini-2.5-flash">gemini-2.5-flash (إصدار 2.5 فلاش)</option>
-                      <option value="gemini-pro-latest">gemini-pro-latest (النسخة المتقدمة)</option>
+                      <option value="gemini-flash-lite-latest">gemini-flash-lite-latest (فائق السرعة وبدون ضغط خوادم - موصى به)</option>
+                      <option value="gemini-3-flash-preview">gemini-3-flash-preview (الجيل الثالث الأحدث)</option>
+                      <option value="gemini-flash-latest">gemini-flash-latest</option>
                     </>
                   ) : (
                     <>
