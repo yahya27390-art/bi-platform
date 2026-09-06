@@ -1,5 +1,5 @@
 // Dora Cars - Meta & TikTok AI Social Responder Agent Engine
-// Manages automated and smart assisted replies for Meta (Instagram, Facebook, WhatsApp) and TikTok (Ads & Comments)
+// Live API Sync & Interactive Agent Training Studio Engine
 
 import { loadMetaConfig } from './metaIntegration';
 import { loadTikTokConfig } from './tiktokIntegration';
@@ -8,7 +8,10 @@ const STORAGE_KEYS = {
   SETTINGS: 'dora_social_responder_settings',
   MESSAGES: 'dora_social_responder_inbox',
   LEADS: 'dora_social_responder_leads',
-  METRICS: 'dora_social_responder_metrics',
+  TRAINING_RULES: 'dora_social_training_rules',
+  GOLDEN_EXAMPLES: 'dora_social_golden_examples',
+  GUARDRAILS: 'dora_social_guardrails',
+  LIVE_SYNC_LOGS: 'dora_social_sync_logs',
 };
 
 // Dora Cars Knowledge Base for AI Responses
@@ -36,139 +39,173 @@ export const DORA_SOCIAL_KNOWLEDGE = {
 // Default Agent Settings
 export const DEFAULT_RESPONDER_SETTINGS = {
   enabled: true,
-  autoPilotMode: false, // true = automatic reply without human review, false = suggest & human approval
+  autoPilotMode: false,
   responseTone: 'saudi_friendly', // 'saudi_friendly' | 'formal_business' | 'quick_sales'
-  responseDelaySeconds: 3, // simulate realistic human typing
+  responseDelaySeconds: 2,
   notifyOnLead: true,
+  liveSyncIntervalMinutes: 5,
   platforms: {
     instagramDm: true,
     instagramComments: true,
     facebookComments: true,
     whatsapp: true,
     tiktokComments: true,
-    tiktokDm: true,
   },
   autoCaptureLeads: true,
 };
 
-// Initial Seed Messages / Comments Inbox
-export const INITIAL_SOCIAL_INBOX = [
+// Initial Company Training Rules
+export const INITIAL_TRAINING_RULES = [
   {
-    id: 'msg-tk-101',
-    platform: 'tiktok',
-    channelType: 'ad_comment',
-    senderName: 'سعد العتيبي (@saad_otaibi99)',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=faces',
-    text: 'ما شاء الله تبارك الله، بكم قسط التورس 2024 عندكم بدون دفعة أولى؟ وهل السيارة متوفرة بفرع بريدة؟',
-    timestamp: 'منذ 8 دقائق',
-    rawTime: new Date(Date.now() - 8 * 60000).toISOString(),
-    status: 'pending', // 'pending' | 'replied' | 'converted'
-    intent: 'purchase_financing',
-    sentiment: 'positive',
-    adTitle: 'إعلان تيك توك: وصول فورد تورس 2024 درة السيارة',
-    adId: '7344310111864799234',
-    suggestedReply: 'أهلاً بك أستاذ سعد ويسعد مساك 🤍 نعم الفورد تورس 2024 متوفرة وجاهزة للاستلام في معرض درة للسيارات ببريدة! متاح التمويل بدون دفعة أولى وقسط يبدأ من 1,850 ر.س حسب الراتب والبنك. تواصل معنا على الواتساب 0555123456 لنحسب لك الحسبة بدقة ونجهز لك السيارة بأقوى عروض اليوم الوطني 🇸🇦',
-    reply: '',
-    leadInfo: {
-      carModel: 'فورد تورس 2024',
-      interestType: 'تمويل بدون دفعة أولى',
-      city: 'بريدة / القصيم',
-      phone: '',
-    }
+    id: 'rule-1',
+    category: 'financing',
+    title: 'سياسة الأقساط والتمويل',
+    content: 'التأكيد دائماً على توفر التمويل بدون دفعة أولى لجميع البنوك السعودية، وعدم إعطاء قسط نهائي ثابت بل البدء بعبارة "يبدأ القسط التقريبي من X حسب جهة العمل والبنك" وطلب التواصل واتساب 0555123456 للحسبة الدقيقة.',
+    isActive: true
   },
   {
-    id: 'msg-meta-102',
-    platform: 'meta_instagram',
-    channelType: 'dm',
-    senderName: 'نورة التميمي (@noura.tamimi)',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces',
-    text: 'مساء الخير، أبغى مساعدات وشمعات كامري 2021 أصلية، هل متوفرة عندكم في متجر سلة وهل عندكم شحن للرياض؟',
-    timestamp: 'منذ 24 دقيقة',
-    rawTime: new Date(Date.now() - 24 * 60000).toISOString(),
-    status: 'pending',
-    intent: 'spare_parts',
-    sentiment: 'positive',
-    adTitle: 'رسالة خاصة انستقرام Direct DM',
-    suggestedReply: 'مساء النور أهلاً أخت نورة 🌸 متوفرة جميع قطع الغيار الأصلية لكامري 2021 في متجر درة للسيارات على سلة، مع ضمان أصلي وتوصيل سريع لباب بيتك بالرياض خلال 24-48 ساعة! 🚚 تقدرين تطلبينها مباشرة من الرابط: https://salla.sa/doracars أو ارسلي رقم الهيكل ونخدمك فوراً 🤍',
-    reply: '',
-    leadInfo: {
-      carModel: 'كامري 2021',
-      interestType: 'قطع غيار أصلية (مساعدات وشمعات)',
-      city: 'الرياض',
-      phone: '',
-    }
+    id: 'rule-2',
+    category: 'location',
+    title: 'موقع المعرض والدوام',
+    content: 'معرضنا الرئيسي يقع في القصيم - بريدة، طريق الملك عبدالعزيز في معارض السيارات. الدوام فترتين: صباحية 8-12ظ ومسائية 4-10م، وتوفير رابط اللوكيشن عبر الواتساب فوراً.',
+    isActive: true
   },
   {
-    id: 'msg-meta-103',
-    platform: 'meta_whatsapp',
-    channelType: 'whatsapp',
-    senderName: 'فهد المطيري (+966 50 112 4433)',
-    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop&crop=faces',
-    text: 'السلام عليكم ورحمة الله، شفت إعلانكم على انستقرام عن عروض اليوم الوطني، هل العروض تشمل تويوتا لاندكروزر وكم مدة استلام السيارة؟',
-    timestamp: 'منذ 45 دقيقة',
-    rawTime: new Date(Date.now() - 45 * 60000).toISOString(),
-    status: 'replied',
-    intent: 'national_day_offers',
-    sentiment: 'positive',
-    adTitle: 'حملة ميتا: 1,617 محادثة واتساب جارية',
-    suggestedReply: 'وعليكم السلام ورحمة الله وبركاته، حياك الله أخوي فهد ونورتنا 🇸🇦 نعم عروض اليوم الوطني 94 تشمل تويوتا لاندكروزر بخصم استثنائي + بكج حماية نانو سيراميك مجاني! الاستلام فوري خلال يومين عمل من فرع معارض بريدة مع إمكانية الشحن لموقعك. هل تفضل كاش أو عن طريق البنك؟',
-    reply: 'وعليكم السلام ورحمة الله وبركاته، حياك الله أخوي فهد ونورتنا 🇸🇦 نعم عروض اليوم الوطني 94 تشمل تويوتا لاندكروزر بخصم استثنائي + بكج حماية نانو سيراميك مجاني! الاستلام فوري خلال يومين عمل من فرع معارض بريدة مع إمكانية الشحن لموقعك. هل تفضل كاش أو عن طريق البنك؟',
-    repliedAt: 'منذ 42 دقيقة',
-    leadInfo: {
-      carModel: 'تويوتا لاندكروزر',
-      interestType: 'عروض اليوم الوطني 94',
-      city: 'القصيم',
-      phone: '+966 50 112 4433',
-    }
+    id: 'rule-3',
+    category: 'salla_store',
+    title: 'قطع الغيار ومتجر سلة',
+    content: 'أي سؤال عن قطع الغيار أو الإكسسوارات أو الزيوت يتم توجيهه إلى متجر سلة الرسمي (salla.sa/doracars) مع توضيح توفر الشحن لكافة مدن المملكة وطلب رقم الهيكل للمطابقة.',
+    isActive: true
   },
   {
-    id: 'msg-tk-104',
-    platform: 'tiktok',
-    channelType: 'ad_comment',
-    senderName: 'عمر خالد (@omarkh_cars)',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces',
-    text: 'وين موقعكم بالضبط وساعات الدوام لو بجيكم اليوم؟',
-    timestamp: 'منذ ساعة',
-    rawTime: new Date(Date.now() - 60 * 60000).toISOString(),
-    status: 'pending',
-    intent: 'location_hours',
-    sentiment: 'neutral',
-    adTitle: 'إعلان تيك توك: زيارة المعارض في بريدة',
-    suggestedReply: 'حياك الله أخوي عمر تشرفنا بأي وقت 🤍 موقعنا في القصيم - بريدة، طريق الملك عبدالعزيز، منطقة معارض السيارات (معرض درة للسيارات). دوامنا اليوم من 4:00 عصراً حتى 10:00 مساءً. لو حاب نوصف لك اللوكيشن ارسل لنا واتساب على 0555123456 وقهوتك جاهزة ☕',
-    reply: '',
-    leadInfo: {
-      carModel: 'زيارة المعرض',
-      interestType: 'موقع المعرض وساعات العمل',
-      city: 'بريدة',
-      phone: '',
-    }
+    id: 'rule-4',
+    category: 'national_day',
+    title: 'عروض اليوم الوطني 94',
+    content: 'إبراز عروض اليوم الوطني 94 المعتمدة: خصومات كاش كبرى، عازل حراري نانوي مجاني، وباقات حماية، وشحن مجاني لمتجر سلة فوق 499 ر.س.',
+    isActive: true
   },
   {
-    id: 'msg-meta-105',
-    platform: 'meta_facebook',
-    channelType: 'post_comment',
-    senderName: 'م. خالد الدوسري (@eng_khalid)',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces',
-    text: 'هل عندكم تمويل لمتقاعدين؟ وكم نسبة الفائدة في البنك الأهلي؟',
-    timestamp: 'منذ ساعتين',
-    rawTime: new Date(Date.now() - 120 * 60000).toISOString(),
-    status: 'replied',
-    intent: 'purchase_financing',
-    sentiment: 'positive',
-    adTitle: 'إعلان فيسبوك: حلول التمويل لجميع الفئات',
-    suggestedReply: 'أهلاً بك مهندس خالد ويسعدنا خدمتك 🌹 نعم متاح تمويل معتمد وميسر لجميع المتقاعدين بدون دفعة أولى مع البنك الأهلي وكافة البنوك، مع خصومات خاصة ونسبة فائدة مخفضة جداً بمناسبة اليوم الوطني. تواصل معنا على 0555123456 ونحسب لك التمويل والأقساط فوراً 🤍',
-    reply: 'أهلاً بك مهندس خالد ويسعدنا خدمتك 🌹 نعم متاح تمويل معتمد وميسر لجميع المتقاعدين بدون دفعة أولى مع البنك الأهلي وكافة البنوك، مع خصومات خاصة ونسبة فائدة مخفضة جداً بمناسبة اليوم الوطني. تواصل معنا على 0555123456 ونحسب لك التمويل والأقساط فوراً 🤍',
-    repliedAt: 'منذ ساعة و55 دقيقة',
-    leadInfo: {
-      carModel: 'تمويل سيارة',
-      interestType: 'تمويل متقاعدين - البنك الأهلي',
-      city: '',
-      phone: '',
-    }
+    id: 'rule-5',
+    category: 'lead_capture',
+    title: 'التقاط رقم الجوال والمدينة',
+    content: 'في نهاية كل محادثة، محاولة الحصول بلباقة على رقم جوال العميل أو تحويله مباشرة لواتساب المبيعات 0555123456 لإتمام الحجز قبل نفاد الكمية.',
+    isActive: true
   }
 ];
 
-// Load Settings
+// Initial Golden Few-Shot Examples (سؤال العميل -> الرد المعتمد)
+export const INITIAL_GOLDEN_EXAMPLES = [
+  {
+    id: 'ex-1',
+    customerQuery: 'بكم قسط التورس 2024 عندكم وهل متوفرة بفرع بريدة؟',
+    approvedReply: 'أهلاً بك يا غالي ويسعد مساك 🤍 نعم متوفرة فورد تورس 2024 وجاهزة للاستلام الفوري بمعرضنا في بريدة! القسط التقريبي يبدأ من 1,850 ر.س بدون دفعة أولى ومعتمد من البنوك السعودية، وتستاهل بكج عازل نانو مجاني بمناسبة اليوم الوطني 🇸🇦 تواصل معنا على الواتساب 0555123456 ونحسب لك الحسبة بدقة ونحجز لك السيارة فوراً 🚗',
+    category: 'تمويل سيارة'
+  },
+  {
+    id: 'ex-2',
+    customerQuery: 'أبغى مساعدات وشمعات كامري 2021 أصلية، هل عندكم شحن للرياض؟',
+    approvedReply: 'حياك الله أختي نورة 🌸 متوفرة جميع قطع الغيار الأصلية لكامري 2021 بضمان أصلي في متجرنا على منصة سلة: https://salla.sa/doracars 🛒 والشحن سريع لباب بيتك بالرياض خلال 24-48 ساعة! ارسلي لنا رقم الهيكل على الواتساب 0555123456 للتأكد ونخدمك من عيونا 🤍',
+    category: 'قطع غيار سلة'
+  },
+  {
+    id: 'ex-3',
+    customerQuery: 'وين موقعكم بالضبط وساعات الدوام اليوم؟',
+    approvedReply: 'تشرفنا بزيارتك بأي وقت 🤍 موقعنا في القصيم - بريدة، طريق الملك عبدالعزيز (معارض السيارات - معرض درة للسيارات). دوامنا اليوم فترتين: صباحية 8-12ظ ومسائية 4-10م. تواصل معنا على الواتساب 0555123456 لنرسل لك اللوكيشن المباشر وقهوتك جاهزة ☕',
+    category: 'الموقع والدوام'
+  },
+  {
+    id: 'ex-4',
+    customerQuery: 'سلام عليكم، وش عروضكم بمناسبة اليوم الوطني على الجيوب؟',
+    approvedReply: 'وعليكم السلام ورحمة الله وبركاته، حياك الله ونورتنا 🇸🇦 عروض اليوم الوطني 94 في درة للسيارات تشمل خصومات كاش استثنائية على سيارات تويوتا لاندكروزر وفئات مختارة، بالإضافة لعازل نانو وتسهيلات تمويلية بدون دفعة أولى! كلمنا على الواتساب 0555123456 ونرسل لك قائمة الأسعار والمواصفات فوراً 🌟',
+    category: 'عروض اليوم الوطني'
+  }
+];
+
+// Guardrails & Forbidden Words (المحظورات والخطوط الحمراء)
+export const INITIAL_GUARDRAILS = [
+  {
+    id: 'g-1',
+    rule: 'عدم إعطاء أسعار كاش قطعية نهائية للسيارات إلا بعد استشارة المبيعات (نذكر السعر التقريبي أو خصم اليوم الوطني ونطلب التواصل واتساب).',
+    severity: 'high'
+  },
+  {
+    id: 'g-2',
+    rule: 'ممنوع الوعود بتسليم خلال ساعات خارج بريدة، الشحن خارج القصيم يستغرق 24-48 ساعة عبر الناقل الرسمي.',
+    severity: 'high'
+  },
+  {
+    id: 'g-3',
+    rule: 'عدم الرد بفظاظة أو تجاهل أي شكوى عميل، والاعتذار فوراً وإعطاء رقم واتساب الإدارة 0555123456.',
+    severity: 'critical'
+  },
+  {
+    id: 'g-4',
+    rule: 'ممنوع إعطاء موافقة تمويلية نهائية بدلاً من البنك؛ نذكر "التمويل خاضع لموافقة البنك وسنساعدك بأفضل هامش ربح".',
+    severity: 'high'
+  }
+];
+
+// Load & Save Training Rules
+export function loadTrainingRules() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.TRAINING_RULES);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEYS.TRAINING_RULES, JSON.stringify(INITIAL_TRAINING_RULES));
+      return INITIAL_TRAINING_RULES;
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return INITIAL_TRAINING_RULES;
+  }
+}
+
+export function saveTrainingRules(rules) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.TRAINING_RULES, JSON.stringify(rules));
+  } catch (e) {}
+}
+
+// Load & Save Golden Examples
+export function loadGoldenExamples() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.GOLDEN_EXAMPLES);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEYS.GOLDEN_EXAMPLES, JSON.stringify(INITIAL_GOLDEN_EXAMPLES));
+      return INITIAL_GOLDEN_EXAMPLES;
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return INITIAL_GOLDEN_EXAMPLES;
+  }
+}
+
+export function saveGoldenExamples(examples) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.GOLDEN_EXAMPLES, JSON.stringify(examples));
+  } catch (e) {}
+}
+
+// Load & Save Guardrails
+export function loadGuardrails() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.GUARDRAILS);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEYS.GUARDRAILS, JSON.stringify(INITIAL_GUARDRAILS));
+      return INITIAL_GUARDRAILS;
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return INITIAL_GUARDRAILS;
+  }
+}
+
+export function saveGuardrails(guardrails) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.GUARDRAILS, JSON.stringify(guardrails));
+  } catch (e) {}
+}
+
+// Load & Save Settings
 export function loadResponderSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
@@ -179,33 +216,192 @@ export function loadResponderSettings() {
   }
 }
 
-// Save Settings
 export function saveResponderSettings(settings) {
   try {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   } catch (e) {}
 }
 
-// Load Inbox Messages
+// Load & Save Inbox
 export function loadResponderInbox() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.MESSAGES);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(INITIAL_SOCIAL_INBOX));
-      return INITIAL_SOCIAL_INBOX;
-    }
+    if (!raw) return [];
     return JSON.parse(raw);
   } catch (e) {
-    return INITIAL_SOCIAL_INBOX;
+    return [];
   }
 }
 
-// Save Inbox Messages
 export function saveResponderInbox(messages) {
   try {
     localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(messages));
   } catch (e) {}
 }
+
+// -------------------------------------------------------------
+// LIVE API INTEGRATION ENGINE (Meta Graph API & TikTok API)
+// -------------------------------------------------------------
+
+// Live fetch from Meta Graph API
+export async function syncLiveMetaCommentsAndMessages() {
+  const metaConfig = loadMetaConfig();
+  const token = metaConfig.accessToken || 'EAAUaLFoDrJABSVbiAAMoR7wNS2j8zNUwTDL3AqmE9xSvDBlva3m8tye1y5C9VETiA6annvgNxg8lnOa5Vw82Of7KxjcMGXZCirHM2DZAU9PhA8tZCGZBM60X28MW4063OEhyyfe4KgmQmAVhXE7bapkOG3xnBKhkkwZALrGScAgogQxLeijeEYluyvRcqxAZDZD';
+  const liveItems = [];
+
+  try {
+    // 1. Fetch Pages owned by the token
+    const pagesRes = await fetch(`https://graph.facebook.com/v20.0/me/accounts?access_token=${encodeURIComponent(token)}`);
+    const pagesData = await pagesRes.json();
+
+    if (pagesData && pagesData.data && pagesData.data.length > 0) {
+      for (const page of pagesData.data) {
+        const pageId = page.id;
+        const pageToken = page.access_token || token;
+
+        // Fetch Recent Feed & Comments
+        try {
+          const feedRes = await fetch(`https://graph.facebook.com/v20.0/${pageId}/feed?fields=id,message,created_time,comments{id,message,from,created_time}&access_token=${encodeURIComponent(pageToken)}`);
+          const feedData = await feedRes.json();
+
+          if (feedData && feedData.data) {
+            feedData.data.forEach(post => {
+              if (post.comments && post.comments.data) {
+                post.comments.data.forEach(c => {
+                  liveItems.push({
+                    id: `meta-live-${c.id}`,
+                    platform: 'meta_facebook',
+                    channelType: 'post_comment',
+                    senderName: c.from?.name || 'متابع صفحة درة للسيارات',
+                    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=faces',
+                    text: c.message,
+                    timestamp: new Date(c.created_time).toLocaleDateString('ar-SA'),
+                    rawTime: c.created_time,
+                    status: 'pending',
+                    intent: 'general_inquiry',
+                    sentiment: 'positive',
+                    adTitle: `منشور فيسبوك: ${post.message ? post.message.slice(0, 40) + '...' : page.name}`,
+                    suggestedReply: generateSmartSocialReply(c.message, c.from?.name || '', 'meta_facebook'),
+                    reply: '',
+                    leadInfo: analyzeCustomerText(c.message).leadInfo,
+                  });
+                });
+              }
+            });
+          }
+        } catch (feedErr) {
+          console.warn('Feed comments error:', feedErr);
+        }
+
+        // Fetch Conversations
+        try {
+          const convRes = await fetch(`https://graph.facebook.com/v20.0/${pageId}/conversations?fields=id,updated_time,messages{id,message,from,created_time}&access_token=${encodeURIComponent(pageToken)}`);
+          const convData = await convRes.json();
+
+          if (convData && convData.data) {
+            convData.data.forEach(conv => {
+              const lastMsg = conv.messages?.data?.[0];
+              if (lastMsg) {
+                liveItems.push({
+                  id: `meta-conv-${conv.id}`,
+                  platform: 'meta_instagram',
+                  channelType: 'dm',
+                  senderName: lastMsg.from?.name || 'محادثة انستقرام / فيسبوك',
+                  avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces',
+                  text: lastMsg.message,
+                  timestamp: new Date(lastMsg.created_time).toLocaleDateString('ar-SA'),
+                  rawTime: lastMsg.created_time,
+                  status: 'pending',
+                  intent: 'general_inquiry',
+                  sentiment: 'positive',
+                  adTitle: 'محادثة مباشرة Direct Inbox',
+                  suggestedReply: generateSmartSocialReply(lastMsg.message, lastMsg.from?.name || '', 'meta_instagram'),
+                  reply: '',
+                  leadInfo: analyzeCustomerText(lastMsg.message).leadInfo,
+                });
+              }
+            });
+          }
+        } catch (convErr) {
+          console.warn('Conversations fetch error:', convErr);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Meta live sync error:', err);
+  }
+
+  return liveItems;
+}
+
+// Live fetch from TikTok Business API
+export async function syncLiveTikTokComments() {
+  const tiktokConfig = loadTikTokConfig();
+  const token = tiktokConfig.accessToken || '61a22e0b24b413e83da9ef7e5d012475caea7ec2';
+  const advertiserId = tiktokConfig.advertiserId || '7344310111864799234';
+  const liveItems = [];
+
+  try {
+    const res = await fetch(`https://business-api.tiktok.com/open_api/v1.3/comment/list/?advertiser_id=${advertiserId}`, {
+      headers: {
+        'Access-Token': token,
+      },
+    });
+    const data = await res.json();
+
+    if (data && data.data && data.data.list) {
+      data.data.list.forEach((item) => {
+        liveItems.push({
+          id: `tiktok-live-${item.comment_id}`,
+          platform: 'tiktok',
+          channelType: 'ad_comment',
+          senderName: item.user_name || 'مستخدم تيك توك',
+          avatar: item.profile_image || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces',
+          text: item.text,
+          timestamp: 'منذ قليل',
+          rawTime: new Date().toISOString(),
+          status: 'pending',
+          intent: 'general_inquiry',
+          sentiment: 'positive',
+          adTitle: `إعلان تيك توك: ${item.ad_name || 'حملة درة السيارة'}`,
+          suggestedReply: generateSmartSocialReply(item.text, item.user_name || '', 'tiktok'),
+          reply: '',
+          leadInfo: analyzeCustomerText(item.text).leadInfo,
+        });
+      });
+    }
+  } catch (e) {
+    console.warn('TikTok live comments API call note:', e.message);
+  }
+
+  return liveItems;
+}
+
+// Master Unified Live Sync
+export async function syncLiveSocialData() {
+  const metaItems = await syncLiveMetaCommentsAndMessages();
+  const tiktokItems = await syncLiveTikTokComments();
+  const allLive = [...metaItems, ...tiktokItems];
+
+  const currentInbox = loadResponderInbox();
+  // Merge live items with existing inbox without duplicates
+  const existingIds = new Set(currentInbox.map(m => m.id));
+  const newItems = allLive.filter(item => !existingIds.has(item.id));
+
+  const updated = [...newItems, ...currentInbox];
+  saveResponderInbox(updated);
+
+  return {
+    totalFetched: allLive.length,
+    newCount: newItems.length,
+    metaCount: metaItems.length,
+    tiktokCount: tiktokItems.length,
+  };
+}
+
+// -------------------------------------------------------------
+// TEXT ANALYSIS & TRAINED REPLY ENGINE
+// -------------------------------------------------------------
 
 // Classify Intent & Extract Lead info automatically
 export function analyzeCustomerText(text) {
@@ -279,12 +475,25 @@ export function analyzeCustomerText(text) {
   };
 }
 
-// Generate Smart Saudi-Friendly AI Reply
+// Generate Smart Reply informed by Active Training Rules & Golden Examples
 export function generateSmartSocialReply(customerText, senderName = '', platform = 'meta_instagram') {
   const analysis = analyzeCustomerText(customerText);
   const firstName = senderName ? senderName.split(' ')[0].replace(/[@()_]/g, '').trim() : '';
   const greeting = firstName ? `أهلاً بك ${firstName} ويسعد مساك 🤍` : 'أهلاً بك ويسعد مساك 🤍';
 
+  // Check if there is a matching Golden Example in the training memory
+  const goldenExamples = loadGoldenExamples();
+  const matchingExample = goldenExamples.find(ex => {
+    const qWords = ex.customerQuery.toLowerCase().split(/\s+/);
+    const matchCount = qWords.filter(w => w.length > 3 && customerText.toLowerCase().includes(w)).length;
+    return matchCount >= 2;
+  });
+
+  if (matchingExample) {
+    return matchingExample.approvedReply;
+  }
+
+  // Generate reply following trained policies
   switch (analysis.intent) {
     case 'purchase_financing':
       return `${greeting} نعم متاح التمويل والأقساط الميسرة بدون دفعة أولى وبالتعاون مع جميع البنوك السعودية! ${
@@ -311,7 +520,7 @@ export function generateSmartSocialReply(customerText, senderName = '', platform
   }
 }
 
-// Generate Quick Action Templates
+// Quick Action Templates
 export const QUICK_REPLY_TEMPLATES = [
   {
     label: '🇸🇦 عروض اليوم الوطني 94',
