@@ -32,6 +32,9 @@ export default function SallaIntegrationModal({ isOpen, onClose, onSyncComplete,
   if (!isOpen) return null;
 
   const [sallaConfig, setSallaConfig] = useState(loadSallaConfig);
+  const [authMode, setAuthMode] = useState('credentials'); // 'credentials' | 'token'
+  const [clientIdInput, setClientIdInput] = useState(sallaConfig.clientId || 'b762ff22-f688-4c72-ae7c-8c420c423878');
+  const [clientSecretInput, setClientSecretInput] = useState(sallaConfig.clientSecret || '');
   const [tokenInput, setTokenInput] = useState(sallaConfig.accessToken || '');
   const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'guide' | 'preview'
   const [isTesting, setIsTesting] = useState(false);
@@ -43,7 +46,11 @@ export default function SallaIntegrationModal({ isOpen, onClose, onSyncComplete,
 
   const handleTestAndSave = async (e) => {
     e?.preventDefault();
-    if (!tokenInput.trim()) {
+    if (authMode === 'credentials' && (!clientIdInput.trim() || !clientSecretInput.trim())) {
+      setConnectionStatus({ type: 'error', msg: 'يرجى إدخال الرقم التعريفي للعميل والمفتاح السري من لوحة سلة.' });
+      return;
+    }
+    if (authMode === 'token' && !tokenInput.trim()) {
       setConnectionStatus({ type: 'error', msg: 'يرجى إدخال رمز الوصول (Access Token) أولاً.' });
       return;
     }
@@ -52,10 +59,16 @@ export default function SallaIntegrationModal({ isOpen, onClose, onSyncComplete,
     setConnectionStatus(null);
 
     try {
-      const result = await testSallaConnection(tokenInput);
+      const payload = authMode === 'credentials'
+        ? { clientId: clientIdInput.trim(), clientSecret: clientSecretInput.trim() }
+        : { token: tokenInput.trim() };
+
+      const result = await testSallaConnection(payload);
       const updated = {
         ...sallaConfig,
-        accessToken: tokenInput.trim(),
+        clientId: clientIdInput.trim(),
+        clientSecret: clientSecretInput.trim(),
+        accessToken: tokenInput.trim() || sallaConfig.accessToken,
         isConnected: true,
         merchantId: result.merchantId || sallaConfig.merchantId,
         storeName: result.storeName || sallaConfig.storeName,
@@ -67,13 +80,13 @@ export default function SallaIntegrationModal({ isOpen, onClose, onSyncComplete,
       saveSallaConfig(updated);
       setConnectionStatus({
         type: 'success',
-        msg: result.note || 'تم التحقق من رمز الوصول وربط متجر درة السيارة في سلة بنجاح!',
+        msg: result.note || 'تم التحقق من بيانات الربط وربط متجر درة السيارة في سلة بنجاح!',
       });
       if (onSyncComplete) onSyncComplete(updated);
     } catch (err) {
       setConnectionStatus({
         type: 'error',
-        msg: err.message || 'تعذر الاتصال بـ API سلة. يرجى مراجعة الرمز والتأكد من الصلاحيات.',
+        msg: err.message || 'تعذر الاتصال بـ API سلة. يرجى مراجعة البيانات والتأكد من الصلاحيات.',
       });
     } finally {
       setIsTesting(false);
@@ -247,37 +260,105 @@ export default function SallaIntegrationModal({ isOpen, onClose, onSyncComplete,
               </div>
             </div>
 
-            {/* Token Form */}
-            <form onSubmit={handleTestAndSave} className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Key className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>رمز وصول سلة (Salla Personal Access Token / API Key)</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('guide')}
-                    className="text-[11px] text-teal-400 hover:text-teal-300 underline font-medium flex items-center gap-1"
-                  >
-                    <span>كيف أحصل على هذا الرمز؟</span>
-                    <ArrowRight className="w-3 h-3 rotate-180" />
-                  </button>
-                </div>
+            {/* Auth Mode Selector */}
+            <div className="flex items-center gap-2 p-1 bg-slate-950/80 rounded-xl border border-slate-800 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setAuthMode('credentials')}
+                className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  authMode === 'credentials'
+                    ? 'bg-slate-800 text-emerald-400 shadow-sm border border-emerald-500/30'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>مفاتيح التطبيق (Client ID & Secret) - الظاهرة في شاشتك</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode('token')}
+                className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  authMode === 'token'
+                    ? 'bg-slate-800 text-teal-400 shadow-sm border border-teal-500/30'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>رمز وصول مباشر (Access Token)</span>
+              </button>
+            </div>
 
-                <div className="relative">
-                  <textarea
-                    rows={3}
-                    value={tokenInput}
-                    onChange={(e) => setTokenInput(e.target.value)}
-                    placeholder="الصق رمز الوصول هنا (مثال: salla_pat_... أو رمز OAuth من بوابة شركاء سلة)"
-                    className="w-full p-3.5 bg-slate-950/90 border border-slate-700/80 rounded-2xl text-xs font-mono text-emerald-300 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-all resize-none leading-relaxed"
-                  />
+            {/* Token / Credentials Form */}
+            <form onSubmit={handleTestAndSave} className="space-y-4">
+              {authMode === 'credentials' ? (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>الرقم التعريفي للعميل (Client ID)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={clientIdInput}
+                      onChange={(e) => setClientIdInput(e.target.value)}
+                      placeholder="b762ff22-f688-4c72-ae7c-8c420c423878"
+                      className="w-full p-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs font-mono text-emerald-300 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                        <span>المفتاح السري للعميل (Client Secret)</span>
+                      </label>
+                      <span className="text-[11px] text-purple-300">
+                        اضغط على علامة العين 👁️ في سلة لنسخه
+                      </span>
+                    </div>
+                    <input
+                      type="password"
+                      value={clientSecretInput}
+                      onChange={(e) => setClientSecretInput(e.target.value)}
+                      placeholder="الصق المفتاح السري المنسوخ من بوابة شركاء سلة هنا"
+                      className="w-full p-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs font-mono text-emerald-300 placeholder:text-slate-600 focus:outline-none focus:border-purple-500 transition-all"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    يتم حفظ هذه المفاتيح بشكل محلي مشفر في متصفحك للربط التلقائي مع سلة.
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-400">
-                  يتم تخزين الرمز بشكل محلي مشفر في متصفحك فقط لاستخدامه في جلب التقارير وتحديث بيانات الإيجنت.
-                </p>
-              </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5 text-teal-400" />
+                      <span>رمز وصول سلة (Salla Personal Access Token / API Key)</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('guide')}
+                      className="text-[11px] text-teal-400 hover:text-teal-300 underline font-medium flex items-center gap-1"
+                    >
+                      <span>كيف أحصل على هذا الرمز؟</span>
+                      <ArrowRight className="w-3 h-3 rotate-180" />
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <textarea
+                      rows={3}
+                      value={tokenInput}
+                      onChange={(e) => setTokenInput(e.target.value)}
+                      placeholder="الصق رمز الوصول هنا (مثال: salla_pat_... أو رمز OAuth من بوابة شركاء سلة)"
+                      className="w-full p-3.5 bg-slate-950/90 border border-slate-700/80 rounded-2xl text-xs font-mono text-teal-300 placeholder:text-slate-600 focus:outline-none focus:border-teal-500 transition-all resize-none leading-relaxed"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    يتم تخزين الرمز بشكل محلي مشفر في متصفحك فقط لاستخدامه في جلب التقارير وتحديث بيانات الإيجنت.
+                  </p>
+                </div>
+              )}
 
               {/* Status Alert */}
               {connectionStatus && (
