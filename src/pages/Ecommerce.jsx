@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useEcommerceStats } from '../hooks/useBIData';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
 import { formatSAR, formatNum, formatPercent } from '../lib/kpiEngine';
@@ -6,10 +7,14 @@ import { GrowthChip, CardSkeleton, SectionHeader, StatRow } from '../components/
 import KPICard from '../components/charts/KPICard';
 import { ShoppingBag, TrendingUp, Users, Percent, ShoppingCart, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import SallaIntegrationModal from '../components/shared/SallaIntegrationModal';
+import { loadSallaConfig } from '../lib/sallaIntegration';
 
 export default function Ecommerce() {
   const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const { data: ecm, loading } = useEcommerceStats(periodId);
+  const [showSallaModal, setShowSallaModal] = useState(false);
+  const [sallaConfig, setSallaConfig] = useState(loadSallaConfig);
 
   const totalRevenue = ecm?.topCategories?.reduce((s, c) => s + c.revenue, 0) || 0;
 
@@ -20,13 +25,24 @@ export default function Ecommerce() {
           <h1 className="text-2xl font-black text-slate-900">متجر سلة الإلكتروني (Salla E-Commerce)</h1>
           <p className="text-slate-500 text-sm mt-1">doracars.com · تقارير المبيعات والزيارات الرسمية المعتمدة (مشمولة ضمن الإجمالي الكلي للفروع)</p>
         </div>
-        <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-2xl p-1 shadow-inner">
-          {periods?.slice(0, 3).map(p => (
-            <button key={p.id} onClick={() => setPeriodId(p.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-[#0F172A] text-white shadow-md' : 'text-slate-600 hover:text-slate-900'}`}>
-              {p.labelAr || p.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setShowSallaModal(true)}
+            className="px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 border transition-all shadow-sm bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white border-purple-600/50"
+            title="إدارة ربط متجر سلة بالـ API واستخراج الرمز"
+          >
+            <span className={`w-2 h-2 rounded-full ${sallaConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            <span>{sallaConfig.isConnected ? 'متصل حياً بـ سلة (doracars.com)' : 'ربط متجر سلة (Salla API)'}</span>
+          </button>
+
+          <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-2xl p-1 shadow-inner">
+            {periods?.slice(0, 3).map(p => (
+              <button key={p.id} onClick={() => setPeriodId(p.id)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-[#0F172A] text-white shadow-md' : 'text-slate-600 hover:text-slate-900'}`}>
+                {p.labelAr || p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -161,6 +177,13 @@ export default function Ecommerce() {
           </div>
         </>
       ) : null}
+
+      {/* Salla Integration Modal */}
+      <SallaIntegrationModal
+        isOpen={showSallaModal}
+        onClose={() => setShowSallaModal(false)}
+        onSyncComplete={(updatedCfg) => setSallaConfig(updatedCfg)}
+      />
     </div>
   );
 }

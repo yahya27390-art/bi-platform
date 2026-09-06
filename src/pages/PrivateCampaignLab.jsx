@@ -48,7 +48,8 @@ import {
   Paperclip,
   X,
   Pin,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ShoppingCart
 } from 'lucide-react';
 import { formatSAR, formatNum } from '../lib/kpiEngine';
 import ga4Snapshot from '../data/ga4LiveSnapshot.json';
@@ -66,6 +67,8 @@ import {
   DEFAULT_MEMORIES,
   DEFAULT_TASKS
 } from '../lib/agentMemory';
+import SallaIntegrationModal from '../components/shared/SallaIntegrationModal';
+import { loadSallaConfig, formatSallaForAgentPrompt } from '../lib/sallaIntegration';
 
 // System prompt grounding the AI Agent in real Dora Cars data
 const DORA_SYSTEM_PROMPT = `أنت المساعد الذكي والخبير التسويقي الرقمي الخاص لشركة "درة السيارة" (Dora Cars) في المملكة العربية السعودية.
@@ -291,16 +294,28 @@ ${fileList}
    - **الإجراء:** عروض شحن مخفض أو مجاني للطلبات فوق 300 ر.س.`;
   }
 
-  // Retargeting
-  if (lower.includes('سلات') || lower.includes('متروكة') || lower.includes('إعادة استهداف') || lower.includes('retargeting')) {
-    return `🎯 **خطة استعادة السلات المتروكة (Cart Abandonment Funnel):**
+  // Salla Store & Cart Abandonment Intelligence
+  if (lower.includes('سلة') || lower.includes('salla') || lower.includes('سلات') || lower.includes('متروكة') || lower.includes('abandoned') || lower.includes('المتجر') || lower.includes('أونلاين') || lower.includes('اونلاين')) {
+    return `🛒 **تقرير وبيانات متجر سلة الإلكتروني (doracars.com) وحملة استعادة السلات المتروكة:**
 
-- **البيانات الحالية:** في شهر أغسطس سجل GA4 أكثر من 18,527 جلسة و 47,221 مشاهدة صفحة ولكن 66 طلب شراء فقط، ما يعني وجود نسبة زوار مهتمين لم يكملوا الدفع.
-- **الخطة المقترحة:**
-  1. إنشاء شريحة في Meta Ads و Google Ads تستهدف زوار حدث \`add_to_cart\` خلال آخر 14 يوماً.
-  2. تقديم كود خصم 5% مع رسالة: "هل نسيت قطعتك في السلة؟ أكمل طلبك الآن من درة السيارة واستمتع بشحن مجاني".
-  3. إرسال تذكير تلقائي عبر رسائل سلة SMS أو واتساب بعد ساعتين من ترك السلة.
-  - **العائد المتوقع:** استرجاع 15 إلى 30 طلب شراء إضافي شهرياً.`;
+📊 **الأرقام والمؤشرات الحالية لمتجر سلة:**
+- **صافي مبيعات المتجر:** 41,783 ر.س
+- **إجمالي الطلبات المكتملة:** 69 طلباً (بمتوسط قيمة سلة 528 ر.س)
+- **معدل التحويل (Conversion Rate):** 3.2%
+- **السلات المتروكة المعلقة:** 48 سلة بقيمة محتجزة تفوق **25,410 ر.س**!
+
+🔥 **المنتجات الأكثر مبيعاً وإضافة للسلات:**
+1. فحمات فرامل سيراميك هيونداي إلنترا / سوناتا (Mobis) - 24 طلب
+2. بكج صيانة كيا سيراتو (فلاتر + زيت شل 5W30) - 19 طلب
+3. طقم بواجي إيريديوم ليزر تويوتا كورولا / يارس - 15 طلب
+
+🎯 **خطة الإيجنت الفورية لاستعادة الـ 25,410 ر.س من السلات المتروكة:**
+1. إطلاق حملة Advantage+ Catalog على Meta مخصصة لحدث \`Add to Cart\` لمن زار المتجر خلال 14 يوماً.
+2. تفعيل كود الخصم المخصص: \`DORA5\` (خصم 5% + شحن مجاني).
+3. إرسال تذكيرات سلة المؤتمتة عبر رسائل SMS / WhatsApp بعد ساعتين و 24 ساعة من ترك السلة.
+4. إبراز ميزة الدفع بالتقسيط على 4 دفعات عبر تابي وتمارا لتخفيف حاجز السعر للعملاء.
+
+💡 **العائد المتوقع:** استعادة ما بين 18 إلى 28 طلب شراء بقيمة إضافية تتجاوز 14,000 ر.س شهرياً!`;
   }
 
   // Memory or Remember check
@@ -451,6 +466,10 @@ export default function PrivateCampaignLab() {
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [previewModalImage, setPreviewModalImage] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Salla Integration State
+  const [showSallaModal, setShowSallaModal] = useState(false);
+  const [sallaConfig, setSallaConfig] = useState(loadSallaConfig);
 
   // New campaign modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -832,7 +851,8 @@ export default function PrivateCampaignLab() {
 *تنبيه للإيجنت:* يجب أن تبني جميع تحليلاتك وحسابات العائد ROAS والتوصيات بدقة متناهية على هذه الأرقام الحقيقية المأخوذة مباشرة من محاكي الميزانية أمام المستخدم.
 `;
 
-    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${memoriesContext}\n\n${tasksContext}`;
+    const sallaContext = formatSallaForAgentPrompt(sallaConfig);
+    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${sallaContext}\n\n${memoriesContext}\n\n${tasksContext}`;
 
     // Append textual content of documents (csv, txt, json) to prompt
     let fullUserQueryText = userQuery;
@@ -1074,6 +1094,16 @@ export default function PrivateCampaignLab() {
           </div>
 
           <div className="flex items-center gap-3 self-start lg:self-center flex-wrap">
+            <button
+              onClick={() => setShowSallaModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-purple-900/40 hover:bg-purple-900/60 border border-purple-500/40 text-purple-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
+              title="ربط ومزامنة متجر سلة (doracars.com)"
+            >
+              <ShoppingCart className="w-4 h-4 text-purple-400" />
+              <span>{sallaConfig.isConnected ? 'متجر سلة: متصل حياً' : 'ربط متجر سلة (Salla)'}</span>
+              <span className={`w-2 h-2 rounded-full ${sallaConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            </button>
+
             <button
               onClick={() => setShowSettingsModal(true)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
@@ -1389,6 +1419,13 @@ export default function PrivateCampaignLab() {
                   className="px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition-all whitespace-nowrap text-xs font-medium"
                 >
                   👋 انت موجود؟
+                </button>
+                <button
+                  onClick={() => handleSendQuery('ما هي مبيعات متجر سلة الحالية وكم عدد السلات المتروكة وكيف نستعيدها؟')}
+                  className="px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/35 text-purple-200 border border-purple-500/40 transition-all whitespace-nowrap text-xs font-medium flex items-center gap-1"
+                >
+                  <ShoppingCart className="w-3 h-3 text-purple-400" />
+                  <span>🛒 متجر سلة والسلات المتروكة</span>
                 </button>
                 <button
                   onClick={() => handleSendQuery('نظم نفسك وبورد المهام الموكلة إليك واقترح أولويات العمل')}
@@ -2959,6 +2996,17 @@ export default function PrivateCampaignLab() {
           </div>
         </div>
       )}
+
+      {/* Salla Integration Modal */}
+      <SallaIntegrationModal
+        isOpen={showSallaModal}
+        onClose={() => setShowSallaModal(false)}
+        onSyncComplete={(updatedCfg) => setSallaConfig(updatedCfg)}
+        onConsultAgent={(query) => {
+          setActiveSubTab('chat_lab');
+          handleSendQuery(query);
+        }}
+      />
     </div>
   );
 }

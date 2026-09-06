@@ -4,13 +4,16 @@ import { BIRoleGuard } from '../components/shared/BIRoleGuard';
 import { DataSourceBadge, SectionHeader } from '../components/shared/SharedComponents';
 import {
   Upload, CheckCircle, AlertCircle, XCircle, FileSpreadsheet, Clock,
-  Image, FileText, CheckCircle2, Eye, ShieldCheck, ArrowRight, Save, Plus, Download
+  Image, FileText, CheckCircle2, Eye, ShieldCheck, ArrowRight, Save, Plus, Download,
+  ShoppingCart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatSAR } from '../lib/kpiEngine';
 import { DORA_DOCUMENTS } from '../data/doraSchema';
 import EvidenceViewerModal from '../components/shared/EvidenceViewerModal';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
+import SallaIntegrationModal from '../components/shared/SallaIntegrationModal';
+import { loadSallaConfig } from '../lib/sallaIntegration';
 
 const IMPORT_CATEGORIES = [
   { id: 'branch_sales', label: 'مبيعات الفروع المادية', icon: '🏪', formats: '.png, .jpg, .xlsx, .pdf', desc: 'سكرين شوت تقرير نقاط البيع (Z-Report) أو إكسل فروع درة للسيارات' },
@@ -31,6 +34,8 @@ export default function DataImport() {
   const [dragOver, setDragOver] = useState(false);
   const [simulatedFile, setSimulatedFile] = useState(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showSallaModal, setShowSallaModal] = useState(false);
+  const [sallaConfig, setSallaConfig] = useState(loadSallaConfig);
   const [verificationForm, setVerificationForm] = useState({
     branch: 'main',
     grossSales: 471748.99,
@@ -180,6 +185,37 @@ export default function DataImport() {
             })}
           </div>
         </div>
+
+        {/* Salla Live Direct Integration Banner when ecommerce category is selected */}
+        {selectedCategory === 'ecommerce' && (
+          <div className="rounded-3xl border border-purple-200 bg-gradient-to-r from-purple-50 via-indigo-50 to-emerald-50 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-fadeIn">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center text-xl shadow-md shrink-0">
+                🛒
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-black text-slate-900">الربط اللحظي المباشر مع متجر سلة (Salla API)</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                    بديل آلي للإكسل
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 mt-1">
+                  يمكنك جلب فواتير وطلبات doracars.com والسلات المتروكة مباشرة عبر الـ API دون الحاجة لتصدير ورفع ملفات إكسل يدوية.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowSallaModal(true)}
+              className="px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 shrink-0"
+            >
+              <span className={`w-2 h-2 rounded-full ${sallaConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-300'}`} />
+              <span>{sallaConfig.isConnected ? 'إدارة ربط سلة المباشر' : 'تفعيل الربط المباشر مع سلة'}</span>
+            </button>
+          </div>
+        )}
 
         {/* 3. Upload & Drop Zone */}
         <div
@@ -459,6 +495,13 @@ export default function DataImport() {
             onClose={() => setActiveEvidenceDoc(null)}
           />
         )}
+
+        {/* Salla Integration Modal */}
+        <SallaIntegrationModal
+          isOpen={showSallaModal}
+          onClose={() => setShowSallaModal(false)}
+          onSyncComplete={(cfg) => setSallaConfig(cfg)}
+        />
       </div>
     </BIRoleGuard>
   );
