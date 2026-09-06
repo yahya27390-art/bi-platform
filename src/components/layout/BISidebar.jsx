@@ -1,15 +1,24 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useBIAuth } from '@/auth/BIAuthContext';
 import {
   LayoutDashboard, TrendingUp, ShoppingCart, MapPin, Package,
   DollarSign, Target, Upload, ChevronRight, ChevronLeft,
-  BarChart3, X, Building2
+  BarChart3, X, Building2, Sparkles, Lock
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { label: 'نظرة عامة', icon: LayoutDashboard, path: '/', exact: true },
   { label: 'الإعلانات', icon: BarChart3, path: '/media' },
   { label: 'الحملات', icon: TrendingUp, path: '/campaigns' },
+  { 
+    label: 'مختبر الحملات والذكاء الاصطناعي', 
+    shortLabel: 'مختبر الحملات (AI)', 
+    icon: Sparkles, 
+    path: '/campaign-lab', 
+    privateOnly: true,
+    highlight: true,
+  },
   { label: 'المتجر الإلكتروني', icon: ShoppingCart, path: '/ecommerce' },
   { label: 'الفروع', icon: MapPin, path: '/branches' },
   { label: 'المنتجات', icon: Package, path: '/products' },
@@ -20,6 +29,16 @@ const NAV_ITEMS = [
 
 export default function BISidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
   const location = useLocation();
+  const { permissions, user } = useBIAuth();
+
+  const isItemVisible = (item) => {
+    if (item.privateOnly) {
+      return !!permissions?.canViewPrivateCampaignLab && user?.role !== 'OWNER';
+    }
+    return true;
+  };
+
+  const visibleNavItems = NAV_ITEMS.filter(isItemVisible);
 
   const isActive = (item) => {
     if (item.exact) return location.pathname === item.path;
@@ -46,7 +65,7 @@ export default function BISidebar({ collapsed, onToggleCollapse, mobileOpen, onC
 
       {/* Nav Items */}
       <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
-        {NAV_ITEMS.map(item => {
+        {visibleNavItems.map(item => {
           const active = isActive(item);
           return (
             <Link
@@ -59,15 +78,24 @@ export default function BISidebar({ collapsed, onToggleCollapse, mobileOpen, onC
                 collapsed ? 'justify-center p-3' : 'px-3.5 py-2.5',
                 active
                   ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-900/40'
+                  : item.highlight
+                  ? 'text-cyan-300 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 hover:from-cyan-500/20 hover:to-purple-500/20 border border-cyan-500/20 font-bold'
                   : 'text-slate-300 hover:bg-white/5 hover:text-white font-medium'
               )}
             >
               {active && (
                 <span className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-white rounded-l-full" />
               )}
-              <item.icon className={cn('shrink-0 transition-all', collapsed ? 'w-5 h-5' : 'w-4 h-4', active ? 'text-white' : 'text-slate-400 group-hover:text-white')} />
+              <item.icon className={cn('shrink-0 transition-all', collapsed ? 'w-5 h-5' : 'w-4 h-4', active ? 'text-white' : item.highlight ? 'text-cyan-400' : 'text-slate-400 group-hover:text-white')} />
               {!collapsed && (
-                <span className="text-sm">{item.label}</span>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                  <span className="text-sm truncate">{item.label}</span>
+                  {item.highlight && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/25 text-purple-300 border border-purple-500/30 font-mono font-bold shrink-0 mr-1.5">
+                      AI خاص
+                    </span>
+                  )}
+                </div>
               )}
               {/* Tooltip when collapsed */}
               {collapsed && (
