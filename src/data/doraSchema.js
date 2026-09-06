@@ -380,6 +380,23 @@ export const DORA_DOCUMENTS = [
     mobileSharePct: 91.2,
     notes: 'تقرير زيارات متجر سلة لشهر 8 - إجمالي الزيارات: 17,998 زيارة (جوجل 48.1%، مباشر 34.3%، تيك توك 10.6%) | المدن: جدة 5,712، الرياض 3,878، الدمام 2,256',
   },
+  {
+    id: 'doc-aug-16',
+    periodId: 'p-2026-08',
+    branchId: null,
+    category: 'ad_campaigns_screenshot',
+    fileName: 'بطاقات نظرة عامة إعلانات Google لشهر 8.png',
+    fileUrl: 'evidence/google_cards/السلسلة_الزمنية(2026.08.01-2026.08.31).png',
+    uploadedBy: 'مدير الحملات الإعلانية (Media Buyer)',
+    uploadedAt: '2026-09-06T10:49:17Z',
+    verificationStatus: 'VERIFIED',
+    adSpend: 4660.27,
+    conversionsCount: 2160,
+    costPerConversion: 2.16,
+    ctr: 5.11,
+    mobileSharePct: 95.8,
+    notes: 'سكرين شوت بطاقات نظرة عامة Google Ads لشهر 8 (السلسلة الزمنية، الحملات، الأجهزة 95.8% موبايل، والشبكات 62.9% خرائط) - 2,160 إحالة ناجحة بتكلفة 2.16 ر.س',
+  },
 ];
 
 // Physical Branch Sales (Gross, Returns, Net)

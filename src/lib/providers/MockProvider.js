@@ -107,11 +107,11 @@ export class MockProvider {
         ...m,
         ...platform,
         // Calculated KPIs from raw fields
-        roas:     calcROAS(m.attributedRevenue, m.spend),
-        cpa:      calcCPA(m.spend, m.conversions),
-        ctr:      calcCTR(m.clicks, m.impressions),
-        cpc:      calcCPC(m.spend, m.clicks),
-        cpm:      calcCPM(m.spend, m.impressions),
+        roas:     m.roas || calcROAS(m.attributedRevenue, m.spend),
+        cpa:      m.costPerConversion !== undefined ? m.costPerConversion : calcCPA(m.spend, m.conversions),
+        ctr:      m.ctr !== undefined ? m.ctr : calcCTR(m.clicks, m.impressions),
+        cpc:      m.cpc !== undefined ? m.cpc : calcCPC(m.spend, m.clicks),
+        cpm:      m.cpm !== undefined ? m.cpm : calcCPM(m.spend, m.impressions),
         convRate: calcConversionRate(m.conversions, m.clicks),
         // Growth vs previous period
         spendGrowth:   prev ? calcGrowth(m.spend, prev.spend) : 0,

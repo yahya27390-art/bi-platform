@@ -162,9 +162,10 @@ export const MOCK_PLATFORM_PERIOD_METRICS = {
   ],
   'p-2026-08': [
     { platformSlug: 'google', spend: 4660.27, impressions: 234672, reach: 180000,
-      clicks: 89820, linkClicks: 12000, attributedRevenue: 36660.19,
-      conversions: 73, videoViews: 0, frequency: 1.3,
-      cpc: 0.05, ctr: 38.27,
+      clicks: 89820, linkClicks: 11885, attributedRevenue: 36660.19,
+      conversions: 2160, costPerConversion: 2.16, videoViews: 0, frequency: 1.3,
+      cpc: 0.05, ctr: 5.11, searchCtr: 13.71,
+      mobileShare: 95.8, crossNetworkShare: 62.9, searchShare: 37.1,
       attributionModel: 'last_click', attributionWindow: '30d_click',
       dataSourceId: 'ds-google-manual' },
     { platformSlug: 'meta', spend: 3221.60, impressions: 752961, reach: 236648,
