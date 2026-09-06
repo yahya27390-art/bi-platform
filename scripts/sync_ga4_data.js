@@ -68,19 +68,21 @@ async function fetchComprehensiveGA4() {
   });
   const dataAug = await resAug.json();
 
-  // 2. August 2026 by Device & City
+  // 2. August 2026 by City & Region
   const resGeo = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       dateRanges: [{ startDate: '2026-08-01', endDate: '2026-08-31' }],
-      dimensions: [{ name: 'city' }],
+      dimensions: [{ name: 'city' }, { name: 'region' }],
       metrics: [
         { name: 'activeUsers' },
         { name: 'sessions' },
+        { name: 'conversions' },
         { name: 'totalRevenue' },
       ],
-      limit: 10,
+      orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+      limit: 25,
     }),
   });
   const dataGeo = await resGeo.json();

@@ -1,6 +1,6 @@
 {
   "propertyId": "421858793",
-  "syncedAt": "2026-09-06T08:53:36.541Z",
+  "syncedAt": "2026-09-06T09:25:11.429Z",
   "period": "2026-08",
   "channelReport": {
     "dimensionHeaders": [
@@ -75,7 +75,7 @@
             "value": "17"
           },
           {
-            "value": "7585.000004"
+            "value": "7585.0000039999995"
           }
         ]
       },
@@ -284,6 +284,9 @@
     "dimensionHeaders": [
       {
         "name": "city"
+      },
+      {
+        "name": "region"
       }
     ],
     "metricHeaders": [
@@ -296,6 +299,10 @@
         "type": "TYPE_INTEGER"
       },
       {
+        "name": "conversions",
+        "type": "TYPE_FLOAT"
+      },
+      {
         "name": "totalRevenue",
         "type": "TYPE_CURRENCY"
       }
@@ -305,6 +312,9 @@
         "dimensionValues": [
           {
             "value": "Jeddah"
+          },
+          {
+            "value": "Makkah Province"
           }
         ],
         "metricValues": [
@@ -315,7 +325,10 @@
             "value": "5712"
           },
           {
-            "value": "13150.000001"
+            "value": "20"
+          },
+          {
+            "value": "13150.000000999999"
           }
         ]
       },
@@ -323,6 +336,9 @@
         "dimensionValues": [
           {
             "value": "Riyadh"
+          },
+          {
+            "value": "Riyadh Province"
           }
         ],
         "metricValues": [
@@ -333,6 +349,9 @@
             "value": "3878"
           },
           {
+            "value": "16"
+          },
+          {
             "value": "9375.000001"
           }
         ]
@@ -341,14 +360,20 @@
         "dimensionValues": [
           {
             "value": "(not set)"
+          },
+          {
+            "value": "(not set)"
           }
         ],
         "metricValues": [
           {
-            "value": "2764"
+            "value": "2546"
           },
           {
-            "value": "2796"
+            "value": "2565"
+          },
+          {
+            "value": "0"
           },
           {
             "value": "0"
@@ -359,6 +384,9 @@
         "dimensionValues": [
           {
             "value": "Dammam"
+          },
+          {
+            "value": "Eastern Province"
           }
         ],
         "metricValues": [
@@ -369,6 +397,9 @@
             "value": "2256"
           },
           {
+            "value": "12"
+          },
+          {
             "value": "6884.999995"
           }
         ]
@@ -377,6 +408,9 @@
         "dimensionValues": [
           {
             "value": "Madinah"
+          },
+          {
+            "value": "Al Madinah Province"
           }
         ],
         "metricValues": [
@@ -387,6 +421,9 @@
             "value": "1288"
           },
           {
+            "value": "9"
+          },
+          {
             "value": "5410.000002"
           }
         ]
@@ -395,6 +432,9 @@
         "dimensionValues": [
           {
             "value": "Buraydah"
+          },
+          {
+            "value": "Al Qassim Province"
           }
         ],
         "metricValues": [
@@ -405,6 +445,9 @@
             "value": "851"
           },
           {
+            "value": "1"
+          },
+          {
             "value": "3349.999999"
           }
         ]
@@ -413,6 +456,9 @@
         "dimensionValues": [
           {
             "value": "Abha"
+          },
+          {
+            "value": "Aseer Province"
           }
         ],
         "metricValues": [
@@ -423,6 +469,9 @@
             "value": "556"
           },
           {
+            "value": "3"
+          },
+          {
             "value": "2004"
           }
         ]
@@ -431,6 +480,9 @@
         "dimensionValues": [
           {
             "value": "Makkah"
+          },
+          {
+            "value": "Makkah Province"
           }
         ],
         "metricValues": [
@@ -441,6 +493,9 @@
             "value": "145"
           },
           {
+            "value": "2"
+          },
+          {
             "value": "769"
           }
         ]
@@ -448,7 +503,34 @@
       {
         "dimensionValues": [
           {
+            "value": "(not set)"
+          },
+          {
+            "value": "Abu Dhabi"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "80"
+          },
+          {
+            "value": "80"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
             "value": "Al Khobar"
+          },
+          {
+            "value": "Eastern Province"
           }
         ],
         "metricValues": [
@@ -460,6 +542,9 @@
           },
           {
             "value": "0"
+          },
+          {
+            "value": "0"
           }
         ]
       },
@@ -467,6 +552,9 @@
         "dimensionValues": [
           {
             "value": "Tabuk"
+          },
+          {
+            "value": "Tabuk Province"
           }
         ],
         "metricValues": [
@@ -477,12 +565,351 @@
             "value": "56"
           },
           {
+            "value": "1"
+          },
+          {
             "value": "125.000001"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Al Hofuf"
+          },
+          {
+            "value": "Eastern Province"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "42"
+          },
+          {
+            "value": "46"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Al Jubail"
+          },
+          {
+            "value": "Eastern Province"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "42"
+          },
+          {
+            "value": "56"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Arar"
+          },
+          {
+            "value": "Northern Borders Province"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "25"
+          },
+          {
+            "value": "26"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Cairo"
+          },
+          {
+            "value": "Cairo Governorate"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "23"
+          },
+          {
+            "value": "23"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Hail"
+          },
+          {
+            "value": "Hail Province"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "23"
+          },
+          {
+            "value": "24"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Mansoura"
+          },
+          {
+            "value": "Dakahlia Governorate"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "23"
+          },
+          {
+            "value": "28"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Al Qatif"
+          },
+          {
+            "value": "Eastern Province"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "22"
+          },
+          {
+            "value": "28"
+          },
+          {
+            "value": "1"
+          },
+          {
+            "value": "555.000001"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Taif"
+          },
+          {
+            "value": "Makkah Province"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "22"
+          },
+          {
+            "value": "24"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "New York"
+          },
+          {
+            "value": "New York"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "21"
+          },
+          {
+            "value": "21"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Amman"
+          },
+          {
+            "value": "Amman Governorate"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "20"
+          },
+          {
+            "value": "23"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "(not set)"
+          },
+          {
+            "value": "Aseer Province"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "19"
+          },
+          {
+            "value": "21"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Ashburn"
+          },
+          {
+            "value": "Virginia"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "18"
+          },
+          {
+            "value": "19"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Manama"
+          },
+          {
+            "value": "Capital Governorate"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "18"
+          },
+          {
+            "value": "21"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Najran"
+          },
+          {
+            "value": "Najran Province"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "18"
+          },
+          {
+            "value": "19"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
           }
         ]
       }
     ],
-    "rowCount": 350,
+    "rowCount": 395,
     "metadata": {
       "schemaRestrictionResponse": {},
       "currencyCode": "SAR",
