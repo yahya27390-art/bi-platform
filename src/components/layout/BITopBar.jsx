@@ -18,10 +18,10 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
   const currentPeriod = periods?.find(p => p.id === effectivePeriodId) || periods?.find(p => p.id === 'p-2026-08') || periods?.[0];
 
   return (
-    <header className="sticky top-0 z-20 bg-[#0A1628]/90 backdrop-blur-md border-b border-white/5 px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4 shadow-sm">
       {/* Mobile menu */}
       <button
-        className="lg:hidden text-slate-400 hover:text-white"
+        className="lg:hidden text-slate-600 hover:text-[#0F172A]"
         onClick={onOpenMobileSidebar}
       >
         <Menu className="w-5 h-5" />
@@ -32,15 +32,15 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
         <div className="relative">
           <button
             onClick={() => setOpen(o => !o)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-white transition-all"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-sm font-bold text-[#0F172A] transition-all shadow-xs"
           >
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             {currentPeriod?.label || 'اختر الفترة'}
-            <ChevronDown className={cn('w-4 h-4 text-slate-400 transition-transform', open && 'rotate-180')} />
+            <ChevronDown className={cn('w-4 h-4 text-slate-500 transition-transform', open && 'rotate-180')} />
           </button>
 
           {open && (
-            <div className="absolute top-full mt-2 right-0 w-52 bg-[#0d1f35] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+            <div className="absolute top-full mt-2 right-0 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-50 p-1">
               {periods.map(p => (
                 <button
                   key={p.id}
@@ -50,17 +50,17 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
                     setOpen(false);
                   }}
                   className={cn(
-                    'w-full text-right px-4 py-2.5 text-sm transition-all',
+                    'w-full text-right px-4 py-2.5 text-sm rounded-xl transition-all',
                     p.id === currentPeriod?.id
-                      ? 'bg-emerald-500/15 text-emerald-400 font-bold'
-                      : 'text-slate-300 hover:bg-white/5'
+                      ? 'bg-blue-50 text-blue-900 font-bold'
+                      : 'text-slate-700 hover:bg-slate-50'
                   )}
                 >
                   <div className="flex items-center justify-between">
                     <span>{p.label}</span>
                     <div className="flex items-center gap-1">
-                      {p.isCurrent && <span className="text-[10px] text-emerald-400 font-bold">الحالي</span>}
-                      {p.isClosed && <span className="text-[10px] text-slate-500">مغلق</span>}
+                      {p.isCurrent && <span className="text-[10px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-bold">الحالي</span>}
+                      {p.isClosed && <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">مغلق</span>}
                     </div>
                   </div>
                 </button>
@@ -72,64 +72,64 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
 
       <div className="flex-1" />
 
-      {/* Data Source badge */}
-      <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
-        <RefreshCw className="w-3 h-3" />
-        بيانات حية ومحاكاة
+      {/* Live Badge */}
+      <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+        <RefreshCw className="w-3 h-3 text-emerald-600" />
+        بيانات مدققة ومطابقة Z-Report
       </div>
 
       {/* User & Role Switcher */}
       <div className="relative">
         <button
           onClick={() => setUserMenuOpen(u => !u)}
-          className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-white/5 border border-white/5 transition-all text-right"
+          className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-100 border border-slate-200 transition-all text-right"
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-500 flex items-center justify-center text-xs font-black text-white shadow-lg">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0F172A] to-blue-900 flex items-center justify-center text-xs font-black text-white shadow">
             {user?.name?.[0] || 'م'}
           </div>
           <div className="hidden md:block">
-            <div className="text-xs font-bold text-white">{user?.name || 'المالك'}</div>
-            <div className="text-[10px] text-emerald-400 font-medium">{roleLabel}</div>
+            <div className="text-xs font-bold text-[#0F172A]">{user?.name || 'المالك'}</div>
+            <div className="text-[10px] text-slate-500 font-semibold">{roleLabel}</div>
           </div>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
         </button>
 
         {userMenuOpen && (
-          <div className="absolute top-full mt-2 left-0 w-64 bg-[#0d1f35] border border-white/10 rounded-2xl shadow-2xl p-3 space-y-3 z-50">
-            <div className="px-2 pt-1 border-b border-white/10 pb-2">
-              <div className="text-sm font-bold text-white">{user?.name}</div>
-              <div className="text-xs text-slate-400">{user?.email}</div>
-              <div className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/15 text-emerald-400 font-bold px-2 py-0.5 rounded-full mt-1.5 border border-emerald-500/20">
-                <ShieldCheck className="w-3 h-3" /> {roleLabel}
+          <div className="absolute top-full mt-2 left-0 w-64 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 space-y-3 z-50 text-right">
+            <div className="px-2 pt-1 border-b border-slate-100 pb-2">
+              <div className="text-sm font-bold text-[#0F172A]">{user?.name}</div>
+              <div className="text-xs text-slate-500">{user?.email}</div>
+              <div className="inline-flex items-center gap-1 text-[10px] bg-blue-50 text-blue-800 font-bold px-2 py-0.5 rounded-full mt-1.5 border border-blue-200">
+                <ShieldCheck className="w-3 h-3 text-blue-600" /> {roleLabel}
               </div>
             </div>
 
             <div>
-              <div className="text-[11px] text-slate-400 font-bold px-2 mb-1.5">تبديل الحساب / الصلاحية:</div>
+              <div className="text-[11px] text-slate-500 font-bold px-2 mb-1.5">تبديل الحساب / الصلاحية:</div>
               {demoUsers.map(u => (
                 <button
                   key={u.id}
                   onClick={() => { loginAs(u.id); setUserMenuOpen(false); }}
                   className={cn(
-                    'w-full text-right px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-all',
+                    'w-full text-right px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between transition-all',
                     u.id === user?.id
-                      ? 'bg-emerald-500/15 text-emerald-300 font-bold'
-                      : 'text-slate-300 hover:bg-white/5'
+                      ? 'bg-blue-50 text-blue-900 font-bold'
+                      : 'text-slate-700 hover:bg-slate-50'
                   )}
                 >
                   <span>{u.name}</span>
-                  <span className="text-[10px] text-slate-400">({u.role === 'owner' ? 'مالك' : u.role === 'admin' ? 'مدير' : 'محلل'})</span>
+                  <span className="text-[10px] text-slate-500">{u.role}</span>
                 </button>
               ))}
             </div>
 
-            <div className="pt-2 border-t border-white/10">
+            <div className="border-t border-slate-100 pt-1">
               <button
                 onClick={() => { logout(); navigate('/login'); }}
-                className="w-full text-right px-3 py-2 rounded-xl text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-all"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs text-rose-600 hover:bg-rose-50 transition-all font-semibold"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>تسجيل الخروج</span>
+                تسجيل الخروج
               </button>
             </div>
           </div>

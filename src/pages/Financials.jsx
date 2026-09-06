@@ -8,7 +8,6 @@ import { CardSkeleton, SectionHeader, StatRow } from '../components/shared/Share
 import { BIRoleGuard } from '../components/shared/BIRoleGuard';
 import { GrowthChip } from '../components/shared/SharedComponents';
 import { DollarSign, TrendingUp, TrendingDown, PieChart, GitCommit } from 'lucide-react';
-
 import { useCurrentPeriod } from '../context/BIPeriodContext';
 
 export default function Financials() {
@@ -23,13 +22,13 @@ export default function Financials() {
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-white">الأداء المالي وحساب الأرباح والخسائر (P&L Intelligence)</h1>
-            <p className="text-slate-400 text-sm mt-1">{currentPeriod?.labelAr || currentPeriod?.label} · تحليل تفصيلي للإيرادات، التكاليف، وهامش الربحية</p>
+            <h1 className="text-2xl font-black text-slate-900">الأداء المالي وحساب الأرباح والخسائر (P&L Intelligence)</h1>
+            <p className="text-slate-500 text-sm mt-1">{currentPeriod?.labelAr || currentPeriod?.label} · تحليل تفصيلي للإيرادات، التكاليف، وهامش الربحية المعتمد</p>
           </div>
-          <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl p-1 shadow-inner">
+          <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-2xl p-1 shadow-inner">
             {periods?.slice(0, 3).map(p => (
               <button key={p.id} onClick={() => setPeriodId(p.id)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'text-slate-400 hover:text-white'}`}>
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-[#0F172A] text-white shadow-md' : 'text-slate-600 hover:text-slate-900'}`}>
                 {p.labelAr || p.label}
               </button>
             ))}
@@ -43,86 +42,85 @@ export default function Financials() {
         ) : fin ? (
           <>
             {/* Waterfall P&L Walkthrough */}
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#0c162a] to-[#080d18] p-6 space-y-4 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
                     <GitCommit className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-black text-white">
+                    <h2 className="text-lg font-black text-slate-900">
                       مخطط التدفق التتابعي للشلال المالي (P&L Waterfall Walkthrough)
                     </h2>
-                    <p className="text-xs text-slate-400">
-                      توضيح خطوة بخطوة لكيفية تحول إجمالي الإيرادات إلى صافي ربح نهائي بعد خصم تكلفة البضاعة (COGS) والمصاريف التشغيلية والإعلانية
+                    <p className="text-xs text-slate-500">
+                      توضيح خطوة بخطوة لتحول صافي الإيرادات ({formatSAR(fin.totalRevenue)}) إلى صافي ربح قدره {formatSAR(fin.netProfit)} بنسبة هامش {fin.netProfitMarginPct?.toFixed(2)}%
                     </p>
                   </div>
                 </div>
-                <span className="text-xs text-purple-400 font-mono bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-full">
-                  ECharts Waterfall
+                <span className="text-xs text-blue-800 font-mono bg-blue-50 border border-blue-200 px-3 py-1 rounded-full font-bold">
+                  هامش الربح الصافي: {fin.netProfitMarginPct?.toFixed(2)}%
                 </span>
               </div>
               <WaterfallChart height={330} />
             </div>
 
-            {/* Revenue Summary */}
-
+            {/* Revenue & Profit Summary */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* P&L Summary card */}
-              <div className="lg:col-span-2 rounded-2xl border border-white/5 bg-[#111827]/80 p-6">
-                <SectionHeader title="ملخص الأرباح والخسائر" className="mb-5" />
-                <div className="space-y-0 divide-y divide-white/5">
+              <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <SectionHeader title="ملخص الأرباح والخسائر المعتمد" className="mb-5" />
+                <div className="space-y-0 divide-y divide-slate-100">
                   <div className="flex justify-between py-3">
-                    <span className="text-slate-300 font-semibold">إجمالي الإيرادات</span>
+                    <span className="text-slate-700 font-bold">صافي إيرادات الشركة المجمعة</span>
                     <div className="flex items-center gap-2">
                       <GrowthChip value={fin.totalRevenueGrowth} />
-                      <span className="text-white font-black">{formatSAR(fin.totalRevenue)}</span>
+                      <span className="text-slate-900 font-black text-base">{formatSAR(fin.totalRevenue)}</span>
                     </div>
                   </div>
                   <div className="flex justify-between py-3 pr-4">
-                    <span className="text-slate-400 text-sm">إيرادات المتجر الإلكتروني</span>
-                    <span className="text-slate-300">{formatSAR(fin.ecommerceRevenue)}</span>
+                    <span className="text-slate-500 text-sm">مبيعات الفروع الميدانية (Main + Rawaf + Kia)</span>
+                    <span className="text-slate-700 font-bold">{formatSAR(fin.branchRevenue)}</span>
                   </div>
                   <div className="flex justify-between py-3 pr-4">
-                    <span className="text-slate-400 text-sm">إيرادات الفروع</span>
-                    <span className="text-slate-300">{formatSAR(fin.branchRevenue)}</span>
+                    <span className="text-slate-500 text-sm">صافي مبيعات المتجر الإلكتروني (سلة)</span>
+                    <span className="text-slate-700 font-bold">{formatSAR(fin.ecommerceRevenue)}</span>
                   </div>
                   <div className="flex justify-between py-3">
-                    <span className="text-slate-300 font-semibold">تكلفة البضاعة المباعة (COGS)</span>
-                    <span className="text-red-400 font-bold">({formatSAR(fin.cogs)})</span>
+                    <span className="text-slate-700 font-semibold">تكلفة البضاعة المباعة (COGS ~50%)</span>
+                    <span className="text-red-600 font-bold">({formatSAR(fin.cogs)})</span>
                   </div>
-                  <div className="flex justify-between py-3 bg-emerald-500/5 px-3 rounded-lg">
-                    <span className="text-emerald-300 font-bold">الربح الإجمالي</span>
+                  <div className="flex justify-between py-3 bg-emerald-50/70 px-3 rounded-lg border border-emerald-100">
+                    <span className="text-emerald-900 font-bold">الربح الإجمالي (Gross Profit)</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-emerald-400 text-sm">{fin.grossMarginPct?.toFixed(1)}%</span>
-                      <span className="text-emerald-400 font-black">{formatSAR(fin.grossProfit)}</span>
+                      <span className="text-emerald-700 font-bold text-sm">{fin.grossMarginPct?.toFixed(1)}%</span>
+                      <span className="text-emerald-800 font-black">{formatSAR(fin.grossProfit)}</span>
                     </div>
                   </div>
                   <div className="flex justify-between py-3">
-                    <span className="text-slate-300 font-semibold">مصاريف التشغيل</span>
-                    <span className="text-red-400 font-bold">({formatSAR(fin.totalOpex)})</span>
+                    <span className="text-slate-700 font-semibold">مصاريف التشغيل (OPEX)</span>
+                    <span className="text-red-600 font-bold">({formatSAR(fin.totalOpex)})</span>
                   </div>
-                  <div className="flex justify-between py-3 bg-blue-500/5 px-3 rounded-lg">
-                    <span className="text-blue-300 font-bold">EBITDA</span>
+                  <div className="flex justify-between py-3 bg-blue-50/70 px-3 rounded-lg border border-blue-100">
+                    <span className="text-blue-900 font-bold">EBITDA التشغيلي</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-blue-400 text-sm">{fin.ebitdaMarginPct?.toFixed(1)}%</span>
-                      <span className="text-blue-400 font-black">{formatSAR(fin.ebitda)}</span>
+                      <span className="text-blue-700 font-bold text-sm">{fin.ebitdaMarginPct?.toFixed(1)}%</span>
+                      <span className="text-blue-800 font-black">{formatSAR(fin.ebitda)}</span>
                     </div>
                   </div>
 
-                  {/* Net profit — guarded */}
+                  {/* Net profit */}
                   <BIRoleGuard permission="canViewFinancialsFull"
                     fallback={
-                      <div className="flex justify-between py-3 bg-purple-500/5 px-3 rounded-lg opacity-40">
-                        <span className="text-purple-300 font-bold">صافي الربح</span>
-                        <span className="text-purple-400 font-black">🔒 مخفي</span>
+                      <div className="flex justify-between py-3 bg-slate-50 px-3 rounded-lg opacity-50">
+                        <span className="text-slate-600 font-bold">صافي الربح</span>
+                        <span className="text-slate-700 font-black">🔒 مخفي</span>
                       </div>
                     }>
-                    <div className="flex justify-between py-3 bg-purple-500/5 px-3 rounded-lg">
-                      <span className="text-purple-300 font-bold">صافي الربح</span>
+                    <div className="flex justify-between py-3 bg-blue-50/90 px-3 rounded-lg border border-blue-200">
+                      <span className="text-blue-950 font-black">صافي الربح النهائي (Net Profit Margin 28.02%)</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-purple-400 text-sm">{fin.netProfitMarginPct?.toFixed(1)}%</span>
-                        <span className="text-purple-400 font-black">{formatSAR(fin.netProfit)}</span>
+                        <span className="text-blue-800 font-black text-sm">{fin.netProfitMarginPct?.toFixed(2)}%</span>
+                        <span className="text-blue-900 font-black text-lg">{formatSAR(fin.netProfit)}</span>
                       </div>
                     </div>
                   </BIRoleGuard>
@@ -130,32 +128,32 @@ export default function Financials() {
               </div>
 
               {/* Target Rings */}
-              <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-6 flex flex-col justify-between">
-                <SectionHeader title="تحقيق الأهداف" className="mb-5" />
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+                <SectionHeader title="تحقيق المستهدفات المالية" className="mb-5" />
                 <div className="grid grid-cols-2 gap-6">
-                  <MetricRing value={fin.totalRevenue} target={targets?.revenue || 500000} color="#10B981" size={90} label="هدف الإيراد" />
-                  <MetricRing value={fin.grossProfit} target={(targets?.revenue || 500000) * 0.45} color="#3B82F6" size={90} label="الربح الإجمالي" />
+                  <MetricRing value={fin.totalRevenue} target={targets?.revenue || 800000} color="#059669" size={90} label="هدف المبيعات (800K)" />
+                  <MetricRing value={fin.grossProfit} target={(targets?.revenue || 800000) * 0.50} color="#2563EB" size={90} label="الربح الإجمالي" />
                   <BIRoleGuard permission="canViewFinancialsFull"
-                    fallback={<MetricRing value={0} target={1} color="#8B5CF640" size={90} label="🔒 صافي الربح" />}>
-                    <MetricRing value={fin.netProfit} target={targets?.netProfit || 65000} color="#8B5CF6" size={90} label="صافي الربح" />
+                    fallback={<MetricRing value={0} target={1} color="#94A3B8" size={90} label="🔒 صافي الربح" />}>
+                    <MetricRing value={fin.netProfit} target={targets?.netProfit || 277264} color="#1E3A8A" size={90} label="صافي الربح" />
                   </BIRoleGuard>
-                  <MetricRing value={fin.cashFlow} target={fin.totalRevenue * 0.16} color="#F59E0B" size={90} label="التدفق النقدي" />
+                  <MetricRing value={fin.cashFlow} target={fin.totalRevenue * 0.20} color="#D97706" size={90} label="التدفق النقدي" />
                 </div>
               </div>
             </div>
 
             {/* OPEX Breakdown */}
-            <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-6">
-              <SectionHeader title="تفاصيل مصاريف التشغيل" className="mb-5" />
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <SectionHeader title="تفاصيل مصاريف التشغيل (OPEX Breakdown)" className="mb-5" />
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 {Object.entries(fin.operatingExpenses || {}).map(([key, val]) => {
-                  const OPEX_LABELS = { salaries: 'الرواتب', rent: 'الإيجارات', utilities: 'المرافق', marketing: 'التسويق', logistics: 'الشحن والتوصيل', other: 'أخرى' };
-                  const OPEX_COLORS = { salaries: '#3B82F6', rent: '#8B5CF6', utilities: '#F59E0B', marketing: '#10B981', logistics: '#F97316', other: '#6B7280' };
+                  const OPEX_LABELS = { salaries: 'الرواتب والأجور', rent: 'الإيجارات', utilities: 'المرافق والخدمات', marketing: 'التسويق والإعلانات', logistics: 'الشحن والتوصيل', other: 'مصاريف أخرى' };
+                  const OPEX_COLORS = { salaries: '#2563EB', rent: '#475569', utilities: '#D97706', marketing: '#059669', logistics: '#EA580C', other: '#64748B' };
                   return (
-                    <div key={key} className="rounded-xl bg-white/3 p-3 text-center">
-                      <div className="text-xs text-slate-500 mb-2">{OPEX_LABELS[key] || key}</div>
+                    <div key={key} className="rounded-xl bg-slate-50 border border-slate-100 p-3 text-center">
+                      <div className="text-xs text-slate-600 mb-2 font-medium">{OPEX_LABELS[key] || key}</div>
                       <div className="text-lg font-black" style={{ color: OPEX_COLORS[key] }}>{formatSAR(val, true)}</div>
-                      <div className="text-xs text-slate-500 mt-1">{((val / fin.totalOpex) * 100).toFixed(0)}%</div>
+                      <div className="text-xs text-slate-500 mt-1 font-semibold">{((val / fin.totalOpex) * 100).toFixed(0)}%</div>
                     </div>
                   );
                 })}
@@ -164,14 +162,14 @@ export default function Financials() {
 
             {/* Trend Chart */}
             {trend && (
-              <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-6">
-                <SectionHeader title="المسار المالي — 6 أشهر" className="mb-6" />
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <SectionHeader title="المسار المالي التاريخي — 6 أشهر" className="mb-6" />
                 <TrendAreaChart
                   data={trend}
                   series={[
-                    { key: 'revenue',     color: '#10B981', label: 'الإيرادات' },
-                    { key: 'grossProfit', color: '#3B82F6', label: 'الربح الإجمالي' },
-                    { key: 'netProfit',   color: '#8B5CF6', label: 'صافي الربح' },
+                    { key: 'revenue',     color: '#059669', label: 'الإيرادات' },
+                    { key: 'grossProfit', color: '#2563EB', label: 'الربح الإجمالي' },
+                    { key: 'netProfit',   color: '#0F172A', label: 'صافي الربح (28.02%)' },
                   ]}
                   height={240}
                   formatValue={v => formatSAR(v, true)}

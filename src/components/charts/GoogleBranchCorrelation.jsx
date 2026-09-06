@@ -21,13 +21,13 @@ export default function GoogleBranchCorrelation({ data }) {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'axis',
-      backgroundColor: '#0D1E36',
-      borderColor: 'rgba(255,255,255,0.15)',
+      backgroundColor: '#0F172A',
+      borderColor: '#334155',
       textStyle: { color: '#fff', fontFamily: 'Cairo' },
     },
     legend: {
       data: ['إنفاق إعلانات Google', 'مبيعات الفروع الميدانية'],
-      textStyle: { color: '#94A3B8', fontFamily: 'Cairo', fontSize: 11 },
+      textStyle: { color: '#334155', fontFamily: 'Cairo', fontSize: 11, fontWeight: 'bold' },
       bottom: '0%',
       icon: 'roundRect',
     },
@@ -35,37 +35,39 @@ export default function GoogleBranchCorrelation({ data }) {
       top: '10%',
       left: '3%',
       right: '3%',
-      bottom: '12%',
+      bottom: '14%',
       containLabel: true,
     },
     xAxis: {
       type: 'category',
       data: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3 (اليوم الوطني)', 'الأسبوع 4'],
-      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
-      axisLabel: { color: '#94A3B8', fontFamily: 'Cairo' },
+      axisLine: { lineStyle: { color: '#E2E8F0' } },
+      axisLabel: { color: '#475569', fontFamily: 'Cairo', fontWeight: 'bold' },
     },
     yAxis: [
       {
         type: 'value',
         name: 'مبيعات الفروع',
-        nameTextStyle: { color: '#10B981', fontFamily: 'Cairo', fontSize: 11 },
+        nameTextStyle: { color: '#059669', fontFamily: 'Cairo', fontSize: 11, fontWeight: 'bold' },
         axisLine: { show: false },
-        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } },
+        splitLine: { lineStyle: { color: '#F1F5F9' } },
         axisLabel: {
-          color: '#64748B',
+          color: '#475569',
           fontFamily: 'Cairo',
+          fontWeight: 'bold',
           formatter: (v) => `${(v / 1000).toFixed(0)}K`,
         },
       },
       {
         type: 'value',
         name: 'إنفاق Google',
-        nameTextStyle: { color: '#3B82F6', fontFamily: 'Cairo', fontSize: 11 },
+        nameTextStyle: { color: '#2563EB', fontFamily: 'Cairo', fontSize: 11, fontWeight: 'bold' },
         axisLine: { show: false },
         splitLine: { show: false },
         axisLabel: {
-          color: '#3B82F6',
+          color: '#2563EB',
           fontFamily: 'Cairo',
+          fontWeight: 'bold',
           formatter: (v) => `${(v / 1000).toFixed(0)}K`,
         },
       },
@@ -77,7 +79,7 @@ export default function GoogleBranchCorrelation({ data }) {
         barWidth: '32%',
         data: [175000, 190000, 245000, 190000],
         itemStyle: {
-          color: '#10B981',
+          color: '#059669',
           borderRadius: [6, 6, 0, 0],
         },
       },
@@ -87,30 +89,30 @@ export default function GoogleBranchCorrelation({ data }) {
         yAxisIndex: 1,
         smooth: true,
         data: [7500, 8500, 16000, 8000],
-        itemStyle: { color: '#3B82F6' },
-        lineStyle: { width: 3, color: '#3B82F6' },
+        itemStyle: { color: '#2563EB' },
+        lineStyle: { width: 3, color: '#2563EB' },
       },
     ],
   };
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#0c162a] to-[#080d18] p-6 space-y-5 shadow-xl">
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-5 shadow-sm">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+          <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 shadow-xs">
             <Compass className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-white">
+            <h3 className="text-lg font-black text-[#0F172A]">
               تحليل الارتباط: إعلانات Google مقابل مبيعات الفروع الميدانية
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 font-medium">
               مقارنة تحليلية دقيقة تفصل بين الإسناد الرقمي والواقع المالي الميداني (تجنب ادعاء السببية المباشرة)
             </p>
           </div>
         </div>
-        <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+        <span className="text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 px-3.5 py-1 rounded-full shadow-xs">
           Analytical Correlation Layer
         </span>
       </div>
@@ -118,63 +120,63 @@ export default function GoogleBranchCorrelation({ data }) {
       {/* 2-Column Metrics Side by Side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Left: Google Ads Performance */}
-        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 space-y-3">
-          <div className="text-xs font-bold text-blue-400 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-blue-400" />
+        <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-4 space-y-3">
+          <div className="text-xs font-black text-blue-900 flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
             أداء إعلانات Google Ads (منصة الإسناد الرقمي)
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-white/3 rounded-xl p-2.5">
-              <div className="text-[11px] text-slate-400">الإنفاق الفعلي</div>
-              <div className="text-base font-black text-white font-mono" dir="ltr">
-                {formatSAR(correlationData.googleSpend, true)}
+            <div className="bg-white border border-blue-100 rounded-xl p-2.5 shadow-xs">
+              <div className="text-[11px] text-slate-500 font-medium">الإنفاق الفعلي</div>
+              <div className="text-base font-black text-[#0F172A]" dir="rtl">
+                {formatSAR(correlationData.googleSpend, false)}
               </div>
             </div>
-            <div className="bg-white/3 rounded-xl p-2.5">
-              <div className="text-[11px] text-slate-400">تحويلات Google</div>
-              <div className="text-base font-black text-blue-400 font-mono">
+            <div className="bg-white border border-blue-100 rounded-xl p-2.5 shadow-xs">
+              <div className="text-[11px] text-slate-500 font-medium">تحويلات Google</div>
+              <div className="text-base font-black text-blue-700">
                 {formatNum(correlationData.googleConversions)}
               </div>
             </div>
-            <div className="bg-white/3 rounded-xl p-2.5">
-              <div className="text-[11px] text-slate-400">إيراد معزو للمنصة</div>
-              <div className="text-base font-black text-cyan-300 font-mono" dir="ltr">
-                {formatSAR(correlationData.googleAttributedRev, true)}
+            <div className="bg-white border border-blue-100 rounded-xl p-2.5 shadow-xs">
+              <div className="text-[11px] text-slate-500 font-medium">إيراد معزو للمنصة</div>
+              <div className="text-base font-black text-indigo-700" dir="rtl">
+                {formatSAR(correlationData.googleAttributedRev, false)}
               </div>
             </div>
           </div>
-          <div className="text-[11px] text-slate-400 flex items-center gap-1 bg-black/20 p-2 rounded-lg">
-            <Info className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-            <span>الإيراد المعزو رقمي من Google Analytics 4 ولا يُضاف مباشرة للمبيعات الرسمية.</span>
+          <div className="text-[11px] text-slate-600 flex items-center gap-1.5 bg-white/80 p-2 rounded-lg border border-blue-100">
+            <Info className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+            <span>الإيراد المعزو رقمي من Google ولا يُضاف مباشرة للمبيعات الفعلية للشركة.</span>
           </div>
         </div>
 
         {/* Right: Physical Branch Net Sales */}
-        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
-          <div className="text-xs font-bold text-emerald-400 flex items-center justify-between">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 space-y-3">
+          <div className="text-xs font-black text-emerald-900 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
               صافي مبيعات الفروع الميدانية (حقيقة الإيراد المالي)
             </span>
-            <span className="text-[11px] font-mono text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded">
+            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
               {formatSAR(correlationData.physicalBranchesNetSales, true)}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
             {correlationData.branchBreakdown.map((b, i) => (
-              <div key={i} className="bg-white/3 rounded-xl p-2.5">
-                <div className="text-[11px] text-slate-400 truncate">{b.nameAr}</div>
-                <div className="text-sm font-black text-white font-mono" dir="ltr">
+              <div key={i} className="bg-white border border-emerald-100 rounded-xl p-2.5 shadow-xs">
+                <div className="text-[11px] text-slate-600 font-medium truncate">{b.nameAr}</div>
+                <div className="text-sm font-black text-[#0F172A]" dir="rtl">
                   {formatSAR(b.netSales, true)}
                 </div>
-                <div className="text-[10px] text-emerald-400 mt-0.5 font-semibold">
+                <div className="text-[10px] text-emerald-700 mt-0.5 font-bold">
                   تحقيق {((b.netSales / b.target) * 100).toFixed(0)}%
                 </div>
               </div>
             ))}
           </div>
-          <div className="text-[11px] text-slate-400 flex items-center gap-1 bg-black/20 p-2 rounded-lg">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <div className="text-[11px] text-slate-600 flex items-center gap-1.5 bg-white/80 p-2 rounded-lg border border-emerald-100">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span>مستخرجة من تقارير فواتير الفروع الثلاثة بعد خصم المرتجعات.</span>
           </div>
         </div>
@@ -182,19 +184,19 @@ export default function GoogleBranchCorrelation({ data }) {
 
       {/* Correlation Chart */}
       <div className="pt-2">
-        <div className="text-xs font-bold text-slate-300 mb-2">
+        <div className="text-xs font-bold text-slate-700 mb-2">
           المسار الأسبوعي المتزامن: ذروة إنفاق Google مقابل ذروة مبيعات الفروع
         </div>
         <ReactECharts option={option} style={{ height: 260, width: '100%' }} opts={{ renderer: 'canvas' }} />
       </div>
 
       {/* Evidence-backed Analytical Insight */}
-      <div className="rounded-2xl border border-white/10 bg-white/3 p-4 space-y-1.5">
-        <div className="text-xs font-black text-emerald-400 flex items-center gap-1.5">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-1.5">
+        <div className="text-xs font-black text-emerald-800 flex items-center gap-1.5">
           <span>💡 خلاصة التحليل الاستراتيجي (Strategic Correlation Finding):</span>
         </div>
-        <p className="text-xs text-slate-200 leading-relaxed">
-          &quot;لوحظ ارتفاع مبيعات الفروع الميدانية بنسبة <strong className="text-emerald-400">+14.2%</strong> خلال فترات تكثيف نشاط وحملات البحث على Google Ads (خاصة الأسبوع الثالث لعروض اليوم الوطني)، مما يؤكد وجود ارتباط إيجابي قوي بين بحث العملاء عبر Google والزيارات الميدانية للشراء من الفرع الرئيسي وفرع الرواف.&quot;
+        <p className="text-xs text-slate-700 leading-relaxed font-medium">
+          &quot;لوحظ ارتفاع مبيعات الفروع الميدانية بنسبة <strong className="text-emerald-700">+14.2%</strong> خلال فترات تكثيف نشاط وحملات البحث على Google Ads (خاصة الأسبوع الثالث لعروض اليوم الوطني)، مما يؤكد وجود ارتباط إيجابي قوي بين بحث العملاء عبر Google والزيارات الميدانية للشراء من الفرع الرئيسي وفرع الرواف.&quot;
         </p>
       </div>
     </div>

@@ -8,7 +8,7 @@ export default function BILayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0A1628] text-white font-sans" dir="rtl">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans" dir="rtl">
       {/* Desktop Sidebar */}
       <BISidebar
         collapsed={sidebarCollapsed}

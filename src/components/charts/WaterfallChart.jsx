@@ -1,35 +1,41 @@
 import React from 'react';
 import ReactECharts from 'echarts-for-react';
 
-export default function WaterfallChart({ height = 320 }) {
+export default function WaterfallChart({ height = 330 }) {
   const categories = [
-    'إجمالي الإيرادات',
+    'صافي الإيرادات',
     'تكلفة البضاعة (COGS)',
     'إجمالي الربح (Gross)',
     'مصاريف التشغيل (OPEX)',
     'الإنفاق الإعلاني',
-    'صافي ربح الأعمال'
+    'صافي ربح الأعمال (28.02%)'
   ];
 
-  // Waterfall placeholder, positive, and negative values
-  const baseData = [0, 562400, 0, 257400, 214600, 0];
-  const positiveData = [1480000, '-', 562400, '-', '-', 214600];
-  const negativeData = ['-', 917600, '-', 305000, 42800, '-'];
+  // Waterfall calculation based on August 2026 Dora Cars audited data:
+  // Net Revenue: 989,522.16 SAR
+  // COGS: -494,761.08 SAR (50.0%)
+  // Gross Profit: 494,761.08 SAR
+  // OPEX: -208,093.97 SAR
+  // Ad Spend: -9,403.00 SAR
+  // Net Profit: 277,264.11 SAR (28.02% of net revenue)
+  const baseData = [0, 494761, 0, 286667, 277264, 0];
+  const positiveData = [989522, '-', 494761, '-', '-', 277264];
+  const negativeData = ['-', 494761, '-', 208094, 9403, '-'];
 
   const option = {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      backgroundColor: '#0D1E36',
-      borderColor: 'rgba(255,255,255,0.15)',
-      textStyle: { color: '#fff', fontFamily: 'Cairo' },
+      backgroundColor: '#0F172A',
+      borderColor: '#334155',
+      textStyle: { color: '#F8FAFC', fontFamily: 'Cairo', fontSize: 12 },
       formatter: (params) => {
         const item = params[1] && params[1].value !== '-' ? params[1] : params[2];
         const isCost = params[2] && params[2].value !== '-';
         return `<div dir="rtl" style="text-align:right">
-          <strong>${params[0].name}</strong><br/>
-          <span style="color:${isCost ? '#F87171' : '#34D399'}">
+          <strong style="color:#94A3B8">${params[0].name}</strong><br/>
+          <span style="font-weight:bold; color:${isCost ? '#EF4444' : '#10B981'}; font-size:13px">
             ${isCost ? '-' : '+'}${Number(item?.value || 0).toLocaleString('ar-SA')} ر.س
           </span>
         </div>`;
@@ -38,25 +44,26 @@ export default function WaterfallChart({ height = 320 }) {
     grid: {
       left: '3%',
       right: '3%',
-      bottom: '10%',
+      bottom: '12%',
       top: '12%',
       containLabel: true,
     },
     xAxis: {
       type: 'category',
       data: categories,
-      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+      axisLine: { lineStyle: { color: '#CBD5E1' } },
       axisLabel: {
-        color: '#94A3B8',
+        color: '#475569',
         fontFamily: 'Cairo',
         fontSize: 11,
+        fontWeight: 600,
         interval: 0,
       },
     },
     yAxis: {
       type: 'value',
       axisLine: { show: false },
-      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } },
+      splitLine: { lineStyle: { color: '#E2E8F0', type: 'dashed' } },
       axisLabel: {
         color: '#64748B',
         fontFamily: 'Cairo',
@@ -79,16 +86,17 @@ export default function WaterfallChart({ height = 320 }) {
         label: {
           show: true,
           position: 'top',
-          color: '#10B981',
+          color: '#0F172A',
           fontFamily: 'Cairo',
-          fontSize: 10,
-          formatter: (p) => p.value !== '-' ? `${(p.value / 1000).toFixed(0)}K` : '',
+          fontSize: 11,
+          fontWeight: 'bold',
+          formatter: (p) => p.value !== '-' ? `${(p.value / 1000).toFixed(1)}K` : '',
         },
         itemStyle: {
           color: (params) => {
-            if (params.dataIndex === 0) return '#10B981';
-            if (params.dataIndex === 2) return '#06B6D4';
-            return '#8B5CF6';
+            if (params.dataIndex === 0) return '#1E3A8A'; // Deep Navy Blue for Net Revenue
+            if (params.dataIndex === 2) return '#0284C7'; // Ocean Blue for Gross Profit
+            return '#059669'; // Emerald Green for Net Profit
           },
           borderRadius: [6, 6, 0, 0],
         },
@@ -101,13 +109,14 @@ export default function WaterfallChart({ height = 320 }) {
         label: {
           show: true,
           position: 'bottom',
-          color: '#EF4444',
+          color: '#DC2626',
           fontFamily: 'Cairo',
-          fontSize: 10,
-          formatter: (p) => p.value !== '-' ? `-${(p.value / 1000).toFixed(0)}K` : '',
+          fontSize: 11,
+          fontWeight: 'bold',
+          formatter: (p) => p.value !== '-' ? `-${(p.value / 1000).toFixed(1)}K` : '',
         },
         itemStyle: {
-          color: '#F43F5E',
+          color: '#E11D48',
           borderRadius: [0, 0, 6, 6],
         },
         data: negativeData,

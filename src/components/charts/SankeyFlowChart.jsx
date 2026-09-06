@@ -7,8 +7,8 @@ export default function SankeyFlowChart({ height = 400 }) {
     tooltip: {
       trigger: 'item',
       triggerOn: 'mousemove',
-      backgroundColor: '#0D1E36',
-      borderColor: 'rgba(255, 255, 255, 0.15)',
+      backgroundColor: '#0F172A',
+      borderColor: '#334155',
       textStyle: { color: '#fff', fontFamily: 'Cairo', fontSize: 12 },
       formatter: (params) => {
         if (params.dataType === 'edge') {
@@ -38,85 +38,83 @@ export default function SankeyFlowChart({ height = 400 }) {
           focus: 'adjacency',
           itemStyle: {
             shadowBlur: 15,
-            shadowColor: 'rgba(16, 185, 129, 0.5)',
+            shadowColor: 'rgba(37, 99, 235, 0.4)',
           },
         },
         levels: [
           {
             depth: 0,
-            itemStyle: { color: '#0EA5E9' },
+            itemStyle: { color: '#2563EB' },
             lineStyle: { color: 'source', opacity: 0.35 },
           },
           {
             depth: 1,
-            itemStyle: { color: '#10B981' },
+            itemStyle: { color: '#0F172A' },
             lineStyle: { color: 'source', opacity: 0.35 },
           },
           {
             depth: 2,
-            itemStyle: { color: '#F59E0B' },
+            itemStyle: { color: '#059669' },
             lineStyle: { color: 'source', opacity: 0.35 },
           },
           {
             depth: 3,
-            itemStyle: { color: '#8B5CF6' },
+            itemStyle: { color: '#6366F1' },
             lineStyle: { color: 'source', opacity: 0.35 },
           },
         ],
         data: [
           // Inflow sources (Left)
-          { name: 'فرع الروابي (هيونداي)', value: 720000, itemStyle: { color: '#3B82F6' } },
-          { name: 'فرع السليمانية (كيا)', value: 480000, itemStyle: { color: '#06B6D4' } },
-          { name: 'متجر سلة الإلكتروني', value: 280000, itemStyle: { color: '#10B981' } },
+          { name: 'الفرع الرئيسي (428.9K)', value: 428885.49, itemStyle: { color: '#1E3A8A' } },
+          { name: 'فرع الرواف (291.4K)', value: 291371.67, itemStyle: { color: '#2563EB' } },
+          { name: 'فرع كيا (269.3K)', value: 269265.00, itemStyle: { color: '#0284C7' } },
 
           // Consolidated Total
-          { name: 'إجمالي الإيرادات (1.48M)', value: 1480000, itemStyle: { color: '#10B981' } },
+          { name: 'إجمالي صافي المبيعات (989.5K)', value: 989522.16, itemStyle: { color: '#0F172A' } },
 
           // Allocation buckets
-          { name: 'تكلفة البضاعة (COGS)', value: 917600, itemStyle: { color: '#64748B' } },
-          { name: 'المصاريف التشغيلية (OPEX)', value: 305000, itemStyle: { color: '#F59E0B' } },
-          { name: 'الإنفاق الإعلاني (Ad Spend)', value: 42800, itemStyle: { color: '#EC4899' } },
-          { name: 'صافي أرباح الأعمال (Net Profit)', value: 214600, itemStyle: { color: '#A855F7' } },
+          { name: 'تكلفة البضاعة (COGS)', value: 494761.08, itemStyle: { color: '#64748B' } },
+          { name: 'المصاريف التشغيلية (OPEX)', value: 208093.97, itemStyle: { color: '#D97706' } },
+          { name: 'الإنفاق الإعلاني (Ad Spend)', value: 9403.00, itemStyle: { color: '#E11D48' } },
+          { name: 'صافي أرباح الأعمال (28.02%)', value: 277264.11, itemStyle: { color: '#059669' } },
 
           // Detailed marketing breakdown
-          { name: 'حملات ميتا (Meta Ads)', value: 18200, itemStyle: { color: '#3B82F6' } },
-          { name: 'حملات جوجل (Google Ads)', value: 13000, itemStyle: { color: '#10B981' } },
-          { name: 'حملات تيك توك (TikTok Ads)', value: 7500, itemStyle: { color: '#8B5CF6' } },
-          { name: 'حملات سناب شات (Snapchat)', value: 4100, itemStyle: { color: '#FBBF24' } },
+          { name: 'حملات جوجل (Google Ads)', value: 4660.27, itemStyle: { color: '#2563EB' } },
+          { name: 'حملات ميتا (Meta Ads)', value: 3221.60, itemStyle: { color: '#0284C7' } },
+          { name: 'حملات تيك توك (TikTok)', value: 1521.13, itemStyle: { color: '#8B5CF6' } },
 
           // Detailed OPEX breakdown
-          { name: 'رواتب وأجور الموظفين', value: 175000, itemStyle: { color: '#CBD5E1' } },
-          { name: 'إيجارات الفروع والمستودعات', value: 85000, itemStyle: { color: '#94A3B8' } },
-          { name: 'لوجستيات ومرافق تقنية', value: 45000, itemStyle: { color: '#64748B' } },
+          { name: 'رواتب وأجور الفروع', value: 112000, itemStyle: { color: '#94A3B8' } },
+          { name: 'إيجارات الفروع', value: 42000, itemStyle: { color: '#64748B' } },
+          { name: 'مرافق ولوجستيات وأخرى', value: 54093.97, itemStyle: { color: '#475569' } },
         ],
         links: [
           // Inflow into Total Revenue
-          { source: 'فرع الروابي (هيونداي)', target: 'إجمالي الإيرادات (1.48M)', value: 720000 },
-          { source: 'فرع السليمانية (كيا)', target: 'إجمالي الإيرادات (1.48M)', value: 480000 },
-          { source: 'متجر سلة الإلكتروني', target: 'إجمالي الإيرادات (1.48M)', value: 280000 },
+          { source: 'الفرع الرئيسي (428.9K)', target: 'إجمالي صافي المبيعات (989.5K)', value: 428885.49 },
+          { source: 'فرع الرواف (291.4K)', target: 'إجمالي صافي المبيعات (989.5K)', value: 291371.67 },
+          { source: 'فرع كيا (269.3K)', target: 'إجمالي صافي المبيعات (989.5K)', value: 269265.00 },
 
           // Revenue Allocation
-          { source: 'إجمالي الإيرادات (1.48M)', target: 'تكلفة البضاعة (COGS)', value: 917600 },
-          { source: 'إجمالي الإيرادات (1.48M)', target: 'المصاريف التشغيلية (OPEX)', value: 305000 },
-          { source: 'إجمالي الإيرادات (1.48M)', target: 'الإنفاق الإعلاني (Ad Spend)', value: 42800 },
-          { source: 'إجمالي الإيرادات (1.48M)', target: 'صافي أرباح الأعمال (Net Profit)', value: 214600 },
+          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'تكلفة البضاعة (COGS)', value: 494761.08 },
+          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'المصاريف التشغيلية (OPEX)', value: 208093.97 },
+          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'الإنفاق الإعلاني (Ad Spend)', value: 9403.00 },
+          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'صافي أرباح الأعمال (28.02%)', value: 277264.11 },
 
           // Ad Spend Breakdown
-          { source: 'الإنفاق الإعلاني (Ad Spend)', target: 'حملات ميتا (Meta Ads)', value: 18200 },
-          { source: 'الإنفاق الإعلاني (Ad Spend)', target: 'حملات جوجل (Google Ads)', value: 13000 },
-          { source: 'الإنفاق الإعلاني (Ad Spend)', target: 'حملات تيك توك (TikTok Ads)', value: 7500 },
-          { source: 'الإنفاق الإعلاني (Ad Spend)', target: 'حملات سناب شات (Snapchat)', value: 4100 },
+          { source: 'الإنفاق الإعلاني (Ad Spend)', target: 'حملات جوجل (Google Ads)', value: 4660.27 },
+          { source: 'الإنفاق الإعلاني (Ad Spend)', target: 'حملات ميتا (Meta Ads)', value: 3221.60 },
+          { source: 'الإنفاق الإعلاني (Ad Spend)', target: 'حملات تيك توك (TikTok)', value: 1521.13 },
 
           // OPEX Breakdown
-          { source: 'المصاريف التشغيلية (OPEX)', target: 'رواتب وأجور الموظفين', value: 175000 },
-          { source: 'المصاريف التشغيلية (OPEX)', target: 'إيجارات الفروع والمستودعات', value: 85000 },
-          { source: 'المصاريف التشغيلية (OPEX)', target: 'لوجستيات ومرافق تقنية', value: 45000 },
+          { source: 'المصاريف التشغيلية (OPEX)', target: 'رواتب وأجور الفروع', value: 112000 },
+          { source: 'المصاريف التشغيلية (OPEX)', target: 'إيجارات الفروع', value: 42000 },
+          { source: 'المصاريف التشغيلية (OPEX)', target: 'مرافق ولوجستيات وأخرى', value: 54093.97 },
         ],
         label: {
-          color: '#E2E8F0',
+          color: '#0F172A',
           fontFamily: 'Cairo',
           fontSize: 11,
-          fontWeight: 600,
+          fontWeight: 700,
         },
         lineStyle: {
           curveness: 0.55,

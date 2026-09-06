@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { formatSAR } from '../lib/kpiEngine';
 import { DORA_DOCUMENTS } from '../data/doraSchema';
 import EvidenceViewerModal from '../components/shared/EvidenceViewerModal';
+import { useCurrentPeriod } from '../context/BIPeriodContext';
 
 const IMPORT_CATEGORIES = [
   { id: 'branch_sales', label: 'مبيعات الفروع المادية', icon: '🏪', formats: '.png, .jpg, .xlsx, .pdf', desc: 'سكرين شوت تقرير نقاط البيع (Z-Report) أو إكسل فروع درة للسيارات' },
@@ -23,21 +24,19 @@ const IMPORT_CATEGORIES = [
   { id: 'financials', label: 'القوائم المالية (P&L)', icon: '💰', formats: '.xlsx, .pdf', desc: 'تكلفة البضاعة (COGS) ومصاريف التشغيل والإيجارات' },
 ];
 
-import { useCurrentPeriod } from '../context/BIPeriodContext';
-
 export default function DataImport() {
   const [selectedCategory, setSelectedCategory] = useState('branch_sales');
-  const [sourceType, setSourceType] = useState('screenshot'); // screenshot | excel | manual
+  const [sourceType, setSourceType] = useState('screenshot');
   const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const [dragOver, setDragOver] = useState(false);
   const [simulatedFile, setSimulatedFile] = useState(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationForm, setVerificationForm] = useState({
     branch: 'main',
-    grossSales: 365000,
-    returns: 15000,
+    grossSales: 471748.99,
+    returns: 42863.50,
     confidence: 'VERIFIED',
-    notes: 'سكرين شوت تقرير Z-Report معتمد لشهر سبتمبر',
+    notes: 'سكرين شوت تقرير نقاط البيع Z-Report المعتمد للفرع الرئيسي - شهر 8',
   });
   const [commitSuccess, setCommitSuccess] = useState(false);
   const [activeEvidenceDoc, setActiveEvidenceDoc] = useState(null);
@@ -58,7 +57,7 @@ export default function DataImport() {
 
   const handleSimulateDrop = () => {
     setSimulatedFile({
-      name: selectedCategory === 'branch_sales' ? 'Main_Branch_ZReport_Sep2026.png' : 'Consolidated_Data_Sep2026.xlsx',
+      name: selectedCategory === 'branch_sales' ? 'Main_Branch_ZReport_Aug2026.png' : 'Consolidated_Data_Aug2026.xlsx',
       size: '1.4 MB',
       type: sourceType === 'screenshot' ? 'image/png' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
@@ -78,26 +77,26 @@ export default function DataImport() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-white">مركز استيراد وتدقيق البيانات (Data Import Center)</h1>
-              <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+              <h1 className="text-2xl font-black text-slate-900">مركز استيراد وتدقيق البيانات (Data Import & Governance)</h1>
+              <span className="text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-full">
                 Multi-Source Lineage
               </span>
             </div>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-500 text-sm mt-1">
               يدعم رفع السكرين شوت، ملفات Excel/CSV، أو الإدخال اليدوي مع التدقيق البشري الإلزامي قبل النقل للقوائم الرسمية
             </p>
           </div>
 
           {/* Period Selector */}
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-3 py-1.5">
-            <span className="text-xs text-slate-400">الفترة المحاسبية:</span>
+          <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-2xl px-3 py-1.5">
+            <span className="text-xs text-slate-500 font-medium">الفترة المحاسبية:</span>
             <select
               value={periodId}
               onChange={(e) => setPeriodId(e.target.value)}
-              className="bg-transparent text-xs font-bold text-emerald-400 outline-none cursor-pointer"
+              className="bg-transparent text-xs font-bold text-slate-900 outline-none cursor-pointer"
             >
               {periods?.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#0e172a] text-white">
+                <option key={p.id} value={p.id} className="bg-white text-slate-900">
                   {p.labelAr}
                 </option>
               ))}
@@ -106,17 +105,17 @@ export default function DataImport() {
         </div>
 
         {commitSuccess && (
-          <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center justify-between animate-in fade-in">
+          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between animate-in fade-in">
             <div className="flex items-center gap-2 text-sm font-bold">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
               <span>تم تدقيق وحفظ البيانات بنجاح في قاعدة البيانات مع حفظ مستند الإثبات المصدر!</span>
             </div>
-            <span className="text-xs font-mono text-emerald-400">Status: COMMITTED</span>
+            <span className="text-xs font-mono font-bold text-emerald-700">Status: COMMITTED</span>
           </div>
         )}
 
         {/* 1. Category Selection */}
-        <div className="rounded-3xl border border-white/10 bg-[#0e172a] p-6 space-y-4 shadow-xl">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
           <SectionHeader
             title="1. اختر فئة البيانات المراد إدخالها"
             subtitle="9 مسارات استيراد منفصلة ومطابقة لمعايير الحوكمة المالية"
@@ -127,18 +126,18 @@ export default function DataImport() {
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
-                  'flex items-start gap-3 p-4 rounded-2xl border text-right transition-all group',
+                  'flex items-start gap-3 p-4 rounded-2xl border text-right transition-all group shadow-xs',
                   selectedCategory === cat.id
-                    ? 'border-emerald-500/50 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
-                    : 'border-white/5 bg-white/2 hover:bg-white/5 hover:border-white/10'
+                    ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/20'
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300'
                 )}
               >
-                <span className="text-2xl p-2 rounded-xl bg-white/5 group-hover:scale-110 transition-transform">
+                <span className="text-2xl p-2 rounded-xl bg-white group-hover:scale-105 transition-transform shadow-xs">
                   {cat.icon}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-black text-white truncate">{cat.label}</div>
-                  <div className="text-[11px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">{cat.desc}</div>
+                  <div className="text-xs font-black text-slate-900 truncate">{cat.label}</div>
+                  <div className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">{cat.desc}</div>
                 </div>
               </button>
             ))}
@@ -146,7 +145,7 @@ export default function DataImport() {
         </div>
 
         {/* 2. Source Format Selector */}
-        <div className="rounded-3xl border border-white/10 bg-[#0e172a] p-6 space-y-4 shadow-xl">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
           <SectionHeader
             title="2. حدد طبيعة المستند المصدر"
             subtitle="يتيح النظام إرفاق لقطات الشاشة أو ملفات الجداول مع الاحتفاظ بنسخة الإثبات"
@@ -163,18 +162,18 @@ export default function DataImport() {
                   key={st.id}
                   onClick={() => setSourceType(st.id)}
                   className={cn(
-                    'p-4 rounded-2xl border flex items-center gap-3 text-right transition-all',
+                    'p-4 rounded-2xl border flex items-center gap-3 text-right transition-all shadow-xs',
                     sourceType === st.id
-                      ? 'border-blue-500/50 bg-blue-500/10 shadow-lg'
-                      : 'border-white/5 bg-white/2 hover:bg-white/5'
+                      ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/20'
+                      : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
                   )}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-blue-400 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-blue-700 shadow-xs shrink-0">
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-white">{st.label}</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">{st.desc}</div>
+                    <div className="text-xs font-black text-slate-900">{st.label}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">{st.desc}</div>
                   </div>
                 </button>
               );
@@ -191,68 +190,68 @@ export default function DataImport() {
           className={cn(
             'rounded-3xl border-2 border-dashed transition-all p-10 flex flex-col items-center gap-4 cursor-pointer text-center relative overflow-hidden',
             dragOver
-              ? 'border-emerald-500 bg-emerald-500/10'
-              : 'border-white/10 bg-[#0a1120] hover:border-emerald-500/40 hover:bg-emerald-500/5'
+              ? 'border-blue-500 bg-blue-50/50'
+              : 'border-slate-300 bg-slate-50 hover:border-blue-500 hover:bg-blue-50/30'
           )}
         >
-          <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
+          <div className="w-16 h-16 rounded-3xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 shadow-sm">
             <Upload className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="text-base font-black text-white">
+            <h3 className="text-base font-black text-slate-900">
               اسحب المستند المصدر إلى هنا أو اضغط للاختيار
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               يدعم صور السكرين شوت (PNG, JPG) وملفات الجداول (XLSX, CSV) حتى 25 ميجابايت
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">
+          <div className="flex items-center gap-2 text-xs text-blue-900 bg-blue-50 px-3.5 py-1.5 rounded-xl border border-blue-200 font-bold">
             <ShieldCheck className="w-4 h-4" />
             <span>سيتم فتح نافذة المعاينة والتدقيق البشري فور الرفع</span>
           </div>
         </div>
 
         {/* 4. Multi-Step Pipeline Explanation */}
-        <div className="rounded-3xl border border-white/5 bg-[#0e172a] p-6 space-y-4 shadow-xl">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
           <SectionHeader
             title="مراحل تدقيق وتوثيق البيانات (Audit & Verification Pipeline)"
             subtitle="دورة حياة آمنة تضمن عدم وجود أي أرقام مجهولة المصدر"
           />
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-            <div className="p-3.5 rounded-2xl bg-white/2 border border-white/5 space-y-1">
-              <div className="font-bold text-emerald-400">1. رفع المستند المصدر</div>
-              <p className="text-slate-400 text-[11px]">حفظ سكرين شوت الكاشير أو ملف الإكسل الأصلي في سجل الأدلة.</p>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+              <div className="font-bold text-slate-900">1. رفع المستند المصدر</div>
+              <p className="text-slate-500 text-[11px]">حفظ سكرين شوت الكاشير أو ملف الإكسل الأصلي في سجل الأدلة.</p>
             </div>
-            <div className="p-3.5 rounded-2xl bg-white/2 border border-white/5 space-y-1">
-              <div className="font-bold text-blue-400">2. التحقق البشري الصارم</div>
-              <p className="text-slate-400 text-[11px]">مقارنة الأرقام يدوياً والتأكد من فصل المبيعات عن المرتجعات.</p>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+              <div className="font-bold text-blue-800">2. التحقق البشري الصارم</div>
+              <p className="text-slate-500 text-[11px]">مقارنة الأرقام يدوياً والتأكد من فصل المبيعات عن المرتجعات.</p>
             </div>
-            <div className="p-3.5 rounded-2xl bg-white/2 border border-white/5 space-y-1">
-              <div className="font-bold text-purple-400">3. المطابقة التلقائية</div>
-              <p className="text-slate-400 text-[11px]">فحص مجموع وسائل الدفع مقابل الفواتير وكشف أي فروقات فوراً.</p>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+              <div className="font-bold text-slate-900">3. المطابقة التلقائية</div>
+              <p className="text-slate-500 text-[11px]">فحص مجموع وسائل الدفع مقابل الفواتير وكشف أي فروقات فوراً.</p>
             </div>
-            <div className="p-3.5 rounded-2xl bg-white/2 border border-white/5 space-y-1">
-              <div className="font-bold text-amber-400">4. اعتماد وقفل الشهر</div>
-              <p className="text-slate-400 text-[11px]">تسجيل هوية المعتمد ووقت الاعتماد ومنع التعديلات العشوائية.</p>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+              <div className="font-bold text-emerald-800">4. اعتماد وقفل الشهر</div>
+              <p className="text-slate-500 text-[11px]">تسجيل هوية المعتمد ووقت الاعتماد ومنع التعديلات العشوائية.</p>
             </div>
           </div>
         </div>
 
         {/* 5. Uploaded August 2026 Documents Archive */}
-        <div className="rounded-3xl border border-emerald-500/20 bg-[#0e172a] p-6 space-y-5 shadow-2xl">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-5 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-white">الأرشيف الرقمي لمستندات شهر 8 المرفوعة (August 2026 Source Archive)</h3>
-                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                <h3 className="text-lg font-black text-slate-900">الأرشيف الرقمي لمستندات شهر 8 المرفوعة (August 2026 Source Archive)</h3>
+                <span className="text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-full">
                   {DORA_DOCUMENTS.filter(d => d.periodId === 'p-2026-08').length} مستنداً معتمداً
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 المستندات الرسمية المرفوعة في الأرشيف (سكرين شوت الكاشير + كشوفات الحوالات والتقسيط + تقارير الحملات الإعلانية وسلة) المدققة والمطابقة
               </p>
             </div>
-            <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-400">
+            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800">
               <ShieldCheck className="w-4 h-4" />
               <span>مطابقة القوائم المالية: مكتملة 100% ✓</span>
             </div>
@@ -265,50 +264,50 @@ export default function DataImport() {
               return (
                 <div
                   key={doc.id}
-                  className="rounded-2xl border border-white/5 bg-white/2 hover:border-emerald-500/30 hover:bg-white/4 p-4 space-y-3 transition-all group"
+                  className="rounded-2xl border border-slate-200 bg-slate-50/70 hover:border-slate-300 hover:bg-slate-100/70 p-4 space-y-3 transition-all group"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={cn(
-                        "w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform",
-                        isPdf ? "bg-blue-500/10 border-blue-500/20 text-blue-400" :
-                        isImg ? "bg-purple-500/10 border-purple-500/20 text-purple-400" :
-                        "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                        "w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-xs",
+                        isPdf ? "bg-blue-100 border-blue-200 text-blue-800" :
+                        isImg ? "bg-indigo-100 border-indigo-200 text-indigo-800" :
+                        "bg-emerald-100 border-emerald-200 text-emerald-800"
                       )}>
                         {isPdf ? <FileText className="w-5 h-5" /> : isImg ? <Image className="w-5 h-5" /> : <FileSpreadsheet className="w-5 h-5" />}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-xs font-black text-white truncate" title={doc.fileName}>{doc.fileName}</h4>
-                        <div className="text-[10px] text-slate-400 mt-0.5">{doc.uploadedBy}</div>
+                        <h4 className="text-xs font-black text-slate-900 truncate" title={doc.fileName}>{doc.fileName}</h4>
+                        <div className="text-[10px] text-slate-500 mt-0.5">{doc.uploadedBy}</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
+                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0">
                       {doc.verificationStatus}
                     </span>
                   </div>
 
                   {/* Summary metric if available */}
                   {(doc.grossSales || doc.returnsAmount || doc.amount) && (
-                    <div className="flex items-center justify-between text-xs bg-black/30 px-3 py-2 rounded-xl">
-                      <span className="text-slate-400 text-[11px]">
-                        {doc.grossSales ? 'المبيعات الصافية بالمحلي:' : doc.returnsAmount ? 'إجمالي المردود:' : 'المبلغ الإجمالي:'}
+                    <div className="flex items-center justify-between text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl">
+                      <span className="text-slate-600 text-[11px] font-medium">
+                        {doc.grossSales ? 'المبيعات المسجلة بالمحلي:' : doc.returnsAmount ? 'إجمالي المردود:' : 'المبلغ الإجمالي:'}
                       </span>
-                      <span className="font-mono font-black text-emerald-400" dir="ltr">
+                      <span className="font-mono font-black text-slate-900" dir="ltr">
                         {formatSAR(doc.grossSales || doc.returnsAmount || doc.amount, true)}
                       </span>
                     </div>
                   )}
 
-                  <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed font-medium">
                     {doc.notes}
                   </p>
 
                   {/* Actions */}
-                  <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200">
                     <button
                       type="button"
                       onClick={() => setActiveEvidenceDoc(doc)}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       معاينة الإثبات
@@ -317,7 +316,7 @@ export default function DataImport() {
                       <a
                         href={(import.meta.env.BASE_URL ? import.meta.env.BASE_URL : '/') + doc.fileUrl.replace(/^\//, '')}
                         download={doc.fileName}
-                        className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-xs flex items-center gap-1"
+                        className="p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white transition-colors text-xs flex items-center gap-1"
                         title="تحميل الملف"
                       >
                         <Download className="w-3.5 h-3.5" />
@@ -333,18 +332,18 @@ export default function DataImport() {
 
         {/* Human Verification Modal (Preview Before Commit) */}
         {showVerificationModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-            <div className="relative w-full max-w-2xl rounded-3xl border border-white/10 bg-[#0d1728] shadow-2xl overflow-hidden p-6 space-y-5">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+            <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-2xl overflow-hidden p-6 space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-white">
+                    <h3 className="text-base font-black text-slate-900">
                       معاينة وتدقيق المستند قبل الحفظ (Human Verification Step)
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500">
                       تأكيد مطابقة الأرقام المستخرجة مع المستند المصدر (المستند لا يتم ترحيله دون مراجعة)
                     </p>
                   </div>
@@ -352,98 +351,98 @@ export default function DataImport() {
               </div>
 
               {/* Document Info */}
-              <div className="p-3.5 rounded-2xl bg-white/3 border border-white/5 flex items-center justify-between text-xs">
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-emerald-400" />
-                  <span className="text-white font-bold">{simulatedFile?.name}</span>
+                  <FileText className="w-4 h-4 text-blue-700" />
+                  <span className="text-slate-900 font-bold">{simulatedFile?.name}</span>
                 </div>
-                <span className="text-slate-400 font-mono">{simulatedFile?.size}</span>
+                <span className="text-slate-500 font-mono font-bold">{simulatedFile?.size}</span>
               </div>
 
               {/* Manual Confirmation Form */}
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-slate-400 font-medium">الفرع التابع له التقرير:</label>
+                    <label className="text-xs text-slate-600 font-bold">الفرع التابع له التقرير:</label>
                     <select
                       value={verificationForm.branch}
                       onChange={(e) => setVerificationForm({ ...verificationForm, branch: e.target.value })}
-                      className="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-xs text-white outline-none focus:border-emerald-500/50"
+                      className="w-full mt-1 bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 font-medium"
                     >
-                      <option value="main" className="bg-[#0e172a]">الفرع الرئيسي (Main Branch)</option>
-                      <option value="al-rawaf" className="bg-[#0e172a]">فرع الرواف (Al Rawaf)</option>
-                      <option value="kia" className="bg-[#0e172a]">فرع كيا (Kia)</option>
+                      <option value="main">الفرع الرئيسي (Main Branch)</option>
+                      <option value="al-rawaf">فرع الرواف (Al Rawaf)</option>
+                      <option value="kia">فرع كيا (Kia)</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-xs text-slate-400 font-medium">مستوى الثقة في المصدر:</label>
+                    <label className="text-xs text-slate-600 font-bold">مستوى الثقة في المصدر:</label>
                     <select
                       value={verificationForm.confidence}
                       onChange={(e) => setVerificationForm({ ...verificationForm, confidence: e.target.value })}
-                      className="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-xs text-emerald-400 font-bold outline-none focus:border-emerald-500/50"
+                      className="w-full mt-1 bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-emerald-800 font-bold outline-none focus:border-blue-500"
                     >
-                      <option value="VERIFIED" className="bg-[#0e172a]">VERIFIED (مدقق ومطابق 100%)</option>
-                      <option value="IMPORTED" className="bg-[#0e172a]">IMPORTED (مستورد من شيت)</option>
-                      <option value="MANUAL" className="bg-[#0e172a]">MANUAL (إدخال يدوي)</option>
+                      <option value="VERIFIED">VERIFIED (مدقق ومطابق 100%)</option>
+                      <option value="IMPORTED">IMPORTED (مستورد من شيت)</option>
+                      <option value="MANUAL">MANUAL (إدخال يدوي)</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-slate-400 font-medium">إجمالي المبيعات (Gross Sales):</label>
+                    <label className="text-xs text-slate-600 font-bold">إجمالي المبيعات (Gross Sales):</label>
                     <input
                       type="number"
                       value={verificationForm.grossSales}
                       onChange={(e) => setVerificationForm({ ...verificationForm, grossSales: parseFloat(e.target.value) || 0 })}
-                      className="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-sm text-white font-mono outline-none focus:border-emerald-500/50"
+                      className="w-full mt-1 bg-white border border-slate-200 rounded-xl p-2.5 text-sm text-slate-900 font-mono font-bold outline-none focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs text-red-400 font-medium">المرتجعات المسجلة (Returns):</label>
+                    <label className="text-xs text-red-600 font-bold">المرتجعات المسجلة (Returns):</label>
                     <input
                       type="number"
                       value={verificationForm.returns}
                       onChange={(e) => setVerificationForm({ ...verificationForm, returns: parseFloat(e.target.value) || 0 })}
-                      className="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-sm text-red-400 font-mono outline-none focus:border-red-500/50"
+                      className="w-full mt-1 bg-white border border-slate-200 rounded-xl p-2.5 text-sm text-red-600 font-mono font-bold outline-none focus:border-red-500"
                     />
                   </div>
                 </div>
 
                 {/* Net Sales Computed Formula */}
-                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
-                  <span className="text-xs text-emerald-300 font-bold">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                  <span className="text-xs text-emerald-900 font-bold">
                     صافي المبيعات المحسوب تلقائياً (Net Sales = Gross - Returns):
                   </span>
-                  <span className="text-base font-black text-emerald-400 font-mono" dir="ltr">
+                  <span className="text-base font-black text-emerald-800 font-mono" dir="ltr">
                     {formatSAR(verificationForm.grossSales - verificationForm.returns, true)}
                   </span>
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-400 font-medium">ملاحظات التدقيق والمصدر:</label>
+                  <label className="text-xs text-slate-600 font-bold">ملاحظات التدقيق والمصدر:</label>
                   <input
                     type="text"
                     value={verificationForm.notes}
                     onChange={(e) => setVerificationForm({ ...verificationForm, notes: e.target.value })}
-                    className="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-emerald-500/50"
+                    className="w-full mt-1 bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 outline-none focus:border-blue-500 font-medium"
                   />
                 </div>
               </div>
 
               {/* Modal Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   onClick={() => setShowVerificationModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors"
                 >
                   إلغاء
                 </button>
                 <button
                   onClick={handleCommitData}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-white transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-500/20"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-[#0F172A] hover:bg-slate-800 text-white transition-colors flex items-center gap-1.5 shadow-md"
                 >
                   <Save className="w-4 h-4" />
                   اعتماد وحفظ المستند

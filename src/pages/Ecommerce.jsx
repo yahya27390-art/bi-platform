@@ -17,13 +17,13 @@ export default function Ecommerce() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">متجر سلة الإلكتروني (Salla E-Commerce)</h1>
-          <p className="text-slate-400 text-sm mt-1">doracars.com · تقارير المبيعات والزيارات الرسمية المعتمدة</p>
+          <h1 className="text-2xl font-black text-slate-900">متجر سلة الإلكتروني (Salla E-Commerce)</h1>
+          <p className="text-slate-500 text-sm mt-1">doracars.com · تقارير المبيعات والزيارات الرسمية المعتمدة (مشمولة ضمن الإجمالي الكلي للفروع)</p>
         </div>
-        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl p-1 shadow-inner">
+        <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-2xl p-1 shadow-inner">
           {periods?.slice(0, 3).map(p => (
             <button key={p.id} onClick={() => setPeriodId(p.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'text-slate-400 hover:text-white'}`}>
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-[#0F172A] text-white shadow-md' : 'text-slate-600 hover:text-slate-900'}`}>
               {p.labelAr || p.label}
             </button>
           ))}
@@ -47,7 +47,7 @@ export default function Ecommerce() {
               sparklineData={[45, 52, 58, 64, 69, ecm.totalOrders]}
             />
             <KPICard
-              title="صافي إيرادات المتجر"
+              title="صافي مبيعات المتجر الإلكتروني"
               displayValue={formatSAR(ecm.totalRevenue, false)}
               growth={ecm.totalRevenueGrowth}
               icon={<TrendingUp className="w-5 h-5" />}
@@ -55,7 +55,7 @@ export default function Ecommerce() {
               sparklineData={[24000, 26500, 28000, 31000, 34500, ecm.totalRevenue]}
             />
             <KPICard
-              title="متوسط قيمة الطلب (AOV)"
+              title="متوسط قيمة السلة (AOV)"
               displayValue={formatSAR(ecm.avgOrderValue, false)}
               growth={ecm.avgOrderValueGrowth}
               icon={<ShoppingCart className="w-5 h-5" />}
@@ -75,7 +75,7 @@ export default function Ecommerce() {
           {/* Secondary stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
-              title="الزيارات المباشرة"
+              title="الزيارات المباشرة للمتجر"
               displayValue={formatNum(ecm.sessions)}
               growth={ecm.sessionsGrowth}
               icon={<Users className="w-5 h-5" />}
@@ -109,11 +109,11 @@ export default function Ecommerce() {
           </div>
 
           {/* Daily orders timeline */}
-          <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-6">
-            <SectionHeader title="الطلبات اليومية" subtitle={`${periods?.find(p=>p.id===periodId)?.label}`} className="mb-6" />
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <SectionHeader title="حركة الطلبات اليومية للمتجر" subtitle={`${periods?.find(p=>p.id===periodId)?.label}`} className="mb-6" />
             <TrendAreaChart
               data={ecm.ordersTimeline}
-              series={[{ key: 'orders', color: '#10B981', label: 'الطلبات' }]}
+              series={[{ key: 'orders', color: '#059669', label: 'الطلبات المكتملة' }]}
               height={200}
               formatValue={(v) => `${v} طلب`}
             />
@@ -121,41 +121,41 @@ export default function Ecommerce() {
 
           {/* Category breakdown */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-6">
-              <SectionHeader title="أداء الفئات" className="mb-5" />
-              <div className="space-y-3">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <SectionHeader title="أداء فئات المنتجات في المتجر" className="mb-5" />
+              <div className="space-y-4">
                 {ecm.topCategories?.map((cat, i) => (
                   <div key={i} className="space-y-1.5">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-300 font-medium">{cat.name}</span>
+                      <span className="text-slate-800 font-bold">{cat.name}</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-slate-400">{formatNum(cat.orders)} طلب</span>
-                        <span className="text-white font-bold">{formatSAR(cat.revenue, true)}</span>
+                        <span className="text-slate-500 font-medium">{formatNum(cat.orders)} طلب</span>
+                        <span className="text-slate-900 font-black">{formatSAR(cat.revenue, true)}</span>
                       </div>
                     </div>
-                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full"
-                        style={{ width: `${cat.share}%`, background: `hsl(${140 + i * 30}, 60%, 50%)` }}
+                        style={{ width: `${cat.share}%`, background: `hsl(${210 + i * 25}, 80%, 45%)` }}
                       />
                     </div>
-                    <div className="text-xs text-slate-500">{cat.share}% من الإيرادات</div>
+                    <div className="text-xs text-slate-500 font-semibold">{cat.share}% من إجمالي مبيعات المتجر</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Stats summary */}
-            <div className="rounded-2xl border border-white/5 bg-[#111827]/80 p-6">
-              <SectionHeader title="ملخص الأداء" className="mb-5" />
-              <div className="divide-y divide-white/5">
-                <StatRow label="إجمالي الطلبات" value={formatNum(ecm.totalOrders)} />
-                <StatRow label="إجمالي الإيرادات" value={formatSAR(ecm.totalRevenue)} valueClass="text-emerald-400" />
-                <StatRow label="متوسط قيمة الطلب" value={formatSAR(ecm.avgOrderValue)} />
-                <StatRow label="الزيارات" value={formatNum(ecm.sessions)} />
-                <StatRow label="معدل التحويل" value={`${ecm.conversionRate?.toFixed(1)}%`} />
-                <StatRow label="معدل التخلي عن السلة" value={`${ecm.cartAbandonmentRate?.toFixed(1)}%`} valueClass="text-red-400" />
-                <StatRow label="العملاء المتكررون" value={`${ecm.returningCustomerRate?.toFixed(1)}%`} valueClass="text-purple-400" />
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <SectionHeader title="ملخص الأداء والمقاييس التشغيلية" className="mb-5" />
+              <div className="divide-y divide-slate-100">
+                <StatRow label="إجمالي الطلبات المكتملة" value={formatNum(ecm.totalOrders)} />
+                <StatRow label="صافي مبيعات المتجر" value={formatSAR(ecm.totalRevenue)} valueClass="text-emerald-700 font-bold" />
+                <StatRow label="متوسط قيمة السلة (AOV)" value={formatSAR(ecm.avgOrderValue)} />
+                <StatRow label="جلسات الزوار النشطة" value={formatNum(ecm.sessions)} />
+                <StatRow label="معدل التحويل النهائي" value={`${ecm.conversionRate?.toFixed(1)}%`} />
+                <StatRow label="معدل التخلي عن السلة" value={`${ecm.cartAbandonmentRate?.toFixed(1)}%`} valueClass="text-red-600 font-bold" />
+                <StatRow label="نسبة عودة العملاء المتكررين" value={`${ecm.returningCustomerRate?.toFixed(1)}%`} valueClass="text-blue-800 font-bold" />
               </div>
             </div>
           </div>

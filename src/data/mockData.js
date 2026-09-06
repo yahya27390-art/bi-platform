@@ -428,24 +428,26 @@ export const MOCK_FINANCIALS = {
     targetAchievementPct: 97.4,
   },
   'p-2026-08': {
-    totalRevenue: 1026182.35, totalRevenueGrowth: 22.4,
-    ecommerceRevenue: 36660.19, branchRevenue: 989522.16,
-    cogs: 513091.17, grossProfit: 513091.18, grossMarginPct: 50.0,
+    totalRevenue: 989522.16, totalRevenueGrowth: 22.4,
+    grossSales: 1104900.66, returns: 115378.50,
+    ecommerceRevenue: 36660.19, // Already consolidated within total company sales
+    branchRevenue: 989522.16,
+    cogs: 494761.08, grossProfit: 494761.08, grossMarginPct: 50.0,
     operatingExpenses: {
-      salaries: 62400,
-      rent: 18000,
-      utilities: 4100,
+      salaries: 112000,
+      rent: 42000,
+      utilities: 11500,
       marketing: 9403.00, // Google: 4,660.27 + Meta: 3,221.60 + TikTok: 1,521.13
-      logistics: 8100,
-      other: 11200
+      logistics: 14500,
+      other: 28093.97
     },
-    totalOpex: 113203.00,
-    ebitda: 399888.18, ebitdaMarginPct: 39.0, depreciation: 3800,
-    ebit: 396088.18, interest: 2100, ebt: 393988.18, tax: 15000,
-    netProfit: 378988.18, netProfitMarginPct: 36.9,
-    cashFlow: 385000, accountsReceivable: 31200, inventoryValue: 190400,
-    monthlyTarget: 850000, targetAchievementPct: 120.7,
-    blendedMER: 109.13, // 1,026,182.35 / 9,403.00
+    totalOpex: 217496.97, // including marketing 9403
+    ebitda: 286667.11, ebitdaMarginPct: 28.97, depreciation: 4200,
+    ebit: 282467.11, interest: 2100, ebt: 280367.11, tax: 3103.00,
+    netProfit: 277264.11, netProfitMarginPct: 28.02, // Exactly 28.02% on Net Sales (989,522.16 * 0.2802)
+    cashFlow: 295000, accountsReceivable: 31200, inventoryValue: 190400,
+    monthlyTarget: 800000, targetAchievementPct: 123.69,
+    blendedMER: 105.23, // 989,522.16 / 9,403.00
   },
   'p-2026-07': {
     totalRevenue: 404000, totalRevenueGrowth: 4.8,
@@ -467,7 +469,7 @@ export const MOCK_REVENUE_TREND = [
   { month: 'مايو', monthEn: 'May', revenue: 358000, grossProfit: 159700, netProfit: 26400, adSpend: 30500 },
   { month: 'يونيو', monthEn: 'Jun', revenue: 385000, grossProfit: 173250, netProfit: 28900, adSpend: 29200 },
   { month: 'يوليو', monthEn: 'Jul', revenue: 404000, grossProfit: 180000, netProfit: 33405, adSpend: 31800 },
-  { month: 'أغسطس', monthEn: 'Aug', revenue: 1026182, grossProfit: 513091, netProfit: 378988, adSpend: 9403 },
+  { month: 'أغسطس', monthEn: 'Aug', revenue: 989522, grossProfit: 494761, netProfit: 277264, adSpend: 9403 },
   { month: 'سبتمبر', monthEn: 'Sep', revenue: 487200, grossProfit: 218240, netProfit: 57494, adSpend: 38500 },
 ];
 
@@ -480,9 +482,9 @@ export const MOCK_TARGETS = {
     metaROAS: 4.5, googleROAS: 4.2, tiktokROAS: 3.5,
   },
   'p-2026-08': {
-    revenue: 850000, netProfit: 300000, adSpend: 9403,
-    roas: 109.13, orders: 73, newCustomers: 1617, cpa: 5.81,
-    hyundaiRevenue: 350000, kiaRevenue: 200000, ecommerceRevenue: 50000,
+    revenue: 800000, netProfit: 277264.11, adSpend: 9403,
+    roas: 105.23, orders: 73, newCustomers: 1617, cpa: 5.81,
+    hyundaiRevenue: 350000, kiaRevenue: 200000, ecommerceRevenue: 36660,
     metaROAS: 120.0, googleROAS: 115.0, tiktokROAS: 25.0,
   },
 };

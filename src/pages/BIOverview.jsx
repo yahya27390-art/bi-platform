@@ -92,26 +92,26 @@ export default function BIOverview() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-white">مركز القيادة التنفيذي (Executive Command Center)</h1>
-            <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            <h1 className="text-2xl font-black text-[#0F172A]">مركز القيادة التنفيذي (Executive Command Center)</h1>
+            <span className="text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
               LIVE C-LEVEL
             </span>
           </div>
-          <p className="text-slate-400 text-sm mt-1">
-            {currentPeriod?.labelAr || currentPeriod?.label} · تحليل استراتيجي ومترابط لكافة التدفقات النقدية، المبيعات، والإنفاق الإعلاني
+          <p className="text-slate-600 text-sm mt-1 font-medium">
+            {currentPeriod?.labelAr || currentPeriod?.label} · تحليل استراتيجي ومترابط لكافة التدفقات النقدية، المبيعات الميدانية، والإنفاق الإعلاني
           </p>
         </div>
 
         {/* Period Selector Tabs */}
-        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl p-1 shadow-inner">
+        <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-2xl p-1 shadow-sm">
           {periods?.slice(0, 3).map(p => (
             <button
               key={p.id}
               onClick={() => setPeriodId(p.id)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 periodId === p.id
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-[#0F172A] text-white shadow-md'
+                  : 'text-slate-600 hover:text-[#0F172A] hover:bg-slate-100'
               }`}
             >
               {p.labelAr || p.label}
@@ -121,15 +121,15 @@ export default function BIOverview() {
       </div>
 
       {/* Interactive Cross-Filtering Control Bar */}
-      <div className="rounded-2xl border border-white/10 bg-[#0c1629]/90 backdrop-blur-md p-4 shadow-xl flex flex-wrap items-center justify-between gap-3">
+      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold ml-2">
-            <Filter className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="flex items-center gap-1.5 text-xs text-slate-700 font-bold ml-2">
+            <Filter className="w-3.5 h-3.5 text-blue-600" />
             <span>تصفية فورية:</span>
           </div>
 
           {/* Channel selector */}
-          <div className="inline-flex rounded-xl bg-white/5 p-0.5 border border-white/5">
+          <div className="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200">
             {[
               { id: 'all', label: 'كافة القنوات' },
               { id: 'branches', label: 'الفروع الميدانية' },
@@ -138,10 +138,10 @@ export default function BIOverview() {
               <button
                 key={c.id}
                 onClick={() => setChannelFilter(c.id)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                   channelFilter === c.id
-                    ? 'bg-emerald-500 text-white shadow'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#0F172A] text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {c.label}
@@ -150,7 +150,7 @@ export default function BIOverview() {
           </div>
 
           {/* Platform selector */}
-          <div className="inline-flex rounded-xl bg-white/5 p-0.5 border border-white/5">
+          <div className="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200">
             {[
               { id: 'all', label: 'كل المنصات' },
               { id: 'meta', label: 'Meta' },
@@ -161,10 +161,10 @@ export default function BIOverview() {
               <button
                 key={pl.id}
                 onClick={() => setPlatformFilter(pl.id)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                   platformFilter === pl.id
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {pl.label}
@@ -176,12 +176,12 @@ export default function BIOverview() {
         {/* Reset / Active filter feedback */}
         {hasActiveFilters && (
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-amber-300 font-medium bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+            <span className="text-[11px] text-amber-900 font-bold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
               تصفية نشطة: {channelFilter !== 'all' ? channelFilter : ''} {platformFilter !== 'all' ? `(${platformFilter})` : ''}
             </span>
             <button
               onClick={resetFilters}
-              className="flex items-center gap-1 text-xs text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg transition-colors border border-white/10"
+              className="flex items-center gap-1 text-xs text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors border border-slate-200 font-semibold"
             >
               <RotateCcw className="w-3 h-3" />
               إلغاء التصفية
@@ -220,45 +220,45 @@ export default function BIOverview() {
           <div>
             <SectionHeader
               title="المؤشرات المالية والبيعية الفعلية"
-              subtitle={channelFilter === 'all' ? 'مستخلصة من فواتير الفروع ونظام طلبات المتجر' : `مفلترة حسب: ${channelFilter === 'branches' ? 'الفروع الميدانية' : 'متجر سلة'}`}
+              subtitle={channelFilter === 'all' ? 'مستخلصة من فواتير الفروع ونظام طلبات المتجر بعد خصم المردودات' : `مفلترة حسب: ${channelFilter === 'branches' ? 'الفروع الميدانية' : 'متجر سلة'}`}
               className="mb-4"
             />
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <KPICard
-                title="إجمالي الإيرادات الفعلية"
+                title="صافي إجمالي المبيعات (Net Sales)"
                 displayValue={formatSAR(displayedKpis.totalRevenue, false)}
                 growth={displayedKpis.totalRevenueGrowth}
                 icon={<DollarSign className="w-5 h-5" />}
-                color="emerald"
+                color="blue"
                 target={displayedKpis.targetRevenue}
-                targetLabel="الهدف الشهري"
-                sparklineData={[850000, 920000, 960000, 980000, 1010000, 1026182]}
+                targetLabel="مستهدف الفروع (800,000)"
+                sparklineData={[800000, 850000, 910000, 940000, 970000, 989522]}
               />
               <KPICard
                 title="الربح الإجمالي (Gross Profit)"
                 displayValue={formatSAR(displayedKpis.grossProfit, false)}
                 growth={18.4}
                 icon="📈"
-                color="blue"
-                sublabel={`هامش ربح ${displayedKpis.grossMarginPct?.toFixed(1)}%`}
-                sparklineData={[420000, 450000, 470000, 490000, 505000, 513091]}
+                color="emerald"
+                sublabel={`هامش ربح إجمالي ${displayedKpis.grossMarginPct?.toFixed(1)}%`}
+                sparklineData={[400000, 425000, 455000, 470000, 485000, 494761]}
               />
               <KPICard
-                title="صافي الربح (Net Profit)"
+                title="صافي ربح الأعمال (Net Profit)"
                 displayValue={canViewNetProfit ? formatSAR(displayedKpis.netProfit, false) : 'محمي 🔒'}
                 growth={canViewNetProfit ? displayedKpis.netProfitGrowth : null}
                 icon="💰"
                 color="purple"
-                sublabel={canViewNetProfit ? `هامش صافي ${displayedKpis.netProfitMarginPct?.toFixed(1)}%` : 'يتطلب صلاحية المالك أو الإدارة'}
-                sparklineData={[280000, 310000, 330000, 350000, 365000, 378988]}
+                sublabel={canViewNetProfit ? `هامش ربح صافي معتمد ${displayedKpis.netProfitMarginPct?.toFixed(2)}%` : 'يتطلب صلاحية المالك أو الإدارة'}
+                sparklineData={[210000, 225000, 240000, 255000, 268000, 277264]}
               />
               <KPICard
-                title="تحقيق مستهدف الإيرادات"
+                title="نسبة تحقيق المستهدف البيعي"
                 displayValue={`${displayedKpis.targetAchievementPct?.toFixed(1)}%`}
                 growth={null}
                 icon={<Target className="w-5 h-5" />}
-                color={displayedKpis.targetAchievementPct >= 95 ? 'emerald' : displayedKpis.targetAchievementPct >= 80 ? 'amber' : 'red'}
-                sublabel={`الهدف: ${formatSAR(displayedKpis.targetRevenue, false)}`}
+                color={displayedKpis.targetAchievementPct >= 100 ? 'emerald' : 'amber'}
+                sublabel={`الهدف: ${formatSAR(displayedKpis.targetRevenue, false)} (+189.5K فائض)`}
               />
             </div>
           </div>
@@ -285,8 +285,8 @@ export default function BIOverview() {
                 growth={24.5}
                 icon={<Zap className="w-5 h-5" />}
                 color={displayedKpis.overallROAS >= 3.5 ? 'emerald' : 'amber'}
-                sublabel="إجمالي الإيرادات ÷ إجمالي الإنفاق الإعلاني"
-                sparklineData={[35, 48, 62, 78, 92, 109.13]}
+                sublabel="إجمالي المبيعات الصافية ÷ إجمالي الإنفاق الإعلاني"
+                sparklineData={[35, 48, 62, 78, 92, 105.23]}
               />
               <KPICard
                 title="تكلفة الاكتساب للمحادثة (CPA)"
@@ -294,7 +294,7 @@ export default function BIOverview() {
                 growth={-18.5}
                 icon={<Users className="w-5 h-5" />}
                 color="blue"
-                sublabel={`${formatNum(displayedKpis.totalConversions || 1617)} محادثة واستفسار شراء`}
+                sublabel={`${formatNum(displayedKpis.totalConversions || 1617)} استفسار شراء واتساب`}
                 sparklineData={[8.5, 7.2, 6.8, 6.1, 5.9, 5.81]}
               />
               <KPICard
@@ -302,7 +302,7 @@ export default function BIOverview() {
                 displayValue={formatSAR(displayedKpis.avgOrderValue || 531.36, false)}
                 growth={6.5}
                 icon={<ShoppingBag className="w-5 h-5" />}
-                color="cyan"
+                color="slate"
                 sublabel="متوسط قيمة سلة المشتريات بالمتجر"
                 sparklineData={[480, 495, 510, 515, 525, 531.36]}
               />
@@ -327,25 +327,25 @@ export default function BIOverview() {
       />
 
       {/* Executive Sankey Diagram: Capital & Revenue Flow Topology */}
-      <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#0c162a] to-[#080d18] p-6 space-y-4 shadow-2xl relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 shadow-xs">
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-white">
+              <h2 className="text-lg font-black text-[#0F172A]">
                 خريطة التدفق المالي والرأسمالي التفاعلية (Executive Cashflow Topology)
               </h2>
-              <p className="text-xs text-slate-400">
-                رسم بياني شبكي يوضح مسار كل ريال من الإيرادات (الفروع والمتجر) وتوزيعه على تكلفة البضاعة، التشغيل، التسويق، وصافي الأرباح
+              <p className="text-xs text-slate-600 font-medium">
+                رسم بياني شبكي يوضح مسار كل ريال من الإيرادات الصافية (الفروع والمتجر) وتوزيعه على تكلفة البضاعة، التشغيل، التسويق، وصافي الأرباح (28.02%)
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              Interactive Apache ECharts
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-bold shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
+              Interactive ECharts Topology
             </span>
           </div>
         </div>
@@ -359,108 +359,107 @@ export default function BIOverview() {
       {/* SECTION: City & Geographic Performance */}
       <GeoPerformanceView />
 
-
       {/* Section 10: The Executive 8-Question Diagnostic Command Center */}
-      <div className="bg-[#0D1F38] border border-white/10 rounded-3xl p-6 space-y-6 shadow-xl">
-        <div className="flex items-center justify-between border-b border-white/5 pb-4">
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-6 shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100">
               <HelpCircle className="w-5 h-5" />
             </span>
             <div>
-              <h2 className="text-lg font-black text-white">التشخيص التنفيذي السريع (Executive Intelligence Q&A)</h2>
-              <p className="text-xs text-slate-400">إجابات استراتيجية مباشرة على أهم 8 أسئلة لإدارة ونمو الشركة</p>
+              <h2 className="text-lg font-black text-[#0F172A]">التشخيص التنفيذي السريع (Executive Intelligence Q&A)</h2>
+              <p className="text-xs text-slate-600 font-medium">إجابات استراتيجية ومحاسبية مباشرة على أهم 8 أسئلة لإدارة ونمو الشركة</p>
             </div>
           </div>
-          <span className="text-xs font-mono text-slate-500">Auto-Generated Insights</span>
+          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">Executive Brief</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Q1: WHAT HAPPENED? */}
-          <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-2 hover:border-emerald-500/30 transition-colors">
-            <div className="text-[11px] font-bold text-emerald-400 flex items-center justify-between">
-              <span>1. ماذا حدث؟ (WHAT HAPPENED?)</span>
-              <span className="text-emerald-400">✓</span>
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 hover:border-blue-300 transition-colors shadow-xs">
+            <div className="text-[11px] font-black text-blue-900 flex items-center justify-between">
+              <span>1. ماذا حدث في شهر 8؟</span>
+              <span className="text-emerald-600">✓</span>
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed font-semibold">
-              نمو قوي في الإيرادات بنسبة <strong className="text-emerald-400">+14.2%</strong> لتصل إلى 1.48 مليون ر.س، بتحقيق 98.7% من مستهدف الشهر.
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              بلغ صافي المبيعات <strong className="text-[#0F172A]">989,522.16 ر.س</strong> محققاً <strong className="text-emerald-700">123.7%</strong> من مستهدف الفروع (800K) بفائض قدره +189.5 ألف ر.س.
             </p>
           </div>
 
           {/* Q2: WHY DID IT HAPPEN? */}
-          <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-2 hover:border-sky-500/30 transition-colors">
-            <div className="text-[11px] font-bold text-sky-400 flex items-center justify-between">
-              <span>2. لماذا حدث ذلك؟ (WHY DID IT HAPPEN?)</span>
-              <span className="text-sky-400">💡</span>
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 hover:border-blue-300 transition-colors shadow-xs">
+            <div className="text-[11px] font-black text-blue-900 flex items-center justify-between">
+              <span>2. لماذا حدث ذلك؟</span>
+              <span className="text-blue-600">💡</span>
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed">
-              تحسّن أداء حملات اليوم الوطني على ميتا وجوجل ورفع الـ ROAS العام إلى 4.59×، مع زيادة إقبال الصيانة في الفروع.
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              حملات جوجل للخرائط وحملات الواتساب في ميتا أحدثت تدفقاً ميدانياً عالي الكثافة في الفروع مع مضاعفة سداد التقسيط (تابي وتمارا).
             </p>
           </div>
 
           {/* Q3: WHERE DID THE MONEY GO? */}
-          <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-2 hover:border-amber-500/30 transition-colors">
-            <div className="text-[11px] font-bold text-amber-400 flex items-center justify-between">
-              <span>3. أين ذهبت الأموال؟ (WHERE DID MONEY GO?)</span>
-              <span className="text-amber-400">📉</span>
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 hover:border-blue-300 transition-colors shadow-xs">
+            <div className="text-[11px] font-black text-blue-900 flex items-center justify-between">
+              <span>3. أين ذهبت الأموال ونسبة الربح؟</span>
+              <span className="text-amber-600">📉</span>
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed">
-              62% تكلفة البضاعة (COGS)، 23% مصاريف تشغيل ورواتب، و <strong className="text-amber-300">2.9% فقط</strong> إنفاق إعلاني مدروس (42.8 ألف ر.س).
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              50% تكلفة بضاعة، 21.9% مصاريف تشغيل وإعلانات، محققاً <strong className="text-emerald-700">28.02% صافي ربح</strong> بقيمة <strong className="text-[#0F172A]">277,264.11 ر.س</strong>.
             </p>
           </div>
 
           {/* Q4: WHERE DID REVENUE COME FROM? */}
-          <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-2 hover:border-purple-500/30 transition-colors">
-            <div className="text-[11px] font-bold text-purple-400 flex items-center justify-between">
-              <span>4. من أين أتت الإيرادات؟ (REVENUE SOURCE)</span>
-              <span className="text-purple-400">🏢</span>
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 hover:border-blue-300 transition-colors shadow-xs">
+            <div className="text-[11px] font-black text-blue-900 flex items-center justify-between">
+              <span>4. من أين أتت المبيعات؟</span>
+              <span className="text-indigo-600">🏢</span>
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed">
-              81% من الفروع الميدانية (1.20 مليون ر.س)، و 19% من مبيعات المتجر الإلكتروني سلة (280 ألف ر.س).
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              الرئيسي (428.9K)، الرواف (291.4K)، كيا (269.3K)، وشملت شبكة وكاش و165 حوالة بنكية (130.9K) و131 عملية تقسيط (93.6K).
             </p>
           </div>
 
           {/* Q5: WHICH CHANNEL PERFORMED BEST? */}
-          <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-2 hover:border-emerald-500/30 transition-colors">
-            <div className="text-[11px] font-bold text-emerald-400 flex items-center justify-between">
-              <span>5. أي القنوات حققت أفضل أداء؟</span>
-              <Flame className="w-3.5 h-3.5 text-amber-400" />
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 hover:border-blue-300 transition-colors shadow-xs">
+            <div className="text-[11px] font-black text-blue-900 flex items-center justify-between">
+              <span>5. أي القنوات الإعلانية كانت الأكفأ؟</span>
+              <Flame className="w-3.5 h-3.5 text-amber-500" />
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed">
-              <strong className="text-white">ميتا (Meta Ads)</strong> تصدرت بعائد <strong className="text-emerald-400">4.58× ROAS</strong> وصرف 18.2 ألف، تليها جوجل بعائد 4.09×.
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              <strong className="text-[#0F172A]">حملات خرائط Google</strong> بإنفاق 4.66K حققت 89K تفاعل، وميتا حققت 1,617 محادثة بإنفاق 3.22K.
             </p>
           </div>
 
           {/* Q6: WHICH CAMPAIGN NEEDS ATTENTION? */}
-          <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-2 hover:border-red-500/30 transition-colors">
-            <div className="text-[11px] font-bold text-red-400 flex items-center justify-between">
-              <span>6. ما الحملة التي تتطلب تدخلاً؟</span>
-              <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 hover:border-blue-300 transition-colors shadow-xs">
+            <div className="text-[11px] font-black text-blue-900 flex items-center justify-between">
+              <span>6. ما الحملة التي تتطلب تحسيناً؟</span>
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed">
-              حملة <strong className="text-amber-300">تيك توك عروض الصيانة</strong> CPA مرتفع (60 ر.س) وتم إيقافها مؤقتاً لمراجعة الكرييتف.
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              حملة <strong className="text-amber-800">تيك توك</strong> حققت 1.14M ظهور ولكن التحويل المباشر للزيارات يحتاج تعزيز عروض قطع الصيانة.
             </p>
           </div>
 
           {/* Q7: WHICH PRODUCT IS GROWING? */}
-          <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-2 hover:border-cyan-500/30 transition-colors">
-            <div className="text-[11px] font-bold text-cyan-400 flex items-center justify-between">
-              <span>7. ما المنتجات الأكثر نمواً؟</span>
-              <PackageSearch className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 hover:border-blue-300 transition-colors shadow-xs">
+            <div className="text-[11px] font-black text-blue-900 flex items-center justify-between">
+              <span>7. ما المنتجات الأكثر طلباً؟</span>
+              <PackageSearch className="w-3.5 h-3.5 text-blue-600" />
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed">
-              <strong className="text-white">أقمشة فرامل هيونداي أصلية</strong> نمو مبيعات +28% بهامش ربح إجمالي ممتاز 46%.
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              <strong className="text-[#0F172A]">قطع غيار كيا وهيونداي الأصلية</strong> شكلت 72.4% من مبيعات سلة، مع إقبال واسع على الفلاتر والزيوت.
             </p>
           </div>
 
           {/* Q8: WHICH BRANCH IS LEADING? */}
-          <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-2 hover:border-emerald-500/30 transition-colors">
-            <div className="text-[11px] font-bold text-emerald-400 flex items-center justify-between">
-              <span>8. أداء الفروع الجغرافية؟</span>
-              <Store className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 hover:border-blue-300 transition-colors shadow-xs">
+            <div className="text-[11px] font-black text-blue-900 flex items-center justify-between">
+              <span>8. أداء الفروع مقارنة بالتارجت؟</span>
+              <Store className="w-3.5 h-3.5 text-emerald-600" />
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed">
-              <strong className="text-white">فرع الروابي (هيونداي)</strong> حقق 104% من الهدف، وفرع السليمانية (كيا) عند 92%.
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              جميع الفروع حققت التارجت: <strong className="text-emerald-700">كيا 134.6%</strong>، <strong className="text-emerald-700">الرئيسي 122.5%</strong>، و <strong className="text-emerald-700">الرواف 116.6%</strong>!
             </p>
           </div>
         </div>
@@ -468,10 +467,10 @@ export default function BIOverview() {
 
       {/* Revenue Trend Area Chart */}
       {trend && (
-        <div className="rounded-3xl border border-white/5 bg-[#0D1E36] p-6 space-y-4 shadow-xl">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
           <SectionHeader
             title="المسار التاريخي للإيرادات وصافي الأرباح"
-            subtitle="مقارنة آخر 6 أشهر (تأكيد الاستقرار والنمو المستمر)"
+            subtitle="مقارنة آخر 6 أشهر توضح قفزة شهر أغسطس ووصول الصافي إلى 989,522 ر.س"
           />
           <TrendAreaChart
             data={trend}
@@ -491,33 +490,33 @@ export default function BIOverview() {
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredPlatforms.map(p => (
-              <div key={p.slug} className="rounded-2xl border border-white/5 bg-[#0D1F38] p-5 space-y-3.5 hover:border-emerald-500/30 transition-all shadow-lg">
+              <div key={p.slug} className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3.5 hover:border-blue-300 transition-all shadow-sm">
                 <div className="flex items-center justify-between">
                   <PlatformBadge platform={p.slug} size="md" />
                   <GrowthChip value={p.roasGrowth} />
                 </div>
                 <div>
-                  <div className="text-2xl font-black text-white" dir="ltr">
+                  <div className="text-2xl font-black text-[#0F172A]" dir="ltr">
                     {formatMultiplier(p.roas)}
                   </div>
-                  <div className="text-xs text-slate-400 mt-0.5">ROAS العائد على الإنفاق</div>
+                  <div className="text-xs text-slate-500 font-bold mt-0.5">ROAS العائد على الإنفاق</div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-white/5">
+                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
                   <div>
-                    <div className="text-slate-500">الإنفاق</div>
-                    <div className="text-white font-bold">{formatSAR(p.spend, true)}</div>
+                    <div className="text-slate-500 font-medium">الإنفاق</div>
+                    <div className="text-[#0F172A] font-bold">{formatSAR(p.spend, true)}</div>
                   </div>
                   <div>
-                    <div className="text-slate-500">المبيعات المعزوة</div>
-                    <div className="text-white font-bold">{formatSAR(p.attributedRevenue, true)}</div>
+                    <div className="text-slate-500 font-medium">المبيعات المعزوة</div>
+                    <div className="text-[#0F172A] font-bold">{formatSAR(p.attributedRevenue, true)}</div>
                   </div>
                   <div>
-                    <div className="text-slate-500">CPA الاكتساب</div>
-                    <div className="text-white font-bold">{formatSAR(p.cpa)}</div>
+                    <div className="text-slate-500 font-medium">CPA الاكتساب</div>
+                    <div className="text-[#0F172A] font-bold">{formatSAR(p.cpa)}</div>
                   </div>
                   <div>
-                    <div className="text-slate-500">النقرات (CTR)</div>
-                    <div className="text-white font-bold">{p.ctr?.toFixed(2)}%</div>
+                    <div className="text-slate-500 font-medium">النقرات (CTR)</div>
+                    <div className="text-[#0F172A] font-bold">{p.ctr?.toFixed(2)}%</div>
                   </div>
                 </div>
                 <TargetProgress
@@ -534,17 +533,17 @@ export default function BIOverview() {
 
       {/* Revenue vs Ad Spend Monthly Comparison */}
       {trend && (
-        <div className="rounded-3xl border border-white/5 bg-[#0D1E36] p-6 space-y-4 shadow-xl">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
           <SectionHeader
             title="مقارنة الإيرادات مقابل الإنفاق الإعلاني وصافي الربح"
-            subtitle="مقارنة شهرية متوازنة توضح كفاءة تحويل الإنفاق إلى أرباح حقيقية"
+            subtitle="مقارنة شهرية متوازنة توضح كفاءة تحويل الإنفاق إلى أرباح حقيقية (277.3K صافي ربح)"
           />
           <ComparisonBarChart
             data={trend}
             series={[
-              { key: 'revenue',   color: '#10B981', label: 'إجمالي الإيرادات' },
-              { key: 'adSpend',   color: '#F59E0B', label: 'الإنفاق الإعلاني' },
-              { key: 'netProfit', color: '#8B5CF6', label: 'صافي الربح' },
+              { key: 'revenue',   color: '#0F172A', label: 'صافي المبيعات' },
+              { key: 'adSpend',   color: '#D97706', label: 'الإنفاق الإعلاني' },
+              { key: 'netProfit', color: '#059669', label: 'صافي الربح' },
             ]}
             height={240}
             formatValue={(v) => formatSAR(v, true)}

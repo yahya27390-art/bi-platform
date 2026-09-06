@@ -17,8 +17,8 @@ export default function PaymentMethodMix({ payments, periodId = 'p-2026-08', onI
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'item',
-      backgroundColor: '#0D1E36',
-      borderColor: 'rgba(255,255,255,0.15)',
+      backgroundColor: '#0F172A',
+      borderColor: '#334155',
       textStyle: { color: '#fff', fontFamily: 'Cairo', fontSize: 12 },
       formatter: (params) => {
         return `<div dir="rtl" style="text-align:right">
@@ -31,7 +31,7 @@ export default function PaymentMethodMix({ payments, periodId = 'p-2026-08', onI
       orient: 'horizontal',
       bottom: '0%',
       left: 'center',
-      textStyle: { color: '#94A3B8', fontFamily: 'Cairo', fontSize: 11 },
+      textStyle: { color: '#334155', fontFamily: 'Cairo', fontSize: 11, fontWeight: 'bold' },
       icon: 'circle',
     },
     series: [
@@ -43,7 +43,7 @@ export default function PaymentMethodMix({ payments, periodId = 'p-2026-08', onI
         avoidLabelOverlap: false,
         itemStyle: {
           borderRadius: 8,
-          borderColor: '#0c162a',
+          borderColor: '#ffffff',
           borderWidth: 3,
         },
         label: {
@@ -55,7 +55,7 @@ export default function PaymentMethodMix({ payments, periodId = 'p-2026-08', onI
             fontSize: 12,
             fontWeight: 'bold',
             fontFamily: 'Cairo',
-            color: '#fff',
+            color: '#0F172A',
             formatter: '{b}\n{d}%',
           },
         },
@@ -69,29 +69,29 @@ export default function PaymentMethodMix({ payments, periodId = 'p-2026-08', onI
   };
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#0c162a] to-[#080d18] p-6 space-y-5 shadow-xl">
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-5 shadow-sm">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+          <div className="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 shadow-xs">
             <CreditCard className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-white">
+            <h3 className="text-lg font-black text-[#0F172A]">
               مزيج وهيكل وسائل الدفع والتحصيل (Payment Method Mix)
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 font-medium">
               توزيع المبيعات الصافية حسب آلية السداد (شبكة، كاش، تحويلات، وشركات التقسيط تابي وتمارا)
             </p>
           </div>
         </div>
 
         {/* Installment Callout Badge */}
-        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-2xl">
-          <Smartphone className="w-4 h-4 text-amber-400" />
+        <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-2xl shadow-xs">
+          <Smartphone className="w-4 h-4 text-amber-600" />
           <div className="text-right">
-            <div className="text-[10px] text-slate-400 font-medium">إجمالي مبيعات التقسيط (تابي + تمارا)</div>
-            <div className="text-xs font-black text-amber-300 font-mono" dir="ltr">
+            <div className="text-[10px] text-amber-900 font-bold">إجمالي مبيعات التقسيط (تابي + تمارا)</div>
+            <div className="text-xs font-black text-amber-800" dir="rtl">
               {formatSAR(installmentTotal, true)} ({((installmentTotal / totalAmount) * 100).toFixed(1)}%)
             </div>
           </div>
@@ -110,33 +110,33 @@ export default function PaymentMethodMix({ payments, periodId = 'p-2026-08', onI
           {paymentList.map((p, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between p-3 rounded-xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors"
+              className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/70 border border-slate-200 hover:border-blue-300 transition-colors shadow-xs"
             >
               <div className="flex items-center gap-3">
-                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
+                <span className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs" style={{ backgroundColor: p.color }} />
                 <div>
-                  <div className="text-xs font-bold text-white flex items-center gap-2">
+                  <div className="text-xs font-bold text-[#0F172A] flex items-center gap-2">
                     {p.nameAr}
                     {p.documentId && (
                       <button
                         onClick={() => onInspectDocument && onInspectDocument(p.documentId)}
-                        className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded flex items-center gap-1 hover:bg-emerald-500/20"
+                        className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-md flex items-center gap-1 hover:bg-emerald-100 font-bold"
                         title="عرض كشف الإثبات المصدر"
                       >
-                        <FileCheck className="w-3 h-3" />
+                        <FileCheck className="w-3 h-3 text-emerald-600" />
                         مستند معتمد
                       </button>
                     )}
                   </div>
-                  <div className="text-[11px] text-slate-500">{formatNum(p.orderCount)} عملية سداد</div>
+                  <div className="text-[11px] text-slate-500 font-medium">{formatNum(p.orderCount)} عملية سداد</div>
                 </div>
               </div>
 
               <div className="text-left">
-                <div className="text-sm font-black text-white font-mono" dir="ltr">
-                  {formatSAR(p.amount, true)}
+                <div className="text-sm font-black text-[#0F172A]" dir="rtl">
+                  {formatSAR(p.amount, false)}
                 </div>
-                <div className="text-xs font-bold text-slate-400 font-mono" dir="ltr">
+                <div className="text-xs font-bold text-slate-500" dir="ltr">
                   {p.sharePct.toFixed(1)}%
                 </div>
               </div>
