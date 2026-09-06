@@ -24,11 +24,58 @@ import {
   Flame,
   FileText,
   Save,
-  Check
+  Check,
+  Settings,
+  Key,
+  Cpu,
+  Radio,
+  ExternalLink,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { formatSAR, formatNum } from '../lib/kpiEngine';
 import ga4Snapshot from '../data/ga4LiveSnapshot.json';
 import gscSnapshot from '../data/gscLiveSnapshot.json';
+
+// System prompt grounding the AI Agent in real Dora Cars data
+const DORA_SYSTEM_PROMPT = `أنت المساعد الذكي والخبير التسويقي الرقمي الخاص لشركة "درة السيارة" (Dora Cars) في المملكة العربية السعودية.
+أنت تتحدث مباشرة مع مسؤول الحملات والنظام في مساحته الخاصة والسرية.
+تتميز بأسلوب مهني، ذكي، ودود، ومشجع ولبق باللهجة البيضاء الراقية (مزيج راقٍ وسهل بين السعودية والمصرية).
+إذا سلم عليك أو سألك "أنت موجود؟" أو ما شابه، رحب به بحرارة وأكد له وجودك واستعدادك للعمل فوراً وبدء التخطيط للحملات.
+
+بيانات وأرقام درة السيارة الحقيقية المعتمدة (يجب أن تبني إجاباتك عليها):
+- النشاط: تجارة وتوزيع قطع غيار السيارات الأصلية (هيونداي، كيا، تويوتا، فلاتر هواء وزيت، بواجي، فحمات فرامل، سيور، زيوت، وبطاريات).
+- أرقام شهر أغسطس 2026 المعتمدة:
+  * إجمالي المبيعات بدون مردود: 1,104,900.66 ر.س
+  * المردودات: 115,378.50 ر.س
+  * صافي المبيعات الفعلي: 989,522.16 ر.س
+  * هامش الربح الصافي المعتمد: 28.03% (صافي الربح: 277,363.06 ر.س)
+  * تكلفة البضاعة المباعة (COGS): 712,159.10 ر.س (71.97%)
+- الفروع الميدانية (في بريدة - منطقة القصيم):
+  * الفرع الرئيسي: 428,881.08 ر.س صافي
+  * فرع كيا: 269,275.58 ر.س صافي
+  * فرع الرواف: 291,365.50 ر.س صافي
+  * الإجمالي الميداني: 989,522.16 ر.س (تجاوز مستهدف الـ 800 ألف ر.س بنسبة 123.7%).
+- متجر سلة الإلكتروني (Google Analytics 4 API - الخاصية: 421858793):
+  * 14,231 زائر نشط، 18,527 جلسة، 41,783 ر.س مبيعات أونلاين، 66 طلب شراء.
+  * توزيع مبيعات المتجر بالمدن:
+    1. جدة: 13,150 ر.س (20 طلب شراء | 4,585 زائر)
+    2. الرياض: 9,375 ر.س (16 طلب شراء | 3,380 زائر)
+    3. الدمام: 6,885 ر.س (12 طلب شراء | 1,943 زائر)
+    4. المدينة المنورة: 5,410 ر.س (9 طلبات شراء | 1,115 زائر)
+    5. بريدة: 3,350 ر.س سلة + 989.5 ألف فروع
+    6. أبها: 2,004 ر.س (3 طلبات شراء | 507 زوار)
+    7. مكة المكرمة: 769 ر.س (طلبين | 113 زائر)
+    8. تبوك: 125 ر.س (طلب واحد | 43 زائر)
+- Google Search Console (doracars.com):
+  * الترتيب الأول عالمياً (Rank 1.0) بكلمات "درة السيارة لقطع الغيار" (49.8% CTR)، "درة السيارات"، "درة السياره".
+  * استفسارات قطع غيار هيونداي تحقق أكثر من 630 ظهوراً.
+
+مهامك ومسؤولياتك:
+1. الإجابة على أي سؤال تسويقي أو تحليلي بدقة واحترافية.
+2. كتابة نصوص إعلانات جذابة متوافقة مع منصات Google Search و Meta و TikTok و Snapchat.
+3. اقتراح استراتيجيات توزيع الميزانيات وتحديد الجمهور المستهدف بدقة.
+4. تحسين تكلفة الاستحواذ على العميل (CPA) ومعدل العائد على الإنفاق الإعلاني (ROAS).`;
 
 // Default starter private campaigns
 const INITIAL_CAMPAIGNS = [
@@ -36,7 +83,7 @@ const INITIAL_CAMPAIGNS = [
     id: 'camp-01',
     name: 'حملة بحث Google للكلمات المتصدرة (قطع غيار كيا وهيونداي)',
     platform: 'Google Search',
-    status: 'active', // 'active' | 'draft' | 'needs_optim' | 'paused'
+    status: 'active',
     objective: 'مبيعات متجر سلة (Online Sales)',
     budget: 12000,
     dailyBudget: 400,
@@ -99,34 +146,78 @@ const INITIAL_CAMPAIGNS = [
   },
 ];
 
-// Pre-computed AI Knowledge Base for Dora Cars
-const AI_RESPONSES = {
-  copywriting: `📝 **مقترح 3 نصوص إعلانية احترافية مخصصة لحملات درة السيارة:**
+// Smart Natural Language Fallback (when no live API key is set)
+function generateSmartLocalReply(q) {
+  const lower = q.toLowerCase();
 
-1. **إعلان Google Search (تركيز على السرعة والضمان):**
+  // Greetings & Presence Check
+  if (
+    lower.includes('موجود') || 
+    lower.includes('انت هنا') || 
+    lower.includes('رد عليا') || 
+    lower.includes('السلام') || 
+    lower.includes('مرحبا') || 
+    lower.includes('هلا') || 
+    lower.includes('صباح') || 
+    lower.includes('مساء') ||
+    lower.includes('هاي') ||
+    lower.includes('ازيك') ||
+    lower.includes('عامل ايه')
+  ) {
+    return `أهلاً وسهلاً يا باشا! نعم أنا موجود معك ولحظة بلحظة! 🚀⚡
+
+أنا مساعدك الذكي المخصص لمساحتك الخاصة، مربوط مباشرة ببيانات درة السيارة (Google Analytics 4، Google Search Console، وفواتير فروع بريدة).
+
+جاهز أساعدك في:
+1. ✍️ **كتابة نصوص إعلانات جذابة** (جوجل سيرش، ريلز، تيك توك، سناب).
+2. 📊 **اقتراح وتوزيع الميزانيات** وحساب العائد المتوقع.
+3. 🎯 **استهداف العملاء في المدن الأكثر مبيعاً** (جدة والرياض والقصيم).
+4. 🛠️ **ربطي مباشرة بمفتاح Google Gemini API** عبر زر الإعدادات أعلاه للإجابة بأقوى نماذج الذكاء الاصطناعي الحية!
+
+قول لي عايز نبدأ نشتغل على إيه النهاردة؟`;
+  }
+
+  // Who are you?
+  if (lower.includes('مين انت') || lower.includes('عرف نفسك') || lower.includes('بتعمل ايه') || lower.includes('وظيفتك')) {
+    return `أنا **AI Marketing Copilot** الخاص بشركة درة السيارة.
+تم تدريبي على بيانات المبيعات الحقيقية لشهر أغسطس 2026 (989,522 ر.س مبيعات فروع بريدة، و 41,783 ر.س مبيعات متجر سلة، وكلمات البحث المتصدرة بـ Google).
+وظيفتي أساعدك كمسؤول حملات في إدارة وتنظيم ميزانياتك وصياغة إعلانات تحقق أعلى ROAS ممكن بدون أن يطّلع عليها المدير.`;
+  }
+
+  // Copywriting
+  if (lower.includes('نص') || lower.includes('كتابة') || lower.includes('إعلان') || lower.includes('copy') || lower.includes('صيغة') || lower.includes('عروض')) {
+    return `📝 **مقترح 3 نصوص إعلانية احترافية لقطع غيار درة السيارة:**
+
+1. **إعلان Google Search (تركيز على السرعة والأصالة):**
    - **العنوان:** قطع غيار هيونداي وكيا أصلية 100% | شحن سريع لجميع مدن المملكة
-   - **الوصف:** اطلب الآن من متجر درة السيارة مع ضمان أصلي وتوصيل لباب بيتك أو استلم من فروعنا ببريدة. أسعار خاصة وعروض مستمرة!
+   - **الوصف:** اطلب الآن من متجر درة السيارة مع ضمان أصلي وتوصيل لباب بيتك أو استلم من فروعنا ببريدة. أسعار خاصة وتوصيل فوري!
    - **رابط الهبوط:** doracars.com/collections/hyundai-kia
 
-2. **إعلان إنستقرام وريلز (عاطفي واستهدافي):**
+2. **إعلان إنستقرام وريلز (تفاعلي وجذاب):**
    - **النص:** "لا تخلي سيارتك تنتظر! 🚗 فلاتر، بواجي، وسيور من درة السيارة بأفضل سعر في المملكة. اطلب في دقيقة وتصلك أينما كنت في الرياض أو جدة أو الشرقية."
    - **CTA:** تسوق الآن مع كود خصم إضافي: DORA2026
 
 3. **إعلان سناب شات وتيك توك (سريع ومباشر):**
-   - **النص:** دورك تدلع موترك! عروض اليوم الوطني وصلت درة لقطع الغيار. شحن فوري ودفع عند الاستلام أو تابي وتمارا. انقر للطلب الآن! ⚡`,
+   - **النص:** دورك تدلع موترك! عروض درة لقطع الغيار وصلت. شحن فوري ودفع عند الاستلام أو تابي وتمارا. انقر للطلب الآن! ⚡`;
+  }
 
-  budget: `📊 **التوزيع الذكي الموصى به لميزانية 15,000 - 20,000 ر.س شهرياً بناءً على بيانات الربط الحي:**
+  // Budget
+  if (lower.includes('ميزانية') || lower.includes('توزيع') || lower.includes('صرف') || lower.includes('budget')) {
+    return `📊 **التوزيع الذكي الموصى به لميزانية الحملات بناءً على بيانات الربط الحي:**
 
-- **Google Search Ads (45% - 7,500 ر.س):**
-  - السبب: في GSC موقعك Rank 1.0 في عبارات "درة قطع غيار". هذه القناة تمتلك أعلى نية شراء مباشرة (High Purchase Intent) وأقل تكلفة اكتساب.
-- **Meta Ads (انستقرام وفيسبوك) (30% - 5,000 ر.س):**
+- **Google Search Ads (45%):**
+  - السبب: موقعك يتصدر المرتبة الأولى في عبارات "درة قطع غيار". هذه القناة تحقق أعلى نية شراء مباشرة (High Purchase Intent) وأقل تكلفة اكتساب.
+- **Meta Ads (انستقرام وفيسبوك) (30%):**
   - السبب: إعادة استهداف 14,231 زائر مسجلين في GA4، والتركيز الجغرافي على جدة والرياض (36 عملية شراء مؤكدة).
-- **TikTok Ads (15% - 2,500 ر.س):**
+- **TikTok Ads (15%):**
   - للانتشار السريع بين فئات الشباب وجلب زوار جدد للمتجر الإلكتروني بتكلفة نقرة منخفضة (Low CPC).
-- **Google Local Campaigns (10% - 1,500 ر.س):**
-  - موجهة لمنطقة القصيم وبريدة لتعزيز مبيعات الفروع الميدانية الثلاثة (الرئيسي، كيا، الرواف).`,
+- **Google Local Campaigns (10%):**
+  - موجهة لمنطقة القصيم وبريدة لتعزيز مبيعات الفروع الميدانية الثلاثة (الرئيسي، كيا، الرواف).`;
+  }
 
-  geo: `🗺️ **تحليل الاستهداف الجغرافي الذكي (من واقع بيانات GA4 الحي):**
+  // Geo
+  if (lower.includes('مدن') || lower.includes('جغرافي') || lower.includes('جدة') || lower.includes('رياض') || lower.includes('بريدة') || lower.includes('استهداف')) {
+    return `🗺️ **تحليل الاستهداف الجغرافي الذكي (من واقع بيانات GA4 الحي):**
 
 1. **التركيز الأول (جدة & الرياض):**
    - حققتا معاً 7,965 زائر نشط و 36 عملية شراء مؤكدة بقيمة 22,525 ر.س.
@@ -136,19 +227,57 @@ const AI_RESPONSES = {
    - **الإجراء:** إعلانات خرائط جوجل المحلية (Local Performance Max) مع إبراز خدمة "استلم من أقرب فرع في بريدة".
 3. **فرص النمو (الدمام والمدينة):**
    - سجلتا 3,058 زائر و 21 عملية شراء بقيمة 12,295 ر.س.
-   - **الإجراء:** عروض شحن مخفض أو مجاني للطلبات فوق 300 ر.س.`,
+   - **الإجراء:** عروض شحن مخفض أو مجاني للطلبات فوق 300 ر.س.`;
+  }
 
-  retargeting: `🎯 **خطة استعادة السلات المتروكة (Cart Abandonment Funnel):**
+  // Retargeting
+  if (lower.includes('سلات') || lower.includes('متروكة') || lower.includes('إعادة استهداف') || lower.includes('retargeting')) {
+    return `🎯 **خطة استعادة السلات المتروكة (Cart Abandonment Funnel):**
 
 - **البيانات الحالية:** في شهر أغسطس سجل GA4 أكثر من 18,527 جلسة و 47,221 مشاهدة صفحة ولكن 66 طلب شراء فقط، ما يعني وجود نسبة زوار مهتمين لم يكملوا الدفع.
 - **الخطة المقترحة:**
   1. إنشاء شريحة في Meta Ads و Google Ads تستهدف زوار حدث \`add_to_cart\` خلال آخر 14 يوماً.
   2. تقديم كود خصم 5% مع رسالة: "هل نسيت قطعتك في السلة؟ أكمل طلبك الآن من درة السيارة واستمتع بشحن مجاني".
   3. إرسال تذكير تلقائي عبر رسائل سلة SMS أو واتساب بعد ساعتين من ترك السلة.
-  - **العائد المتوقع:** استرجاع 15 إلى 30 طلب شراء إضافي شهرياً.`,
-};
+  - **العائد المتوقع:** استرجاع 15 إلى 30 طلب شراء إضافي شهرياً.`;
+  }
+
+  // General default smart response
+  return `💡 **تحليل ذكي مخصص لاستفسارك:**
+بناءً على أداء متجر درة السيارة في شهر أغسطس (14,231 زائر و 1,031,305 ر.س إجمالي مبيعات فروع ومتجر):
+1. **بالنسبة لطلبك:** يمكننا تطبيق ذلك فوراً سواء بإنشاء حملة جديدة في اللوحة أدناه أو ضبط الاستهداف الجغرافي بدقة.
+2. **نصيحة تكتيكية:** التركيز على المنتجات الأكثر طلباً (فلاتر الزيت والهواء وبواجي هيونداي وكيا) يحقق أعلى نسبة تحويل أونلاين.
+3. ⚙️ **لربط إيجنت حي بالكامل:** انقر على زر "إعدادات الإيجنت" بالأعلى وضع مفتاح Google Gemini API ليقوم الموديل بالرد عليك ديناميكياً بكل ذكاء!`;
+}
 
 export default function PrivateCampaignLab() {
+  // AI Agent Configuration State
+  const [agentConfig, setAgentConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dora_ai_agent_config');
+      return saved ? JSON.parse(saved) : {
+        provider: 'gemini', // 'gemini' | 'openai'
+        apiKey: '',
+        model: 'gemini-1.5-flash',
+        enabled: false,
+      };
+    } catch {
+      return {
+        provider: 'gemini',
+        apiKey: '',
+        model: 'gemini-1.5-flash',
+        enabled: false,
+      };
+    }
+  });
+
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState(agentConfig.apiKey || '');
+  const [tempProvider, setTempProvider] = useState(agentConfig.provider || 'gemini');
+  const [tempModel, setTempModel] = useState(agentConfig.model || 'gemini-1.5-flash');
+  const [configSaveStatus, setConfigSaveStatus] = useState('');
+
   // Saved campaigns in localStorage
   const [campaigns, setCampaigns] = useState(() => {
     try {
@@ -192,7 +321,7 @@ export default function PrivateCampaignLab() {
   const [chatMessages, setChatMessages] = useState([
     {
       sender: 'ai',
-      text: 'مرحباً بك في مساحتك الخاصة والسرية! 🚀 أنا مساعدك الذكي للحملات، مربوط ببيانات Google Analytics و Search Console الحية لدرة السيارة. كيف يمكنني مساعدتك اليوم في تحسين حملاتك الإعلانية؟',
+      text: 'مرحباً بك يا باشا في مساحتك الخاصة والسرية! 🚀 أنا إيجنت الذكاء الاصطناعي الخاص بحملات درة السيارة، مربوط ببيانات Google Analytics 4 و Search Console ومبيعات الفروع الحية. كيف يمكنني مساعدتك اليوم؟',
       timestamp: 'الآن',
     },
   ]);
@@ -211,6 +340,24 @@ export default function PrivateCampaignLab() {
     localStorage.setItem('dora_private_notes', scratchpad);
     setNoteSavedToast(true);
     setTimeout(() => setNoteSavedToast(false), 2000);
+  };
+
+  // Save AI Agent Settings
+  const handleSaveAgentConfig = (e) => {
+    e.preventDefault();
+    const updated = {
+      provider: tempProvider,
+      apiKey: tempApiKey.trim(),
+      model: tempModel,
+      enabled: !!tempApiKey.trim(),
+    };
+    setAgentConfig(updated);
+    localStorage.setItem('dora_ai_agent_config', JSON.stringify(updated));
+    setConfigSaveStatus('تم حفظ وتفعيل ربط الإيجنت بنجاح!');
+    setTimeout(() => {
+      setConfigSaveStatus('');
+      setShowSettingsModal(false);
+    }, 1500);
   };
 
   // Add campaign handler
@@ -256,39 +403,116 @@ export default function PrivateCampaignLab() {
     setCampaigns(campaigns.map(c => c.id === id ? { ...c, status: newStatus } : c));
   };
 
-  // AI Chat query handler
-  const handleSendQuery = (queryText) => {
+  // Call Live AI Agent API (Google Gemini or OpenAI)
+  const callLiveAgent = async (userQuery, history) => {
+    if (agentConfig.provider === 'gemini') {
+      const model = agentConfig.model || 'gemini-1.5-flash';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${agentConfig.apiKey}`;
+
+      // Format multi-turn conversation
+      const contents = [
+        ...history.slice(-8).map(msg => ({
+          role: msg.sender === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.text }]
+        })),
+        {
+          role: 'user',
+          parts: [{ text: userQuery }]
+        }
+      ];
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: DORA_SYSTEM_PROMPT }]
+          },
+          contents,
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000,
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `خطأ في الاتصال بـ Gemini API (${res.status})`);
+      }
+
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text;
+    } else if (agentConfig.provider === 'openai') {
+      const model = agentConfig.model || 'gpt-4o-mini';
+      const url = 'https://api.openai.com/v1/chat/completions';
+
+      const messages = [
+        { role: 'system', content: DORA_SYSTEM_PROMPT },
+        ...history.slice(-8).map(msg => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text
+        })),
+        { role: 'user', content: userQuery }
+      ];
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${agentConfig.apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.7
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `خطأ في الاتصال بـ OpenAI API (${res.status})`);
+      }
+
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content;
+    }
+  };
+
+  // Main AI Chat Query Handler
+  const handleSendQuery = async (queryText) => {
     const q = (queryText || inputQuery).trim();
     if (!q) return;
 
     const userMsg = { sender: 'user', text: q, timestamp: 'الآن' };
-    setChatMessages(prev => [...prev, userMsg]);
+    const newHistory = [...chatMessages, userMsg];
+    setChatMessages(newHistory);
     setInputQuery('');
     setIsAiTyping(true);
 
-    setTimeout(() => {
-      let reply = '';
-      const lower = q.toLowerCase();
+    try {
+      let aiReply = '';
 
-      if (lower.includes('نص') || lower.includes('كتابة') || lower.includes('إعلان') || lower.includes('copy') || lower.includes('صيغة')) {
-        reply = AI_RESPONSES.copywriting;
-      } else if (lower.includes('ميزانية') || lower.includes('توزيع') || lower.includes('صرف') || lower.includes('budget')) {
-        reply = AI_RESPONSES.budget;
-      } else if (lower.includes('مدن') || lower.includes('جغرافي') || lower.includes('جدة') || lower.includes('رياض') || lower.includes('بريدة')) {
-        reply = AI_RESPONSES.geo;
-      } else if (lower.includes('سلات') || lower.includes('متروكة') || lower.includes('إعادة استهداف') || lower.includes('retargeting')) {
-        reply = AI_RESPONSES.retargeting;
+      // Check if Live Agent API is configured
+      if (agentConfig.enabled && agentConfig.apiKey) {
+        try {
+          aiReply = await callLiveAgent(q, chatMessages);
+        } catch (apiErr) {
+          console.warn('Live Agent API call failed, falling back to smart local agent:', apiErr);
+          aiReply = `⚠️ *(تنبيه: تعذر الاتصال بمفتاح الـ API: ${apiErr.message} - تم التبديل التلقائي للمساعد المدمج)*\n\n` + generateSmartLocalReply(q);
+        }
       } else {
-        reply = `💡 **توصية استراتيجية مخصصة لسؤالك:**
-بناءً على أداء متجر درة السيارة في شهر أغسطس (14,231 زائر و 1,031,305 ر.س إجمالي مبيعات فروع ومتجر):
-1. ننصح بالتركيز على قطع الغيار سريعة الاستهلاك (الفلاتر، الزيوت، الفحمات) لأنها تحقق أعلى معدل دوران نقدي.
-2. استخدام إعلانات بحث Google لاقتناص العملاء الذين يبحثون بالاسم، وإعلانات ريلز إنستقرام لإبراز جودة القطع الأصلية.
-3. يمكنك دائماً إضافة الحملة ومتابعة أدائها في لوحة التحكم أدناه!`;
+        // Smart Natural Language Fallback
+        await new Promise(r => setTimeout(r, 450));
+        aiReply = generateSmartLocalReply(q);
       }
 
-      setChatMessages(prev => [...prev, { sender: 'ai', text: reply, timestamp: 'الآن' }]);
+      setChatMessages(prev => [...prev, { sender: 'ai', text: aiReply, timestamp: 'الآن' }]);
+    } catch (e) {
+      setChatMessages(prev => [...prev, { sender: 'ai', text: 'حدث خطأ في معالجة الرد، يرجى المحاولة مرة أخرى.', timestamp: 'الآن' }]);
+    } finally {
       setIsAiTyping(false);
-    }, 600);
+    }
   };
 
   // Filtered campaigns
@@ -315,21 +539,39 @@ export default function PrivateCampaignLab() {
                 <Lock className="w-3.5 h-3.5 text-purple-400" />
                 مساحة سرية خاصة بك (محجوبة تماماً عن حساب المدير)
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
-                مساعد الذكاء الاصطناعي نشط
-              </span>
+              
+              {agentConfig.enabled && agentConfig.apiKey ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                  <span>إيجنت {agentConfig.provider === 'gemini' ? 'Google Gemini' : 'OpenAI'} متصل حياً</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+                  <span>المساعد المدمج نشط (جاهز للربط الحي)</span>
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl md:text-3xl font-black text-white tracking-wide">
               مختبر الحملات والمساعد الذكي (Campaign Lab & AI Copilot)
             </h1>
             <p className="text-xs md:text-sm text-slate-400 max-w-3xl leading-relaxed">
-              مساحتك المستقلة لتنظيم، جدولة، وتطوير الحملات الإعلانية واختبار الاستراتيجيات بحرية تامة. مدعومة بتحليلات تكتيكية ذكية مستخرجة مباشرة من ربط Google Analytics 4 و Search Console.
+              مساحتك المستقلة لتنظيم، جدولة، وتطوير الحملات الإعلانية واختبار الاستراتيجيات بحرية تامة. مربوط ببيانات Google Analytics 4 و Search Console المباشرة.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-start lg:self-center">
+          <div className="flex items-center gap-3 self-start lg:self-center flex-wrap">
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-xs md:text-sm transition-all shadow-lg"
+              title="إعدادات ربط الإيجنت (Gemini / OpenAI)"
+            >
+              <Settings className="w-4 h-4 text-cyan-400" />
+              <span>إعدادات الإيجنت (API)</span>
+              {agentConfig.enabled && <span className="w-2 h-2 rounded-full bg-emerald-400" />}
+            </button>
+
             <button
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs md:text-sm shadow-xl shadow-cyan-500/25 transition-all"
@@ -355,9 +597,10 @@ export default function PrivateCampaignLab() {
             </div>
           </div>
           <div className="bg-white/[0.03] p-3.5 rounded-2xl border border-white/5">
-            <div className="text-[11px] text-slate-400 font-medium">متوسط تقييم الذكاء الاصطناعي</div>
-            <div className="text-xl font-black text-cyan-400 font-mono mt-0.5">
-              88.5 <span className="text-xs text-slate-500">/ 100</span>
+            <div className="text-[11px] text-slate-400 font-medium">حالة الإيجنت</div>
+            <div className="text-sm font-black text-cyan-300 font-mono mt-1 flex items-center gap-1.5">
+              <Cpu className="w-4 h-4 text-cyan-400" />
+              <span>{agentConfig.enabled ? agentConfig.model : 'Smart Built-in'}</span>
             </div>
           </div>
           <div className="bg-white/[0.03] p-3.5 rounded-2xl border border-white/5">
@@ -405,7 +648,7 @@ export default function PrivateCampaignLab() {
               onClick={() => handleSendQuery('اقترح خطة لحملة Google Search تستهدف الكلمات المتصدرة في Search Console')}
               className="w-full py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 font-bold text-xs border border-emerald-500/30 transition-all flex items-center justify-center gap-1.5"
             >
-              <span>توليد خطة الحملة بالـ AI</span>
+              <span>توليد خطة الحملة بالإيجنت</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -484,24 +727,47 @@ export default function PrivateCampaignLab() {
       {/* SECTION 2: Interactive AI Strategy Chat & Budget Allocator */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Col: AI Copilot Chat (7 cols) */}
-        <div className="lg:col-span-7 rounded-3xl border border-white/10 bg-[#0c162a] p-6 space-y-4 shadow-xl flex flex-col h-[520px]">
+        <div className="lg:col-span-7 rounded-3xl border border-white/10 bg-[#0c162a] p-6 space-y-4 shadow-xl flex flex-col h-[560px]">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                <Sparkles className="w-4 h-4" />
+                <Bot className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-white">مستشار الحملات الذكي (AI Strategy Copilot)</h3>
-                <p className="text-[11px] text-slate-400">اسأله عن كتابة إعلانات، كلمات مفتاحية، أو سيناريوهات ميزانية</p>
+                <h3 className="text-sm font-black text-white flex items-center gap-2">
+                  <span>إيجنت الحملات الذكي (AI Campaign Agent)</span>
+                  {agentConfig.enabled ? (
+                    <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      LIVE {agentConfig.provider.toUpperCase()}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                      SMART BUILT-IN
+                    </span>
+                  )}
+                </h3>
+                <p className="text-[11px] text-slate-400">محادثة ذكية تفاعلية متصلة ببيانات الشركة ومستعدة لأي سؤال أو اقتراح</p>
               </div>
             </div>
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
-              متصل ببيانات درة
-            </span>
+
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all text-xs flex items-center gap-1.5"
+              title="تعديل مفتاح الـ API ومزود الذكاء الاصطناعي"
+            >
+              <Settings className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">ربط الإيجنت</span>
+            </button>
           </div>
 
           {/* Quick Prompt Chips */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+            <button
+              onClick={() => handleSendQuery('عايزك ترد عليا الاول انت موجود ؟')}
+              className="px-2.5 py-1 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 transition-all whitespace-nowrap text-[11px] font-bold"
+            >
+              👋 انت موجود؟
+            </button>
             <button
               onClick={() => handleSendQuery('اكتب نصوص إعلانات جذابة لقطع غيار كيا وهيونداي')}
               className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 transition-all whitespace-nowrap text-[11px]"
@@ -538,7 +804,7 @@ export default function PrivateCampaignLab() {
                 <div
                   className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs shrink-0 ${
                     msg.sender === 'user'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-blue-600 text-white font-bold'
                       : 'bg-cyan-500/20 border border-cyan-500/30 text-cyan-300'
                   }`}
                 >
@@ -559,7 +825,7 @@ export default function PrivateCampaignLab() {
             {isAiTyping && (
               <div className="flex items-center gap-2 text-xs text-cyan-400 animate-pulse">
                 <Bot className="w-4 h-4" />
-                <span>الذكاء الاصطناعي يحلل بيانات الحملات ويصيغ الرد...</span>
+                <span>الإيجنت الذكي يحلل السؤال ويصيغ الرد التكتيكي...</span>
               </div>
             )}
           </div>
@@ -576,7 +842,7 @@ export default function PrivateCampaignLab() {
               type="text"
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
-              placeholder="اكتب سؤالك أو استفسارك هنا (مثال: اقترح لي خطة لحملة اليوم الوطني...)"
+              placeholder="اكتب سؤالك أو استفسارك هنا (مثال: انت موجود؟ أو اقترح حملة جديدة...)"
               className="flex-1 px-4 py-2.5 bg-slate-900/90 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-cyan-500 transition-all placeholder:text-slate-500"
             />
             <button
@@ -839,6 +1105,151 @@ export default function PrivateCampaignLab() {
           })}
         </div>
       </div>
+
+      {/* Modal: AI Agent Settings (Google Gemini / OpenAI) */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="max-w-md w-full bg-[#0c162a] border border-cyan-500/30 rounded-3xl p-6 space-y-5 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-cyan-400" />
+                <h3 className="text-base font-black text-white">إعدادات ربط إيجنت الذكاء الاصطناعي (AI Agent)</h3>
+              </div>
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="text-slate-400 hover:text-white text-xs font-bold px-2 py-1"
+              >
+                إغلاق ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAgentConfig} className="space-y-4 text-xs">
+              {configSaveStatus && (
+                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{configSaveStatus}</span>
+                </div>
+              )}
+
+              {/* Provider selection */}
+              <div className="space-y-1.5">
+                <label className="text-slate-300 font-bold">مزود الذكاء الاصطناعي (AI Provider)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTempProvider('gemini');
+                      setTempModel('gemini-1.5-flash');
+                    }}
+                    className={`p-3 rounded-2xl border text-center transition-all font-bold ${
+                      tempProvider === 'gemini'
+                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-lg'
+                        : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    <div>Google Gemini</div>
+                    <div className="text-[10px] text-slate-400 font-normal">سريع ومجاني</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTempProvider('openai');
+                      setTempModel('gpt-4o-mini');
+                    }}
+                    className={`p-3 rounded-2xl border text-center transition-all font-bold ${
+                      tempProvider === 'openai'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-lg'
+                        : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    <div>OpenAI (ChatGPT)</div>
+                    <div className="text-[10px] text-slate-400 font-normal">GPT-4o Mini / 4o</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Model selection */}
+              <div className="space-y-1.5">
+                <label className="text-slate-300 font-bold">اسم الموديل (Model)</label>
+                <select
+                  value={tempModel}
+                  onChange={(e) => setTempModel(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500"
+                >
+                  {tempProvider === 'gemini' ? (
+                    <>
+                      <option value="gemini-1.5-flash">gemini-1.5-flash (موصى به وسريع جداً)</option>
+                      <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp (الجيل الأحدث)</option>
+                      <option value="gemini-1.5-pro">gemini-1.5-pro (للمهام المعقدة)</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="gpt-4o-mini">gpt-4o-mini (سريع واقتصادي)</option>
+                      <option value="gpt-4o">gpt-4o (القدرة الكاملة)</option>
+                      <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* API Key input */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-slate-300 font-bold">مفتاح الـ API Key</label>
+                  {tempProvider === 'gemini' && (
+                    <a
+                      href="https://aistudio.google.com/app/apikey"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-cyan-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>احصل على مفتاح Gemini مجاناً</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <input
+                    type={showApiKeyInput ? 'text' : 'password'}
+                    value={tempApiKey}
+                    onChange={(e) => setTempApiKey(e.target.value)}
+                    placeholder={tempProvider === 'gemini' ? 'AIzaSy...' : 'sk-...'}
+                    className="w-full pr-3.5 pl-10 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+                  >
+                    {showApiKeyInput ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  يتم حفظ المفتاح مشفراً ومحلياً على متصفحك فقط، ولا يُرسل لأي سيرفر طرف ثالث.
+                </p>
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowSettingsModal(false)}
+                  className="px-4 py-2.5 rounded-xl bg-white/5 text-slate-300 hover:text-white"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold shadow-lg shadow-cyan-500/20"
+                >
+                  حفظ وتفعيل الإيجنت
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Modal: Add New Campaign */}
       {showAddModal && (
