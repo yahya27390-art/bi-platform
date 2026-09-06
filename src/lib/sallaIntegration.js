@@ -5,13 +5,14 @@ export const SALLA_STORAGE_KEY = 'dora_salla_config';
 
 export const DEFAULT_SALLA_CONFIG = {
   accessToken: '',
-  clientId: '',
-  clientSecret: '',
+  appId: '849020134',
+  clientId: 'b762ff22-f688-4c72-ae7c-8c420c423878',
+  clientSecret: '77d07c2c469466308073b0af061dbd132a895c727c5181cf35e4e46e0ee8a9b9',
   merchantId: '1092841',
-  storeName: 'درة السيارة لقطع الغيار',
+  storeName: 'درة السيارة لقطع الغيار (doracars.com)',
   storeUrl: 'https://doracars.com',
-  isConnected: false,
-  lastSync: '2026-09-06T12:00:00.000Z',
+  isConnected: true,
+  lastSync: '2026-09-06T18:00:00.000Z',
   autoSync: true,
   syncedStats: {
     totalOrders: 69,
@@ -40,16 +41,23 @@ export const DEFAULT_SALLA_CONFIG = {
 export function loadSallaConfig() {
   try {
     const saved = localStorage.getItem(SALLA_STORAGE_KEY);
-    if (!saved) return DEFAULT_SALLA_CONFIG;
+    if (!saved) {
+      saveSallaConfig(DEFAULT_SALLA_CONFIG);
+      return DEFAULT_SALLA_CONFIG;
+    }
     const parsed = JSON.parse(saved);
-    return {
+    const merged = {
       ...DEFAULT_SALLA_CONFIG,
       ...parsed,
+      clientId: parsed.clientId || DEFAULT_SALLA_CONFIG.clientId,
+      clientSecret: parsed.clientSecret || DEFAULT_SALLA_CONFIG.clientSecret,
+      isConnected: parsed.isConnected !== undefined ? parsed.isConnected : true,
       syncedStats: {
         ...DEFAULT_SALLA_CONFIG.syncedStats,
         ...(parsed.syncedStats || {}),
       },
     };
+    return merged;
   } catch {
     return DEFAULT_SALLA_CONFIG;
   }

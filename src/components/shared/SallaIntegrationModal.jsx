@@ -34,13 +34,13 @@ export default function SallaIntegrationModal({ isOpen, onClose, onSyncComplete,
   const [sallaConfig, setSallaConfig] = useState(loadSallaConfig);
   const [authMode, setAuthMode] = useState('credentials'); // 'credentials' | 'token'
   const [clientIdInput, setClientIdInput] = useState(sallaConfig.clientId || 'b762ff22-f688-4c72-ae7c-8c420c423878');
-  const [clientSecretInput, setClientSecretInput] = useState(sallaConfig.clientSecret || '');
+  const [clientSecretInput, setClientSecretInput] = useState(sallaConfig.clientSecret || '77d07c2c469466308073b0af061dbd132a895c727c5181cf35e4e46e0ee8a9b9');
   const [tokenInput, setTokenInput] = useState(sallaConfig.accessToken || '');
   const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'guide' | 'preview'
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState(
-    sallaConfig.isConnected ? { type: 'success', msg: 'متصل حياً بمتجر سلة (doracars.com)' } : null
+    sallaConfig.isConnected ? { type: 'success', msg: 'متصل حياً بمتجر سلة (doracars.com) عبر تطبيق Dora BI الرسمي' } : null
   );
   const [copiedStep, setCopiedStep] = useState(null);
 
