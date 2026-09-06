@@ -77,6 +77,8 @@ import MetaIntegrationModal from '../components/shared/MetaIntegrationModal';
 import { loadMetaConfig, formatMetaForAgentPrompt } from '../lib/metaIntegration';
 import GoogleAdsIntegrationModal from '../components/shared/GoogleAdsIntegrationModal';
 import { loadGoogleAdsConfig, formatGoogleAdsForAgentPrompt } from '../lib/googleAdsIntegration';
+import ChatMessageRenderer from '../components/chat/ChatMessageRenderer';
+
 
 // System prompt grounding the AI Agent in real Dora Cars data
 const DORA_SYSTEM_PROMPT = `أنت المساعد الذكي والخبير التسويقي الرقمي الخاص لشركة "درة السيارة" (Dora Cars) في المملكة العربية السعودية.
@@ -1634,11 +1636,15 @@ export default function PrivateCampaignLab() {
                     <div
                       className={`relative group rounded-2xl p-4 text-sm leading-relaxed ${
                         msg.sender === 'user'
-                          ? 'bg-slate-800/90 border border-slate-700/70 text-slate-100 font-normal max-w-[85%]'
-                          : 'bg-[#0f172a]/95 border border-slate-800/90 text-slate-200 whitespace-pre-wrap max-w-[90%]'
+                          ? 'bg-slate-800/90 border border-slate-700/70 text-slate-100 font-normal max-w-[85%] whitespace-pre-wrap'
+                          : 'bg-[#0a1224]/95 border border-slate-800/90 text-slate-200 max-w-[96%] w-full shadow-lg'
                       }`}
                     >
-                      {msg.text}
+                      {msg.sender === 'user' ? (
+                        <div className="whitespace-pre-wrap">{msg.text}</div>
+                      ) : (
+                        <ChatMessageRenderer text={msg.text} />
+                      )}
 
                       {/* Attached Files & Images Preview in Chat Message */}
                       {msg.attachments && msg.attachments.length > 0 && (
