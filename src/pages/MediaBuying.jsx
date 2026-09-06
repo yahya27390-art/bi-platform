@@ -7,8 +7,10 @@ import PlatformRadarChart from '../components/charts/PlatformRadarChart';
 import { PlatformBadge, GrowthChip, AttributionNote, CardSkeleton, SectionHeader } from '../components/shared/SharedComponents';
 import { cn } from '@/lib/utils';
 import { MOCK_PLATFORM_PERIOD_METRICS } from '../data/mockData';
-import { Compass, Sparkles } from 'lucide-react';
+import { Compass, Sparkles, Video } from 'lucide-react';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
+import TikTokIntegrationModal from '../components/shared/TikTokIntegrationModal';
+import { loadTikTokConfig } from '../lib/tiktokIntegration';
 
 const PLATFORM_TABS = [
   { slug: 'all',    label: 'الكل' },
@@ -30,6 +32,8 @@ function KPICell({ label, value, metric, unit = '' }) {
 export default function MediaBuying() {
   const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const [activePlatform, setActivePlatform] = useState('all');
+  const [showTikTokModal, setShowTikTokModal] = useState(false);
+  const [tiktokConfig, setTikTokConfig] = useState(loadTikTokConfig);
   const { data: platforms, loading }    = useAdMetrics(periodId);
   const { data: campaigns }             = useCampaigns({ periodId, platform: activePlatform === 'all' ? undefined : activePlatform });
   const { data: funnels }               = useAdFunnel(periodId, activePlatform === 'all' ? 'meta' : activePlatform);
@@ -49,13 +53,25 @@ export default function MediaBuying() {
           <h1 className="text-2xl font-black text-slate-900">أداء الإعلانات المدفوعة (Media Buying Intelligence)</h1>
           <p className="text-slate-500 text-sm mt-1">تحليل معمق عبر القنوات: Meta · Google · TikTok مع توزيع الإنفاق والعائد</p>
         </div>
-        <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-2xl p-1 shadow-inner">
-          {periods?.slice(0, 3).map(p => (
-            <button key={p.id} onClick={() => setPeriodId(p.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-[#0F172A] text-white shadow-md' : 'text-slate-600 hover:text-slate-900'}`}>
-              {p.labelAr || p.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={() => setShowTikTokModal(true)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs transition-all shadow-sm"
+            title="ربط حساب TikTok Ads Manager"
+          >
+            <Video className="w-4 h-4 text-[#ff0050]" />
+            <span>{tiktokConfig.isConnected ? 'تيك توك: متصل حياً' : 'ربط إعلانات تيك توك'}</span>
+            <span className={`w-2 h-2 rounded-full ${tiktokConfig.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-400'}`} />
+          </button>
+
+          <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-2xl p-1 shadow-inner">
+            {periods?.slice(0, 3).map(p => (
+              <button key={p.id} onClick={() => setPeriodId(p.id)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-[#0F172A] text-white shadow-md' : 'text-slate-600 hover:text-slate-900'}`}>
+                {p.labelAr || p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -217,6 +233,13 @@ export default function MediaBuying() {
           </div>
         </div>
       )}
+
+      {/* TikTok Integration Modal */}
+      <TikTokIntegrationModal
+        isOpen={showTikTokModal}
+        onClose={() => setShowTikTokModal(false)}
+        onSyncComplete={(updated) => setTikTokConfig(updated)}
+      />
     </div>
   );
 }

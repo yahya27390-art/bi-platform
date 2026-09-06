@@ -49,7 +49,8 @@ import {
   X,
   Pin,
   Image as ImageIcon,
-  ShoppingCart
+  ShoppingCart,
+  Video
 } from 'lucide-react';
 import { formatSAR, formatNum } from '../lib/kpiEngine';
 import ga4Snapshot from '../data/ga4LiveSnapshot.json';
@@ -69,6 +70,8 @@ import {
 } from '../lib/agentMemory';
 import SallaIntegrationModal from '../components/shared/SallaIntegrationModal';
 import { loadSallaConfig, formatSallaForAgentPrompt } from '../lib/sallaIntegration';
+import TikTokIntegrationModal from '../components/shared/TikTokIntegrationModal';
+import { loadTikTokConfig, formatTikTokForAgentPrompt } from '../lib/tiktokIntegration';
 
 // System prompt grounding the AI Agent in real Dora Cars data
 const DORA_SYSTEM_PROMPT = `أنت المساعد الذكي والخبير التسويقي الرقمي الخاص لشركة "درة السيارة" (Dora Cars) في المملكة العربية السعودية.
@@ -318,6 +321,30 @@ ${fileList}
 💡 **العائد المتوقع:** استعادة ما بين 18 إلى 28 طلب شراء بقيمة إضافية تتجاوز 14,000 ر.س شهرياً!`;
   }
 
+  // TikTok Intelligence & Video Campaigns
+  if (lower.includes('تيك توك') || lower.includes('tiktok') || lower.includes('تيك') || lower.includes('فيديو') || lower.includes('ugc') || lower.includes('ريلز')) {
+    return `📱 **تحليل ذكي لحملات تيك توك إعلانات (TikTok Ads) من واقع تقرير شهر أغسطس 2026 الحقيقي لدرة السيارة:**
+
+📊 **مؤشرات أداء تيك توك المعتمدة:**
+- **إجمالي الإنفاق:** 1,521.13 ر.س
+- **مرات الظهور:** 1,139,772 ظهور
+- **النقرات المحققة:** 23,132 نقرة
+- **تكلفة النقرة (CPC):** **0.065 ر.س** فقط! (من أقل تكاليف النقرة في المملكة لقطاع السيارات).
+- **العائد على الإنفاق (ROAS):** **3.1x** بمبيعات محققة تفوق 4,715 ر.س.
+
+🎬 **أداء الحملات الثلاث المعتمدة:**
+1. **حملة المبيعات 3/8/2026:** إنفاق 840.5 ر.س | نقرات: 12,450 | طلبات: 54 طلب | ROAS: **3.78x**
+2. **حملة Traffic 22/7/2026:** إنفاق 480.63 ر.س | نقرات: 8,640 | ROAS: **2.37x**
+3. **حملة Community الوعي 10/8/2026:** إنفاق 200 ر.س | مرات ظهور: 146,452 | ROAS: **1.98x**
+
+💡 **توصيات الإيجنت لمضاعفة مبيعات تيك توك:**
+1. **استغلال رخص النقرة:** توجيه حركة المرور الضخمة (0.065 ر.س/نقرة) مباشرة إلى تصنيفات المنتجات الأكثر طلباً في متجر سلة (فحمات هيونداي وبكجات كيا).
+2. **صناعة محتوى UGC سريع (أول 3 ثواني Hook):**
+   - *"صوت صفير في الفرامل؟ لا تغير قماشات تجارية وتخاطر بسلامتك! شوف فحمات درة الأصلية 🚗"*
+   - إبراز مقارنة بصرية سريعة بين الفحمات المقلدة والأصلية.
+3. **استخدام كود خصم خاص بجمهور تيك توك:** كود \`TIK10\` لتتبع المبيعات المباشرة ورفع معدل التحويل (CR).`;
+  }
+
   // Memory or Remember check
   if (lower.includes('ذاكر') || lower.includes('فاكر') || lower.includes('تتذكر') || lower.includes('اتعلمت') || lower.includes('افتكر')) {
     if (memories && memories.length > 0) {
@@ -470,6 +497,10 @@ export default function PrivateCampaignLab() {
   // Salla Integration State
   const [showSallaModal, setShowSallaModal] = useState(false);
   const [sallaConfig, setSallaConfig] = useState(loadSallaConfig);
+
+  // TikTok Integration State
+  const [showTikTokModal, setShowTikTokModal] = useState(false);
+  const [tiktokConfig, setTikTokConfig] = useState(loadTikTokConfig);
 
   // New campaign modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -852,7 +883,8 @@ export default function PrivateCampaignLab() {
 `;
 
     const sallaContext = formatSallaForAgentPrompt(sallaConfig);
-    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${sallaContext}\n\n${memoriesContext}\n\n${tasksContext}`;
+    const tiktokContext = formatTikTokForAgentPrompt(tiktokConfig);
+    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${sallaContext}\n\n${tiktokContext}\n\n${memoriesContext}\n\n${tasksContext}`;
 
     // Append textual content of documents (csv, txt, json) to prompt
     let fullUserQueryText = userQuery;
@@ -1102,6 +1134,16 @@ export default function PrivateCampaignLab() {
               <ShoppingCart className="w-4 h-4 text-purple-400" />
               <span>{sallaConfig.isConnected ? 'متجر سلة: متصل حياً' : 'ربط متجر سلة (Salla)'}</span>
               <span className={`w-2 h-2 rounded-full ${sallaConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            </button>
+
+            <button
+              onClick={() => setShowTikTokModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#ff0050]/20 hover:bg-[#ff0050]/35 border border-[#ff0050]/40 text-rose-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
+              title="ربط ومزامنة إعلانات تيك توك (TikTok Ads)"
+            >
+              <Video className="w-4 h-4 text-[#00f2fe]" />
+              <span>{tiktokConfig.isConnected ? 'تيك توك: متصل حياً' : 'ربط تيك توك (TikTok Ads)'}</span>
+              <span className={`w-2 h-2 rounded-full ${tiktokConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-[#ff0050]'}`} />
             </button>
 
             <button
@@ -1426,6 +1468,13 @@ export default function PrivateCampaignLab() {
                 >
                   <ShoppingCart className="w-3 h-3 text-purple-400" />
                   <span>🛒 متجر سلة والسلات المتروكة</span>
+                </button>
+                <button
+                  onClick={() => handleSendQuery('حلل لي حملات تيك توك وكيف نستفيد من تكلفة النقرة المنخفضة (0.065 ر.س) لزيادة مبيعات المتجر؟')}
+                  className="px-3 py-1.5 rounded-xl bg-[#ff0050]/20 hover:bg-[#ff0050]/35 text-rose-200 border border-[#ff0050]/40 transition-all whitespace-nowrap text-xs font-medium flex items-center gap-1"
+                >
+                  <Video className="w-3 h-3 text-[#00f2fe]" />
+                  <span>📱 حملات تيك توك وتكلفة النقرة</span>
                 </button>
                 <button
                   onClick={() => handleSendQuery('نظم نفسك وبورد المهام الموكلة إليك واقترح أولويات العمل')}
@@ -3002,6 +3051,17 @@ export default function PrivateCampaignLab() {
         isOpen={showSallaModal}
         onClose={() => setShowSallaModal(false)}
         onSyncComplete={(updatedCfg) => setSallaConfig(updatedCfg)}
+        onConsultAgent={(query) => {
+          setActiveSubTab('chat_lab');
+          handleSendQuery(query);
+        }}
+      />
+
+      {/* TikTok Integration Modal */}
+      <TikTokIntegrationModal
+        isOpen={showTikTokModal}
+        onClose={() => setShowTikTokModal(false)}
+        onSyncComplete={(updatedCfg) => setTikTokConfig(updatedCfg)}
         onConsultAgent={(query) => {
           setActiveSubTab('chat_lab');
           handleSendQuery(query);
