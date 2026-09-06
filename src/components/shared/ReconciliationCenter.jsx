@@ -1,35 +1,37 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { formatSAR } from '../../lib/kpiEngine';
 import { ShieldCheck, AlertTriangle, CheckCircle2, ArrowRightLeft, FileText, Calendar } from 'lucide-react';
 import { DORA_RECONCILIATION_LOGS, DORA_PERIODS } from '../../data/doraSchema';
+import { useCurrentPeriod } from '../../context/BIPeriodContext';
 
 export default function ReconciliationCenter({
   logs = DORA_RECONCILIATION_LOGS,
   periodId: propPeriodId,
   onInspectDocument
 }) {
-  const [activePeriod, setActivePeriod] = useState(propPeriodId || 'p-2026-08');
+  const { periodId: globalPeriodId, setPeriodId: setGlobalPeriodId } = useCurrentPeriod();
+  const activePeriod = propPeriodId || globalPeriodId;
 
   const currentLogs = logs.filter(l => l.periodId === activePeriod);
   const allMatched = currentLogs.length > 0 && currentLogs.every(l => !l.hasDiscrepancy);
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-[#0c1527] p-6 space-y-4 shadow-xl">
+    <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#0d1628] to-[#0a1120] p-6 space-y-4 shadow-2xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
             <ArrowRightLeft className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-black text-white">مركز المطابقة وتدقيق الفروقات (Multi-Source Reconciliation)</h3>
               {allMatched ? (
-                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                   <CheckCircle2 className="w-3 h-3" />
                   تطابق تام بنسبة 100%
                 </span>
               ) : (
-                <span className="text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" />
                   يوجد فروقات تتطلب مراجعة
                 </span>
@@ -47,8 +49,8 @@ export default function ReconciliationCenter({
           {DORA_PERIODS.slice(0, 2).map((p) => (
             <button
               key={p.id}
-              onClick={() => setActivePeriod(p.id)}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              onClick={() => setGlobalPeriodId(p.id)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activePeriod === p.id
                   ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -65,16 +67,16 @@ export default function ReconciliationCenter({
         {currentLogs.map((log) => (
           <div
             key={log.id}
-            className={`rounded-2xl border p-4 space-y-3 transition-colors ${
+            className={`rounded-2xl border p-5 space-y-3.5 transition-all hover:border-emerald-500/40 ${
               log.hasDiscrepancy
                 ? 'border-amber-500/30 bg-amber-500/5'
-                : 'border-emerald-500/20 bg-emerald-500/5'
+                : 'border-white/5 bg-[#10192d]/80 shadow-lg shadow-black/20'
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white leading-snug">{log.title}</span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-black text-white leading-snug">{log.title}</span>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${
                   log.hasDiscrepancy
                     ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                     : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
@@ -84,34 +86,33 @@ export default function ReconciliationCenter({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs bg-black/30 p-3 rounded-xl">
+            <div className="grid grid-cols-2 gap-3 text-xs bg-black/40 p-3.5 rounded-xl border border-white/5">
               <div>
                 <div className="text-[11px] text-slate-400 leading-tight mb-1">{log.sourceALabel}</div>
-                <div className="text-sm font-black text-white font-mono mt-0.5" dir="ltr">
-                  {formatSAR(log.sourceAAmount, true)}
+                <div className="text-base font-black text-white mt-1">
+                  {formatSAR(log.sourceAAmount, false)}
                 </div>
               </div>
-              <div>
+              <div className="border-r border-white/5 pr-3">
                 <div className="text-[11px] text-slate-400 leading-tight mb-1">{log.sourceBLabel}</div>
-                <div className="text-sm font-black text-white font-mono mt-0.5" dir="ltr">
-                  {formatSAR(log.sourceBAmount, true)}
+                <div className="text-base font-black text-emerald-400 mt-1">
+                  {formatSAR(log.sourceBAmount, false)}
                 </div>
               </div>
             </div>
 
             <div className="text-xs flex items-center justify-between pt-1">
-              <span className="text-slate-400">الفارق المسجل (Discrepancy):</span>
+              <span className="text-slate-400 font-medium">الفارق المسجل (Discrepancy):</span>
               <span
-                className={`font-mono font-bold ${
-                  log.hasDiscrepancy ? 'text-amber-400' : 'text-emerald-400'
+                className={`font-bold px-2 py-0.5 rounded-lg text-xs ${
+                  log.hasDiscrepancy ? 'text-amber-400 bg-amber-500/10' : 'text-emerald-400 bg-emerald-500/10'
                 }`}
-                dir="ltr"
               >
-                {formatSAR(log.discrepancy, true)}
+                {log.discrepancy === 0 ? '0.00 ر.س (مطابق 100%)' : formatSAR(log.discrepancy, false)}
               </span>
             </div>
 
-            <p className="text-[11px] text-slate-300/90 leading-relaxed border-t border-white/5 pt-2">
+            <p className="text-[11px] text-slate-300/85 leading-relaxed border-t border-white/5 pt-2.5">
               {log.notes}
             </p>
           </div>

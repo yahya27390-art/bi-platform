@@ -7,22 +7,24 @@ import { KPI_THRESHOLDS, BI_CURRENCY } from './biConstants';
 
 // ── NUMBER FORMATTERS ─────────────────────────────────────────
 
-export function formatSAR(value, compact = false) {
+export function formatSAR(value, compact = false, decimals = 0) {
   if (value == null || isNaN(value)) return '—';
+  const num = Number(value);
   if (compact) {
-    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}م ر.س`;
-    if (value >= 1_000)     return `${(value / 1_000).toFixed(1)}ك ر.س`;
-    return `${Math.round(value).toLocaleString('ar-SA')} ر.س`;
+    if (Math.abs(num) >= 1_000_000) {
+      return `${(num / 1_000_000).toFixed(2)} مليون ر.س`;
+    }
+    if (Math.abs(num) >= 200_000) {
+      return `${(num / 1_000).toFixed(1)} ألف ر.س`;
+    }
+    return `${num.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} ر.س`;
   }
-  return new Intl.NumberFormat('ar-SA', {
-    style: 'currency', currency: 'SAR',
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
-  }).format(value);
+  return `${num.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} ر.س`;
 }
 
 export function formatNum(value, decimals = 0) {
   if (value == null || isNaN(value)) return '—';
-  return value.toLocaleString('ar-SA', {
+  return Number(value).toLocaleString('en-US', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
@@ -30,20 +32,22 @@ export function formatNum(value, decimals = 0) {
 
 export function formatPercent(value, { decimals = 1, showSign = true } = {}) {
   if (value == null || isNaN(value)) return '—';
-  const sign = showSign && value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(decimals)}%`;
+  const num = Number(value);
+  const sign = showSign && num > 0 ? '+' : '';
+  return `${sign}${num.toFixed(decimals)}%`;
 }
 
 export function formatMultiplier(value, decimals = 2) {
   if (value == null || isNaN(value)) return '—';
-  return `${value.toFixed(decimals)}×`;
+  return `${Number(value).toFixed(decimals)}×`;
 }
 
 export function formatCompact(value) {
   if (value == null || isNaN(value)) return '—';
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000)     return `${(value / 1_000).toFixed(1)}K`;
-  return Math.round(value).toLocaleString();
+  const num = Number(value);
+  if (Math.abs(num) >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+  if (Math.abs(num) >= 1_000)     return `${(num / 1_000).toFixed(1)}K`;
+  return Math.round(num).toLocaleString('en-US');
 }
 
 // ── KPI FORMULA DEFINITIONS ───────────────────────────────────

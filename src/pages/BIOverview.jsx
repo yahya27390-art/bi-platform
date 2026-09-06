@@ -23,14 +23,15 @@ import {
   AlertTriangle, ArrowUpRight, Flame, Store, PackageSearch, Filter, RotateCcw, Layers
 } from 'lucide-react';
 
+import { useCurrentPeriod } from '../context/BIPeriodContext';
+
 export default function BIOverview() {
-  const [periodId, setPeriodId] = useState('p-2026-09');
+  const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const [channelFilter, setChannelFilter] = useState('all'); // all | branches | ecommerce
   const [platformFilter, setPlatformFilter] = useState('all'); // all | meta | google | tiktok | snapchat
   const [activeDocId, setActiveDocId] = useState(null);
 
   const { user } = useBIAuth();
-  const { data: periods } = usePeriods();
   const { kpis, trend, targets, loading } = useBIData(periodId);
   const { data: platforms } = useAdMetrics(periodId);
 
@@ -40,7 +41,6 @@ export default function BIOverview() {
   const selectedDocument = activeDocId
     ? DORA_DOCUMENTS.find(d => d.id === activeDocId) || { id: activeDocId, fileName: 'Document_Proof.png', uploadedBy: 'المحاسب المالي', category: 'branch_sales_screenshot', verificationStatus: 'VERIFIED' }
     : null;
-
 
   const hasActiveFilters = channelFilter !== 'all' || platformFilter !== 'all';
 
@@ -57,13 +57,13 @@ export default function BIOverview() {
     let adSpend = kpis.totalAdSpend;
 
     if (channelFilter === 'branches') {
-      rev = 1200000;
-      targetRev = 1180000;
-      adSpend = kpis.totalAdSpend * 0.45;
+      rev = kpis.branchRevenue || 989522.16;
+      targetRev = 800000;
+      adSpend = kpis.totalAdSpend * 0.70;
     } else if (channelFilter === 'ecommerce') {
-      rev = 280000;
-      targetRev = 320000;
-      adSpend = kpis.totalAdSpend * 0.55;
+      rev = kpis.ecommerceRevenue || 36660.19;
+      targetRev = 50000;
+      adSpend = kpis.totalAdSpend * 0.30;
     }
 
     if (platformFilter !== 'all' && platforms) {
@@ -76,7 +76,7 @@ export default function BIOverview() {
       totalRevenue: rev,
       targetRevenue: targetRev,
       totalAdSpend: adSpend,
-      targetAchievementPct: (rev / targetRev) * 100,
+      targetAchievementPct: targetRev ? (rev / targetRev) * 100 : 100,
     };
   }, [kpis, channelFilter, platformFilter, platforms]);
 
@@ -98,23 +98,23 @@ export default function BIOverview() {
             </span>
           </div>
           <p className="text-slate-400 text-sm mt-1">
-            {currentPeriod?.label} · تحليل استراتيجي ومترابط لكافة التدفقات النقدية، المبيعات، والإنفاق الإعلاني
+            {currentPeriod?.labelAr || currentPeriod?.label} · تحليل استراتيجي ومترابط لكافة التدفقات النقدية، المبيعات، والإنفاق الإعلاني
           </p>
         </div>
 
         {/* Period Selector Tabs */}
-        <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shadow-inner">
+        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl p-1 shadow-inner">
           {periods?.slice(0, 3).map(p => (
             <button
               key={p.id}
               onClick={() => setPeriodId(p.id)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 periodId === p.id
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              {p.labelEn}
+              {p.labelAr || p.label}
             </button>
           ))}
         </div>
@@ -191,7 +191,7 @@ export default function BIOverview() {
       </div>
 
       {/* Section 11: Data Health Status Bar */}
-      <DataHealthBar periodLabel={currentPeriod?.label || 'سبتمبر 2026'} />
+      <DataHealthBar periodLabel={currentPeriod?.labelAr || currentPeriod?.label || 'أغسطس 2026'} />
 
       {/* Multi-Source Reconciliation & Discrepancy Detector */}
       <ReconciliationCenter
@@ -202,10 +202,10 @@ export default function BIOverview() {
       {/* Section 12: Data Reconciliation Banner (Anti Double-Counting) */}
       {displayedKpis && (
         <ReconciliationBanner
-          actualRevenue={formatSAR(displayedKpis.totalRevenue, true)}
-          attributedRevenue={formatSAR(displayedKpis.attributedRevenue, true)}
-          adSpend={formatSAR(displayedKpis.totalAdSpend, true)}
-          netProfit={canViewNetProfit ? formatSAR(displayedKpis.netProfit, true) : '🔒 محمي للمالك'}
+          actualRevenue={formatSAR(displayedKpis.totalRevenue, false)}
+          attributedRevenue={formatSAR(displayedKpis.attributedRevenue, false)}
+          adSpend={formatSAR(displayedKpis.totalAdSpend, false)}
+          netProfit={canViewNetProfit ? formatSAR(displayedKpis.netProfit, false) : '🔒 محمي للمالك'}
         />
       )}
 
@@ -226,31 +226,31 @@ export default function BIOverview() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <KPICard
                 title="إجمالي الإيرادات الفعلية"
-                displayValue={formatSAR(displayedKpis.totalRevenue, true)}
+                displayValue={formatSAR(displayedKpis.totalRevenue, false)}
                 growth={displayedKpis.totalRevenueGrowth}
                 icon={<DollarSign className="w-5 h-5" />}
                 color="emerald"
                 target={displayedKpis.targetRevenue}
                 targetLabel="الهدف الشهري"
-                sparklineData={[1120000, 1180000, 1250000, 1310000, 1390000, 1480000]}
+                sparklineData={[850000, 920000, 960000, 980000, 1010000, 1026182]}
               />
               <KPICard
                 title="الربح الإجمالي (Gross Profit)"
-                displayValue={formatSAR(displayedKpis.grossProfit, true)}
-                growth={12.4}
+                displayValue={formatSAR(displayedKpis.grossProfit, false)}
+                growth={18.4}
                 icon="📈"
                 color="blue"
                 sublabel={`هامش ربح ${displayedKpis.grossMarginPct?.toFixed(1)}%`}
-                sparklineData={[420000, 450000, 470000, 505000, 530000, 562400]}
+                sparklineData={[420000, 450000, 470000, 490000, 505000, 513091]}
               />
               <KPICard
                 title="صافي الربح (Net Profit)"
-                displayValue={canViewNetProfit ? formatSAR(displayedKpis.netProfit, true) : 'محمي 🔒'}
+                displayValue={canViewNetProfit ? formatSAR(displayedKpis.netProfit, false) : 'محمي 🔒'}
                 growth={canViewNetProfit ? displayedKpis.netProfitGrowth : null}
                 icon="💰"
                 color="purple"
                 sublabel={canViewNetProfit ? `هامش صافي ${displayedKpis.netProfitMarginPct?.toFixed(1)}%` : 'يتطلب صلاحية المالك أو الإدارة'}
-                sparklineData={[160000, 175000, 185000, 198000, 205000, 214600]}
+                sparklineData={[280000, 310000, 330000, 350000, 365000, 378988]}
               />
               <KPICard
                 title="تحقيق مستهدف الإيرادات"
@@ -258,7 +258,7 @@ export default function BIOverview() {
                 growth={null}
                 icon={<Target className="w-5 h-5" />}
                 color={displayedKpis.targetAchievementPct >= 95 ? 'emerald' : displayedKpis.targetAchievementPct >= 80 ? 'amber' : 'red'}
-                sublabel={`${formatSAR(displayedKpis.targetRevenue, true)} الهدف`}
+                sublabel={`الهدف: ${formatSAR(displayedKpis.targetRevenue, false)}`}
               />
             </div>
           </div>
@@ -273,38 +273,38 @@ export default function BIOverview() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <KPICard
                 title="إجمالي الصرف الإعلاني"
-                displayValue={formatSAR(displayedKpis.totalAdSpend, true)}
+                displayValue={formatSAR(displayedKpis.totalAdSpend, false)}
                 icon={<TrendingUp className="w-5 h-5" />}
                 color="amber"
-                sublabel="ميتا + جوجل + تيك توك + سناب"
-                sparklineData={[38000, 41000, 39500, 44000, 41500, 42800]}
+                sublabel="جوجل (4,660) + ميتا (3,222) + تيك توك (1,521)"
+                sparklineData={[12000, 11500, 10800, 10200, 9800, 9403]}
               />
               <KPICard
-                title="العائد الإجمالي (Blended ROAS)"
-                displayValue={formatMultiplier(displayedKpis.overallROAS)}
-                growth={18.2}
+                title="العائد التسويقي الإجمالي (Blended MER)"
+                displayValue={`${displayedKpis.overallROAS?.toFixed(2)}×`}
+                growth={24.5}
                 icon={<Zap className="w-5 h-5" />}
                 color={displayedKpis.overallROAS >= 3.5 ? 'emerald' : 'amber'}
-                sublabel="الهدف: 3.50×"
-                sparklineData={[3.2, 3.5, 3.8, 4.1, 4.3, 4.59]}
+                sublabel="إجمالي الإيرادات ÷ إجمالي الإنفاق الإعلاني"
+                sparklineData={[35, 48, 62, 78, 92, 109.13]}
               />
               <KPICard
-                title="تكلفة الاكتساب (Blended CPA)"
-                displayValue={formatSAR(displayedKpis.overallCPA)}
-                growth={-8.5}
+                title="تكلفة الاكتساب للمحادثة (CPA)"
+                displayValue={formatSAR(displayedKpis.overallCPA, false, 2)}
+                growth={-18.5}
                 icon={<Users className="w-5 h-5" />}
                 color="blue"
-                sublabel={`${formatNum(displayedKpis.totalConversions)} عملية شراء/طلب`}
-                sparklineData={[42, 39, 36, 34, 31, 29.5]}
+                sublabel={`${formatNum(displayedKpis.totalConversions || 1617)} محادثة واستفسار شراء`}
+                sparklineData={[8.5, 7.2, 6.8, 6.1, 5.9, 5.81]}
               />
               <KPICard
                 title="متوسط قيمة الطلب (AOV)"
-                displayValue={formatSAR(displayedKpis.avgOrderValue)}
-                growth={5.4}
+                displayValue={formatSAR(displayedKpis.avgOrderValue || 531.36, false)}
+                growth={6.5}
                 icon={<ShoppingBag className="w-5 h-5" />}
                 color="cyan"
-                sublabel={`من إجمالي ${formatNum(displayedKpis.totalOrders)} طلب متجر`}
-                sparklineData={[420, 435, 440, 460, 475, 495]}
+                sublabel="متوسط قيمة سلة المشتريات بالمتجر"
+                sparklineData={[480, 495, 510, 515, 525, 531.36]}
               />
             </div>
           </div>

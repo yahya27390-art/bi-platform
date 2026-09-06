@@ -11,6 +11,8 @@ import { MapPin, TrendingUp, Users, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DataProvider } from '../lib/dataProvider';
 
+import { useCurrentPeriod } from '../context/BIPeriodContext';
+
 // Fix Leaflet default icon
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -27,10 +29,9 @@ const MAP_METRICS = [
 ];
 
 export default function BranchesBI() {
-  const [periodId, setPeriodId]     = useState('p-2026-09');
+  const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const [selectedBranch, setSelected] = useState(null);
   const [mapMetric, setMapMetric]   = useState('revenue');
-  const { data: periods }           = usePeriods();
 
   // Manually construct branches with performance since hook needed direct provider call
   const [branches, setBranches]     = useState(null);
@@ -55,14 +56,14 @@ export default function BranchesBI() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">الفروع الجغرافية</h1>
-          <p className="text-slate-400 text-sm mt-1">بريدة، القصيم — {currentPeriod?.label}</p>
+          <h1 className="text-2xl font-black text-white">الفروع الجغرافية والمبيعات الميدانية</h1>
+          <p className="text-slate-400 text-sm mt-1">بريدة، منطقة القصيم — {currentPeriod?.labelAr || currentPeriod?.label}</p>
         </div>
-        <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
+        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl p-1 shadow-inner">
           {periods?.slice(0, 3).map(p => (
             <button key={p.id} onClick={() => setPeriodId(p.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${periodId === p.id ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}>
-              {p.labelEn}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'text-slate-400 hover:text-white'}`}>
+              {p.labelAr || p.label}
             </button>
           ))}
         </div>
@@ -151,7 +152,7 @@ export default function BranchesBI() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <div className="text-slate-500">الإيرادات</div>
-                  <div className="text-white font-bold">{formatSAR(b.revenue, true)}</div>
+                  <div className="text-white font-bold">{formatSAR(b.revenue, false)}</div>
                 </div>
                 <div>
                   <div className="text-slate-500">الطلبات</div>

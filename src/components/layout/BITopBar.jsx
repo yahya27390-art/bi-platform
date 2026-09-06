@@ -2,17 +2,20 @@ import { useState } from 'react';
 import { Menu, ChevronDown, RefreshCw, Bell, User, LogOut, ShieldCheck } from 'lucide-react';
 import { useBIAuth } from '@/auth/BIAuthContext';
 import { usePeriods } from '../../hooks/useBIData';
+import { useCurrentPeriod } from '../../context/BIPeriodContext';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
-export default function BITopBar({ onOpenMobileSidebar, periodId, onPeriodChange }) {
+export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, onPeriodChange }) {
   const { user, roleLabel, demoUsers, loginAs, logout } = useBIAuth();
+  const { periodId: globalPeriodId, setPeriodId: setGlobalPeriodId } = useCurrentPeriod();
+  const effectivePeriodId = propPeriodId || globalPeriodId;
   const { data: periods } = usePeriods();
   const [open, setOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const currentPeriod = periods?.find(p => p.id === periodId) || periods?.find(p => p.isCurrent) || periods?.[0];
+  const currentPeriod = periods?.find(p => p.id === effectivePeriodId) || periods?.find(p => p.id === 'p-2026-08') || periods?.[0];
 
   return (
     <header className="sticky top-0 z-20 bg-[#0A1628]/90 backdrop-blur-md border-b border-white/5 px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
@@ -41,7 +44,11 @@ export default function BITopBar({ onOpenMobileSidebar, periodId, onPeriodChange
               {periods.map(p => (
                 <button
                   key={p.id}
-                  onClick={() => { onPeriodChange?.(p.id); setOpen(false); }}
+                  onClick={() => {
+                    if (onPeriodChange) onPeriodChange(p.id);
+                    else setGlobalPeriodId(p.id);
+                    setOpen(false);
+                  }}
                   className={cn(
                     'w-full text-right px-4 py-2.5 text-sm transition-all',
                     p.id === currentPeriod?.id

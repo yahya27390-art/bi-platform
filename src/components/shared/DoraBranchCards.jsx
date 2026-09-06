@@ -27,15 +27,15 @@ export default function DoraBranchCards({ branchSales = DORA_BRANCH_SALES, perio
         </div>
 
         {/* Consolidated Total Chip */}
-        <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl">
+        <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl shadow-inner">
           <div>
             <div className="text-[10px] text-slate-400 font-medium">إجمالي صافي مبيعات الفروع الثلاثة</div>
-            <div className="text-sm font-black text-white font-mono" dir="ltr">
-              {formatSAR(totalNet, true)} / <span className="text-slate-400">{formatSAR(totalTarget, true)}</span>
+            <div className="text-sm font-black text-white">
+              {formatSAR(totalNet, false)} <span className="text-slate-400 font-normal">/ الهدف: {formatSAR(totalTarget, false)}</span>
             </div>
           </div>
-          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl">
-            {totalAchievement.toFixed(0)}% تحقيق
+          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/25 px-3 py-1 rounded-xl">
+            {totalAchievement.toFixed(1)}% تحقيق
           </span>
         </div>
       </div>
@@ -47,17 +47,17 @@ export default function DoraBranchCards({ branchSales = DORA_BRANCH_SALES, perio
           return (
             <div
               key={branch.branchId}
-              className="rounded-3xl border border-white/10 bg-[#0e172a]/90 backdrop-blur-md p-6 space-y-4 shadow-xl hover:border-emerald-500/30 transition-all group"
+              className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#111a2e]/90 to-[#0c1424]/90 backdrop-blur-md p-6 space-y-4 shadow-xl hover:border-emerald-500/40 hover:-translate-y-1 transition-all group"
             >
               {/* Branch Header */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
                     <Store className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="text-base font-black text-white">{branch.branchNameAr}</h3>
-                    <span className="text-[11px] text-slate-400 font-mono">الهدف: {formatSAR(branch.target, true)}</span>
+                    <span className="text-[11px] text-slate-400">الهدف: {formatSAR(branch.target, false)}</span>
                   </div>
                 </div>
 
@@ -65,24 +65,24 @@ export default function DoraBranchCards({ branchSales = DORA_BRANCH_SALES, perio
                 {branch.documentId && (
                   <button
                     onClick={() => onInspectDocument && onInspectDocument(branch.documentId)}
-                    className="p-1.5 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-500/30 text-slate-400 hover:text-emerald-300 transition-colors flex items-center gap-1 text-[11px]"
+                    className="p-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-500/30 text-slate-300 hover:text-emerald-300 transition-colors flex items-center gap-1.5 text-[11px] font-bold"
                     title="معاينة سكرين شوت تقرير المبيعات المعتمد"
                   >
                     <FileText className="w-3.5 h-3.5 text-emerald-400" />
-                    المستند المصدر
+                    المستند المعتمد
                   </button>
                 )}
               </div>
 
               {/* Net Sales Hero */}
-              <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-1">
-                <div className="text-[11px] text-slate-400">صافي المبيعات الفعلية (Net Sales):</div>
-                <div className="text-2xl lg:text-3xl font-black text-white font-mono tracking-tight" dir="ltr">
-                  {formatSAR(branch.netSales, true)}
+              <div className="p-4 rounded-2xl bg-black/30 border border-white/5 space-y-1">
+                <div className="text-[11px] text-slate-400 font-medium">صافي المبيعات الفعلية (Net Sales):</div>
+                <div className="text-2xl lg:text-3xl font-black text-white tracking-tight">
+                  {formatSAR(branch.netSales, false)}
                 </div>
                 <div className="flex items-center justify-between text-[11px] pt-2 border-t border-white/5">
-                  <span className="text-slate-400">نمو عن الشهر السابق:</span>
-                  <span className="text-emerald-400 font-bold font-mono">+{branch.growthVsLastMonth}%</span>
+                  <span className="text-slate-400">النمو عن الشهر السابق:</span>
+                  <span className="text-emerald-400 font-bold">+{branch.growthVsLastMonth}%</span>
                 </div>
               </div>
 
@@ -90,17 +90,17 @@ export default function DoraBranchCards({ branchSales = DORA_BRANCH_SALES, perio
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="bg-black/20 p-2.5 rounded-xl border border-white/5">
                   <div className="text-[10px] text-slate-400">إجمالي المبيعات (Gross)</div>
-                  <div className="text-xs font-black text-slate-200 font-mono mt-0.5" dir="ltr">
-                    {formatSAR(branch.grossSales, true)}
+                  <div className="text-xs font-black text-slate-200 mt-1">
+                    {formatSAR(branch.grossSales, false)}
                   </div>
                 </div>
                 <div className="bg-red-500/5 p-2.5 rounded-xl border border-red-500/10">
                   <div className="text-[10px] text-red-400 flex items-center justify-between">
                     <span>المرتجعات (Returns)</span>
-                    <span className="font-mono text-[9px]">{branch.returnRate}%</span>
+                    <span className="text-[10px] font-bold">{branch.returnRate}%</span>
                   </div>
-                  <div className="text-xs font-black text-red-400 font-mono mt-0.5" dir="ltr">
-                    -{formatSAR(branch.returnsAmount, true)}
+                  <div className="text-xs font-black text-red-400 mt-1">
+                    -{formatSAR(branch.returnsAmount, false)}
                   </div>
                 </div>
               </div>
@@ -108,11 +108,11 @@ export default function DoraBranchCards({ branchSales = DORA_BRANCH_SALES, perio
               {/* Target Progress Bar */}
               <div className="space-y-1.5 pt-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400 flex items-center gap-1">
+                  <span className="text-slate-400 flex items-center gap-1 font-medium">
                     <Target className="w-3.5 h-3.5 text-blue-400" />
                     نسبة الإنجاز
                   </span>
-                  <span className="font-bold text-emerald-400 font-mono">
+                  <span className={`font-black ${branch.achievementPct >= 100 ? 'text-emerald-400' : 'text-amber-400'}`}>
                     {branch.achievementPct.toFixed(1)}%
                   </span>
                 </div>
@@ -124,8 +124,8 @@ export default function DoraBranchCards({ branchSales = DORA_BRANCH_SALES, perio
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
                   <span>الانحراف (Variance):</span>
-                  <span className={`font-mono font-bold ${isAboveTarget ? 'text-emerald-400' : 'text-red-400'}`} dir="ltr">
-                    {branch.variance >= 0 ? `+${formatSAR(branch.variance)}` : formatSAR(branch.variance)}
+                  <span className={`font-bold ${isAboveTarget ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {branch.variance >= 0 ? `+${formatSAR(branch.variance, false)} فائض` : `${formatSAR(branch.variance, false)} عجز`}
                   </span>
                 </div>
               </div>

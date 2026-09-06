@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useEcommerceStats, usePeriods } from '../hooks/useBIData';
+import { useEcommerceStats } from '../hooks/useBIData';
+import { useCurrentPeriod } from '../context/BIPeriodContext';
 import { formatSAR, formatNum, formatPercent } from '../lib/kpiEngine';
 import { TrendAreaChart, ComparisonBarChart } from '../components/charts/Charts';
 import { GrowthChip, CardSkeleton, SectionHeader, StatRow } from '../components/shared/SharedComponents';
@@ -8,8 +8,7 @@ import { ShoppingBag, TrendingUp, Users, Percent, ShoppingCart, Package } from '
 import { cn } from '@/lib/utils';
 
 export default function Ecommerce() {
-  const [periodId, setPeriodId] = useState('p-2026-09');
-  const { data: periods } = usePeriods();
+  const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const { data: ecm, loading } = useEcommerceStats(periodId);
 
   const totalRevenue = ecm?.topCategories?.reduce((s, c) => s + c.revenue, 0) || 0;
@@ -18,14 +17,14 @@ export default function Ecommerce() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">المتجر الإلكتروني</h1>
-          <p className="text-slate-400 text-sm mt-1">doracars.com · Salla Platform</p>
+          <h1 className="text-2xl font-black text-white">متجر سلة الإلكتروني (Salla E-Commerce)</h1>
+          <p className="text-slate-400 text-sm mt-1">doracars.com · تقارير المبيعات والزيارات الرسمية المعتمدة</p>
         </div>
-        <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
+        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl p-1 shadow-inner">
           {periods?.slice(0, 3).map(p => (
             <button key={p.id} onClick={() => setPeriodId(p.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${periodId === p.id ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}>
-              {p.labelEn}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'text-slate-400 hover:text-white'}`}>
+              {p.labelAr || p.label}
             </button>
           ))}
         </div>
@@ -40,28 +39,28 @@ export default function Ecommerce() {
           {/* KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
-              title="إجمالي الطلبات"
+              title="إجمالي الطلبات المكتملة"
               displayValue={formatNum(ecm.totalOrders)}
               growth={ecm.totalOrdersGrowth}
               icon={<ShoppingBag className="w-5 h-5" />}
               color="emerald"
-              sparklineData={[420, 480, 510, 560, 610, ecm.totalOrders]}
+              sparklineData={[45, 52, 58, 64, 69, ecm.totalOrders]}
             />
             <KPICard
-              title="إيرادات المتجر"
-              displayValue={formatSAR(ecm.totalRevenue, true)}
+              title="صافي إيرادات المتجر"
+              displayValue={formatSAR(ecm.totalRevenue, false)}
               growth={ecm.totalRevenueGrowth}
               icon={<TrendingUp className="w-5 h-5" />}
               color="blue"
-              sparklineData={[190000, 215000, 230000, 255000, 270000, ecm.totalRevenue]}
+              sparklineData={[24000, 26500, 28000, 31000, 34500, ecm.totalRevenue]}
             />
             <KPICard
               title="متوسط قيمة الطلب (AOV)"
-              displayValue={formatSAR(ecm.avgOrderValue)}
+              displayValue={formatSAR(ecm.avgOrderValue, false)}
               growth={ecm.avgOrderValueGrowth}
               icon={<ShoppingCart className="w-5 h-5" />}
               color="purple"
-              sparklineData={[410, 425, 435, 460, 480, ecm.avgOrderValue]}
+              sparklineData={[480, 495, 510, 520, 528, ecm.avgOrderValue]}
             />
             <KPICard
               title="معدل التحويل (CR)"

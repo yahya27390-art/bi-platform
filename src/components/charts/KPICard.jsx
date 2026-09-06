@@ -12,6 +12,31 @@ const COLOR_MAP = {
   slate:   { text: 'text-slate-300',   bg: 'bg-slate-500/10',   border: 'border-slate-500/20',   hoverBorder: 'hover:border-slate-500/50',   ring: '#6B7280', icon: 'bg-slate-500/15 text-slate-300', glow: 'rgba(107,114,128,0.15)' },
 };
 
+function renderDisplayValue(displayValue, textClass) {
+  if (displayValue == null) return '—';
+  const str = String(displayValue).trim();
+  
+  if (str.endsWith('ر.س')) {
+    const numPart = str.replace(/\s*ر\.س$/, '').trim();
+    return (
+      <div className="flex items-baseline gap-1.5 flex-wrap">
+        <span className={cn('text-2xl lg:text-3xl font-extrabold tracking-tight', textClass)}>
+          {numPart}
+        </span>
+        <span className="text-xs font-semibold text-slate-400">
+          ر.س
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('text-2xl lg:text-3xl font-extrabold tracking-tight', textClass)}>
+      {str}
+    </div>
+  );
+}
+
 export default function KPICard({
   title,
   displayValue,
@@ -39,10 +64,10 @@ export default function KPICard({
       onClick={onClick}
       className={cn(
         'group relative rounded-2xl border p-5 flex flex-col justify-between gap-3',
-        'bg-[#101726]/80 backdrop-blur-md shadow-lg shadow-black/20',
+        'bg-gradient-to-br from-[#121c32]/90 via-[#0d1627]/90 to-[#0a101d]/90 backdrop-blur-md shadow-xl shadow-black/20',
         scheme.border,
         scheme.hoverBorder,
-        'transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
+        'transition-all duration-300 hover:shadow-2xl hover:-translate-y-1',
         onClick && 'cursor-pointer',
         className,
       )}
@@ -56,22 +81,20 @@ export default function KPICard({
       {/* Top row: Icon + Growth + Sparkline */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-inner', scheme.icon)}>
+          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-inner border border-white/5', scheme.icon)}>
             {typeof icon === 'string' ? icon : icon}
           </div>
           {growth != null && <GrowthChip value={growth} />}
         </div>
-        <div className="opacity-70 group-hover:opacity-100 transition-opacity">
+        <div className="opacity-75 group-hover:opacity-100 transition-opacity">
           <Sparkline data={trendData} color={scheme.ring} width={76} height={28} />
         </div>
       </div>
 
       {/* Value & Title */}
       <div>
-        <div className={cn('text-2xl lg:text-3xl font-black tracking-tight font-mono', scheme.text)} dir="ltr">
-          {displayValue ?? '—'}
-        </div>
-        <div className="text-slate-300 text-xs mt-1.5 font-medium">{title}</div>
+        {renderDisplayValue(displayValue, scheme.text)}
+        <div className="text-slate-300 text-xs mt-1.5 font-semibold">{title}</div>
         {sublabel && <div className="text-slate-500 text-[11px] mt-0.5">{sublabel}</div>}
       </div>
 
@@ -80,7 +103,7 @@ export default function KPICard({
         <div className="space-y-1 pt-1 border-t border-white/5">
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-slate-400">{targetLabel || 'الهدف المحدد'}</span>
-            <span className={cn('font-bold font-mono', scheme.text)}>{targetPct?.toFixed(0)}%</span>
+            <span className={cn('font-bold', scheme.text)}>{targetPct?.toFixed(0)}%</span>
           </div>
           <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div

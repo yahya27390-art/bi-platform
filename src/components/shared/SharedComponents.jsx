@@ -223,44 +223,47 @@ export function DataHealthBar({ periodLabel = 'الفترة الحالية' }) {
  */
 export function ReconciliationBanner({ actualRevenue, attributedRevenue, adSpend, netProfit }) {
   return (
-    <div className="bg-gradient-to-r from-[#0d223f] via-[#0b1c33] to-[#0d223f] border border-cyan-500/20 rounded-2xl p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 text-sm">⚖️</span>
-          <h3 className="text-xs font-black text-white">طبقة المطابقة المالية (Data Reconciliation Layer)</h3>
+    <div className="bg-gradient-to-r from-[#0e1d35] via-[#0a1526] to-[#0e1d35] border border-cyan-500/20 rounded-3xl p-5 space-y-4 shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+        <div className="flex items-center gap-2.5">
+          <span className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 text-sm border border-cyan-500/20">⚖️</span>
+          <div>
+            <h3 className="text-sm font-black text-white">طبقة المطابقة والتسوية المالية (Data Reconciliation Layer)</h3>
+            <p className="text-[11px] text-slate-400">عزل وتدقيق صارم يمنع الازدواج المالي ويميز بين التدفق الفعلي والمعزو</p>
+          </div>
         </div>
-        <span className="text-[10px] font-mono bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/20">
+        <span className="text-[10px] font-bold bg-cyan-500/15 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/25 self-start sm:self-auto">
           Strict Anti-Double-Counting Architecture
         </span>
       </div>
 
-      <p className="text-[11px] text-slate-300 leading-relaxed">
-        تنبيه معماري: <strong className="text-amber-300">الإيرادات المعزوة للمنصات (Attributed Revenue)</strong> ناتجة عن خوارزميات التتبع (Pixels) وتُستخدم حصرياً لحساب كفاءة الإعلان (ROAS & CPA)، ولا تُحسب أو تُجمع إطلاقاً ضمن <strong className="text-emerald-300">الإيرادات المحاسبية الفعلية (Actual Business Revenue)</strong> للشركة تجنباً لأي ازدواج مالي.
+      <p className="text-xs text-slate-300 leading-relaxed bg-white/2 p-3 rounded-2xl border border-white/5">
+        تنبيه استراتيجي للمالك: <strong className="text-cyan-300">الإيرادات المعزوة للمنصات (Attributed Revenue)</strong> ناتجة عن بيكسلات التتبع لتقييم كفاءة الحملات فقط، ولا تُجمع إطلاقاً ضمن <strong className="text-emerald-400">الإيرادات المحاسبية الفعلية (Actual Business Revenue)</strong> للشركة منعاً لتضخيم الأرقام والازدواج المالي.
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-        <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
-          <div className="text-[10px] text-slate-400 font-bold">الإيراد الفعلي المعتمد (Actual Revenue)</div>
-          <div className="text-sm font-black text-emerald-400 mt-0.5">{actualRevenue || '1,480,000 ر.س'}</div>
-          <div className="text-[9px] text-slate-500">فواتير الفروع + طلبات المتجر</div>
+        <div className="p-3 rounded-2xl bg-black/40 border border-emerald-500/20 shadow-inner">
+          <div className="text-[11px] text-slate-400 font-bold">الإيراد الفعلي المعتمد (Actual Revenue)</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{actualRevenue || '—'}</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">فواتير الفروع + طلبات المتجر</div>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
-          <div className="text-[10px] text-slate-400 font-bold">الإيراد المعزو للمنصات (Attributed)</div>
-          <div className="text-sm font-black text-cyan-400 mt-0.5">{attributedRevenue || '196,440 ر.س'}</div>
-          <div className="text-[9px] text-slate-500">لتقييم أداء الحملات فقط</div>
+        <div className="p-3 rounded-2xl bg-black/40 border border-cyan-500/20 shadow-inner">
+          <div className="text-[11px] text-slate-400 font-bold">الإيراد المعزو للمنصات (Attributed)</div>
+          <div className="text-base font-black text-cyan-400 mt-1">{attributedRevenue || '—'}</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">لتقييم أداء الحملات فقط</div>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
-          <div className="text-[10px] text-slate-400 font-bold">إجمالي الصرف الإعلاني (Ad Spend)</div>
-          <div className="text-sm font-black text-amber-400 mt-0.5">{adSpend || '42,800 ر.س'}</div>
-          <div className="text-[9px] text-slate-500">تدفق نقدي تسويقي خارج</div>
+        <div className="p-3 rounded-2xl bg-black/40 border border-amber-500/20 shadow-inner">
+          <div className="text-[11px] text-slate-400 font-bold">إجمالي الصرف الإعلاني (Ad Spend)</div>
+          <div className="text-base font-black text-amber-400 mt-1">{adSpend || '—'}</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">تدفق نقدي تسويقي خارج</div>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
-          <div className="text-[10px] text-slate-400 font-bold">صافي ربح الأعمال (Net Profit)</div>
-          <div className="text-sm font-black text-purple-400 mt-0.5">{netProfit || '214,600 ر.س'}</div>
-          <div className="text-[9px] text-slate-500">بعد خصم COGS و OPEX والتسويق</div>
+        <div className="p-3 rounded-2xl bg-black/40 border border-purple-500/20 shadow-inner">
+          <div className="text-[11px] text-slate-400 font-bold">صافي ربح الأعمال (Net Profit)</div>
+          <div className="text-base font-black text-purple-400 mt-1">{netProfit || '—'}</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">بعد خصم COGS و OPEX والتسويق</div>
         </div>
       </div>
     </div>

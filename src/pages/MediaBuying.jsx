@@ -16,21 +16,22 @@ const PLATFORM_TABS = [
   { slug: 'tiktok', label: 'تيك توك' },
 ];
 
+import { useCurrentPeriod } from '../context/BIPeriodContext';
+
 function KPICell({ label, value, metric, unit = '' }) {
   const status = metric ? getKPIStatus(metric, parseFloat(value)) : 'neutral';
   const style  = STATUS_STYLES[status];
   return (
-    <div className={cn('rounded-lg p-3 text-center', style.bg)}>
-      <div className={cn('text-lg font-black', style.text)} dir="ltr">{value}{unit}</div>
-      <div className="text-xs text-slate-500 mt-0.5">{label}</div>
+    <div className={cn('rounded-xl p-3 text-center border border-white/5', style.bg)}>
+      <div className={cn('text-lg font-black', style.text)}>{value}{unit}</div>
+      <div className="text-xs text-slate-400 mt-0.5 font-medium">{label}</div>
     </div>
   );
 }
 
 export default function MediaBuying() {
-  const [periodId, setPeriodId]         = useState('p-2026-09');
+  const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const [activePlatform, setActivePlatform] = useState('all');
-  const { data: periods }               = usePeriods();
   const { data: platforms, loading }    = useAdMetrics(periodId);
   const { data: campaigns }             = useCampaigns({ periodId, platform: activePlatform === 'all' ? undefined : activePlatform });
   const { data: funnels }               = useAdFunnel(periodId, activePlatform === 'all' ? 'meta' : activePlatform);
@@ -48,13 +49,13 @@ export default function MediaBuying() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-white">أداء الإعلانات المدفوعة (Media Buying Intelligence)</h1>
-          <p className="text-slate-400 text-sm mt-1">تحليل معمق عبر القنوات: Meta · Google · TikTok · Snapchat</p>
+          <p className="text-slate-400 text-sm mt-1">تحليل معمق عبر القنوات: Meta · Google · TikTok</p>
         </div>
-        <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
+        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl p-1 shadow-inner">
           {periods?.slice(0, 3).map(p => (
             <button key={p.id} onClick={() => setPeriodId(p.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${periodId === p.id ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}>
-              {p.labelEn}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'text-slate-400 hover:text-white'}`}>
+              {p.labelAr || p.label}
             </button>
           ))}
         </div>
@@ -122,13 +123,13 @@ export default function MediaBuying() {
 
               {/* ROAS hero */}
               <div className="py-3 border-y border-white/5">
-                <div className="text-4xl font-black text-white" dir="ltr">{formatMultiplier(p.roas)}</div>
+                <div className="text-4xl font-black text-white">{formatMultiplier(p.roas)}</div>
                 <div className="text-xs text-slate-400 mt-1">ROAS — إيراد مُسند ÷ إنفاق</div>
               </div>
 
               {/* KPI Grid */}
               <div className="grid grid-cols-3 gap-2">
-                <KPICell label="إنفاق" value={formatSAR(p.spend, true)} />
+                <KPICell label="إنفاق" value={formatSAR(p.spend, false)} />
                 <KPICell label="CPA" value={formatSAR(p.cpa)} metric="cpa" />
                 <KPICell label="CTR" value={p.ctr?.toFixed(2)} unit="%" metric="ctr" />
                 <KPICell label="CPM" value={formatSAR(p.cpm)} metric="cpm" />

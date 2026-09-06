@@ -480,10 +480,10 @@ export const MOCK_TARGETS = {
     metaROAS: 4.5, googleROAS: 4.2, tiktokROAS: 3.5,
   },
   'p-2026-08': {
-    revenue: 450000, netProfit: 48000, adSpend: 36000,
-    roas: 3.8, orders: 1800, newCustomers: 400, cpa: 58,
-    hyundaiRevenue: 100000, kiaRevenue: 90000, ecommerceRevenue: 260000,
-    metaROAS: 4.2, googleROAS: 3.9, tiktokROAS: 3.2,
+    revenue: 850000, netProfit: 300000, adSpend: 9403,
+    roas: 109.13, orders: 73, newCustomers: 1617, cpa: 5.81,
+    hyundaiRevenue: 350000, kiaRevenue: 200000, ecommerceRevenue: 50000,
+    metaROAS: 120.0, googleROAS: 115.0, tiktokROAS: 25.0,
   },
 };
 

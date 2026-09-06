@@ -23,10 +23,12 @@ const IMPORT_CATEGORIES = [
   { id: 'financials', label: 'القوائم المالية (P&L)', icon: '💰', formats: '.xlsx, .pdf', desc: 'تكلفة البضاعة (COGS) ومصاريف التشغيل والإيجارات' },
 ];
 
+import { useCurrentPeriod } from '../context/BIPeriodContext';
+
 export default function DataImport() {
   const [selectedCategory, setSelectedCategory] = useState('branch_sales');
   const [sourceType, setSourceType] = useState('screenshot'); // screenshot | excel | manual
-  const [periodId, setPeriodId] = useState('p-2026-09');
+  const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const [dragOver, setDragOver] = useState(false);
   const [simulatedFile, setSimulatedFile] = useState(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -41,7 +43,6 @@ export default function DataImport() {
   const [activeEvidenceDoc, setActiveEvidenceDoc] = useState(null);
 
   const { data: history } = useImportHistory();
-  const { data: periods } = usePeriods();
 
   const handleFileUpload = (e) => {
     const file = e.target.files ? e.target.files[0] : null;

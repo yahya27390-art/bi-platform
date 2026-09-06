@@ -9,9 +9,10 @@ import { BIRoleGuard } from '../components/shared/BIRoleGuard';
 import { GrowthChip } from '../components/shared/SharedComponents';
 import { DollarSign, TrendingUp, TrendingDown, PieChart, GitCommit } from 'lucide-react';
 
+import { useCurrentPeriod } from '../context/BIPeriodContext';
+
 export default function Financials() {
-  const [periodId, setPeriodId] = useState('p-2026-09');
-  const { data: periods }       = usePeriods();
+  const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const { data: fin, loading }  = useFinancials(periodId);
   const { data: trend }         = useFinancialsTrend();
   const { data: targets }       = useTargets(periodId);
@@ -23,13 +24,13 @@ export default function Financials() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-white">الأداء المالي وحساب الأرباح والخسائر (P&L Intelligence)</h1>
-            <p className="text-slate-400 text-sm mt-1">{currentPeriod?.label} · تحليل تفصيلي للإيرادات، التكاليف، وهامش الربحية</p>
+            <p className="text-slate-400 text-sm mt-1">{currentPeriod?.labelAr || currentPeriod?.label} · تحليل تفصيلي للإيرادات، التكاليف، وهامش الربحية</p>
           </div>
-          <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
+          <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl p-1 shadow-inner">
             {periods?.slice(0, 3).map(p => (
               <button key={p.id} onClick={() => setPeriodId(p.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${periodId === p.id ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}>
-                {p.labelEn}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'text-slate-400 hover:text-white'}`}>
+                {p.labelAr || p.label}
               </button>
             ))}
           </div>

@@ -8,31 +8,33 @@ import { BIRoleGuard } from '../components/shared/BIRoleGuard';
 import { cn } from '@/lib/utils';
 import { Target, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
+import { useCurrentPeriod } from '../context/BIPeriodContext';
+
 function TargetRow({ label, actual, target, format = 'sar', color = '#10B981' }) {
   const pct = calcTargetAchievement(actual, target);
   const status = pct >= 95 ? 'good' : pct >= 75 ? 'warning' : 'critical';
   const StatusIcon = pct >= 95 ? CheckCircle : pct >= 75 ? AlertCircle : XCircle;
   const statusColor = pct >= 95 ? 'text-emerald-400' : pct >= 75 ? 'text-amber-400' : 'text-red-400';
 
-  const displayActual = format === 'sar' ? formatSAR(actual, true)
+  const displayActual = format === 'sar' ? formatSAR(actual, false)
     : format === 'multiplier' ? formatMultiplier(actual)
     : format === 'percent' ? `${actual?.toFixed(1)}%`
     : formatNum(actual);
 
-  const displayTarget = format === 'sar' ? formatSAR(target, true)
+  const displayTarget = format === 'sar' ? formatSAR(target, false)
     : format === 'multiplier' ? formatMultiplier(target)
     : format === 'percent' ? `${target?.toFixed(1)}%`
     : formatNum(target);
 
   return (
-    <div className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0">
+    <div className="flex items-center gap-4 py-3.5 border-b border-white/5 last:border-0">
       <StatusIcon className={cn('w-4 h-4 shrink-0', statusColor)} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-sm text-slate-300 font-medium">{label}</span>
+          <span className="text-sm text-slate-300 font-semibold">{label}</span>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-500" dir="ltr">{displayActual} / {displayTarget}</span>
-            <span className={cn('text-sm font-black', statusColor)} dir="ltr">{pct.toFixed(0)}%</span>
+            <span className="text-xs text-slate-400">{displayActual} / {displayTarget}</span>
+            <span className={cn('text-sm font-black', statusColor)}>{pct.toFixed(0)}%</span>
           </div>
         </div>
         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
@@ -45,8 +47,7 @@ function TargetRow({ label, actual, target, format = 'sar', color = '#10B981' })
 }
 
 export default function Targets() {
-  const [periodId, setPeriodId] = useState('p-2026-09');
-  const { data: periods }       = usePeriods();
+  const { periodId, setPeriodId, periods } = useCurrentPeriod();
   const { data: targets }       = useTargets(periodId);
   const { data: kpis, loading } = useExecutiveKPIs(periodId);
   const { data: adMetrics }     = useAdMetrics(periodId);
@@ -62,14 +63,14 @@ export default function Targets() {
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-white">الأهداف والإنجاز</h1>
-            <p className="text-slate-400 text-sm mt-1">{currentPeriod?.label}</p>
+            <h1 className="text-2xl font-black text-white">الأهداف البيعية ونسب الإنجاز (Targets & OKRs)</h1>
+            <p className="text-slate-400 text-sm mt-1">{currentPeriod?.labelAr || currentPeriod?.label} · متابعة دقيقة لمستهدفات الفروع والمبيعات والتسويق</p>
           </div>
-          <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
+          <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-2xl p-1 shadow-inner">
             {periods?.slice(0, 3).map(p => (
               <button key={p.id} onClick={() => setPeriodId(p.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${periodId === p.id ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}>
-                {p.labelEn}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'text-slate-400 hover:text-white'}`}>
+                {p.labelAr || p.label}
               </button>
             ))}
           </div>
