@@ -4,7 +4,7 @@ import { BIRoleGuard } from '../components/shared/BIRoleGuard';
 import { DataSourceBadge, SectionHeader } from '../components/shared/SharedComponents';
 import {
   Upload, CheckCircle, AlertCircle, XCircle, FileSpreadsheet, Clock,
-  Image, FileText, CheckCircle2, Eye, ShieldCheck, ArrowRight, Save, Plus
+  Image, FileText, CheckCircle2, Eye, ShieldCheck, ArrowRight, Save, Plus, Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatSAR } from '../lib/kpiEngine';
@@ -242,24 +242,25 @@ export default function DataImport() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-white">الأرشيف الرقمي لعينات مستندات شهر 8 المرفوعة (August 2026 Source Archive)</h3>
-                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  10 مستندات معتمدة
+                <h3 className="text-lg font-black text-white">الأرشيف الرقمي لمستندات شهر 8 المرفوعة (August 2026 Source Archive)</h3>
+                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                  {DORA_DOCUMENTS.filter(d => d.periodId === 'p-2026-08').length} مستنداً معتمداً
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                المستندات الرسمية المرفوعة في الأرشيف (سكرين شوت الكاشير + ملفات التحويلات والتقسيط) المدققة والمطابقة 100%
+                المستندات الرسمية المرفوعة في الأرشيف (سكرين شوت الكاشير + كشوفات الحوالات والتقسيط + تقارير الحملات الإعلانية وسلة) المدققة والمطابقة
               </p>
             </div>
             <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-400">
               <ShieldCheck className="w-4 h-4" />
-              <span>مطابقة القوائم المالية: مكتملة ✓</span>
+              <span>مطابقة القوائم المالية: مكتملة 100% ✓</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {DORA_DOCUMENTS.filter(d => d.periodId === 'p-2026-08').map((doc) => {
               const isImg = doc.fileName?.match(/\.(png|jpe?g)$/i);
+              const isPdf = doc.fileName?.match(/\.pdf$/i);
               return (
                 <div
                   key={doc.id}
@@ -267,8 +268,13 @@ export default function DataImport() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
-                        {isImg ? <Image className="w-5 h-5" /> : <FileSpreadsheet className="w-5 h-5" />}
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform",
+                        isPdf ? "bg-blue-500/10 border-blue-500/20 text-blue-400" :
+                        isImg ? "bg-purple-500/10 border-purple-500/20 text-purple-400" :
+                        "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                      )}>
+                        {isPdf ? <FileText className="w-5 h-5" /> : isImg ? <Image className="w-5 h-5" /> : <FileSpreadsheet className="w-5 h-5" />}
                       </div>
                       <div className="min-w-0">
                         <h4 className="text-xs font-black text-white truncate" title={doc.fileName}>{doc.fileName}</h4>
