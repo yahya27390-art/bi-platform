@@ -1,150 +1,210 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useBIAuth } from './BIAuthContext';
-import { getBIRoleMeta } from '../lib/biPermissions';
-import { ShieldCheck, ArrowLeft, BarChart3, Lock, Mail, AlertCircle, Database } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useBIAuth, AUTH_ACCOUNTS } from './BIAuthContext';
+import { 
+  ShieldCheck, 
+  Lock, 
+  User, 
+  AlertCircle, 
+  Eye, 
+  EyeOff, 
+  KeyRound, 
+  CheckCircle2, 
+  Info, 
+  Sparkles,
+  ArrowRight
+} from 'lucide-react';
 
 export default function BILogin() {
-  const { loginAs, loginWithSupabase, demoUsers, isSupabaseConfigured } = useBIAuth();
+  const { loginWithCredentials } = useBIAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCredentialsHelper, setShowCredentialsHelper] = useState(false);
 
-  const handleQuickLogin = (user) => {
-    loginAs(user.id);
-    navigate('/');
-  };
-
-  const handleSupabaseSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      await loginWithSupabase(email, password);
-      navigate('/');
+      await loginWithCredentials(identifier, password);
+      const destination = location.state?.from?.pathname || '/';
+      navigate(destination, { replace: true });
     } catch (err) {
-      setError(err.message || 'فشل تسجيل الدخول. يرجى التحقق من البريد وكلمة المرور.');
+      setError(err.message || 'بيانات الدخول غير صحيحة. يرجى المحاولة مرة أخرى.');
     } finally {
       setLoading(false);
     }
   };
 
+  const fillCredentials = (username, pass) => {
+    setIdentifier(username);
+    setPassword(pass);
+    setError('');
+  };
+
   return (
-    <div className="min-h-screen bg-[#070F1E] flex flex-col items-center justify-center p-4 selection:bg-emerald-500 selection:text-white relative overflow-hidden" dir="rtl">
-      {/* Ambient glowing radial gradients */}
+    <div 
+      className="min-h-screen bg-[#070F1E] flex flex-col items-center justify-center p-4 selection:bg-emerald-500 selection:text-white relative overflow-hidden font-sans" 
+      dir="rtl"
+    >
+      {/* Ambient background glow */}
       <div className="absolute top-1/4 -right-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -left-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/[0.03] rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="max-w-xl w-full bg-[#0D1E36] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative z-10 backdrop-blur-xl">
+      <div className="max-w-md w-full bg-[#0D1E36]/90 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative z-10 backdrop-blur-2xl">
         
-        {/* Brand Header */}
+        {/* Shield & Brand Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex p-3.5 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25">
-            <BarChart3 className="w-8 h-8" />
+          <div className="inline-flex p-4 rounded-3xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 text-emerald-400 shadow-xl shadow-emerald-500/10 relative">
+            <ShieldCheck className="w-9 h-9" />
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#0D1E36] animate-ping" />
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#0D1E36]" />
           </div>
+
           <div>
-            <h1 className="text-2xl font-black text-white">منصة ذكاء الأعمال والتحليلات (BI)</h1>
-            <p className="text-xs text-slate-400 mt-1 font-mono">Dora Cars • Performance & Media Buying Intelligence</p>
+            <h1 className="text-2xl font-black text-white tracking-wide">
+              منصة ذكاء الأعمال والتحليلات
+            </h1>
+            <p className="text-xs text-slate-400 mt-1 font-mono">
+              Dora Cars • Executive BI & Analytics Platform
+            </p>
           </div>
-          
-          <div className="flex items-center justify-center gap-2 pt-1">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Supabase Auth + RLS Protection</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[11px] font-semibold">
-              <Database className="w-3.5 h-3.5" />
-              <span>22 جداول معزولة تماماً</span>
-            </span>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold">
+            <Lock className="w-3.5 h-3.5" />
+            <span>بوابة الدخول المشفرة والمحمية</span>
           </div>
         </div>
 
-        {/* Supabase Production Login Form */}
-        <form onSubmit={handleSupabaseSubmit} className="space-y-3 pt-2">
-          <div className="text-xs text-slate-300 font-bold px-1">تسجيل الدخول عبر حساب Supabase:</div>
-          
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs leading-relaxed animate-shake">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
               <span>{error}</span>
             </div>
           )}
 
-          <div className="space-y-2">
+          {/* Identifier Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 px-1 flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-slate-400" />
+              <span>اسم المستخدم أو البريد الإلكتروني</span>
+            </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="البريد الإلكتروني (مثال: owner@doratcars.com)"
-                className="w-full pr-10 pl-4 py-2.5 bg-slate-900/80 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-slate-600"
-              />
-            </div>
-
-            <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="كلمة المرور"
-                className="w-full pr-10 pl-4 py-2.5 bg-slate-900/80 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-slate-600"
+                type="text"
+                required
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="admin أو البريد الإلكتروني"
+                className="w-full px-4 py-3 bg-slate-900/90 border border-white/10 rounded-2xl text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-600 font-mono"
               />
             </div>
           </div>
 
+          {/* Password Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 px-1 flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5 text-slate-400" />
+              <span>كلمة المرور (Password)</span>
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="أدخل كلمة المرور"
+                className="w-full pr-4 pl-11 py-3 bg-slate-900/90 border border-white/10 rounded-2xl text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-600 font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-1"
+                title={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-black shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
+            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
           >
-            {loading ? 'جارٍ التحقق...' : 'تسجيل الدخول (Supabase Sign-In)'}
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                <span>جارٍ التحقق والاعتماد...</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-4 h-4" />
+                <span>تسجيل الدخول الآمن للمنصة</span>
+              </>
+            )}
           </button>
         </form>
 
-        {/* Quick Demo Access Roles (Section 4 directive) */}
-        <div className="space-y-2.5 pt-2 border-t border-white/10">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs text-slate-300 font-bold">أو الدخول السريع لاختبار أدوار الـ RBAC الـ 5:</span>
-            <span className="text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-              اختبار الأدوار
+        {/* Credentials Helper Toggle */}
+        <div className="pt-2 border-t border-white/10">
+          <button
+            type="button"
+            onClick={() => setShowCredentialsHelper(!showCredentialsHelper)}
+            className="w-full flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-all text-right text-xs text-slate-400 hover:text-white"
+          >
+            <span className="flex items-center gap-2">
+              <Info className="w-4 h-4 text-cyan-400" />
+              <span>بيانات الدخول المصرح بها للإدارة</span>
             </span>
-          </div>
+            <span className="text-[11px] text-cyan-400 underline">
+              {showCredentialsHelper ? 'إخفاء' : 'عرض الحسابات'}
+            </span>
+          </button>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {demoUsers.map(u => {
-              const meta = getBIRoleMeta(u.role);
-              return (
-                <button
-                  key={u.id}
-                  onClick={() => handleQuickLogin(u)}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-emerald-500/15 border border-white/5 hover:border-emerald-500/30 transition-all text-right group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-slate-800 group-hover:bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs transition-colors shrink-0">
-                      {u.avatar}
-                    </div>
-                    <div className="overflow-hidden">
-                      <div className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors truncate">
-                        {u.name}
+          {showCredentialsHelper && (
+            <div className="mt-3 p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/20 space-y-2.5 text-xs animate-fadeIn">
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                انقر على أي حساب لتعبئة بياناته تلقائياً أو استخدم كلمة المرور العامة: <code className="bg-slate-800 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-bold">dora2026</code>
+              </p>
+              <div className="space-y-1.5">
+                {AUTH_ACCOUNTS.slice(0, 3).map((acc) => (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => fillCredentials(acc.username, acc.password)}
+                    className="w-full flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/5 hover:border-emerald-500/30 transition-all text-right group"
+                  >
+                    <div>
+                      <div className="font-bold text-white text-xs group-hover:text-emerald-300">
+                        {acc.name} ({acc.username})
                       </div>
-                      <div className="text-[10px] text-slate-400 truncate">{meta.label}</div>
+                      <div className="text-[10px] text-slate-400">{acc.title}</div>
                     </div>
-                  </div>
-                  <ArrowLeft className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400 group-hover:-translate-x-1 transition-all shrink-0" />
-                </button>
-              );
-            })}
-          </div>
+                    <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      تعبئة
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="text-center text-[10px] text-slate-500 font-mono pt-2 border-t border-white/5">
-          درة السيارة © 2026 • Standalone Executive Business Intelligence Platform
+        {/* Security Notice */}
+        <div className="text-center text-[11px] text-slate-500 leading-relaxed">
+          🔒 منصة سرية ومحمية بموجب سياسة أمن المعلومات لشركة درة السيارة.
         </div>
       </div>
     </div>

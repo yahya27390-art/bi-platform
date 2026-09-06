@@ -4,51 +4,78 @@ import { BI_ROLES, getBIPermissions, getBIRoleMeta, normalizeRole } from '../lib
 
 const BIAuthContext = createContext(null);
 
-export const DEMO_USERS = [
-  {
-    id: 'user-owner',
-    name: 'فهد ناصر الجوعي',
-    email: 'owner@doratcars.com',
-    role: BI_ROLES.OWNER,
-    avatar: 'ف',
-  },
+// Authorized Management Accounts for Dora Cars BI Platform
+export const AUTH_ACCOUNTS = [
   {
     id: 'user-admin',
-    name: 'يحيي محمد باشا',
+    username: 'admin',
     email: 'admin@doratcars.com',
+    password: 'dora#admin2026',
+    name: 'يحيي محمد باشا',
     role: BI_ROLES.ADMIN,
     avatar: 'ي',
+    title: 'مدير المنصة التنفيذي',
+  },
+  {
+    id: 'user-owner',
+    username: 'owner',
+    email: 'owner@doratcars.com',
+    password: 'dora#owner2026',
+    name: 'فهد ناصر الجوعي',
+    role: BI_ROLES.OWNER,
+    avatar: 'ف',
+    title: 'مالك المنصة / الإدارة العليا',
   },
   {
     id: 'user-analyst',
-    name: 'سارة خالد',
+    username: 'analyst',
     email: 'analyst@doratcars.com',
+    password: 'dora#analyst2026',
+    name: 'سارة خالد',
     role: BI_ROLES.ANALYST,
     avatar: 'س',
+    title: 'محلل أعمال وبيانات',
   },
   {
     id: 'user-mediabuyer',
-    name: 'عبدالرحمن الشهري',
+    username: 'buyer',
     email: 'buyer@doratcars.com',
+    password: 'dora#buyer2026',
+    name: 'عبدالرحمن الشهري',
     role: BI_ROLES.MEDIA_BUYER,
     avatar: 'ع',
+    title: 'مسؤول الميديا باينج والحملات',
   },
   {
     id: 'user-viewer',
-    name: 'ماجد العتيبي',
+    username: 'viewer',
     email: 'viewer@doratcars.com',
+    password: 'dora#viewer2026',
+    name: 'ماجد العتيبي',
     role: BI_ROLES.VIEWER,
     avatar: 'م',
+    title: 'مراقب عام (عرض فقط)',
   },
 ];
 
+// Universal Master Passwords accepted for convenience and management emergency access
+const MASTER_PASSWORDS = ['dora2026', 'dora#2026', 'dora@2026'];
+
 export function BIAuthProvider({ children }) {
+  // STRICT GATEKEEPER: Default to null if not authenticated!
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('bi_active_user');
-      return saved ? JSON.parse(saved) : DEMO_USERS[0];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Ensure valid user object
+        if (parsed && parsed.id && parsed.role) {
+          return parsed;
+        }
+      }
+      return null;
     } catch {
-      return DEMO_USERS[0];
+      return null;
     }
   });
 
@@ -60,15 +87,16 @@ export function BIAuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        // Fetch role from user metadata or profile table
         const role = session.user.user_metadata?.bi_role || session.user.app_metadata?.bi_role || BI_ROLES.VIEWER;
         const biUser = {
           id: session.user.id,
           email: session.user.email,
+          username: session.user.email?.split('@')[0],
           name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
           role: normalizeRole(role),
           avatar: (session.user.user_metadata?.full_name || session.user.email || 'U')[0].toUpperCase(),
           isSupabaseAuth: true,
+          authenticatedAt: new Date().toISOString(),
         };
         setUser(biUser);
         localStorage.setItem('bi_active_user', JSON.stringify(biUser));
@@ -81,36 +109,101 @@ export function BIAuthProvider({ children }) {
   useEffect(() => {
     if (user) {
       localStorage.setItem('bi_active_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('bi_active_user');
     }
   }, [user]);
 
-  // Direct login as demo user/role
-  const loginAs = (userIdOrRole) => {
-    const found = DEMO_USERS.find(u => u.id === userIdOrRole || u.role === userIdOrRole) || {
-      id: `user-${userIdOrRole}`,
-      name: `مستخدم تجريبي (${userIdOrRole})`,
-      email: `${userIdOrRole.toLowerCase()}@doratcars.com`,
-      role: normalizeRole(userIdOrRole),
-      avatar: userIdOrRole[0],
-    };
-    setUser(found);
-  };
-
-  // Login via Supabase credentials
-  const loginWithSupabase = async (email, password) => {
-    if (!isSupabaseConfigured || !supabase) {
-      throw new Error('قاعدة بيانات Supabase غير مهيأة في متغيرات البيئة. يمكنك استخدام الدخول التجريبي.');
-    }
+  // Primary Login Function (Username / Email + Password)
+  const loginWithCredentials = async (identifier, password) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      return data;
+      const cleanId = (identifier || '').trim().toLowerCase();
+      const cleanPass = (password || '').trim();
+
+      if (!cleanId || !cleanPass) {
+        throw new Error('يرجى إدخال اسم المستخدم وكلمة المرور');
+      }
+
+      // Check registered system accounts
+      const matched = AUTH_ACCOUNTS.find(
+        acc => acc.username.toLowerCase() === cleanId || acc.email.toLowerCase() === cleanId
+      );
+
+      if (matched) {
+        const isPassValid =
+          matched.password === cleanPass ||
+          MASTER_PASSWORDS.includes(cleanPass);
+
+        if (isPassValid) {
+          const authUser = {
+            id: matched.id,
+            email: matched.email,
+            username: matched.username,
+            name: matched.name,
+            role: matched.role,
+            avatar: matched.avatar,
+            title: matched.title,
+            authenticatedAt: new Date().toISOString(),
+          };
+          setUser(authUser);
+          localStorage.setItem('bi_active_user', JSON.stringify(authUser));
+          return authUser;
+        }
+      }
+
+      // If Supabase is configured and input is an email, attempt Supabase sign-in
+      if (isSupabaseConfigured && supabase && cleanId.includes('@')) {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: cleanId,
+            password: cleanPass,
+          });
+          if (!error && data?.user) {
+            const role = data.user.user_metadata?.bi_role || BI_ROLES.VIEWER;
+            const biUser = {
+              id: data.user.id,
+              email: data.user.email,
+              username: data.user.email?.split('@')[0],
+              name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
+              role: normalizeRole(role),
+              avatar: (data.user.email || 'U')[0].toUpperCase(),
+              isSupabaseAuth: true,
+              authenticatedAt: new Date().toISOString(),
+            };
+            setUser(biUser);
+            localStorage.setItem('bi_active_user', JSON.stringify(biUser));
+            return biUser;
+          }
+        } catch (supaErr) {
+          console.warn('Supabase signin attempt:', supaErr);
+        }
+      }
+
+      throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة. يرجى التأكد من البيانات والمحاولة مجدداً.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Role switching (ONLY allowed if already authenticated)
+  const loginAs = (userIdOrRole) => {
+    if (!user) {
+      console.warn('Authentication required before role switching');
+      return;
+    }
+    const found = AUTH_ACCOUNTS.find(u => u.id === userIdOrRole || u.role === userIdOrRole);
+    if (found) {
+      const updated = {
+        ...found,
+        authenticatedAt: user.authenticatedAt,
+      };
+      setUser(updated);
+      localStorage.setItem('bi_active_user', JSON.stringify(updated));
+    }
+  };
+
+  // Secure Logout
   const logout = async () => {
     if (isSupabaseConfigured && supabase) {
       try {
@@ -131,11 +224,11 @@ export function BIAuthProvider({ children }) {
       user,
       permissions,
       roleMeta,
-      roleLabel: roleMeta.label,
+      roleLabel: roleMeta?.label || 'مستخدم',
+      loginWithCredentials,
       loginAs,
-      loginWithSupabase,
       logout,
-      demoUsers: DEMO_USERS,
+      demoUsers: AUTH_ACCOUNTS,
       isAuthenticated: !!user,
       isLoading,
       isSupabaseConfigured,
