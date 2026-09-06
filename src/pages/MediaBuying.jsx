@@ -7,12 +7,14 @@ import PlatformRadarChart from '../components/charts/PlatformRadarChart';
 import { PlatformBadge, GrowthChip, AttributionNote, CardSkeleton, SectionHeader } from '../components/shared/SharedComponents';
 import { cn } from '@/lib/utils';
 import { MOCK_PLATFORM_PERIOD_METRICS } from '../data/mockData';
-import { Compass, Sparkles, Video, Facebook } from 'lucide-react';
+import { Compass, Sparkles, Video, Facebook, Search } from 'lucide-react';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
 import TikTokIntegrationModal from '../components/shared/TikTokIntegrationModal';
 import { loadTikTokConfig } from '../lib/tiktokIntegration';
 import MetaIntegrationModal from '../components/shared/MetaIntegrationModal';
 import { loadMetaConfig } from '../lib/metaIntegration';
+import GoogleAdsIntegrationModal from '../components/shared/GoogleAdsIntegrationModal';
+import { loadGoogleAdsConfig } from '../lib/googleAdsIntegration';
 
 const PLATFORM_TABS = [
   { slug: 'all',    label: 'الكل' },
@@ -38,6 +40,8 @@ export default function MediaBuying() {
   const [tiktokConfig, setTikTokConfig] = useState(loadTikTokConfig);
   const [showMetaModal, setShowMetaModal] = useState(false);
   const [metaConfig, setMetaConfig] = useState(loadMetaConfig);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googleConfig, setGoogleConfig] = useState(loadGoogleAdsConfig);
   const { data: platforms, loading }    = useAdMetrics(periodId);
   const { data: campaigns }             = useCampaigns({ periodId, platform: activePlatform === 'all' ? undefined : activePlatform });
   const { data: funnels }               = useAdFunnel(periodId, activePlatform === 'all' ? 'meta' : activePlatform);
@@ -55,9 +59,20 @@ export default function MediaBuying() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">أداء الإعلانات المدفوعة (Media Buying Intelligence)</h1>
-          <p className="text-slate-500 text-sm mt-1">تحليل معمق عبر القنوات: Meta · Google · TikTok مع توزيع الإنفاق والعائد</p>
+          <p className="text-slate-500 text-sm mt-1">تحليل معمق عبر القنوات: Google · Meta · TikTok مع توزيع الإنفاق والعائد</p>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Google Ads Integration Button */}
+          <button
+            onClick={() => setShowGoogleModal(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-bold text-xs transition-all shadow-sm"
+            title="ربط حساب Google Ads وحملات البحث والخرائط"
+          >
+            <Search className="w-4 h-4 text-amber-600" />
+            <span>{googleConfig.isConnected ? 'جوجل: متصل حياً' : 'ربط إعلانات جوجل'}</span>
+            <span className={`w-2 h-2 rounded-full ${googleConfig.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+          </button>
+
           {/* Meta Integration Button */}
           <button
             onClick={() => setShowMetaModal(true)}
@@ -262,6 +277,13 @@ export default function MediaBuying() {
         isOpen={showMetaModal}
         onClose={() => setShowMetaModal(false)}
         onSyncComplete={(updated) => setMetaConfig(updated)}
+      />
+
+      {/* Google Ads Integration Modal */}
+      <GoogleAdsIntegrationModal
+        isOpen={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        onSyncComplete={(updated) => setGoogleConfig(updated)}
       />
     </div>
   );

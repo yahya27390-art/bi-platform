@@ -75,6 +75,8 @@ import TikTokIntegrationModal from '../components/shared/TikTokIntegrationModal'
 import { loadTikTokConfig, formatTikTokForAgentPrompt } from '../lib/tiktokIntegration';
 import MetaIntegrationModal from '../components/shared/MetaIntegrationModal';
 import { loadMetaConfig, formatMetaForAgentPrompt } from '../lib/metaIntegration';
+import GoogleAdsIntegrationModal from '../components/shared/GoogleAdsIntegrationModal';
+import { loadGoogleAdsConfig, formatGoogleAdsForAgentPrompt } from '../lib/googleAdsIntegration';
 
 // System prompt grounding the AI Agent in real Dora Cars data
 const DORA_SYSTEM_PROMPT = `أنت المساعد الذكي والخبير التسويقي الرقمي الخاص لشركة "درة السيارة" (Dora Cars) في المملكة العربية السعودية.
@@ -378,6 +380,34 @@ ${fileList}
 3. **أتمتة الردود السريعة في واتساب درة:** رسالة ترحيب آلية تطلب: "موديل السيارة + سنة الصنع + رقم الهيكل VIN + القطعة المطلوبة" لتسريع إتمام الطلب في أقل من دقيقتين.`;
   }
 
+  // Google Ads Intelligence (Search & Maps)
+  if (lower.includes('جوجل') || lower.includes('google') || lower.includes('بحث') || lower.includes('search') || lower.includes('خرائط') || lower.includes('maps') || lower.includes('بريدة') || lower.includes('القصيم')) {
+    return `🎯 **تحليل ذكي لحملات إعلانات جوجل (Google Ads Search & Maps) من واقع تقرير شهر أغسطس 2026 الحقيقي لدرة السيارة:**
+
+📊 **مؤشرات أداء إعلانات جوجل المعتمدة:**
+- **إجمالي الإنفاق:** 4,660.27 ر.س
+- **إجمالي التفاعلات والنقرات:** **89,820 تفاعل** (معدل تفاعل قياسي **38.27%**!)
+- **مرات الظهور:** 234,672 ظهور
+- **متوسط تكلفة التفاعل:** **0.05 ر.س** فقط!
+
+🏆 **تفاصيل أهم الحملات المعتمدة:**
+1. **حملة البحث الأولى (DEC Search Campaign):**
+   - الإنفاق: 1,730.97 ر.س | نقرات شراء: 4,605 | معدل تفاعل: 13.71% | متوسط CPC: 0.38 ر.س
+   - تتصدر الترتيب الأول في شبكة البحث لكلمات مفتاحية ذات نية شراء عالية (مثل: "درة قطع غيار"، "قطع غيار هيونداي أصلية").
+   - *ملاحظة:* الحملة مؤهلة ولكنها مقيدة بالميزانية (محدودة بـ 100 ر.س يومياً).
+2. **حملة خرائط فرع كيا (Google Maps KIA):**
+   - الإنفاق: 599.56 ر.س | تفاعلات: **69,757 تفاعل** بمعدل استثنائي **52.96%** وتكلفة **0.01 ر.س** فقط!
+3. **حملة خرائط الفرع الرئيسي (Google Maps):**
+   - الإنفاق: 1,146.32 ر.س | تفاعلات وتوجيه مسار: 2,447 تفاعل.
+4. **حملة خرائط الفرع الثالث (الرواف):**
+   - تفاعلات: 11,467 تفاعل بإنفاق 316.84 ر.س.
+
+💡 **توصيات الإيجنت لليوم الوطني ومضاعفة المبيعات:**
+1. **فك قيد ميزانية حملة DEC Search:** زيادة الميزانية اليومية من 100 ر.س إلى 150-200 ر.س خلال أسبوع اليوم الوطني لحصد كل عمليات البحث عن "عروض قطع غيار اليوم الوطني".
+2. **استثمار قوة حملات الخرائط:** تحديث صور بروفايل فروع بريدة على Google Maps ببانرات اليوم الوطني وكود الخصم.
+3. **التكامل مع المتجر:** توجيه 50% من إعلانات البحث لصفحات تصنيفات متجر سلة مع تفعيل ملحقات الاتصال المباشر (Call Assets).`;
+  }
+
   // Memory or Remember check
   if (lower.includes('ذاكر') || lower.includes('فاكر') || lower.includes('تتذكر') || lower.includes('اتعلمت') || lower.includes('افتكر')) {
     if (memories && memories.length > 0) {
@@ -538,6 +568,10 @@ export default function PrivateCampaignLab() {
   // Meta Integration State
   const [showMetaModal, setShowMetaModal] = useState(false);
   const [metaConfig, setMetaConfig] = useState(loadMetaConfig);
+
+  // Google Ads Integration State
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googleConfig, setGoogleConfig] = useState(loadGoogleAdsConfig);
 
   // New campaign modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -922,7 +956,8 @@ export default function PrivateCampaignLab() {
     const sallaContext = formatSallaForAgentPrompt(sallaConfig);
     const tiktokContext = formatTikTokForAgentPrompt(tiktokConfig);
     const metaContext = formatMetaForAgentPrompt(metaConfig);
-    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${sallaContext}\n\n${tiktokContext}\n\n${metaContext}\n\n${memoriesContext}\n\n${tasksContext}`;
+    const googleContext = formatGoogleAdsForAgentPrompt(googleConfig);
+    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${sallaContext}\n\n${tiktokContext}\n\n${metaContext}\n\n${googleContext}\n\n${memoriesContext}\n\n${tasksContext}`;
 
     // Append textual content of documents (csv, txt, json) to prompt
     let fullUserQueryText = userQuery;
@@ -1192,6 +1227,16 @@ export default function PrivateCampaignLab() {
               <Facebook className="w-4 h-4 text-[#1877f2]" />
               <span>{metaConfig.isConnected ? 'ميتا: متصل حياً' : 'ربط ميتا (Meta Ads)'}</span>
               <span className={`w-2 h-2 rounded-full ${metaConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-[#1877f2]'}`} />
+            </button>
+
+            <button
+              onClick={() => setShowGoogleModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 text-amber-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
+              title="ربط ومزامنة إعلانات جوجل والبحث والخرائط (Google Ads)"
+            >
+              <Search className="w-4 h-4 text-amber-400" />
+              <span>{googleConfig.isConnected ? 'جوجل: متصل حياً' : 'ربط جوجل (Google Ads)'}</span>
+              <span className={`w-2 h-2 rounded-full ${googleConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
             </button>
 
             <button
@@ -1530,6 +1575,13 @@ export default function PrivateCampaignLab() {
                 >
                   <Facebook className="w-3 h-3 text-[#1877f2]" />
                   <span>💬 محادثات واتساب وإعلانات ميتا</span>
+                </button>
+                <button
+                  onClick={() => handleSendQuery('حلل لي حملات إعلانات جوجل والبحث والخرائط لدرة وكيف نستفيد منها في مبيعات اليوم الوطني؟')}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-500/40 transition-all whitespace-nowrap text-xs font-medium flex items-center gap-1"
+                >
+                  <Search className="w-3 h-3 text-amber-400" />
+                  <span>🎯 حملات بحث وخرائط جوجل</span>
                 </button>
                 <button
                   onClick={() => handleSendQuery('نظم نفسك وبورد المهام الموكلة إليك واقترح أولويات العمل')}
@@ -3128,6 +3180,17 @@ export default function PrivateCampaignLab() {
         isOpen={showMetaModal}
         onClose={() => setShowMetaModal(false)}
         onSyncComplete={(updatedCfg) => setMetaConfig(updatedCfg)}
+        onConsultAgent={(query) => {
+          setActiveSubTab('chat_lab');
+          handleSendQuery(query);
+        }}
+      />
+
+      {/* Google Ads Integration Modal */}
+      <GoogleAdsIntegrationModal
+        isOpen={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        onSyncComplete={(updatedCfg) => setGoogleConfig(updatedCfg)}
         onConsultAgent={(query) => {
           setActiveSubTab('chat_lab');
           handleSendQuery(query);
