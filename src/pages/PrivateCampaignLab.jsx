@@ -250,32 +250,44 @@ function generateSmartLocalReply(q) {
 3. ⚙️ **لربط إيجنت حي بالكامل:** انقر على زر "إعدادات الإيجنت" بالأعلى وضع مفتاح Google Gemini API ليقوم الموديل بالرد عليك ديناميكياً بكل ذكاء!`;
 }
 
+const OFFICIAL_GEMINI_KEY = 'AIzaSyA9qOLWzie8GC4SmpD_lxF_jYsNX3ecquo';
+
 export default function PrivateCampaignLab() {
   // AI Agent Configuration State
   const [agentConfig, setAgentConfig] = useState(() => {
     try {
       const saved = localStorage.getItem('dora_ai_agent_config');
-      return saved ? JSON.parse(saved) : {
-        provider: 'gemini', // 'gemini' | 'openai'
-        apiKey: '',
-        model: 'gemini-1.5-flash',
-        enabled: false,
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.apiKey && parsed.apiKey.startsWith('AIzaSy')) {
+          return {
+            ...parsed,
+            model: parsed.model === 'gemini-1.5-flash' ? 'gemini-flash-latest' : parsed.model,
+            enabled: true,
+          };
+        }
+      }
+      return {
+        provider: 'gemini',
+        apiKey: OFFICIAL_GEMINI_KEY,
+        model: 'gemini-flash-latest',
+        enabled: true,
       };
     } catch {
       return {
         provider: 'gemini',
-        apiKey: '',
-        model: 'gemini-1.5-flash',
-        enabled: false,
+        apiKey: OFFICIAL_GEMINI_KEY,
+        model: 'gemini-flash-latest',
+        enabled: true,
       };
     }
   });
 
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [tempApiKey, setTempApiKey] = useState(agentConfig.apiKey || '');
+  const [tempApiKey, setTempApiKey] = useState(agentConfig.apiKey || OFFICIAL_GEMINI_KEY);
   const [tempProvider, setTempProvider] = useState(agentConfig.provider || 'gemini');
-  const [tempModel, setTempModel] = useState(agentConfig.model || 'gemini-1.5-flash');
+  const [tempModel, setTempModel] = useState(agentConfig.model || 'gemini-flash-latest');
   const [configSaveStatus, setConfigSaveStatus] = useState('');
 
   // Saved campaigns in localStorage
@@ -406,7 +418,8 @@ export default function PrivateCampaignLab() {
   // Call Live AI Agent API (Google Gemini or OpenAI)
   const callLiveAgent = async (userQuery, history) => {
     if (agentConfig.provider === 'gemini') {
-      const model = agentConfig.model || 'gemini-1.5-flash';
+      let model = agentConfig.model || 'gemini-flash-latest';
+      if (model === 'gemini-1.5-flash') model = 'gemini-flash-latest';
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${agentConfig.apiKey}`;
 
       // Format multi-turn conversation
@@ -1179,9 +1192,9 @@ export default function PrivateCampaignLab() {
                 >
                   {tempProvider === 'gemini' ? (
                     <>
-                      <option value="gemini-1.5-flash">gemini-1.5-flash (موصى به وسريع جداً)</option>
-                      <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp (الجيل الأحدث)</option>
-                      <option value="gemini-1.5-pro">gemini-1.5-pro (للمهام المعقدة)</option>
+                      <option value="gemini-flash-latest">gemini-flash-latest (موصى به وسريع جداً)</option>
+                      <option value="gemini-2.5-flash">gemini-2.5-flash (إصدار 2.5 فلاش)</option>
+                      <option value="gemini-pro-latest">gemini-pro-latest (النسخة الاحترافية المتقدمة)</option>
                     </>
                   ) : (
                     <>
