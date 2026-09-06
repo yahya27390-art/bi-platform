@@ -33,14 +33,17 @@ export default function MetaIntegrationModal({ isOpen, onClose, onSyncComplete, 
   const [adAccountId, setAdAccountId] = useState(metaConfig.adAccountId || '1820338072104640');
   const [primaryPixelId, setPrimaryPixelId] = useState(metaConfig.primaryPixelId || '1581120113149357');
   const [secondaryPixelId, setSecondaryPixelId] = useState(metaConfig.secondaryPixelId || '1285376456874397');
-  const [accessToken, setAccessToken] = useState(metaConfig.accessToken || '');
+  const [accessToken, setAccessToken] = useState(
+    metaConfig.accessToken ||
+      'EAAUaLFoDrJABSVbiAAMoR7wNS2j8zNUwTDL3AqmE9xSvDBlva3m8tye1y5C9VETiA6annvgNxg8lnOa5Vw82Of7KxjcMGXZCirHM2DZAU9PhA8tZCGZBM60X28MW4063OEhyyfe4KgmQmAVhXE7bapkOG3xnBKhkkwZALrGScAgogQxLeijeEYluyvRcqxAZDZD'
+  );
   const [showToken, setShowToken] = useState(false);
   const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'guide' | 'preview'
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState(
     metaConfig.isConnected
-      ? { type: 'success', msg: 'متصل حياً بـ Meta Events Manager و Datasets درة (174,000 حدث مسجل)' }
+      ? { type: 'success', msg: 'متصل حياً بـ Meta CAPI Quality API و Datasets درة (174,000 حدث مسجل)' }
       : null
   );
   const [copiedKey, setCopiedKey] = useState(null);
