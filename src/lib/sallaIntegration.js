@@ -8,6 +8,7 @@ export const DEFAULT_SALLA_CONFIG = {
   appId: '849020134',
   clientId: 'b762ff22-f688-4c72-ae7c-8c420c423878',
   clientSecret: '77d07c2c469466308073b0af061dbd132a895c727c5181cf35e4e46e0ee8a9b9',
+  webhookSecret: '85bc2c14ddfcef10a4a5a901537b05107c2c4565b3f340c57b56b1031befd00a',
   merchantId: '1092841',
   storeName: 'درة السيارة لقطع الغيار (doracars.com)',
   storeUrl: 'https://doracars.com',
