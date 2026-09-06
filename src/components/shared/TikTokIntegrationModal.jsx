@@ -32,12 +32,13 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
   const [tiktokConfig, setTikTokConfig] = useState(loadTikTokConfig);
   const [advertiserId, setAdvertiserId] = useState(tiktokConfig.advertiserId || '7344310111864799234');
   const [pixelId, setPixelId] = useState(tiktokConfig.pixelId || 'CT82DF3C77UF2P2A5GNG');
-  const [accessToken, setAccessToken] = useState(tiktokConfig.accessToken || '');
+  const [accessToken, setAccessToken] = useState(tiktokConfig.accessToken || '61a22e0b24b413e83da9ef7e5d012475caea7ec2');
+  const [showToken, setShowToken] = useState(false);
   const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'guide' | 'preview'
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState(
-    tiktokConfig.isConnected ? { type: 'success', msg: 'متصل حياً بحساب TikTok Ads (شركة درة السيارة لقطع غيار السيارات0524)' } : null
+    tiktokConfig.isConnected ? { type: 'success', msg: 'متصل حياً بـ TikTok Events API و DoraCars Pixel (13,733 حدث مسجل)' } : null
   );
   const [copiedStep, setCopiedStep] = useState(null);
 
@@ -283,26 +284,29 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
                   />
                 </div>
 
-                {/* Access Token (Optional for Events API) */}
+                {/* Access Token (TikTok Events API) */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
                       <Zap className="w-3.5 h-3.5 text-purple-400" />
-                      <span>رمز وصول واجهة الأحداث (Events API Access Token - اختياري)</span>
+                      <span>رمز وصول واجهة تطبيقات الأحداث (Events API / CAPI Access Token)</span>
+                      <span className="px-1.5 py-0.2 rounded text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        سيرفر CAPI
+                      </span>
                     </label>
                     <button
                       type="button"
-                      onClick={() => setActiveTab('guide')}
+                      onClick={() => setShowToken(!showToken)}
                       className="text-[11px] text-[#00f2fe] hover:underline"
                     >
-                      أين أجد الرمز؟
+                      {showToken ? 'إخفاء الرمز' : 'إظهار الرمز'}
                     </button>
                   </div>
                   <input
-                    type="password"
+                    type={showToken ? 'text' : 'password'}
                     value={accessToken}
                     onChange={(e) => setAccessToken(e.target.value)}
-                    placeholder="الصق الرمز هنا إذا كنت تستخدم Events API لتتبع السلات مباشرة"
+                    placeholder="الصق الرمز هنا (Events API Access Token)"
                     className="w-full p-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs font-mono text-purple-300 placeholder:text-slate-600 focus:outline-none focus:border-purple-500 transition-all"
                   />
                 </div>
