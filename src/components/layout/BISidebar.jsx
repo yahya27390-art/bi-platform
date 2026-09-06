@@ -4,7 +4,7 @@ import { useBIAuth } from '@/auth/BIAuthContext';
 import {
   LayoutDashboard, TrendingUp, ShoppingCart, MapPin, Package,
   DollarSign, Target, Upload, ChevronRight, ChevronLeft,
-  BarChart3, X, Building2, Sparkles, Lock
+  BarChart3, X, Building2, Sparkles, Lock, MessageSquare
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -16,6 +16,14 @@ const NAV_ITEMS = [
     shortLabel: 'مختبر الحملات (AI)', 
     icon: Sparkles, 
     path: '/campaign-lab', 
+    privateOnly: true,
+    highlight: true,
+  },
+  { 
+    label: 'إيجنت الرد والمحادثات (Meta & TikTok)', 
+    shortLabel: 'إيجنت الردود (Social)', 
+    icon: MessageSquare, 
+    path: '/social-responder', 
     privateOnly: true,
     highlight: true,
   },

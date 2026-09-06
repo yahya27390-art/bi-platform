@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAdMetrics, useCampaigns, useAdFunnel, usePeriods } from '../hooks/useBIData';
 import { formatSAR, formatNum, formatPercent, formatMultiplier, getKPIStatus, STATUS_STYLES } from '../lib/kpiEngine';
 import { TrendAreaChart } from '../components/charts/Charts';
@@ -7,7 +8,7 @@ import PlatformRadarChart from '../components/charts/PlatformRadarChart';
 import { PlatformBadge, GrowthChip, AttributionNote, CardSkeleton, SectionHeader } from '../components/shared/SharedComponents';
 import { cn } from '@/lib/utils';
 import { MOCK_PLATFORM_PERIOD_METRICS } from '../data/mockData';
-import { Compass, Sparkles, Video, Facebook, Search } from 'lucide-react';
+import { Compass, Sparkles, Video, Facebook, Search, MessageSquare, ArrowLeft } from 'lucide-react';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
 import TikTokIntegrationModal from '../components/shared/TikTokIntegrationModal';
 import { loadTikTokConfig } from '../lib/tiktokIntegration';
@@ -107,6 +108,33 @@ export default function MediaBuying() {
       </div>
 
       <AttributionNote model="Last Click" window="7 أيام" />
+
+      {/* Social Responder Agent Quick Access Banner */}
+      <div className="p-4 sm:p-5 rounded-3xl border border-blue-900/60 bg-gradient-to-r from-[#0c1832] via-[#0f2042] to-[#091326] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300 shrink-0 shadow-inner">
+            <MessageSquare className="w-5 h-5 text-teal-400" />
+          </div>
+          <div>
+            <div className="font-black text-sm sm:text-base flex flex-wrap items-center gap-2 text-white">
+              <span>إيجنت الرد الذكي على رسائل وتعليقات ميتا وتيك توك (Social Responder)</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold">
+                نشط حياً 🟢
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-0.5">
+              متابعة والرد الفوري لـ 1,617 محادثة واتساب وتعليقات إعلانات تيك توك وإنستقرام بأسلوب سعودي ذكي
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/social-responder"
+          className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-teal-500/20 transition-all whitespace-nowrap flex items-center gap-2 shrink-0"
+        >
+          <span>فتح صندوق الوارد والمحادثات</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+        </Link>
+      </div>
 
       {/* Multi-Axis Channel Radar Matrix Card */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
