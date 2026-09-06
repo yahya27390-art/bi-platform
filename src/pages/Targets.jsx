@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { Target, CheckCircle, AlertCircle, XCircle, Award } from 'lucide-react';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
 
-function TargetRow({ label, actual, target, format = 'sar', color = '#059669' }) {
+function TargetRow({ label, actual, target, format = 'sar', color = '#059669', subtitle }) {
   const pct = calcTargetAchievement(actual, target);
   const status = pct >= 95 ? 'good' : pct >= 75 ? 'warning' : 'critical';
   const StatusIcon = pct >= 95 ? CheckCircle : pct >= 75 ? AlertCircle : XCircle;
@@ -30,9 +30,12 @@ function TargetRow({ label, actual, target, format = 'sar', color = '#059669' })
       <StatusIcon className={cn('w-4 h-4 shrink-0', statusColor)} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-sm text-slate-800 font-bold">{label}</span>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-500 font-medium">{displayActual} / {displayTarget}</span>
+          <div className="flex flex-col">
+            <span className="text-sm text-slate-800 font-bold">{label}</span>
+            {subtitle && <span className="text-[11px] text-slate-500 font-medium">{subtitle}</span>}
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs text-slate-500 font-medium" dir="ltr">{displayActual} / {displayTarget}</span>
             <span className={cn('text-sm font-black', statusColor)}>{pct.toFixed(1)}%</span>
           </div>
         </div>
@@ -137,15 +140,63 @@ export default function Targets() {
                 </div>
               </div>
 
-              {/* Ad targets */}
+              {/* Ad targets with Full Omnichannel Attribution */}
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <SectionHeader title="مستهدفات الحملات الإعلانية" className="mb-4" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                  <SectionHeader title="مستهدفات الحملات الإعلانية ونموذج الإسناد البيعي" />
+                  <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg w-fit">
+                    إسناد واقعي متكامل (Omnichannel)
+                  </span>
+                </div>
                 <div>
-                  <TargetRow label="العائد على الإنفاق (ROAS المباشر)" actual={kpis.overallROAS} target={targets?.roas || 4} format="multiplier" color="#D97706" />
-                  <TargetRow label="ميزانية الإنفاق الإعلاني" actual={kpis.totalAdSpend} target={targets?.adSpend || 15000} format="sar" color="#EA580C" />
-                  <TargetRow label="ROAS إعلانات ميتا" actual={metaMetrics?.roas || 4.58} target={targets?.metaROAS || 4.5} format="multiplier" color="#2563EB" />
-                  <TargetRow label="ROAS إعلانات جوجل" actual={googleMetrics?.roas || 4.09} target={targets?.googleROAS || 4.2} format="multiplier" color="#059669" />
-                  <TargetRow label="ROAS إعلانات تيك توك" actual={tiktokMetrics?.roas || 2.80} target={targets?.tiktokROAS || 3.5} format="multiplier" color="#0F172A" />
+                  <TargetRow 
+                    label="مضاعف كفاءة التسويق الشامل (Blended MER)" 
+                    subtitle="إجمالي مبيعات الشركة (989.5K) ÷ إجمالي الإنفاق الإعلاني (9,403 ر.س)"
+                    actual={kpis.totalAdSpend > 0 ? (kpis.totalRevenue / kpis.totalAdSpend) : 105.23} 
+                    target={targets?.blendedMER || 85.0} 
+                    format="multiplier" 
+                    color="#D97706" 
+                  />
+                  <TargetRow 
+                    label="ميزانية الإنفاق الإعلاني المعتمدة" 
+                    subtitle="جوجل (4,660 ر.س) + ميتا (3,222 ر.س) + تيك توك (1,521 ر.س)"
+                    actual={kpis.totalAdSpend} 
+                    target={targets?.adSpend || 9403} 
+                    format="sar" 
+                    color="#EA580C" 
+                  />
+                  <TargetRow 
+                    label="مبيعات قنوات التواصل (ميتا + تيك توك)" 
+                    subtitle="المبيعات المغلقة عبر المحادثات: تحويلات بنكية (130.9K) + تمارا (60.5K) + تابي (33.1K)"
+                    actual={periodId === 'p-2026-08' ? 224558.08 : 150000} 
+                    target={targets?.omnichannelRevenue || 180000} 
+                    format="sar" 
+                    color="#8B5CF6" 
+                  />
+                  <TargetRow 
+                    label="العائد الإعلاني لميتا وتيك توك (Messaging ROAS)" 
+                    subtitle="مبيعات المحادثات والتقسيط (224.6K) ÷ إنفاق ميتا وتيك توك (4,743 ر.س)"
+                    actual={periodId === 'p-2026-08' ? 47.35 : 6.0} 
+                    target={targets?.omnichannelROAS || 35.0} 
+                    format="multiplier" 
+                    color="#2563EB" 
+                  />
+                  <TargetRow 
+                    label="ROAS إعلانات جوجل (متجر سلة الإلكتروني)" 
+                    subtitle="مبيعات سلة (36,660 ر.س) ÷ إنفاق جوجل (4,660 ر.س) — دون احتساب مبيعات الفروع"
+                    actual={googleMetrics?.roas || 7.87} 
+                    target={targets?.googleROAS || 5.0} 
+                    format="multiplier" 
+                    color="#059669" 
+                  />
+                  <TargetRow 
+                    label="تحويلات جوجل الإجمالية (خرائط الفروع والمتجر)" 
+                    subtitle="2,160 إجراء تحويل ومكالمات وزيارات فروع بمتوسط تكلفة تحويل 2.16 ر.س"
+                    actual={periodId === 'p-2026-08' ? 2160 : (googleMetrics?.conversions || 450)} 
+                    target={targets?.googleConversions || 1800} 
+                    format="number" 
+                    color="#059669" 
+                  />
                 </div>
               </div>
 

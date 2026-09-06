@@ -98,6 +98,27 @@ export default function PaymentMethodMix({ payments, periodId = 'p-2026-08', onI
         </div>
       </div>
 
+      {/* Attribution Insight Banner */}
+      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-indigo-50/60 to-purple-50/80 border border-blue-200/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5">
+          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse shrink-0" />
+          <span className="text-slate-800 font-bold">
+            نموذج الإسناد البيعي للحملات (Attribution Logic):
+          </span>
+          <span className="text-slate-600 font-medium">
+            مبيعات <strong className="text-purple-900">التحويلات البنكية</strong>، <strong className="text-amber-900">تمارا</strong>، و<strong className="text-cyan-900">تابي</strong> (إجمالي <strong className="text-emerald-700">224,558 ر.س</strong>) تعتمد كلياً على إعلانات محادثات ميتا وتيك توك (عائد <strong>47.35×</strong>)، بينما تدعم إعلانات جوجل حركة الزيارات الميدانية للفروع ومبيعات متجر سلة.
+          </span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
+          <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-black text-[11px]">
+            ميتا وتيك توك: 224.6K ر.س
+          </span>
+          <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-black text-[11px]">
+            جوجل: الفروع + سلة
+          </span>
+        </div>
+      </div>
+
       {/* Grid: Donut Chart on Left, Detail Table on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         {/* Chart Column */}

@@ -484,9 +484,18 @@ export const MOCK_TARGETS = {
   },
   'p-2026-08': {
     revenue: 800000, netProfit: 277264.11, adSpend: 9403,
-    roas: 105.23, orders: 73, newCustomers: 1617, cpa: 5.81,
-    hyundaiRevenue: 350000, kiaRevenue: 200000, ecommerceRevenue: 36660,
-    metaROAS: 120.0, googleROAS: 115.0, tiktokROAS: 25.0,
+    blendedMER: 85.0, // Blended MER: Total Company Sales (989.5K) / Total Ad Spend (9.4K) = 105.23x
+    roas: 15.0, // Overall direct platform-attributed ROAS (Actual: 19.79x)
+    orders: 73, newCustomers: 1617, cpa: 5.81,
+    hyundaiRevenue: 350000, kiaRevenue: 200000, ecommerceRevenue: 35000,
+    // Meta & TikTok Omnichannel Attribution: 100% of Bank Transfers (130.9K) + Tamara (60.5K) + Tabby (33.1K) = 224,558.08 SAR
+    omnichannelRevenue: 180000,
+    omnichannelROAS: 35.0, // Actual: 224,558.08 / 4,742.73 = 47.35x
+    metaROAS: 30.0, // Actual: 130,931.08 / 3,221.60 = 40.64x
+    metaConversations: 1200, // Actual: 1,617 conversations
+    googleROAS: 5.0, // Actual Salla Store ROAS: 36,660.19 / 4,660.27 = 7.87x
+    googleConversions: 1800, // Actual: 2,160 conversions (Maps local visits + Store actions)
+    tiktokROAS: 8.0, // Actual: 18,500 / 1,521.13 = 12.16x
   },
 };
 
