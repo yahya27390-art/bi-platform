@@ -237,22 +237,22 @@ export default function BIOverview() {
                 sparklineData={[800000, 850000, 910000, 940000, 970000, 989522]}
               />
               <KPICard
-                title="الربح الإجمالي (Gross Profit)"
-                displayValue={formatSAR(displayedKpis.grossProfit, false)}
-                growth={18.4}
-                icon="📈"
-                color="emerald"
-                sublabel={`هامش ربح إجمالي ${displayedKpis.grossMarginPct?.toFixed(1)}%`}
-                sparklineData={[400000, 425000, 455000, 470000, 485000, 494761]}
+                title="تكلفة البضاعة والمشتريات (COGS)"
+                displayValue={formatSAR(displayedKpis.cogs || 712159.10, false)}
+                growth={null}
+                icon="📦"
+                color="slate"
+                sublabel="تمثل 71.97% من صافي المبيعات بعد المردودات"
+                sparklineData={[580000, 610000, 650000, 675000, 695000, 712159]}
               />
               <KPICard
-                title="صافي ربح الأعمال (Net Profit)"
-                displayValue={canViewNetProfit ? formatSAR(displayedKpis.netProfit, false) : 'محمي 🔒'}
-                growth={canViewNetProfit ? displayedKpis.netProfitGrowth : null}
+                title="أرباح الأعمال المعتمدة (28.03%)"
+                displayValue={canViewNetProfit ? formatSAR(displayedKpis.grossProfit || 277363.06, false) : 'محمي 🔒'}
+                growth={canViewNetProfit ? 22.4 : null}
                 icon="💰"
-                color="purple"
-                sublabel={canViewNetProfit ? `هامش ربح صافي معتمد ${displayedKpis.netProfitMarginPct?.toFixed(2)}%` : 'يتطلب صلاحية المالك أو الإدارة'}
-                sparklineData={[210000, 225000, 240000, 255000, 268000, 277264]}
+                color="emerald"
+                sublabel={canViewNetProfit ? "هامش ربح معتمد 28.03% على صافي المبيعات" : 'يتطلب صلاحية المالك أو الإدارة'}
+                sparklineData={[210000, 225000, 240000, 255000, 268000, 277363]}
               />
               <KPICard
                 title="نسبة تحقيق المستهدف البيعي"
@@ -412,7 +412,7 @@ export default function BIOverview() {
               <span className="text-amber-600">📉</span>
             </div>
             <p className="text-xs text-slate-700 leading-relaxed font-medium">
-              50% تكلفة بضاعة، 21.9% مصاريف تشغيل وإعلانات، محققاً <strong className="text-emerald-700">28.02% صافي ربح</strong> بقيمة <strong className="text-[#0F172A]">277,264.11 ر.س</strong>.
+              71.97% تكلفة البضاعة والمشتريات (712.2K ر.س)، محققاً <strong className="text-emerald-700">28.03% هامش ربح معتمد</strong> على صافي المبيعات بقيمة <strong className="text-[#0F172A]">277,363.06 ر.س</strong>.
             </p>
           </div>
 

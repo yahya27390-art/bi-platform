@@ -433,7 +433,13 @@ export const MOCK_FINANCIALS = {
     grossSales: 1104900.66, returns: 115378.50,
     ecommerceRevenue: 36660.19, // Already consolidated within total company sales
     branchRevenue: 989522.16,
-    cogs: 494761.08, grossProfit: 494761.08, grossMarginPct: 50.0,
+    // Factual Dora Cars Rule: Profit margin on net sales (sales - returns) is 28.03%
+    // Net Sales: 989,522.16 SAR
+    // Cost (71.97%): 712,159.10 SAR
+    // Profit (28.03%): 277,363.06 SAR
+    cogs: 712159.10, 
+    grossProfit: 277363.06, 
+    grossMarginPct: 28.03,
     operatingExpenses: {
       salaries: 112000,
       rent: 42000,
@@ -445,7 +451,7 @@ export const MOCK_FINANCIALS = {
     totalOpex: 217496.97, // including marketing 9403
     ebitda: 286667.11, ebitdaMarginPct: 28.97, depreciation: 4200,
     ebit: 282467.11, interest: 2100, ebt: 280367.11, tax: 3103.00,
-    netProfit: 277264.11, netProfitMarginPct: 28.02, // Exactly 28.02% on Net Sales (989,522.16 * 0.2802)
+    netProfit: 277363.06, netProfitMarginPct: 28.03, // Exactly 28.03% on Net Sales (989,522.16 * 0.2803)
     cashFlow: 295000, accountsReceivable: 31200, inventoryValue: 190400,
     monthlyTarget: 800000, targetAchievementPct: 123.69,
     blendedMER: 105.23, // 989,522.16 / 9,403.00

@@ -3,24 +3,18 @@ import ReactECharts from 'echarts-for-react';
 
 export default function WaterfallChart({ height = 330 }) {
   const categories = [
-    'صافي الإيرادات',
-    'تكلفة البضاعة (COGS)',
-    'إجمالي الربح (Gross)',
-    'مصاريف التشغيل (OPEX)',
-    'الإنفاق الإعلاني',
-    'صافي ربح الأعمال (28.02%)'
+    'صافي المبيعات (Net)',
+    'تكلفة البضاعة (71.97%)',
+    'ربح الأعمال المعتمد (28.03%)'
   ];
 
   // Waterfall calculation based on August 2026 Dora Cars audited data:
   // Net Revenue: 989,522.16 SAR
-  // COGS: -494,761.08 SAR (50.0%)
-  // Gross Profit: 494,761.08 SAR
-  // OPEX: -208,093.97 SAR
-  // Ad Spend: -9,403.00 SAR
-  // Net Profit: 277,264.11 SAR (28.02% of net revenue)
-  const baseData = [0, 494761, 0, 286667, 277264, 0];
-  const positiveData = [989522, '-', 494761, '-', '-', 277264];
-  const negativeData = ['-', 494761, '-', 208094, 9403, '-'];
+  // COGS: -712,159.10 SAR (71.97%)
+  // Profit: 277,363.06 SAR (28.03% of net sales)
+  const baseData = [0, 277363, 0];
+  const positiveData = [989522, '-', 277363];
+  const negativeData = ['-', 712159, '-'];
 
   const option = {
     backgroundColor: 'transparent',

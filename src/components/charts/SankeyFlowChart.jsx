@@ -73,10 +73,8 @@ export default function SankeyFlowChart({ height = 400 }) {
           { name: 'إجمالي صافي المبيعات (989.5K)', value: 989522.16, itemStyle: { color: '#0F172A' } },
 
           // Allocation buckets
-          { name: 'تكلفة البضاعة (COGS)', value: 494761.08, itemStyle: { color: '#64748B' } },
-          { name: 'المصاريف التشغيلية (OPEX)', value: 208093.97, itemStyle: { color: '#D97706' } },
-          { name: 'الإنفاق الإعلاني (Ad Spend)', value: 9403.00, itemStyle: { color: '#E11D48' } },
-          { name: 'صافي أرباح الأعمال (28.02%)', value: 277264.11, itemStyle: { color: '#059669' } },
+          { name: 'تكلفة البضاعة والمشتريات (71.97%)', value: 712159.10, itemStyle: { color: '#64748B' } },
+          { name: 'أرباح الأعمال المعتمدة (28.03%)', value: 277363.06, itemStyle: { color: '#059669' } },
 
           // Detailed marketing breakdown
           { name: 'حملات جوجل (Google Ads)', value: 4660.27, itemStyle: { color: '#2563EB' } },
@@ -95,10 +93,8 @@ export default function SankeyFlowChart({ height = 400 }) {
           { source: 'فرع كيا (269.3K)', target: 'إجمالي صافي المبيعات (989.5K)', value: 269265.00 },
 
           // Revenue Allocation
-          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'تكلفة البضاعة (COGS)', value: 494761.08 },
-          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'المصاريف التشغيلية (OPEX)', value: 208093.97 },
-          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'الإنفاق الإعلاني (Ad Spend)', value: 9403.00 },
-          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'صافي أرباح الأعمال (28.02%)', value: 277264.11 },
+          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'تكلفة البضاعة والمشتريات (71.97%)', value: 712159.10 },
+          { source: 'إجمالي صافي المبيعات (989.5K)', target: 'أرباح الأعمال المعتمدة (28.03%)', value: 277363.06 },
 
           // Ad Spend Breakdown
           { source: 'الإنفاق الإعلاني (Ad Spend)', target: 'حملات جوجل (Google Ads)', value: 4660.27 },
