@@ -1,0 +1,593 @@
+{
+  "propertyId": "421858793",
+  "syncedAt": "2026-09-06T08:53:36.541Z",
+  "period": "2026-08",
+  "channelReport": {
+    "dimensionHeaders": [
+      {
+        "name": "sessionDefaultChannelGroup"
+      }
+    ],
+    "metricHeaders": [
+      {
+        "name": "activeUsers",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "screenPageViews",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "sessions",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "conversions",
+        "type": "TYPE_FLOAT"
+      },
+      {
+        "name": "totalRevenue",
+        "type": "TYPE_CURRENCY"
+      }
+    ],
+    "rows": [
+      {
+        "dimensionValues": [
+          {
+            "value": "Direct"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "5314"
+          },
+          {
+            "value": "15728"
+          },
+          {
+            "value": "6173"
+          },
+          {
+            "value": "32"
+          },
+          {
+            "value": "20518.000004"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Organic Search"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "3450"
+          },
+          {
+            "value": "9586"
+          },
+          {
+            "value": "4415"
+          },
+          {
+            "value": "17"
+          },
+          {
+            "value": "7585.000004"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Paid Search"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "3226"
+          },
+          {
+            "value": "14830"
+          },
+          {
+            "value": "3905"
+          },
+          {
+            "value": "5"
+          },
+          {
+            "value": "6044.9999960000005"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Organic Social"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "2068"
+          },
+          {
+            "value": "3616"
+          },
+          {
+            "value": "2260"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Paid Social"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "266"
+          },
+          {
+            "value": "868"
+          },
+          {
+            "value": "317"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Cross-network"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "197"
+          },
+          {
+            "value": "797"
+          },
+          {
+            "value": "235"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Referral"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "107"
+          },
+          {
+            "value": "1372"
+          },
+          {
+            "value": "306"
+          },
+          {
+            "value": "11"
+          },
+          {
+            "value": "7584.9999999999991"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "AI Assistant"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "70"
+          },
+          {
+            "value": "185"
+          },
+          {
+            "value": "86"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Unassigned"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "29"
+          },
+          {
+            "value": "230"
+          },
+          {
+            "value": "57"
+          },
+          {
+            "value": "1"
+          },
+          {
+            "value": "49.999999"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Paid Other"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "2"
+          },
+          {
+            "value": "9"
+          },
+          {
+            "value": "3"
+          },
+          {
+            "value": "0"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      }
+    ],
+    "rowCount": 10,
+    "metadata": {
+      "schemaRestrictionResponse": {},
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "kind": "analyticsData#runReport"
+  },
+  "cityReport": {
+    "dimensionHeaders": [
+      {
+        "name": "city"
+      }
+    ],
+    "metricHeaders": [
+      {
+        "name": "activeUsers",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "sessions",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "totalRevenue",
+        "type": "TYPE_CURRENCY"
+      }
+    ],
+    "rows": [
+      {
+        "dimensionValues": [
+          {
+            "value": "Jeddah"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "4585"
+          },
+          {
+            "value": "5712"
+          },
+          {
+            "value": "13150.000001"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Riyadh"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "3380"
+          },
+          {
+            "value": "3878"
+          },
+          {
+            "value": "9375.000001"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "(not set)"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "2764"
+          },
+          {
+            "value": "2796"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Dammam"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "1943"
+          },
+          {
+            "value": "2256"
+          },
+          {
+            "value": "6884.999995"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Madinah"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "1115"
+          },
+          {
+            "value": "1288"
+          },
+          {
+            "value": "5410.000002"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Buraydah"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "526"
+          },
+          {
+            "value": "851"
+          },
+          {
+            "value": "3349.999999"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Abha"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "507"
+          },
+          {
+            "value": "556"
+          },
+          {
+            "value": "2004"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Makkah"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "113"
+          },
+          {
+            "value": "145"
+          },
+          {
+            "value": "769"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Al Khobar"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "46"
+          },
+          {
+            "value": "52"
+          },
+          {
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "Tabuk"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "43"
+          },
+          {
+            "value": "56"
+          },
+          {
+            "value": "125.000001"
+          }
+        ]
+      }
+    ],
+    "rowCount": 350,
+    "metadata": {
+      "schemaRestrictionResponse": {},
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "kind": "analyticsData#runReport"
+  },
+  "funnelReport": {
+    "dimensionHeaders": [
+      {
+        "name": "eventName"
+      }
+    ],
+    "metricHeaders": [
+      {
+        "name": "eventCount",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "totalUsers",
+        "type": "TYPE_INTEGER"
+      }
+    ],
+    "rows": [
+      {
+        "dimensionValues": [
+          {
+            "value": "page_view"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "47221"
+          },
+          {
+            "value": "14231"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "view_item"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "12297"
+          },
+          {
+            "value": "7532"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "add_to_cart"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "1191"
+          },
+          {
+            "value": "521"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "begin_checkout"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "514"
+          },
+          {
+            "value": "178"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "purchase"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "66"
+          },
+          {
+            "value": "63"
+          }
+        ]
+      }
+    ],
+    "rowCount": 5,
+    "metadata": {
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "kind": "analyticsData#runReport"
+  }
+}
