@@ -30,13 +30,13 @@ export default function GoogleAdsIntegrationModal({ isOpen, onClose, onSyncCompl
   if (!isOpen) return null;
 
   const [googleConfig, setGoogleConfig] = useState(loadGoogleAdsConfig);
-  const [customerId, setCustomerId] = useState(googleConfig.customerId || '942-817-3051');
+  const [customerId, setCustomerId] = useState(googleConfig.customerId || '676-161-2192');
   const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'guide' | 'preview'
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState(
     googleConfig.isConnected
-      ? { type: 'success', msg: 'متصل حياً بحساب Google Ads وحملات البحث وخرائط بريدة' }
+      ? { type: 'success', msg: 'متصل حياً بحساب دره السياره (676-161-2192) وحملات البحث والخرائط' }
       : null
   );
   const [copiedKey, setCopiedKey] = useState(null);

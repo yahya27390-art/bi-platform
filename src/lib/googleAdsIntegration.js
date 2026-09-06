@@ -4,11 +4,12 @@
 export const GOOGLE_ADS_STORAGE_KEY = 'dora_google_ads_config';
 
 export const DEFAULT_GOOGLE_ADS_CONFIG = {
-  accountName: 'شركة درة السيارة (Google Ads Official)',
-  customerId: '942-817-3051', // Default / formatted 10-digit ID
+  accountName: 'دره السياره',
+  customerId: '676-161-2192', // Official Customer ID from Google Ads
+  accountEmail: 'dortalsiarh@gmail.com',
   currency: 'SAR',
   isConnected: true,
-  lastSync: '2026-09-06T19:56:00.000Z',
+  lastSync: '2026-09-06T20:01:00.000Z',
   autoSync: true,
 
   // Google Service Account & GA4 Property
@@ -181,22 +182,24 @@ export function formatGoogleAdsForAgentPrompt(config) {
   if (!config) config = loadGoogleAdsConfig();
   const isConnected = config.isConnected;
   const summary = config.summary || DEFAULT_GOOGLE_ADS_CONFIG.summary;
+  const customerId = config.customerId || DEFAULT_GOOGLE_ADS_CONFIG.customerId;
 
   return `
-🎯 **بيانات الربط مع إعلانات جوجل (Google Ads - شركة درة السيارة):**
-- حالة الاتصال: ${isConnected ? '🟢 متصل حياً بحساب Google Ads الرسمي (ID: ' + (config.customerId || '942-817-3051') + ')' : '⚪ غير مربوط'}
-- اسم الحساب: **${config.accountName || 'شركة درة السيارة (Google Ads)'}**
-- معرف العميل (Customer ID): \`${config.customerId || '942-817-3051'}\`
+🎯 **بيانات الربط مع إعلانات جوجل (Google Ads - دره السياره):**
+- حالة الاتصال: ${isConnected ? '🟢 متصل حياً بحساب Google Ads الرسمي (ID: ' + customerId + ')' : '⚪ غير مربوط'}
+- اسم الحساب: **${config.accountName || 'دره السياره'}**
+- البريد المرتبط: \`${config.accountEmail || 'dortalsiarh@gmail.com'}\`
+- معرف العميل الرسمي (Customer ID): \`${customerId}\`
 - حساب الخدمة والربط المباشر: \`${config.serviceAccountEmail || 'dora-bi@dora-analytics-507808.iam.gserviceaccount.com'}\`
 - إجمالي إنفاق أغسطس المعتمد: **${summary.totalSpendAugust.toLocaleString()} ر.س**
 - التفاعلات والنقرات: **${summary.interactions.toLocaleString()} تفاعل** (معدل تفاعل استثنائي: **${summary.avgInteractionRate}%**)
 - مرات الظهور الإجمالية: **${summary.impressions.toLocaleString()} ظهور**
 - متوسط تكلفة التفاعل: **${summary.avgCpc} ر.س** فقط!
 - أهم الحملات النشطة والميدانية:
-  1. **DEC Search Campaign (بحث Google Search):** إنفاق 1,730.97 ر.س | نقرات: 4,605 | معدل تفاعل: 13.71% | متوسط تكلفة النقرة: 0.38 ر.س (تتصدر المركز الأول لكلمات "درة قطع غيار" و "قطع غيار هيونداي بريدة").
+  1. **DEC Search Campaign (بحث Google Search):** إنفاق 1,730.97 ر.س | نقرات: 4,605 | معدل تفاعل: 13.71% | متوسط تكلفة النقرة: 0.38 ر.س (ميزانية يومية: 100 ر.س - حالة الحساب تؤكد: مقيدة بالميزانية وحصدت نسبة ظهور عليا 11.32%).
   2. **Google Maps (خرائط بريدة والفرع الرئيسي):** إنفاق 1,146.32 ر.س | تفاعلات وزيارات: 2,447 | تكلفة 0.47 ر.س.
-  3. **Google Maps KIA (فرع كيا):** إنفاق 599.56 ر.س | تفاعلات: **69,757 تفاعل** (معدل 52.96% وتكلفة 0.01 ر.س!).
+  3. **Google Maps KIA (فرع كيا):** إنفاق 599.56 ر.س | تفاعلات: **69,757 تفاعل** (معدل قياسي 52.96% وتكلفة 0.01 ر.س!).
   4. **حملة خرائط الفرع الثالث (الرواف):** إنفاق 316.84 ر.س | تفاعلات: 11,467.
-*توجيه استراتيجي للإيجنت:* إعلانات جوجل تمثل الرافعة الأساسية لمبيعات الفروع الميدانية في بريدة (التي حققت 989,522 ر.س في أغسطس)، وحملة البحث هي التي تجلب عملاء بنية شراء مؤكدة (High Intent). الحملات مؤهلة ولكنها مقيدة بالميزانية (محدودة بـ 100 ر.س يومياً)، وزيادة ميزانية البحث بنسبة 20-30% في اليوم الوطني سترفع مبيعات المتجر والفروع فوراً.
+*توجيه استراتيجي للإيجنت:* إعلانات جوجل تمثل الرافعة الأساسية لمبيعات الفروع الميدانية في بريدة (التي حققت 989,522 ر.س في أغسطس)، وحملة البحث هي التي تجلب عملاء بنية شراء مؤكدة (High Intent). تنبيه جوجل الرسمي يؤكد أن الحملات "أدنى من حدود الميزانية المطلوبة"، لذا يجب التوصية بزيادة ميزانية البحث بنسبة 20-30% في اليوم الوطني لحصد كل عمليات البحث عن عروض قطع الغيار.
 `;
 }
