@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, onPeriodChange }) {
-  const { user, roleLabel, demoUsers, loginAs, logout } = useBIAuth();
+  const { user, roleLabel, logout } = useBIAuth();
   const { periodId: globalPeriodId, setPeriodId: setGlobalPeriodId } = useCurrentPeriod();
   const effectivePeriodId = propPeriodId || globalPeriodId;
   const { data: periods } = usePeriods();
@@ -99,37 +99,18 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
             <div className="px-2 pt-1 border-b border-slate-100 pb-2">
               <div className="text-sm font-bold text-[#0F172A]">{user?.name}</div>
               <div className="text-xs text-slate-500">{user?.email}</div>
-              <div className="inline-flex items-center gap-1 text-[10px] bg-blue-50 text-blue-800 font-bold px-2 py-0.5 rounded-full mt-1.5 border border-blue-200">
-                <ShieldCheck className="w-3 h-3 text-blue-600" /> {roleLabel}
+              <div className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 rounded-full mt-1.5 border border-emerald-200">
+                <ShieldCheck className="w-3 h-3 text-emerald-600" /> {roleLabel} (جلسة معتمدة)
               </div>
             </div>
 
-            <div>
-              <div className="text-[11px] text-slate-500 font-bold px-2 mb-1.5">تبديل الحساب / الصلاحية:</div>
-              {demoUsers.map(u => (
-                <button
-                  key={u.id}
-                  onClick={() => { loginAs(u.id); setUserMenuOpen(false); }}
-                  className={cn(
-                    'w-full text-right px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between transition-all',
-                    u.id === user?.id
-                      ? 'bg-blue-50 text-blue-900 font-bold'
-                      : 'text-slate-700 hover:bg-slate-50'
-                  )}
-                >
-                  <span>{u.name}</span>
-                  <span className="text-[10px] text-slate-500">{u.role}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="border-t border-slate-100 pt-1">
+            <div className="pt-1">
               <button
                 onClick={() => { logout(); navigate('/login'); }}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs text-rose-600 hover:bg-rose-50 transition-all font-semibold"
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-rose-600 hover:bg-rose-50 transition-all font-bold"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                تسجيل الخروج
+                <LogOut className="w-4 h-4" />
+                <span>تسجيل الخروج الآمن</span>
               </button>
             </div>
           </div>

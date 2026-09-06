@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, 
   Lock, 
@@ -31,7 +31,12 @@ import {
   Radio,
   ExternalLink,
   Eye,
-  EyeOff
+  EyeOff,
+  Maximize2,
+  Minimize2,
+  Minus,
+  Copy,
+  RotateCcw
 } from 'lucide-react';
 import { formatSAR, formatNum } from '../lib/kpiEngine';
 import ga4Snapshot from '../data/ga4LiveSnapshot.json';
@@ -339,6 +344,39 @@ export default function PrivateCampaignLab() {
   ]);
   const [inputQuery, setInputQuery] = useState('');
   const [isAiTyping, setIsAiTyping] = useState(false);
+  const [isChatExpanded, setIsChatExpanded] = useState(false);
+  const [copiedMsgIndex, setCopiedMsgIndex] = useState(null);
+  const chatBottomRef = useRef(null);
+
+  // Auto-scroll to bottom of chat when new messages arrive
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, isAiTyping]);
+
+  // Stepper function for budget slider (500 SAR increments)
+  const handleBudgetStep = (delta) => {
+    setBudgetSlider((prev) => Math.max(500, Math.min(200000, prev + delta)));
+  };
+
+  // Copy AI response to clipboard
+  const handleCopyMessage = (text, idx) => {
+    try {
+      navigator.clipboard.writeText(text);
+      setCopiedMsgIndex(idx);
+      setTimeout(() => setCopiedMsgIndex(null), 2000);
+    } catch (e) {}
+  };
+
+  // Clear chat history and restart
+  const handleClearChat = () => {
+    setChatMessages([
+      {
+        sender: 'ai',
+        text: 'تم مسح المحادثة بنجاح! 🚀 أنا جاهز لبدء جلسة تخطيط جديدة معك يا باشا. ما هي الحملة أو الاستراتيجية التي تريد العمل عليها الآن؟',
+        timestamp: 'الآن',
+      },
+    ]);
+  };
 
   // Save campaigns to localStorage
   useEffect(() => {
@@ -539,55 +577,55 @@ export default function PrivateCampaignLab() {
   const activeCampaignsCount = campaigns.filter(c => c.status === 'active').length;
 
   return (
-    <div className="space-y-8 pb-12 font-sans" dir="rtl">
+    <div className="space-y-8 pb-16 font-sans text-slate-200" dir="rtl">
       {/* Top Banner: Confidential Workspace */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#111c38] via-[#0e172e] to-[#091122] border border-cyan-500/30 p-6 md:p-8 shadow-2xl">
-        <div className="absolute top-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0b1325] via-[#0f172a] to-[#0a0f1d] border border-slate-800 p-6 md:p-8 shadow-xl">
+        <div className="absolute top-0 left-0 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                <Lock className="w-3.5 h-3.5 text-purple-400" />
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/25">
+                <Lock className="w-3.5 h-3.5 text-indigo-400" />
                 مساحة سرية خاصة بك (محجوبة تماماً عن حساب المدير)
               </span>
               
               {agentConfig.enabled && agentConfig.apiKey ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
                   <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
                   <span>إيجنت {agentConfig.provider === 'gemini' ? 'Google Gemini' : 'OpenAI'} متصل حياً</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-teal-500/10 text-teal-300 border border-teal-500/25">
+                  <Sparkles className="w-3.5 h-3.5 text-teal-400 animate-spin" />
                   <span>المساعد المدمج نشط (جاهز للربط الحي)</span>
                 </span>
               )}
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-black text-white tracking-wide">
+            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-wide">
               مختبر الحملات والمساعد الذكي (Campaign Lab & AI Copilot)
             </h1>
             <p className="text-xs md:text-sm text-slate-400 max-w-3xl leading-relaxed">
-              مساحتك المستقلة لتنظيم، جدولة، وتطوير الحملات الإعلانية واختبار الاستراتيجيات بحرية تامة. مربوط ببيانات Google Analytics 4 و Search Console المباشرة.
+              مساحتك المستقلة لتنظيم، جدولة، وتطوير الحملات الإعلانية واختبار الاستراتيجيات بحرية تامة. مربوط ببيانات Google Analytics 4 و Search Console ومبيعات الفروع المباشرة.
             </p>
           </div>
 
           <div className="flex items-center gap-3 self-start lg:self-center flex-wrap">
             <button
               onClick={() => setShowSettingsModal(true)}
-              className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-xs md:text-sm transition-all shadow-lg"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
               title="إعدادات ربط الإيجنت (Gemini / OpenAI)"
             >
-              <Settings className="w-4 h-4 text-cyan-400" />
+              <Settings className="w-4 h-4 text-teal-400" />
               <span>إعدادات الإيجنت (API)</span>
               {agentConfig.enabled && <span className="w-2 h-2 rounded-full bg-emerald-400" />}
             </button>
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs md:text-sm shadow-xl shadow-cyan-500/25 transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs md:text-sm shadow-lg shadow-teal-500/20 transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>إضافة حملة جديدة</span>
@@ -596,30 +634,30 @@ export default function PrivateCampaignLab() {
         </div>
 
         {/* Quick Metrics Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-white/10">
-          <div className="bg-white/[0.03] p-3.5 rounded-2xl border border-white/5">
-            <div className="text-[11px] text-slate-400 font-medium">الحملات النشطة</div>
-            <div className="text-xl font-black text-emerald-400 font-mono mt-0.5">
-              {activeCampaignsCount} <span className="text-xs text-slate-500">حملات</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-slate-800">
+          <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
+            <div className="text-xs text-slate-400 font-medium">الحملات النشطة</div>
+            <div className="text-xl font-bold text-emerald-400 font-mono mt-1">
+              {activeCampaignsCount} <span className="text-xs text-slate-500 font-normal">حملات</span>
             </div>
           </div>
-          <div className="bg-white/[0.03] p-3.5 rounded-2xl border border-white/5">
-            <div className="text-[11px] text-slate-400 font-medium">إجمالي الميزانيات المجدولة</div>
-            <div className="text-xl font-black text-white font-mono mt-0.5" dir="ltr">
+          <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
+            <div className="text-xs text-slate-400 font-medium">إجمالي الميزانيات المجدولة</div>
+            <div className="text-xl font-bold text-slate-100 font-mono mt-1" dir="ltr">
               {formatSAR(totalBudget, true)}
             </div>
           </div>
-          <div className="bg-white/[0.03] p-3.5 rounded-2xl border border-white/5">
-            <div className="text-[11px] text-slate-400 font-medium">حالة الإيجنت</div>
-            <div className="text-sm font-black text-cyan-300 font-mono mt-1 flex items-center gap-1.5">
-              <Cpu className="w-4 h-4 text-cyan-400" />
+          <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
+            <div className="text-xs text-slate-400 font-medium">حالة الإيجنت</div>
+            <div className="text-sm font-bold text-teal-300 font-mono mt-1.5 flex items-center gap-1.5">
+              <Cpu className="w-4 h-4 text-teal-400" />
               <span>{agentConfig.enabled ? agentConfig.model : 'Smart Built-in'}</span>
             </div>
           </div>
-          <div className="bg-white/[0.03] p-3.5 rounded-2xl border border-white/5">
-            <div className="text-[11px] text-slate-400 font-medium">الكلمات المتصدرة المكتشفة</div>
-            <div className="text-xl font-black text-purple-400 font-mono mt-0.5">
-              4 كلمات <span className="text-xs text-slate-500">(Rank 1.0)</span>
+          <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
+            <div className="text-xs text-slate-400 font-medium">الكلمات المتصدرة المكتشفة</div>
+            <div className="text-xl font-bold text-indigo-300 font-mono mt-1">
+              4 كلمات <span className="text-xs text-slate-500 font-normal">(Rank 1.0)</span>
             </div>
           </div>
         </div>
@@ -629,29 +667,29 @@ export default function PrivateCampaignLab() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+            <div className="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
               <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-white">ترشيحات الذكاء الاصطناعي التكتيكية (AI Tactical Insights)</h2>
+              <h2 className="text-lg font-bold text-white">ترشيحات الذكاء الاصطناعي التكتيكية (AI Tactical Insights)</h2>
               <p className="text-xs text-slate-400">فرص تسويقية فورية مستخرجة آلياً من بيانات الربط الحي لرفع المبيعات وخفض تكلفة الشراء</p>
             </div>
           </div>
-          <span className="text-xs text-cyan-400 font-mono font-bold bg-cyan-500/10 px-2.5 py-1 rounded-xl border border-cyan-500/20">
+          <span className="text-xs text-slate-300 font-mono font-medium bg-slate-800 px-3 py-1 rounded-xl border border-slate-700">
             تحديث لحظي
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1 */}
-          <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 to-[#0A1628] p-5 space-y-3 relative group hover:border-emerald-500/50 transition-all">
+          <div className="rounded-3xl border border-slate-800/90 hover:border-slate-700 bg-[#0f172a] p-5 space-y-3.5 relative group transition-all shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-sky-500/10 text-sky-300 border border-sky-500/20">
                 فرصة Google Search
               </span>
-              <span className="text-xs font-mono font-bold text-emerald-400">عائد متوقع 4.5x</span>
+              <span className="text-xs font-mono font-bold text-sky-400">عائد متوقع 4.5x</span>
             </div>
-            <h3 className="text-sm font-bold text-white leading-snug">
+            <h3 className="text-sm font-bold text-slate-100 leading-snug">
               اقتناص كلمات البحث المتصدرة بـ Search Console
             </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
@@ -659,22 +697,22 @@ export default function PrivateCampaignLab() {
             </p>
             <button
               onClick={() => handleSendQuery('اقترح خطة لحملة Google Search تستهدف الكلمات المتصدرة في Search Console')}
-              className="w-full py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 font-bold text-xs border border-emerald-500/30 transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs border border-slate-700/60 transition-all flex items-center justify-center gap-1.5"
             >
               <span>توليد خطة الحملة بالإيجنت</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
           </div>
 
           {/* Card 2 */}
-          <div className="rounded-3xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/20 to-[#0A1628] p-5 space-y-3 relative group hover:border-cyan-500/50 transition-all">
+          <div className="rounded-3xl border border-slate-800/90 hover:border-slate-700 bg-[#0f172a] p-5 space-y-3.5 relative group transition-all shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
                 تركيز جغرافي (Geo-Push)
               </span>
-              <span className="text-xs font-mono font-bold text-cyan-400">54% من مبيعات سلة</span>
+              <span className="text-xs font-mono font-bold text-indigo-400">54% من مبيعات سلة</span>
             </div>
-            <h3 className="text-sm font-bold text-white leading-snug">
+            <h3 className="text-sm font-bold text-slate-100 leading-snug">
               توجيه 60% من ميزانية Meta إلى جدة والرياض
             </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
@@ -682,22 +720,22 @@ export default function PrivateCampaignLab() {
             </p>
             <button
               onClick={() => handleSendQuery('كيف استهدف عملاء جدة والرياض في إعلانات انستقرام وسناب شات؟')}
-              className="w-full py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 font-bold text-xs border border-cyan-500/30 transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs border border-slate-700/60 transition-all flex items-center justify-center gap-1.5"
             >
               <span>طلب استراتيجية الاستهداف</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
           </div>
 
           {/* Card 3 */}
-          <div className="rounded-3xl border border-purple-500/30 bg-gradient-to-b from-purple-950/20 to-[#0A1628] p-5 space-y-3 relative group hover:border-purple-500/50 transition-all">
+          <div className="rounded-3xl border border-slate-800/90 hover:border-slate-700 bg-[#0f172a] p-5 space-y-3.5 relative group transition-all shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
                 دعم الفروع الميدانية
               </span>
-              <span className="text-xs font-mono font-bold text-purple-400">989 ألف فروع</span>
+              <span className="text-xs font-mono font-bold text-emerald-400">989 ألف فروع</span>
             </div>
-            <h3 className="text-sm font-bold text-white leading-snug">
+            <h3 className="text-sm font-bold text-slate-100 leading-snug">
               إعلانات محلية (Local Maps) لبريدة والقصيم
             </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
@@ -705,22 +743,22 @@ export default function PrivateCampaignLab() {
             </p>
             <button
               onClick={() => handleSendQuery('كيف أصمم حملة Google Maps محلية لزيارات فروع بريدة؟')}
-              className="w-full py-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 font-bold text-xs border border-purple-500/30 transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs border border-slate-700/60 transition-all flex items-center justify-center gap-1.5"
             >
               <span>تفاصيل حملة الفروع</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
           </div>
 
           {/* Card 4 */}
-          <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-b from-amber-950/20 to-[#0A1628] p-5 space-y-3 relative group hover:border-amber-500/50 transition-all">
+          <div className="rounded-3xl border border-slate-800/90 hover:border-slate-700 bg-[#0f172a] p-5 space-y-3.5 relative group transition-all shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
                 السلات المتروكة
               </span>
               <span className="text-xs font-mono font-bold text-amber-400">18.5 ألف جلسة</span>
             </div>
-            <h3 className="text-sm font-bold text-white leading-snug">
+            <h3 className="text-sm font-bold text-slate-100 leading-snug">
               إعادة استهداف زوار المتجر غير المكتملين
             </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
@@ -728,119 +766,183 @@ export default function PrivateCampaignLab() {
             </p>
             <button
               onClick={() => handleSendQuery('ما هي أفضل طريقة لإعادة استهداف زوار المتجر الذين لم يشتروا؟')}
-              className="w-full py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-bold text-xs border border-amber-500/30 transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs border border-slate-700/60 transition-all flex items-center justify-center gap-1.5"
             >
               <span>خطة السلات المتروكة</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
           </div>
         </div>
       </div>
 
       {/* SECTION 2: Interactive AI Strategy Chat & Budget Allocator */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Col: AI Copilot Chat (7 cols) */}
-        <div className="lg:col-span-7 rounded-3xl border border-white/10 bg-[#0c162a] p-6 space-y-4 shadow-xl flex flex-col h-[560px]">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                <Bot className="w-4 h-4" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Col: AI Copilot Chat (Expands to 12 cols or sits comfortably in 8 cols) */}
+        <div
+          className={`${
+            isChatExpanded ? 'lg:col-span-12 h-[780px]' : 'lg:col-span-8 h-[700px]'
+          } rounded-3xl border border-slate-800/90 bg-[#0d1527] p-6 space-y-4 shadow-xl flex flex-col transition-all duration-300 relative`}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-2xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center text-teal-400">
+                <Bot className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-white flex items-center gap-2">
+                <h3 className="text-sm md:text-base font-bold text-white flex items-center gap-2">
                   <span>إيجنت الحملات الذكي (AI Campaign Agent)</span>
                   {agentConfig.enabled ? (
-                    <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium">
                       LIVE {agentConfig.provider.toUpperCase()}
                     </span>
                   ) : (
-                    <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-300 border border-teal-500/30 font-medium">
                       SMART BUILT-IN
                     </span>
                   )}
                 </h3>
-                <p className="text-[11px] text-slate-400">محادثة ذكية تفاعلية متصلة ببيانات الشركة ومستعدة لأي سؤال أو اقتراح</p>
+                <p className="text-xs text-slate-400">محادثة ذكية تفاعلية متصلة ببيانات الشركة ومستعدة لأي سؤال أو اقتراح</p>
               </div>
             </div>
 
-            <button
-              onClick={() => setShowSettingsModal(true)}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all text-xs flex items-center gap-1.5"
-              title="تعديل مفتاح الـ API ومزود الذكاء الاصطناعي"
-            >
-              <Settings className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">ربط الإيجنت</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Reset / Clear Chat */}
+              <button
+                onClick={handleClearChat}
+                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all text-xs flex items-center gap-1.5"
+                title="بدء محادثة جديدة ومسح السجل"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+                <span className="hidden sm:inline">جلسة جديدة</span>
+              </button>
+
+              {/* Expand / Maximize Toggle */}
+              <button
+                onClick={() => setIsChatExpanded(!isChatExpanded)}
+                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all text-xs flex items-center gap-1.5"
+                title={isChatExpanded ? 'تصغير مساحة الشات' : 'تكبير مساحة الشات (شاشة عريضة)'}
+              >
+                {isChatExpanded ? (
+                  <>
+                    <Minimize2 className="w-3.5 h-3.5 text-teal-400" />
+                    <span className="hidden sm:inline">تصغير</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="w-3.5 h-3.5 text-teal-400" />
+                    <span className="hidden sm:inline">مساحة أوسع</span>
+                  </>
+                )}
+              </button>
+
+              {/* Settings button */}
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all text-xs flex items-center gap-1.5"
+                title="تعديل مفتاح الـ API ومزود الذكاء الاصطناعي"
+              >
+                <Settings className="w-3.5 h-3.5 text-teal-400" />
+                <span className="hidden sm:inline">ربط الإيجنت</span>
+              </button>
+            </div>
           </div>
 
           {/* Quick Prompt Chips */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
             <button
               onClick={() => handleSendQuery('عايزك ترد عليا الاول انت موجود ؟')}
-              className="px-2.5 py-1 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 transition-all whitespace-nowrap text-[11px] font-bold"
+              className="px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition-all whitespace-nowrap text-xs font-medium"
             >
               👋 انت موجود؟
             </button>
             <button
               onClick={() => handleSendQuery('اكتب نصوص إعلانات جذابة لقطع غيار كيا وهيونداي')}
-              className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 transition-all whitespace-nowrap text-[11px]"
+              className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all whitespace-nowrap text-xs"
             >
               ✍️ نصوص إعلانات
             </button>
             <button
-              onClick={() => handleSendQuery('أفضل توزيع لميزانية 15 ألف ريال')}
-              className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 transition-all whitespace-nowrap text-[11px]"
+              onClick={() => handleSendQuery(`أفضل توزيع لميزانية ${formatSAR(budgetSlider)} شهرياً`)}
+              className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all whitespace-nowrap text-xs"
             >
               📊 توزيع الميزانية
             </button>
             <button
-              onClick={() => handleSendQuery('كيف استهدف عملاء جدة والرياض؟')}
-              className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 transition-all whitespace-nowrap text-[11px]"
+              onClick={() => handleSendQuery('كيف استهدف عملاء جدة والرياض في إعلانات انستقرام وسناب شات؟')}
+              className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all whitespace-nowrap text-xs"
             >
               🎯 استهداف المدن
             </button>
             <button
               onClick={() => handleSendQuery('خطة استعادة السلات المتروكة في سلة')}
-              className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 transition-all whitespace-nowrap text-[11px]"
+              className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all whitespace-nowrap text-xs"
             >
               🛒 السلات المتروكة
+            </button>
+            <button
+              onClick={() => handleSendQuery('اقترح استراتيجية تسويقية متكاملة لعروض اليوم الوطني في درة السيارة')}
+              className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all whitespace-nowrap text-xs"
+            >
+              🇸🇦 عروض اليوم الوطني
             </button>
           </div>
 
           {/* Chat Messages Area */}
-          <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 pl-2">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1 pl-2">
             {chatMessages.map((msg, i) => (
               <div
                 key={i}
-                className={`flex gap-2.5 ${msg.sender === 'user' ? 'justify-start flex-row-reverse' : 'justify-start'}`}
+                className={`flex gap-3 ${msg.sender === 'user' ? 'justify-start flex-row-reverse' : 'justify-start'}`}
               >
                 <div
-                  className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs shrink-0 ${
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs shrink-0 ${
                     msg.sender === 'user'
-                      ? 'bg-blue-600 text-white font-bold'
-                      : 'bg-cyan-500/20 border border-cyan-500/30 text-cyan-300'
+                      ? 'bg-slate-700 text-slate-100 font-bold'
+                      : 'bg-teal-500/15 border border-teal-500/30 text-teal-300'
                   }`}
                 >
-                  {msg.sender === 'user' ? 'أنت' : <Bot className="w-3.5 h-3.5" />}
+                  {msg.sender === 'user' ? 'أنت' : <Bot className="w-4 h-4" />}
                 </div>
                 <div
-                  className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed ${
+                  className={`relative group rounded-2xl p-4 text-sm leading-relaxed ${
                     msg.sender === 'user'
-                      ? 'bg-blue-600 text-white font-medium'
-                      : 'bg-white/[0.04] border border-white/10 text-slate-200 whitespace-pre-wrap'
+                      ? 'bg-slate-800/90 border border-slate-700/70 text-slate-100 font-normal max-w-[85%]'
+                      : 'bg-[#0f172a]/95 border border-slate-800/90 text-slate-200 whitespace-pre-wrap max-w-[90%]'
                   }`}
                 >
                   {msg.text}
+
+                  {msg.sender === 'ai' && (
+                    <button
+                      onClick={() => handleCopyMessage(msg.text, i)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2.5 left-2.5 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] flex items-center gap-1 border border-slate-700/60"
+                      title="نسخ الرد"
+                    >
+                      {copiedMsgIndex === i ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-400" />
+                          <span>تم النسخ</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span>نسخ</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
 
             {isAiTyping && (
-              <div className="flex items-center gap-2 text-xs text-cyan-400 animate-pulse">
+              <div className="flex items-center gap-2 text-xs text-teal-400 bg-teal-500/10 border border-teal-500/20 px-3 py-2 rounded-xl w-fit animate-pulse">
                 <Bot className="w-4 h-4" />
                 <span>الإيجنت الذكي يحلل السؤال ويصيغ الرد التكتيكي...</span>
               </div>
             )}
+            <div ref={chatBottomRef} />
           </div>
 
           {/* Chat Input Bar */}
@@ -849,19 +951,19 @@ export default function PrivateCampaignLab() {
               e.preventDefault();
               handleSendQuery();
             }}
-            className="flex items-center gap-2 pt-2 border-t border-white/10"
+            className="flex items-center gap-2 pt-3 border-t border-slate-800/80"
           >
             <input
               type="text"
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               placeholder="اكتب سؤالك أو استفسارك هنا (مثال: انت موجود؟ أو اقترح حملة جديدة...)"
-              className="flex-1 px-4 py-2.5 bg-slate-900/90 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-cyan-500 transition-all placeholder:text-slate-500"
+              className="flex-1 px-4 py-3 bg-slate-900/95 border border-slate-700/70 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-teal-500 transition-all placeholder:text-slate-500"
             />
             <button
               type="submit"
               disabled={isAiTyping || !inputQuery.trim()}
-              className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold text-xs transition-all flex items-center gap-1.5"
+              className="px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-slate-950 font-bold text-sm transition-all flex items-center gap-2 shadow-md shadow-teal-500/15"
             >
               <span>إرسال</span>
               <Send className="w-3.5 h-3.5 rotate-180" />
@@ -869,85 +971,152 @@ export default function PrivateCampaignLab() {
           </form>
         </div>
 
-        {/* Right Col: AI Budget Simulator & Scratchpad (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Right Col: AI Budget Simulator & Scratchpad */}
+        <div
+          className={`${
+            isChatExpanded ? 'lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-6' : 'lg:col-span-4 space-y-6'
+          }`}
+        >
           {/* Smart Budget Allocator */}
-          <div className="rounded-3xl border border-white/10 bg-[#0c162a] p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="rounded-3xl border border-slate-800/90 bg-[#0d1527] p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3.5">
               <div className="flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-sm font-black text-white">محاكي توزيع الميزانية الذكي (AI Allocator)</h3>
+                <h3 className="text-sm font-bold text-white">محاكي توزيع الميزانية الذكي (AI Allocator)</h3>
               </div>
-              <span className="text-xs font-mono font-bold text-emerald-400" dir="ltr">
-                {formatSAR(budgetSlider, true)}
+              <span className="text-[10px] font-mono font-medium text-slate-400 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700">
+                خطوة 500 ر.س
               </span>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs text-slate-400">
-                <span>الميزانية الشهرية المقترحة:</span>
-                <span className="font-mono text-white font-bold">{formatSAR(budgetSlider)}</span>
+            {/* Stepper Display & Buttons */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-slate-400">الميزانية الشهرية المقترحة:</span>
+                <span className="font-mono text-emerald-400 font-bold text-lg">{formatSAR(budgetSlider)}</span>
               </div>
+
+              {/* Exact 500 SAR Stepper Controls */}
+              <div className="flex items-center justify-between gap-2 bg-slate-900/90 p-2 rounded-2xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => handleBudgetStep(-500)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
+                  title="إنقاص 500 ريال"
+                >
+                  <Minus className="w-3.5 h-3.5 text-rose-400" />
+                  <span>500- ر.س</span>
+                </button>
+
+                <div className="flex items-center justify-center gap-1">
+                  <input
+                    type="number"
+                    step={500}
+                    min={500}
+                    max={200000}
+                    value={budgetSlider}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      if (!isNaN(val)) setBudgetSlider(val);
+                    }}
+                    className="w-20 text-center bg-slate-800/80 border border-slate-700 rounded-lg py-1 text-xs font-mono font-bold text-white focus:outline-none focus:border-teal-500"
+                  />
+                  <span className="text-[11px] text-slate-400">ر.س</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleBudgetStep(500)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
+                  title="زيادة 500 ريال"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>500+ ر.س</span>
+                </button>
+              </div>
+
+              {/* Slider Input with Step=500 */}
               <input
                 type="range"
-                min={5000}
+                min={1000}
                 max={100000}
-                step={2500}
+                step={500}
                 value={budgetSlider}
                 onChange={(e) => setBudgetSlider(Number(e.target.value))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-400"
               />
               <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                <span>5,000 ر.س</span>
+                <span>1,000 ر.س</span>
                 <span>50,000 ر.س</span>
                 <span>100,000 ر.س</span>
+              </div>
+
+              {/* Quick Presets Chips */}
+              <div className="pt-1">
+                <div className="text-[11px] text-slate-400 mb-1.5">ميزانيات جاهزة سريعة:</div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[5000, 10000, 15000, 20000, 25000, 30000, 50000].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setBudgetSlider(preset)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all border ${
+                        budgetSlider === preset
+                          ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-bold'
+                          : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800'
+                      }`}
+                    >
+                      {preset / 1000}k
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* AI Channel Breakdown */}
-            <div className="space-y-2 pt-2 text-xs">
-              <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between">
+            <div className="space-y-2 pt-3 border-t border-slate-800 text-xs">
+              <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  <div className="font-bold text-slate-200 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-sky-400" />
                     Google Search Ads (45%)
                   </div>
                   <div className="text-[10px] text-slate-400">نية شراء عالية + كلمات Rank 1.0</div>
                 </div>
-                <span className="font-mono font-bold text-blue-400" dir="ltr">
+                <span className="font-mono font-bold text-sky-400" dir="ltr">
                   {formatSAR(budgetSlider * 0.45, true)}
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-pink-500" />
+                  <div className="font-bold text-slate-200 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-indigo-400" />
                     Meta Ads (Instagram Reels) (30%)
                   </div>
                   <div className="text-[10px] text-slate-400">استهداف جدة والرياض وإعادة استهداف GA4</div>
                 </div>
-                <span className="font-mono font-bold text-pink-400" dir="ltr">
+                <span className="font-mono font-bold text-indigo-400" dir="ltr">
                   {formatSAR(budgetSlider * 0.30, true)}
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                  <div className="font-bold text-slate-200 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-teal-400" />
                     TikTok Ads (15%)
                   </div>
                   <div className="text-[10px] text-slate-400">زيارات متجر سريعة ونقرات منخفضة التكلفة</div>
                 </div>
-                <span className="font-mono font-bold text-cyan-400" dir="ltr">
+                <span className="font-mono font-bold text-teal-400" dir="ltr">
                   {formatSAR(budgetSlider * 0.15, true)}
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-white flex items-center gap-1.5">
+                  <div className="font-bold text-slate-200 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-400" />
                     Google Local Maps (بريدة) (10%)
                   </div>
@@ -961,15 +1130,15 @@ export default function PrivateCampaignLab() {
           </div>
 
           {/* Private Marketer Scratchpad */}
-          <div className="rounded-3xl border border-white/10 bg-[#0c162a] p-6 space-y-3 shadow-xl">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="rounded-3xl border border-slate-800/90 bg-[#0d1527] p-6 space-y-3 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-purple-400" />
-                <h3 className="text-sm font-black text-white">مفكرتي الاستراتيجية السرية (Private Notes)</h3>
+                <FileText className="w-4 h-4 text-indigo-400" />
+                <h3 className="text-sm font-bold text-white">مفكرتي الاستراتيجية السرية (Private Notes)</h3>
               </div>
               <button
                 onClick={handleSaveNotes}
-                className="px-2.5 py-1 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all flex items-center gap-1"
+                className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1"
               >
                 {noteSavedToast ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Save className="w-3.5 h-3.5" />}
                 <span>{noteSavedToast ? 'تم الحفظ!' : 'حفظ'}</span>
@@ -981,10 +1150,10 @@ export default function PrivateCampaignLab() {
               onChange={(e) => setScratchpad(e.target.value)}
               rows={4}
               placeholder="اكتب أفكارك وملاحظاتك واختبارات A/B هنا. لا يمكن لأي مستخدم آخر أو للمدير رؤيتها."
-              className="w-full p-3 bg-slate-900/80 border border-white/10 rounded-2xl text-xs text-slate-300 leading-relaxed focus:outline-none focus:border-purple-500 transition-all resize-none font-mono"
+              className="w-full p-3 bg-slate-900/90 border border-slate-700/70 rounded-2xl text-xs text-slate-200 leading-relaxed focus:outline-none focus:border-indigo-500 transition-all resize-none font-mono"
             />
-            <div className="text-[10px] text-slate-500 flex items-center gap-1">
-              <Lock className="w-3 h-3 text-purple-400" />
+            <div className="text-[10px] text-slate-400 flex items-center gap-1">
+              <Lock className="w-3 h-3 text-indigo-400" />
               <span>يتم الحفظ تلقائياً في ذاكرة جهازك فقط وبشكل مشفر.</span>
             </div>
           </div>
@@ -992,10 +1161,10 @@ export default function PrivateCampaignLab() {
       </div>
 
       {/* SECTION 3: Interactive Campaign Organizer & Tracker */}
-      <div className="rounded-3xl border border-white/10 bg-[#0c162a] p-6 space-y-6 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="rounded-3xl border border-slate-800/90 bg-[#0d1527] p-6 space-y-6 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
           <div>
-            <h2 className="text-lg font-black text-white">لوحة تنظيم وجدولة الحملات (Campaign Organizer)</h2>
+            <h2 className="text-lg font-bold text-white">لوحة تنظيم وجدولة الحملات (Campaign Organizer)</h2>
             <p className="text-xs text-slate-400">إدارة وتنظيم كافة حملاتك عبر المنصات المختلفة ومتابعة حالتها وميزانياتها</p>
           </div>
 
@@ -1004,7 +1173,7 @@ export default function PrivateCampaignLab() {
             <select
               value={platformFilter}
               onChange={(e) => setPlatformFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-900 border border-white/10 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+              className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-teal-500"
             >
               <option value="all">جميع المنصات</option>
               <option value="Google Search">Google Search</option>
@@ -1016,7 +1185,7 @@ export default function PrivateCampaignLab() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-900 border border-white/10 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+              className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-teal-500"
             >
               <option value="all">جميع الحالات</option>
               <option value="active">نشطة (Active)</option>
@@ -1040,29 +1209,29 @@ export default function PrivateCampaignLab() {
             return (
               <div
                 key={camp.id}
-                className="rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] p-5 space-y-3.5 transition-all group relative flex flex-col justify-between"
+                className="rounded-2xl border border-slate-800/80 bg-slate-900/50 hover:bg-slate-900/80 p-5 space-y-3.5 transition-all group relative flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">
                       {camp.platform}
                     </span>
-                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${statusConfig.color}`}>
+                    <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${statusConfig.color}`}>
                       {statusConfig.text}
                     </span>
                   </div>
 
-                  <h4 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">
+                  <h4 className="text-sm font-bold text-white group-hover:text-teal-300 transition-colors leading-snug">
                     {camp.name}
                   </h4>
                   <div className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
-                    <Target className="w-3.5 h-3.5 text-cyan-400" />
+                    <Target className="w-3.5 h-3.5 text-teal-400" />
                     <span>{camp.objective}</span>
                   </div>
                 </div>
 
                 {/* Cities & Budget */}
-                <div className="space-y-2 pt-2 border-t border-white/5 text-xs">
+                <div className="space-y-2 pt-2 border-t border-slate-800 text-xs">
                   <div className="flex items-center justify-between text-slate-300">
                     <span className="text-[11px] text-slate-500">المدن:</span>
                     <span className="text-[11px] font-medium text-slate-300 truncate max-w-[180px]">
@@ -1078,19 +1247,19 @@ export default function PrivateCampaignLab() {
                   </div>
 
                   {/* AI Tip box */}
-                  <div className="p-2.5 rounded-xl bg-cyan-500/[0.07] border border-cyan-500/20 text-[11px] text-cyan-300 leading-relaxed flex items-start gap-2">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                  <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-300 leading-relaxed flex items-start gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-teal-400 shrink-0 mt-0.5" />
                     <span>{camp.aiTip}</span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
                   <div className="flex items-center gap-1">
                     {camp.status !== 'active' && (
                       <button
                         onClick={() => handleToggleStatus(camp.id, 'active')}
-                        className="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[11px] font-bold transition-colors"
+                        className="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[11px] font-medium transition-colors"
                       >
                         تنشيط
                       </button>
@@ -1098,7 +1267,7 @@ export default function PrivateCampaignLab() {
                     {camp.status === 'active' && (
                       <button
                         onClick={() => handleToggleStatus(camp.id, 'paused')}
-                        className="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[11px] font-bold transition-colors"
+                        className="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[11px] font-medium transition-colors"
                       >
                         إيقاف مؤقت
                       </button>
@@ -1122,11 +1291,11 @@ export default function PrivateCampaignLab() {
       {/* Modal: AI Agent Settings (Google Gemini / OpenAI) */}
       {showSettingsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="max-w-md w-full bg-[#0c162a] border border-cyan-500/30 rounded-3xl p-6 space-y-5 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="max-w-md w-full bg-[#0d1527] border border-slate-700/80 rounded-3xl p-6 space-y-5 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <Settings className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-base font-black text-white">إعدادات ربط إيجنت الذكاء الاصطناعي (AI Agent)</h3>
+                <Settings className="w-5 h-5 text-teal-400" />
+                <h3 className="text-base font-bold text-white">إعدادات ربط إيجنت الذكاء الاصطناعي (AI Agent)</h3>
               </div>
               <button
                 onClick={() => setShowSettingsModal(false)}
@@ -1146,18 +1315,18 @@ export default function PrivateCampaignLab() {
 
               {/* Provider selection */}
               <div className="space-y-1.5">
-                <label className="text-slate-300 font-bold">مزود الذكاء الاصطناعي (AI Provider)</label>
+                <label className="text-slate-300 font-medium">مزود الذكاء الاصطناعي (AI Provider)</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => {
                       setTempProvider('gemini');
-                      setTempModel('gemini-1.5-flash');
+                      setTempModel('gemini-flash-latest');
                     }}
                     className={`p-3 rounded-2xl border text-center transition-all font-bold ${
                       tempProvider === 'gemini'
-                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-lg'
-                        : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'
+                        ? 'bg-teal-500/15 text-teal-300 border-teal-500/40 shadow-sm'
+                        : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:bg-slate-800'
                     }`}
                   >
                     <div>Google Gemini</div>
@@ -1172,8 +1341,8 @@ export default function PrivateCampaignLab() {
                     }}
                     className={`p-3 rounded-2xl border text-center transition-all font-bold ${
                       tempProvider === 'openai'
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-lg'
-                        : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'
+                        ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40 shadow-sm'
+                        : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:bg-slate-800'
                     }`}
                   >
                     <div>OpenAI (ChatGPT)</div>
@@ -1184,17 +1353,17 @@ export default function PrivateCampaignLab() {
 
               {/* Model selection */}
               <div className="space-y-1.5">
-                <label className="text-slate-300 font-bold">اسم الموديل (Model)</label>
+                <label className="text-slate-300 font-medium">اسم الموديل (Model)</label>
                 <select
                   value={tempModel}
                   onChange={(e) => setTempModel(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-teal-500"
                 >
                   {tempProvider === 'gemini' ? (
                     <>
                       <option value="gemini-flash-latest">gemini-flash-latest (موصى به وسريع جداً)</option>
                       <option value="gemini-2.5-flash">gemini-2.5-flash (إصدار 2.5 فلاش)</option>
-                      <option value="gemini-pro-latest">gemini-pro-latest (النسخة الاحترافية المتقدمة)</option>
+                      <option value="gemini-pro-latest">gemini-pro-latest (النسخة المتقدمة)</option>
                     </>
                   ) : (
                     <>
@@ -1209,13 +1378,13 @@ export default function PrivateCampaignLab() {
               {/* API Key input */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-slate-300 font-bold">مفتاح الـ API Key</label>
+                  <label className="text-slate-300 font-medium">مفتاح الـ API Key</label>
                   {tempProvider === 'gemini' && (
                     <a
                       href="https://aistudio.google.com/app/apikey"
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[10px] text-cyan-400 hover:underline flex items-center gap-1"
+                      className="text-[10px] text-teal-400 hover:underline flex items-center gap-1"
                     >
                       <span>احصل على مفتاح Gemini مجاناً</span>
                       <ExternalLink className="w-3 h-3" />
@@ -1229,7 +1398,7 @@ export default function PrivateCampaignLab() {
                     value={tempApiKey}
                     onChange={(e) => setTempApiKey(e.target.value)}
                     placeholder={tempProvider === 'gemini' ? 'AIzaSy...' : 'sk-...'}
-                    className="w-full pr-3.5 pl-10 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-cyan-500"
+                    className="w-full pr-3.5 pl-10 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-teal-500"
                   />
                   <button
                     type="button"
@@ -1240,21 +1409,21 @@ export default function PrivateCampaignLab() {
                   </button>
                 </div>
                 <p className="text-[10px] text-slate-400 leading-relaxed">
-                  يتم حفظ المفتاح مشفراً ومحلياً على متصفحك فقط، ولا يُرسل لأي سيرفر طرف ثالث.
+                  يتم حفظ المفتاح مشفراً ومحلياً على متصفحك فقط، ولا يُرسل لأي سيرفر خارجي.
                 </p>
               </div>
 
-              <div className="pt-3 flex items-center justify-end gap-2 border-t border-white/10">
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowSettingsModal(false)}
-                  className="px-4 py-2.5 rounded-xl bg-white/5 text-slate-300 hover:text-white"
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold shadow-lg shadow-cyan-500/20"
+                  className="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold shadow-md shadow-teal-500/20"
                 >
                   حفظ وتفعيل الإيجنت
                 </button>
@@ -1267,11 +1436,11 @@ export default function PrivateCampaignLab() {
       {/* Modal: Add New Campaign */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="max-w-lg w-full bg-[#0c162a] border border-white/15 rounded-3xl p-6 space-y-5 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="max-w-lg w-full bg-[#0d1527] border border-slate-700/80 rounded-3xl p-6 space-y-5 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <Plus className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-base font-black text-white">إضافة حملة جديدة لمساحتك الخاصة</h3>
+                <Plus className="w-5 h-5 text-teal-400" />
+                <h3 className="text-base font-bold text-white">إضافة حملة جديدة لمساحتك الخاصة</h3>
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
@@ -1283,24 +1452,24 @@ export default function PrivateCampaignLab() {
 
             <form onSubmit={handleAddCampaign} className="space-y-3.5 text-xs">
               <div className="space-y-1">
-                <label className="text-slate-300 font-bold">اسم الحملة</label>
+                <label className="text-slate-300 font-medium">اسم الحملة</label>
                 <input
                   type="text"
                   required
                   value={newCamp.name}
                   onChange={(e) => setNewCamp({ ...newCamp, name: e.target.value })}
                   placeholder="مثال: حملة عروض نهاية الشهر لفحمات هيونداي"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-teal-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-slate-300 font-bold">المنصة الإعلانية</label>
+                  <label className="text-slate-300 font-medium">المنصة الإعلانية</label>
                   <select
                     value={newCamp.platform}
                     onChange={(e) => setNewCamp({ ...newCamp, platform: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-teal-500"
                   >
                     <option value="Google Search">Google Search</option>
                     <option value="Meta Ads">Meta Ads (إنستقرام/فيسبوك)</option>
@@ -1310,11 +1479,11 @@ export default function PrivateCampaignLab() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-slate-300 font-bold">الحالة المبدئية</label>
+                  <label className="text-slate-300 font-medium">الحالة المبدئية</label>
                   <select
                     value={newCamp.status}
                     onChange={(e) => setNewCamp({ ...newCamp, status: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-teal-500"
                   >
                     <option value="draft">مسودة (Draft)</option>
                     <option value="active">نشطة (Active)</option>
@@ -1325,45 +1494,45 @@ export default function PrivateCampaignLab() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-slate-300 font-bold">الميزانية الإجمالية (ر.س)</label>
+                  <label className="text-slate-300 font-medium">الميزانية الإجمالية (ر.س)</label>
                   <input
                     type="number"
                     value={newCamp.budget}
                     onChange={(e) => setNewCamp({ ...newCamp, budget: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-teal-500"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-slate-300 font-bold">الميزانية اليومية (ر.س)</label>
+                  <label className="text-slate-300 font-medium">الميزانية اليومية (ر.س)</label>
                   <input
                     type="number"
                     value={newCamp.dailyBudget}
                     onChange={(e) => setNewCamp({ ...newCamp, dailyBudget: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white font-mono focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-teal-500"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-slate-300 font-bold">المدن المستهدفة</label>
+                <label className="text-slate-300 font-medium">المدن المستهدفة</label>
                 <input
                   type="text"
                   value={newCamp.targetCities}
                   onChange={(e) => setNewCamp({ ...newCamp, targetCities: e.target.value })}
                   placeholder="الرياض، جدة، بريدة..."
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-teal-500"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-slate-300 font-bold">ملاحظات واستراتيجية الحملة</label>
+                <label className="text-slate-300 font-medium">ملاحظات واستراتيجية الحملة</label>
                 <textarea
                   value={newCamp.notes}
                   onChange={(e) => setNewCamp({ ...newCamp, notes: e.target.value })}
                   placeholder="أي تفاصيل خاصة بالاستهداف أو الكوبونات..."
                   rows={2}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-500 resize-none"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-teal-500 resize-none"
                 />
               </div>
 
@@ -1371,13 +1540,13 @@ export default function PrivateCampaignLab() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2.5 rounded-xl bg-white/5 text-slate-300 hover:text-white"
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold shadow-lg shadow-cyan-500/20"
+                  className="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold shadow-md shadow-teal-500/20"
                 >
                   حفظ الحملة
                 </button>
