@@ -446,14 +446,74 @@ export function saveResponderInbox(messages) {
 export async function syncLiveSocialData() {
   let liveItems = [];
 
-  // Try live Meta Graph API call
+  // Try live Meta Graph API call with Page Token
   try {
     const metaConfig = loadMetaConfig();
-    const token = metaConfig.accessToken || 'EAAUaLFoDrJABSVbiAAMoR7wNS2j8zNUwTDL3AqmE9xSvDBlva3m8tye1y5C9VETiA6annvgNxg8lnOa5Vw82Of7KxjcMGXZCirHM2DZAU9PhA8tZCGZBM60X28MW4063OEhyyfe4KgmQmAVhXE7bapkOG3xnBKhkkwZALrGScAgogQxLeijeEYluyvRcqxAZDZD';
-    const pagesRes = await fetch(`https://graph.facebook.com/v20.0/me/accounts?access_token=${encodeURIComponent(token)}`);
-    const pagesData = await pagesRes.json();
-    if (pagesData && pagesData.data) {
-      // Fetch feeds and messages if available
+    const pageToken = metaConfig.messaging?.facebookPageToken || 'EAAeg0uiXakwBSTdf3pZC1CmD4H4E91q0Y4g13NWjlZChAZAdkQJyc9nK8UikcTp02TE3NMYvZA8qPNDxuV40HfiZCOdGmLTclafYKtrx7ZAwkwxjGFED4PXBPV7iZCXmXhal16DBX1O2Ek6HyZAk8zDejy1jjjavVnHMixRGWojdPJquUjGE3tssA0IpBTHlChl12ZAqVD5VF';
+    const pageId = metaConfig.messaging?.facebookPageId || '560031747184578';
+
+    const convUrl = `https://graph.facebook.com/v20.0/${pageId}/conversations?fields=id,updated_time,unread_count,senders,messages.limit(10){id,message,created_time,from}&limit=25&access_token=${encodeURIComponent(pageToken)}`;
+    const convRes = await fetch(convUrl);
+    const convData = await convRes.json();
+
+    if (convData && convData.data && Array.isArray(convData.data)) {
+      liveItems = convData.data.map((t) => {
+        const customerSender = t.senders?.data?.find((s) => s.id !== pageId) || t.senders?.data?.[0] || { name: 'عميل فيسبوك', id: 'unknown' };
+        const msgs = (t.messages?.data || []).slice().reverse();
+        const customerMsgs = msgs.filter((m) => m.from?.id !== pageId);
+        const pageMsgs = msgs.filter((m) => m.from?.id === pageId);
+
+        const lastMsg = msgs[msgs.length - 1];
+        const lastCustomerMsg = customerMsgs[customerMsgs.length - 1] || lastMsg;
+        const inquiryText = lastCustomerMsg?.message || 'استفسار عبر ماسنجر';
+
+        const isAnswered = pageMsgs.length > 0 && msgs[msgs.length - 1]?.from?.id === pageId;
+        const latestPageReply = isAnswered ? msgs[msgs.length - 1].message : '';
+
+        const analysis = analyzeCustomerText(inquiryText);
+        const suggestedReply = generateSmartSocialReply(inquiryText, customerSender.name, 'meta_facebook', false);
+
+        // Calculate relative time
+        const timeDiff = Date.now() - new Date(t.updated_time).getTime();
+        const minsAgo = Math.max(1, Math.floor(timeDiff / 60000));
+        let relativeTime = 'منذ لحظات';
+        if (minsAgo < 60) relativeTime = `منذ ${minsAgo} دقيقة`;
+        else if (minsAgo < 1440) relativeTime = `منذ ${Math.floor(minsAgo / 60)} ساعة`;
+        else relativeTime = `منذ ${Math.floor(minsAgo / 1440)} يوم`;
+
+        return {
+          id: t.id,
+          platform: 'meta_facebook',
+          channelType: 'dm',
+          senderName: customerSender.name || 'عميل فيسبوك',
+          senderId: customerSender.id,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(customerSender.name || 'Dora Customer')}&background=1877F2&color=fff`,
+          text: inquiryText,
+          chatHistory: msgs.map((m) => ({
+            id: m.id,
+            sender: m.from?.id === pageId ? 'درة السيارة' : (customerSender.name || 'العميل'),
+            isPage: m.from?.id === pageId,
+            message: m.message,
+            time: m.created_time,
+          })),
+          timestamp: relativeTime,
+          rawTime: t.updated_time,
+          status: isAnswered ? 'replied' : 'pending',
+          intent: analysis.intent || 'spare_parts',
+          sentiment: 'positive',
+          adTitle: 'محادثة فيسبوك ماسنجر حية - صفحة Dora Cars',
+          suggestedReply,
+          reply: latestPageReply,
+          leadInfo: {
+            carModel: analysis.leadInfo?.carModel || (analysis.brand !== 'unknown' ? `${analysis.brand} ${analysis.model} ${analysis.year}`.trim() : ''),
+            interestType: analysis.part || 'قطع غيار',
+            city: analysis.leadInfo?.city || 'القصيم / بريدة',
+            phone: analysis.phone || '',
+            vin: analysis.vin || '',
+          },
+          isLive: true,
+        };
+      });
     }
   } catch (e) {
     console.warn('Live Meta API browser call note:', e.message);
@@ -461,18 +521,23 @@ export async function syncLiveSocialData() {
 
   // Load current inbox or seeded dataset
   const currentInbox = loadResponderInbox();
-  const existingIds = new Set(currentInbox.map((m) => m.id));
+  const inboxMap = new Map();
 
-  // Merge any new messages from campaign dataset that were not present
-  const freshItems = DORA_AUTHENTIC_MESSAGES_DATASET.filter((m) => !existingIds.has(m.id));
-  const updatedInbox = [...currentInbox, ...freshItems];
+  // Seeded dataset items
+  DORA_AUTHENTIC_MESSAGES_DATASET.forEach((m) => inboxMap.set(m.id, m));
+  // Preserved inbox items (local state & replies)
+  currentInbox.forEach((m) => inboxMap.set(m.id, m));
+  // Live items fetched from Meta (highest priority)
+  liveItems.forEach((m) => inboxMap.set(m.id, m));
+
+  const updatedInbox = Array.from(inboxMap.values()).sort((a, b) => new Date(b.rawTime || 0) - new Date(a.rawTime || 0));
 
   saveResponderInbox(updatedInbox);
   const learned = analyzeAllMessagesAndLearnPatterns(updatedInbox);
 
   return {
     totalFetched: updatedInbox.length,
-    newCount: freshItems.length,
+    newCount: liveItems.length,
     learnedInsights: learned,
   };
 }
@@ -492,7 +557,8 @@ export function analyzeCustomerText(text) {
       isFault: false,
       isDiesel: false,
       isOnline: false,
-      leadInfo: { carModel: '', interestType: '', city: '', phone: '' }
+      vin: '',
+      leadInfo: { carModel: '', interestType: '', city: '', phone: '', vin: '' }
     };
   }
 
@@ -511,6 +577,10 @@ export function analyzeCustomerText(text) {
   const yearMatch = text.match(/20[1-2]\d/);
   if (yearMatch) year = yearMatch[0];
 
+  let vin = '';
+  const vinMatch = text.match(/[A-HJ-NPR-Z0-9]{17}/i);
+  if (vinMatch) vin = vinMatch[0].toUpperCase();
+
   // Check Kia models
   if (/كيا|أوبتيما|اوبتيما|سيراتو|سبورتاج|كادنزا|سورينتو|ريو|سيلتوس|بيجاس|كارينز|تيلورايد|k5|كي فايف|بونجو/.test(raw)) {
     brand = 'kia';
@@ -520,12 +590,14 @@ export function analyzeCustomerText(text) {
     else if (/كادنزا/.test(raw)) model = 'كادنزا';
     else if (/سورينتو/.test(raw)) model = 'سورينتو';
     else if (/ريو/.test(raw)) model = 'ريو';
+    else if (/كارينز|كارنز/.test(raw)) model = 'كارينز';
+    else if (/كرنفال/.test(raw)) model = 'كرنفال';
     else if (/بونجو/.test(raw)) model = 'بونجو';
     else model = 'كيا';
   }
 
   // Check Hyundai models
-  if (/هيونداي|سوناتا|إلنترا|النترا|أكسنت|اكسنت|توسان|سنتافي|سنتا في|أزيرا|ازيرا|كريتا|كونا|ستاريا|باليسيد/.test(raw)) {
+  if (/هيونداي|سوناتا|إلنترا|النترا|أكسنت|اكسنت|توسان|سنتافي|سنتا في|أزيرا|ازيرا|كريتا|كونا|ستاريا|باليسيد|افانتي|أفانتي/.test(raw)) {
     brand = 'hyundai';
     if (/سوناتا/.test(raw)) model = 'سوناتا';
     else if (/إلنترا|النترا/.test(raw)) model = 'إلنترا';
@@ -534,10 +606,11 @@ export function analyzeCustomerText(text) {
     else if (/سنتافي|سنتا في/.test(raw)) model = 'سنتافي';
     else if (/أزيرا|ازيرا/.test(raw)) model = 'أزيرا';
     else if (/ستاريا/.test(raw)) model = 'ستاريا';
+    else if (/افانتي|أفانتي/.test(raw)) model = 'أفانتي';
     else model = 'هيونداي';
   }
 
-  if (/ديزل|تيربو|بخاخات ديزل|طرمبة ديزل|فلتر ديزل|بونجو/.test(raw)) {
+  if (/ديزل|تيربو|بخاخات ديزل|طرمبة ديزل|فلتر ديزل|بونجو|افانتي ديزل/.test(raw)) {
     isDiesel = true;
   }
 
@@ -549,12 +622,14 @@ export function analyzeCustomerText(text) {
 
   if (/فحمات|تيل/.test(raw)) part = 'فحمات الفرامل';
   else if (/هوبات|أقراص/.test(raw)) part = 'هوبات الفرامل';
+  else if (/عيار زيت/.test(raw)) part = 'عيار زيت المكينة';
+  else if (/مبرد.*تيربو|انتركولر/.test(raw)) part = 'مبرد التيربو';
   else if (/كمبروسر|مكيف/.test(raw)) part = 'كمبروسر المكيف';
-  else if (/رديتر/.test(raw)) part = 'رديتر الماء';
+  else if (/رديتر|بلف حرارة/.test(raw)) part = 'رديتر الماء';
   else if (/مساعدات|مساعد/.test(raw)) part = 'مساعدات';
   else if (/شمعات|شمعة|نور/.test(raw)) part = 'شمعات إنارة';
   else if (/صدام|كبوت|باب|بدي|رفرف|شبك/.test(raw)) part = 'قطع بدي';
-  else if (/كراسي مكينة|قواعد محرك/.test(raw)) part = 'كراسي المكينة';
+  else if (/كراسي مكينة|كرسي جير|قواعد محرك/.test(raw)) part = 'كراسي المكينة والقير';
   else if (/ركبة|مفصل مقص/.test(raw)) part = 'ركبة مقص';
   else if (/جلب مقصات|جلدة/.test(raw)) part = 'جلب المقصات';
   else if (/تيربو|بخاخات/.test(raw)) part = 'تيربو وبخاخات';
@@ -567,11 +642,13 @@ export function analyzeCustomerText(text) {
     isFault,
     isDiesel,
     isOnline,
+    vin,
     leadInfo: {
       carModel: model ? `${brand === 'kia' ? 'كيا' : 'هيونداي'} ${model} ${year}`.trim() : (brand === 'kia' ? 'كيا' : brand === 'hyundai' ? 'هيونداي' : 'غير محدد'),
       interestType: part || (isFault ? 'استفسار فحص عطل' : 'قطع غيار'),
       city: isOnline ? 'شحن خارج الفروع' : 'القصيم / بريدة',
-      phone
+      phone,
+      vin,
     }
   };
 }
@@ -580,6 +657,17 @@ export function analyzeCustomerText(text) {
 export function generateSmartSocialReply(customerText, senderName = '', platform = 'meta_instagram', isPublicComment = false) {
   const analysis = analyzeCustomerText(customerText);
   const raw = customerText.toLowerCase();
+
+  // 0. Installments Inquiry (أقساط تابي وتمارا)
+  if (/اقصاد|تقسيط|اقساط|تابي|تمارا/.test(raw)) {
+    return `حياك الله 🌹 نعم تتوفر لدينا خدمة التقسيط عبر تابي وتمارا سواء عبر المتجر الإلكتروني أو في فروعنا. يمكنك تقسيط مشترياتك بكل سهولة، وللتحقق من تفاصيل الدفعات والأسعار لقطعتك، يمكنك التواصل مباشرة مع فريق المبيعات عبر الواتس أو الجوال: 0538834212 أو فرع كيا: 0539454377 وفرع هيونداي: 0530051360.`;
+  }
+
+  // 0.1 VIN Provided
+  if (analysis.vin && !analysis.part && !analysis.model) {
+    const targetBranch = analysis.brand === 'kia' ? 'فرع كيا: 0539454377' : analysis.brand === 'hyundai' ? 'فرع الرواف هيونداي: 0530051360' : 'فريق المبيعات: 0538834212';
+    return `حياك الله 🌹 تم استلام رقم الهيكل (${analysis.vin}) بنجاح للتحقق من تطابق القطع بنسبة 100%. أرسل لنا القطعة المطلوبة ونزودك بالتوفر والأسعار فوراً عبر ${targetBranch}.`;
+  }
 
   // 1. Fault Questions
   if (analysis.isFault) {
@@ -650,6 +738,33 @@ export function generateSmartSocialReply(customerText, senderName = '', platform
   // 7. General Inquiry Template
   return `حياك الله في درة السيارة لقطع الغيار 🌹
 يسعدنا خدمتك. أرسل لنا نوع السيارة + الموديل + سنة الصنع + القطعة المطلوبة، ونساعدك في التحقق من القطعة المناسبة وتوجيهك للفرع المختص.`;
+}
+
+// Send live message reply via Meta Graph API
+export async function sendLiveReplyToMeta({ recipientId, messageText }) {
+  const metaConfig = loadMetaConfig();
+  const pageToken = metaConfig.messaging?.facebookPageToken || 'EAAeg0uiXakwBSTdf3pZC1CmD4H4E91q0Y4g13NWjlZChAZAdkQJyc9nK8UikcTp02TE3NMYvZA8qPNDxuV40HfiZCOdGmLTclafYKtrx7ZAwkwxjGFED4PXBPV7iZCXmXhal16DBX1O2Ek6HyZAk8zDejy1jjjavVnHMixRGWojdPJquUjGE3tssA0IpBTHlChl12ZAqVD5VF';
+  const pageId = metaConfig.messaging?.facebookPageId || '560031747184578';
+
+  if (!recipientId || !messageText) {
+    throw new Error('يرجى تحديد العميل ونص الرسالة.');
+  }
+
+  const endpoint = `https://graph.facebook.com/v20.0/${pageId}/messages?access_token=${encodeURIComponent(pageToken)}`;
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      recipient: { id: recipientId },
+      message: { text: messageText },
+    }),
+  });
+
+  const data = await res.json();
+  if (data.error) {
+    throw new Error(data.error.message || 'فشل إرسال الرسالة عبر ماسنجر');
+  }
+  return data;
 }
 
 // Training Rules, Golden Examples, Guardrails Load/Save

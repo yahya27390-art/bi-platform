@@ -58,6 +58,7 @@ import {
   loadGuardrails,
   saveGuardrails,
   syncLiveSocialData,
+  sendLiveReplyToMeta,
   generateSmartSocialReply,
   analyzeCustomerText,
   loadLearnedInsights,
@@ -191,14 +192,15 @@ export default function SocialResponderLab() {
   };
 
   // Send Approved Reply
-  const handleSendReply = () => {
+  const handleSendReply = async () => {
     if (!selectedMessage || !replyDraft.trim()) return;
 
+    const trimmedReply = replyDraft.trim();
     const updated = inbox.map((m) => {
       if (m.id === selectedMessage.id) {
         return {
           ...m,
-          reply: replyDraft.trim(),
+          reply: trimmedReply,
           status: 'replied',
           repliedAt: 'الآن (رد معتمد)',
         };
@@ -207,12 +209,31 @@ export default function SocialResponderLab() {
     });
 
     setInbox(updated);
+    saveResponderInbox(updated);
     setSelectedMessage((prev) => ({
       ...prev,
-      reply: replyDraft.trim(),
+      reply: trimmedReply,
       status: 'replied',
       repliedAt: 'الآن (رد معتمد)',
     }));
+
+    if (selectedMessage.senderId && selectedMessage.platform === 'meta_facebook') {
+      try {
+        setSyncStatusMsg('جاري إرسال الرد الحي إلى ماسنجر...');
+        await sendLiveReplyToMeta({
+          recipientId: selectedMessage.senderId,
+          messageText: trimmedReply,
+        });
+        setSyncStatusMsg('تم إرسال الرد للعميل على فيسبوك ماسنجر بنجاح! 🚀');
+        setTimeout(() => setSyncStatusMsg(''), 4000);
+      } catch (err) {
+        setSyncStatusMsg(`تم اعتماد الرد محلياً (ملاحظة ميتا: ${err.message})`);
+        setTimeout(() => setSyncStatusMsg(''), 6000);
+      }
+    } else {
+      setSyncStatusMsg('تم اعتماد وحفظ الرد بنجاح! ✅');
+      setTimeout(() => setSyncStatusMsg(''), 3000);
+    }
   };
 
   // Regenerate Reply using Training Knowledge
@@ -976,13 +997,47 @@ export default function SocialResponderLab() {
                   </button>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span className="font-bold text-slate-300">{selectedMessage.senderName}</span>
-                    <span className="font-mono">{selectedMessage.timestamp}</span>
+                {selectedMessage.chatHistory && selectedMessage.chatHistory.length > 0 ? (
+                  <div className="space-y-2 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 max-h-60 overflow-y-auto">
+                    <div className="text-[11px] font-bold text-teal-400 flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                      <span className="flex items-center gap-1.5">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>سجل المحادثة الحي المباشر (Facebook Messenger):</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">{selectedMessage.chatHistory.length} رسائل متبادلة</span>
+                    </div>
+                    <div className="space-y-2 pt-1">
+                      {selectedMessage.chatHistory.map((ch, idx) => (
+                        <div
+                          key={idx}
+                          className={`p-2.5 rounded-xl text-xs ${
+                            ch.isPage
+                              ? 'bg-teal-500/10 border border-teal-500/30 text-teal-100 mr-4'
+                              : 'bg-slate-900 border border-slate-800 text-white ml-4'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                            <span className={`font-bold ${ch.isPage ? 'text-teal-300' : 'text-slate-300'}`}>
+                              {ch.isPage ? '🤖 درة السيارة' : `👤 ${ch.sender}`}
+                            </span>
+                            <span className="font-mono text-[9px] text-slate-500">
+                              {ch.time ? new Date(ch.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                            </span>
+                          </div>
+                          <p className="leading-relaxed whitespace-pre-line">{ch.message}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <p className="text-xs text-white leading-relaxed">{selectedMessage.text}</p>
-                </div>
+                ) : (
+                  <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] text-slate-400">
+                      <span className="font-bold text-slate-300">{selectedMessage.senderName}</span>
+                      <span className="font-mono">{selectedMessage.timestamp}</span>
+                    </div>
+                    <p className="text-xs text-white leading-relaxed">{selectedMessage.text}</p>
+                  </div>
+                )}
 
                 {/* Quick Action Templates */}
                 <div className="space-y-1.5">
