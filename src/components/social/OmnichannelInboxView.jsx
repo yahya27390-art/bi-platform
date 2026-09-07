@@ -1,0 +1,1194 @@
+import React, { useState } from 'react';
+import {
+  Search,
+  Filter,
+  Check,
+  CheckCheck,
+  Clock,
+  Phone,
+  MessageSquare,
+  Facebook,
+  Instagram,
+  ShoppingCart,
+  Mail,
+  Users,
+  Car,
+  Hash,
+  Copy,
+  ExternalLink,
+  ChevronDown,
+  ChevronRight,
+  Send,
+  Paperclip,
+  Smile,
+  Mic,
+  Quote,
+  X,
+  Share2,
+  BookmarkPlus,
+  Bot,
+  RotateCcw,
+  Sparkles,
+  Edit3,
+  Archive,
+  Trash2,
+  Tag,
+  AtSign,
+  Globe,
+  Radio,
+  Sliders,
+  CheckCircle2,
+  User
+} from 'lucide-react';
+import { QUICK_REPLY_TEMPLATES, DORA_SOCIAL_KNOWLEDGE } from '../../lib/socialResponderAgent';
+
+export default function OmnichannelInboxView({
+  inbox = [],
+  selectedMessage,
+  onSelectMessage,
+  activePlatformFilter,
+  onSetPlatformFilter,
+  searchQuery,
+  onSetSearchQuery,
+  replyDraft,
+  onSetReplyDraft,
+  onSendReply,
+  onInsertTemplate,
+  onCopyText,
+  customerTags = {},
+  onAddTag,
+  onRemoveTag,
+  customerNotes = {},
+  onSavePrivateNote,
+  closedConversations = new Set(),
+  onToggleCloseConversation,
+  getBranchWhatsAppLink,
+  onSyncLive,
+  isSyncingLive,
+  syncStatusMsg,
+  counts = {}
+}) {
+  // Composer Mode: 'reply' | 'note'
+  const [composerMode, setComposerMode] = useState('reply');
+  const [noteInput, setNoteInput] = useState('');
+
+  // Conversations Subfilter: 'mine' | 'unassigned' | 'all'
+  const [subFilter, setSubFilter] = useState('all');
+
+  // Status Filter: 'open' | 'closed' | 'all'
+  const [statusFilter, setStatusFilter] = useState('open');
+
+  // Chat Sub-tab: 'messages' | 'notifications'
+  const [chatSubTab, setChatSubTab] = useState('messages');
+
+  // Tag Input State
+  const [newTagText, setNewTagText] = useState('');
+
+  // Assigned Agent & Department state
+  const [assignedAgent, setAssignedAgent] = useState('أحمد العتيبي (أنت)');
+  const [assignedDept, setAssignedDept] = useState('خدمة العملاء والمبيعات');
+
+  // Computed conversations based on filters
+  const filteredList = inbox.filter((m) => {
+    // 1. Platform filter
+    if (activePlatformFilter === 'meta_facebook' && m.platform !== 'meta_facebook') return false;
+    if (activePlatformFilter === 'meta_instagram' && m.platform !== 'meta_instagram') return false;
+    if (activePlatformFilter === 'meta_whatsapp' && m.platform !== 'meta_whatsapp') return false;
+    if (activePlatformFilter === 'tiktok' && m.platform !== 'tiktok') return false;
+
+    // 2. Open / Closed filter
+    const isClosed = closedConversations.has(m.id);
+    if (statusFilter === 'open' && isClosed) return false;
+    if (statusFilter === 'closed' && !isClosed) return false;
+
+    // 3. Sub-tab filter (All / Unassigned / Mine)
+    if (subFilter === 'unassigned' && m.status === 'replied') return false;
+    if (subFilter === 'mine' && (!m.isLive && m.status !== 'replied')) return false;
+
+    // 4. Search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchName = (m.senderName || '').toLowerCase().includes(q);
+      const matchText = (m.text || '').toLowerCase().includes(q);
+      const matchModel = (m.leadInfo?.carModel || '').toLowerCase().includes(q);
+      const matchVin = (m.leadInfo?.vin || '').toLowerCase().includes(q);
+      const matchPart = (m.leadInfo?.interestType || '').toLowerCase().includes(q);
+      if (!matchName && !matchText && !matchModel && !matchVin && !matchPart) return false;
+    }
+
+    return true;
+  });
+
+  const countTotal = inbox.length;
+  const countPending = inbox.filter(m => m.status === 'pending').length;
+  const countMine = inbox.filter(m => m.isLive || m.status === 'replied').length;
+  const isSelectedClosed = selectedMessage ? closedConversations.has(selectedMessage.id) : false;
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-165px)] min-h-[720px] font-sans text-slate-800 antialiased">
+      
+      {/* ───────────────── TOP WINDOW BAR (Mac Style Dots & Live Sync Info) ───────────────── */}
+      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-red-400 inline-block"></span>
+            <span className="w-3 h-3 rounded-full bg-amber-400 inline-block"></span>
+            <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span>
+          </div>
+          <div className="h-4 w-px bg-slate-200"></div>
+          <div className="flex items-center gap-2">
+            <span className="font-black text-xs text-slate-800 tracking-wide flex items-center gap-1.5">
+              <span className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                درة
+              </span>
+              منصة المحادثات الموحدة (Omnichannel Live Inbox)
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold border border-blue-200 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Meta & Instagram Live
+            </span>
+          </div>
+        </div>
+
+        {/* Live sync button & status */}
+        <div className="flex items-center gap-2.5">
+          {syncStatusMsg && (
+            <span className="text-xs text-slate-600 bg-white px-2.5 py-1 rounded-lg border border-slate-200 font-medium animate-fadeIn">
+              {syncStatusMsg}
+            </span>
+          )}
+          <button
+            onClick={onSyncLive}
+            disabled={isSyncingLive}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm disabled:opacity-50"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 ${isSyncingLive ? 'animate-spin' : ''}`} />
+            <span>{isSyncingLive ? 'جاري المزامنة...' : 'مزامنة الرسائل الحية'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ───────────────── 4-COLUMN MAIN WORKSPACE ───────────────── */}
+      <div className="flex-1 flex overflow-hidden">
+
+        {/* ════════════════════════════════════════════════════════════════
+            COLUMN 1: CHANNELS & TEAMS SIDEBAR (w-[200px] / w-[220px])
+            ════════════════════════════════════════════════════════════════ */}
+        <aside className="w-52 bg-slate-50 border-l border-slate-200 flex flex-col shrink-0 overflow-y-auto custom-scrollbar select-none text-xs">
+          
+          {/* Main Views */}
+          <div className="p-3 border-b border-slate-200 space-y-1">
+            <button
+              onClick={() => { onSetPlatformFilter('all'); setSubFilter('all'); }}
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl font-bold transition-all ${
+                activePlatformFilter === 'all' && subFilter === 'all'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-700 hover:bg-slate-200/70'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" />
+                <span>كل المحادثات</span>
+              </div>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                activePlatformFilter === 'all' && subFilter === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+              }`}>
+                {countTotal}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSubFilter('mine')}
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl font-medium transition-all ${
+                subFilter === 'mine' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-slate-600 hover:bg-slate-200/70'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <AtSign className="w-4 h-4 text-blue-500" />
+                <span>محادثاتي الحية</span>
+              </div>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold">
+                {countMine}
+              </span>
+            </button>
+          </div>
+
+          {/* Teams / Departments */}
+          <div className="p-3 border-b border-slate-200">
+            <div className="text-[10px] font-black tracking-wider uppercase text-slate-400 mb-2">
+              الفرق والأقسام
+            </div>
+            <div className="space-y-1">
+              {[
+                { name: 'خدمة العملاء', count: countPending, color: 'text-blue-600' },
+                { name: 'مبيعات كيا', count: inbox.filter(m => m.leadInfo?.carModel?.includes('كيا')).length, color: 'text-emerald-600' },
+                { name: 'مبيعات هيونداي', count: inbox.filter(m => m.leadInfo?.carModel?.includes('هيونداي')).length, color: 'text-indigo-600' },
+                { name: 'المتجر والشحن', count: inbox.filter(m => m.text?.includes('شحن') || m.text?.includes('متجر')).length, color: 'text-purple-600' },
+              ].map((team, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-200/60 cursor-pointer font-medium"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`w-1.5 h-1.5 rounded-full ${team.color.replace('text-', 'bg-')}`}></span>
+                    <span>{team.name}</span>
+                  </div>
+                  {team.count > 0 && (
+                    <span className="text-[10px] text-slate-400 font-semibold">{team.count}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Channels Section */}
+          <div className="p-3 border-b border-slate-200 flex-1">
+            <div className="text-[10px] font-black tracking-wider uppercase text-slate-400 mb-2">
+              قنوات التواصل
+            </div>
+            <div className="space-y-1">
+              
+              {/* Facebook Messenger */}
+              <button
+                onClick={() => onSetPlatformFilter('meta_facebook')}
+                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                  activePlatformFilter === 'meta_facebook'
+                    ? 'bg-blue-600 text-white font-bold shadow-sm'
+                    : 'text-slate-700 hover:bg-slate-200/70 font-medium'
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <Facebook className={`w-4 h-4 shrink-0 ${activePlatformFilter === 'meta_facebook' ? 'text-white' : 'text-blue-600'}`} />
+                  <span className="truncate">فيسبوك ماسنجر</span>
+                </div>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  activePlatformFilter === 'meta_facebook' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                }`}>
+                  {counts.facebook || 0}
+                </span>
+              </button>
+
+              {/* Instagram Direct */}
+              <button
+                onClick={() => onSetPlatformFilter('meta_instagram')}
+                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                  activePlatformFilter === 'meta_instagram'
+                    ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold shadow-sm'
+                    : 'text-slate-700 hover:bg-slate-200/70 font-medium'
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <Instagram className={`w-4 h-4 shrink-0 ${activePlatformFilter === 'meta_instagram' ? 'text-white' : 'text-pink-600'}`} />
+                  <span className="truncate">انستغرام (@doracars22)</span>
+                </div>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  activePlatformFilter === 'meta_instagram' ? 'bg-white/20 text-white' : 'bg-pink-100 text-pink-700'
+                }`}>
+                  {counts.instagram || 0}
+                </span>
+              </button>
+
+              {/* WhatsApp Branches */}
+              <button
+                onClick={() => onSetPlatformFilter('meta_whatsapp')}
+                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                  activePlatformFilter === 'meta_whatsapp'
+                    ? 'bg-emerald-600 text-white font-bold shadow-sm'
+                    : 'text-slate-700 hover:bg-slate-200/70 font-medium'
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <Phone className={`w-4 h-4 shrink-0 ${activePlatformFilter === 'meta_whatsapp' ? 'text-white' : 'text-emerald-600'}`} />
+                  <span className="truncate">واتساب الفروع</span>
+                </div>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  activePlatformFilter === 'meta_whatsapp' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                }`}>
+                  {counts.whatsapp || 3}
+                </span>
+              </button>
+
+              {/* Salla E-Commerce */}
+              <a
+                href="https://doracars.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-slate-700 hover:bg-slate-200/70 font-medium transition-all"
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <ShoppingCart className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span className="truncate">متجر سلة (doracars)</span>
+                </div>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+
+              {/* Technical Mail */}
+              <div className="flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-slate-500 hover:bg-slate-200/50 cursor-pointer">
+                <div className="flex items-center gap-2 truncate">
+                  <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span className="truncate">البريد والدعم</span>
+                </div>
+                <span className="text-[10px] text-slate-400">0</span>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Quick Tags Palette */}
+          <div className="p-3 border-b border-slate-200">
+            <div className="text-[10px] font-black tracking-wider uppercase text-slate-400 mb-2">
+              الوسوم
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-bold">
+                • تنتظر تسعيرة
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 text-[10px] font-bold">
+                • كيا كرنفال
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold">
+                • ديزل كوري
+              </span>
+            </div>
+          </div>
+
+          {/* Current Agent Profile footer */}
+          <div className="p-3 bg-white border-t border-slate-200 flex items-center gap-2.5">
+            <div className="relative">
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
+                أع
+              </div>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-bold text-xs text-slate-800 truncate">أحمد العتيبي</div>
+              <div className="text-[10px] text-emerald-600 font-medium">متصل ومتاح للرد</div>
+            </div>
+          </div>
+
+        </aside>
+
+        {/* ════════════════════════════════════════════════════════════════
+            COLUMN 2: CONVERSATIONS LIST (w-[320px] / w-[340px])
+            ════════════════════════════════════════════════════════════════ */}
+        <section className="w-80 border-l border-slate-200 bg-white flex flex-col shrink-0 overflow-hidden">
+          
+          {/* Header & Search */}
+          <div className="p-3.5 border-b border-slate-200 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-black text-slate-900 tracking-tight">المحادثات</h2>
+              
+              {/* Status Toggle Dropdown (فتح / مغلقة / الكل) */}
+              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] font-bold">
+                <button
+                  onClick={() => setStatusFilter('open')}
+                  className={`px-2 py-1 rounded-md transition-all ${
+                    statusFilter === 'open' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  فتح
+                </button>
+                <button
+                  onClick={() => setStatusFilter('closed')}
+                  className={`px-2 py-1 rounded-md transition-all ${
+                    statusFilter === 'closed' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  مغلقة
+                </button>
+                <button
+                  onClick={() => setStatusFilter('all')}
+                  className={`px-2 py-1 rounded-md transition-all ${
+                    statusFilter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  الكل
+                </button>
+              </div>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="البحث عن رسائل في المحادثات..."
+                value={searchQuery}
+                onChange={(e) => onSetSearchQuery(e.target.value)}
+                className="w-full pr-9 pl-3 py-2 rounded-xl bg-slate-100 border border-transparent focus:border-blue-500 focus:bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => onSetSearchQuery('')}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Sub-tabs (الكل 23 • غير مسند 4 • محادثاتي 11) */}
+            <div className="flex items-center justify-between border-b border-slate-200 text-xs font-bold text-slate-500 pt-1">
+              <button
+                onClick={() => setSubFilter('all')}
+                className={`pb-2 px-1 relative transition-all ${
+                  subFilter === 'all' ? 'text-blue-600 font-black' : 'hover:text-slate-800'
+                }`}
+              >
+                الكل {countTotal}
+                {subFilter === 'all' && (
+                  <span className="absolute bottom-0 right-0 left-0 h-0.5 bg-blue-600 rounded-full"></span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setSubFilter('unassigned')}
+                className={`pb-2 px-1 relative transition-all ${
+                  subFilter === 'unassigned' ? 'text-blue-600 font-black' : 'hover:text-slate-800'
+                }`}
+              >
+                غير مسند {countPending}
+                {subFilter === 'unassigned' && (
+                  <span className="absolute bottom-0 right-0 left-0 h-0.5 bg-blue-600 rounded-full"></span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setSubFilter('mine')}
+                className={`pb-2 px-1 relative transition-all ${
+                  subFilter === 'mine' ? 'text-blue-600 font-black' : 'hover:text-slate-800'
+                }`}
+              >
+                محادثاتي {countMine}
+                {subFilter === 'mine' && (
+                  <span className="absolute bottom-0 right-0 left-0 h-0.5 bg-blue-600 rounded-full"></span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Conversations Items Stream */}
+          <div className="flex-1 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
+            {filteredList.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center h-full space-y-2">
+                <MessageSquare className="w-8 h-8 text-slate-300" />
+                <p className="font-bold text-slate-600">لا توجد محادثات في هذه القائمة</p>
+                <p className="text-[11px] text-slate-400">جرب تغيير الفلتر أو البحث عن اسم آخر</p>
+              </div>
+            ) : (
+              filteredList.map((msg) => {
+                const isSelected = selectedMessage?.id === msg.id;
+                const isInstagram = msg.platform === 'meta_instagram';
+                const isClosed = closedConversations.has(msg.id);
+
+                return (
+                  <div
+                    key={msg.id}
+                    onClick={() => onSelectMessage(msg)}
+                    className={`p-3.5 cursor-pointer transition-all relative border-r-4 ${
+                      isSelected
+                        ? 'bg-blue-50/80 border-r-blue-600 shadow-xs'
+                        : 'hover:bg-slate-50 border-r-transparent'
+                    }`}
+                  >
+                    {/* Channel handle badge */}
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 ${
+                        isInstagram
+                          ? 'bg-pink-50 text-pink-700 border border-pink-200'
+                          : 'bg-blue-50 text-blue-700 border border-blue-200'
+                      }`}>
+                        {isInstagram ? (
+                          <>
+                            <Instagram className="w-2.5 h-2.5 text-pink-600" />
+                            <span>@Instagram doracars22</span>
+                          </>
+                        ) : (
+                          <>
+                            <Facebook className="w-2.5 h-2.5 text-blue-600" />
+                            <span>@Facebook Dora Cars</span>
+                          </>
+                        )}
+                      </span>
+
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {msg.timestamp || 'منذ قليل'}
+                      </span>
+                    </div>
+
+                    {/* Customer info & snippet */}
+                    <div className="flex items-start gap-2.5">
+                      <div className="relative shrink-0 mt-0.5">
+                        <img
+                          src={msg.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.senderName)}&background=0b76e0&color=fff`}
+                          alt={msg.senderName}
+                          className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-xs"
+                        />
+                        <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
+                          isClosed ? 'bg-slate-400' : 'bg-emerald-500'
+                        }`}></span>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <h4 className="font-bold text-xs text-slate-900 truncate">
+                            {msg.senderName}
+                          </h4>
+                          {msg.isLive && (
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="محادثة حية"></span>
+                          )}
+                        </div>
+
+                        {/* Last message with reply indicator */}
+                        <p className="text-xs text-slate-600 line-clamp-1 leading-relaxed flex items-center gap-1">
+                          <span className="text-blue-500 font-bold">⤶</span>
+                          <span className="truncate">{msg.reply || msg.text}</span>
+                        </p>
+
+                        {/* Badges footer */}
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          {msg.leadInfo?.carModel && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200 truncate max-w-[120px]">
+                              🚗 {msg.leadInfo.carModel}
+                            </span>
+                          )}
+                          {msg.status === 'pending' ? (
+                            <span className="text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded font-bold border border-amber-200">
+                              بانتظار رد
+                            </span>
+                          ) : (
+                            <span className="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-bold border border-emerald-200 flex items-center gap-0.5">
+                              <Check className="w-2.5 h-2.5" />
+                              تم الرد
+                            </span>
+                          )}
+                          {isClosed && (
+                            <span className="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-bold">
+                              مغلقة
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+        </section>
+
+        {/* ════════════════════════════════════════════════════════════════
+            COLUMN 3: ACTIVE CHAT STREAM & TABBED COMPOSER (flex-1)
+            ════════════════════════════════════════════════════════════════ */}
+        <main className="flex-1 bg-[#F1F5F9] flex flex-col overflow-hidden border-l border-slate-200">
+          {selectedMessage ? (
+            <>
+              {/* Chat Header */}
+              <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between gap-3 shrink-0 shadow-xs">
+                
+                {/* Left: Contact Info */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative">
+                    <img
+                      src={selectedMessage.avatar}
+                      alt={selectedMessage.senderName}
+                      className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-xs"
+                    />
+                    <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+                      isSelectedClosed ? 'bg-slate-400' : 'bg-emerald-500'
+                    }`}></span>
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-black text-slate-900 truncate">
+                        {selectedMessage.senderName}
+                      </h3>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        selectedMessage.platform === 'meta_instagram'
+                          ? 'bg-pink-100 text-pink-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {selectedMessage.platform === 'meta_instagram' ? '@doracars22 Instagram' : 'Facebook Messenger'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                      <span className="text-blue-600 font-semibold">{selectedMessage.platform === 'meta_instagram' ? '@doracars22' : 'Dora Cars'}</span>
+                      <span>•</span>
+                      <span>{isSelectedClosed ? 'المحادثة مغلقة وموثقة' : 'متصل الآن ومتاح للرد'}</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right: Actions (Green Close button + WhatsApp) */}
+                <div className="flex items-center gap-2">
+                  {/* WhatsApp transfer */}
+                  {selectedMessage.leadInfo?.carModel?.includes('كيا') ? (
+                    <a
+                      href={getBranchWhatsAppLink('kia', selectedMessage.text)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-xs font-bold transition-all"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>واتساب كيا (0539454377)</span>
+                    </a>
+                  ) : (
+                    <a
+                      href={getBranchWhatsAppLink('hyundai', selectedMessage.text)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 text-xs font-bold transition-all"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-blue-600" />
+                      <span>واتساب هيونداي (0530051360)</span>
+                    </a>
+                  )}
+
+                  {/* Primary Green Close Button (Matching Screenshot ✓) */}
+                  <button
+                    onClick={() => onToggleCloseConversation(selectedMessage.id)}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold text-white transition-all shadow-sm ${
+                      isSelectedClosed
+                        ? 'bg-slate-600 hover:bg-slate-700'
+                        : 'bg-emerald-600 hover:bg-emerald-700'
+                    }`}
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>{isSelectedClosed ? 'إعادة فتح المحادثة' : 'إغلاق المحادثة ✓'}</span>
+                  </button>
+                </div>
+
+              </div>
+
+              {/* Subtabs bar (الرسائل | تنبيهات النظام) */}
+              <div className="bg-white border-b border-slate-200 px-4 flex items-center gap-6 text-xs font-bold text-slate-500">
+                <button
+                  onClick={() => setChatSubTab('messages')}
+                  className={`py-2.5 relative transition-all ${
+                    chatSubTab === 'messages' ? 'text-blue-600 font-black' : 'hover:text-slate-800'
+                  }`}
+                >
+                  الرسائل
+                  {chatSubTab === 'messages' && (
+                    <span className="absolute bottom-0 right-0 left-0 h-0.5 bg-blue-600 rounded-full"></span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setChatSubTab('notifications')}
+                  className={`py-2.5 relative transition-all ${
+                    chatSubTab === 'notifications' ? 'text-blue-600 font-black' : 'hover:text-slate-800'
+                  }`}
+                >
+                  تنبيهات النظام والذكاء الاصطناعي
+                  {chatSubTab === 'notifications' && (
+                    <span className="absolute bottom-0 right-0 left-0 h-0.5 bg-blue-600 rounded-full"></span>
+                  )}
+                </button>
+              </div>
+
+              {/* Chat Message Stream */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+                
+                {/* System notification pill in center */}
+                <div className="flex justify-center">
+                  <span className="bg-slate-200/80 text-slate-600 text-[11px] font-medium px-3.5 py-1 rounded-full shadow-xs border border-slate-300">
+                    أضاف تصنيف: {selectedMessage.leadInfo?.interestType || 'قطع غيار'} • {assignedAgent} • {selectedMessage.timestamp || 'اليوم'}
+                  </span>
+                </div>
+
+                {/* Render Chat History */}
+                {selectedMessage.chatHistory && selectedMessage.chatHistory.length > 0 ? (
+                  selectedMessage.chatHistory.map((chat) => (
+                    <div
+                      key={chat.id}
+                      className={`flex items-start gap-3 ${chat.isPage ? 'flex-row-reverse' : 'flex-row'}`}
+                    >
+                      <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-200 shadow-xs">
+                        {chat.isPage ? (
+                          <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
+                            درة
+                          </div>
+                        ) : (
+                          <img src={selectedMessage.avatar} alt={chat.sender} className="w-full h-full object-cover" />
+                        )}
+                      </div>
+
+                      <div className={`max-w-[72%] rounded-2xl p-3.5 text-xs leading-relaxed ${
+                        chat.isPage
+                          ? 'bg-[#0084ff] text-white rounded-tr-none shadow-md'
+                          : 'bg-white text-slate-800 rounded-tl-none border border-slate-200/90 shadow-sm'
+                      }`}>
+                        <div className={`flex items-center justify-between gap-3 mb-1 text-[10px] ${
+                          chat.isPage ? 'text-blue-100' : 'text-slate-400 font-medium'
+                        }`}>
+                          <span className="font-bold">{chat.isPage ? 'درة السيارة لقطع الغيار' : selectedMessage.senderName}</span>
+                          <span className="flex items-center gap-1">
+                            {chat.time ? new Date(chat.time).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''}
+                            {chat.isPage && <CheckCheck className="w-3 h-3 text-blue-200" />}
+                          </span>
+                        </div>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed">{chat.message}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  /* Fallback single message */
+                  <div className="flex items-start gap-3 flex-row">
+                    <img src={selectedMessage.avatar} alt={selectedMessage.senderName} className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-xs shrink-0" />
+                    <div className="max-w-[72%] rounded-2xl rounded-tl-none p-4 bg-white text-slate-800 text-sm leading-relaxed border border-slate-200/90 shadow-sm">
+                      <div className="flex items-center justify-between gap-3 mb-1 text-[10px] text-slate-400">
+                        <span className="font-bold text-slate-700">{selectedMessage.senderName}</span>
+                        <span>{selectedMessage.timestamp}</span>
+                      </div>
+                      <p className="whitespace-pre-wrap">{selectedMessage.text}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show saved reply if single */}
+                {selectedMessage.reply && (!selectedMessage.chatHistory || selectedMessage.chatHistory.length <= 1) && (
+                  <div className="flex items-start gap-3 flex-row-reverse">
+                    <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs">
+                      درة
+                    </div>
+                    <div className="max-w-[72%] rounded-2xl rounded-tr-none p-4 bg-[#0084ff] text-white text-sm leading-relaxed shadow-md">
+                      <div className="flex items-center justify-between gap-3 mb-1 text-[10px] text-blue-100">
+                        <span className="font-bold">درة السيارة لقطع الغيار</span>
+                        <span className="flex items-center gap-1">
+                          <span>{selectedMessage.repliedAt || 'تم الرد'}</span>
+                          <CheckCheck className="w-3.5 h-3.5 text-blue-200" />
+                        </span>
+                      </div>
+                      <p className="whitespace-pre-wrap">{selectedMessage.reply}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Saved internal team notes if any */}
+                {customerNotes[selectedMessage.id] && (
+                  <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+                    <div className="font-bold text-amber-800 flex items-center gap-1.5 text-[11px]">
+                      <span>📝 ملاحظة خاصة بالفريق الداخلي:</span>
+                    </div>
+                    <p className="whitespace-pre-wrap font-medium">{customerNotes[selectedMessage.id]}</p>
+                  </div>
+                )}
+
+                {/* Typing indicator pill */}
+                <div className="flex items-center gap-2 text-[11px] text-slate-400 italic">
+                  <div className="flex gap-1 bg-white border border-slate-200 px-2.5 py-1 rounded-full shadow-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-bounce [animation-delay:0.2s]"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-bounce [animation-delay:0.4s]"></span>
+                    <span className="text-[10px] text-slate-500 mr-1.5 font-sans font-medium">سليم الحموي is typing...</span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* ───────────────── DUAL TABBED COMPOSER (Bottom) ───────────────── */}
+              <div className="bg-white border-t border-slate-200 p-3.5 space-y-2.5 shadow-md">
+                
+                {/* Mode Tabs: [ إضافة رد ] | [ إضافة ملاحظة خاصة ] */}
+                <div className="flex items-center gap-4 text-xs font-bold border-b border-slate-100 pb-2">
+                  <button
+                    onClick={() => setComposerMode('reply')}
+                    className={`flex items-center gap-1.5 transition-all ${
+                      composerMode === 'reply' ? 'text-blue-600 font-black' : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    <span>إضافة رد</span>
+                    {composerMode === 'reply' && <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>}
+                  </button>
+
+                  <button
+                    onClick={() => setComposerMode('note')}
+                    className={`flex items-center gap-1.5 transition-all ${
+                      composerMode === 'note' ? 'text-amber-600 font-black' : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    <span>إضافة ملاحظة خاصة</span>
+                    {composerMode === 'note' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>}
+                  </button>
+                </div>
+
+                {/* AI Smart Copilot Bar (When in reply mode) */}
+                {composerMode === 'reply' && selectedMessage.suggestedReply && (
+                  <div className="flex items-center justify-between text-xs px-3 py-1.5 rounded-xl bg-blue-50/70 border border-blue-200">
+                    <div className="flex items-center gap-2 truncate">
+                      <Bot className="w-4 h-4 text-blue-600 shrink-0" />
+                      <span className="font-bold text-slate-700 truncate">اقتراح درة الذكي:</span>
+                      <span className="text-slate-600 truncate text-[11px] max-w-md">{selectedMessage.suggestedReply}</span>
+                    </div>
+                    <button
+                      onClick={() => onInsertTemplate(selectedMessage.suggestedReply)}
+                      className="text-[11px] text-blue-600 hover:text-blue-800 font-bold shrink-0 flex items-center gap-1 mr-2"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      إدراج في الرد
+                    </button>
+                  </div>
+                )}
+
+                {/* Quick reply templates chips */}
+                {composerMode === 'reply' && (
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                    {QUICK_REPLY_TEMPLATES.slice(0, 5).map((tmpl, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => onInsertTemplate(tmpl.text)}
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold whitespace-nowrap border border-slate-200 transition-all"
+                      >
+                        {tmpl.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Textarea Input */}
+                {composerMode === 'reply' ? (
+                  <div className="relative">
+                    <textarea
+                      rows={3}
+                      value={replyDraft}
+                      onChange={(e) => onSetReplyDraft(e.target.value)}
+                      placeholder="لإضافة سطر جديد ابدأ بزر / للاختيار من الردود السريعة أو Shift + Enter..."
+                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white leading-relaxed custom-scrollbar transition-all"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <textarea
+                      rows={3}
+                      value={noteInput}
+                      onChange={(e) => setNoteInput(e.target.value)}
+                      placeholder="اكتب ملاحظة خاصة لزملائك في الفريق (لن تظهر للعميل)..."
+                      className="w-full p-3 rounded-xl bg-amber-50/60 border border-amber-300 text-xs text-amber-900 placeholder-amber-500 focus:outline-none focus:border-amber-500 leading-relaxed custom-scrollbar transition-all"
+                    />
+                  </div>
+                )}
+
+                {/* Bottom Action Toolbar */}
+                <div className="flex items-center justify-between pt-1">
+                  
+                  {/* Tool icons (Paperclip, Emoji, Quote, Mic) */}
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <button className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all" title="إرفاق ملف">
+                      <Paperclip className="w-4 h-4" />
+                    </button>
+                    <button className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all" title="رموز تعبيرية">
+                      <Smile className="w-4 h-4" />
+                    </button>
+                    <button className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all" title="اقتباس">
+                      <Quote className="w-4 h-4" />
+                    </button>
+                    <button className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all" title="تسجيل صوتي">
+                      <Mic className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Send / Save Button */}
+                  {composerMode === 'reply' ? (
+                    <button
+                      onClick={onSendReply}
+                      disabled={!replyDraft.trim()}
+                      className="flex items-center gap-2 px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 disabled:opacity-40"
+                    >
+                      <span>إرسال</span>
+                      <Send className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        onSavePrivateNote(selectedMessage.id, noteInput);
+                        setNoteInput('');
+                      }}
+                      disabled={!noteInput.trim()}
+                      className="flex items-center gap-2 px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all shadow-md shadow-amber-600/20 disabled:opacity-40"
+                    >
+                      <span>حفظ الملاحظة</span>
+                      <BookmarkPlus className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                </div>
+
+              </div>
+
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400">
+              <MessageSquare className="w-12 h-12 text-slate-300 mb-2" />
+              <h3 className="font-bold text-slate-700 text-sm">اختر محادثة لعرض تفاصيلها</h3>
+              <p className="text-xs text-slate-400 mt-1">تصفح قائمة المحادثات الحية على اليمين للبدء</p>
+            </div>
+          )}
+        </main>
+
+        {/* ════════════════════════════════════════════════════════════════
+            COLUMN 4: RIGHT CUSTOMER CRM DRAWER (w-[310px] / w-[320px])
+            ════════════════════════════════════════════════════════════════ */}
+        <aside className="w-80 bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-y-auto custom-scrollbar select-none text-xs">
+          {selectedMessage ? (
+            <div className="p-4 space-y-4">
+              
+              {/* Customer Profile Card */}
+              <div className="text-center pb-3 border-b border-slate-100">
+                <div className="relative inline-block mx-auto mb-2">
+                  <img
+                    src={selectedMessage.avatar}
+                    alt={selectedMessage.senderName}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-blue-500/30 shadow-md"
+                  />
+                  <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${
+                    isSelectedClosed ? 'bg-slate-400' : 'bg-emerald-500'
+                  }`}></span>
+                </div>
+
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <h3 className="font-black text-sm text-slate-900">{selectedMessage.senderName}</h3>
+                  <Edit3 className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-pointer" />
+                </div>
+
+                {/* Email with copy icon */}
+                <div className="text-[11px] text-slate-500 flex items-center justify-center gap-1.5 mb-1">
+                  <span>{selectedMessage.leadInfo?.email || `${selectedMessage.senderId.slice(-8)}@customer.dora`}</span>
+                  <Copy
+                    className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    onClick={() => onCopyText(selectedMessage.leadInfo?.email || selectedMessage.senderId, 'email')}
+                  />
+                </div>
+
+                {/* Phone */}
+                <div className="text-[11px] font-bold text-slate-700 flex items-center justify-center gap-1.5 mb-2">
+                  <span>{selectedMessage.leadInfo?.phone || '+966 50 550 0000'}</span>
+                  <Copy
+                    className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    onClick={() => onCopyText(selectedMessage.leadInfo?.phone || '+966505500000', 'phone')}
+                  />
+                </div>
+
+                {/* Availability Badge */}
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">
+                  <span>غير متاح الآن</span>
+                </div>
+
+                {/* Quick Icon Actions (WhatsApp, SMS, Tag, Delete) */}
+                <div className="flex items-center justify-center gap-2 mt-3 pt-2 border-t border-slate-100">
+                  <button className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-all" title="محادثة واتساب">
+                    <Phone className="w-4 h-4" />
+                  </button>
+                  <button className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-all" title="إرسال SMS">
+                    <Mail className="w-4 h-4" />
+                  </button>
+                  <button className="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition-all" title="إضافة تصنيف">
+                    <Tag className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => onToggleCloseConversation(selectedMessage.id)}
+                    className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all"
+                    title={isSelectedClosed ? 'إعادة فتح' : 'أرشفة المحادثة'}
+                  >
+                    <Archive className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Section 1: إجراءات المحادثة (Conversation Actions) */}
+              <div className="space-y-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center justify-between text-xs font-black text-slate-900">
+                  <span>إجراءات المحادثة</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+
+                {/* Assigned Agent */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-500">الوكيل المكلف</label>
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] font-bold flex items-center justify-center">
+                        AK
+                      </div>
+                      <span className="font-bold text-slate-800 text-xs">{assignedAgent}</span>
+                    </div>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  </div>
+                </div>
+
+                {/* Assigned Department */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-500">العضو المكلف / القسم</label>
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                    <span className="font-bold text-slate-800 text-xs">{assignedDept}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  </div>
+                </div>
+
+                {/* Conversation Tags */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-500">وسوم المحادثة</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(customerTags[selectedMessage.id] || ['تنتظر دفعة', 'عميل جاد']).map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-bold"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <span>{tag}</span>
+                        <X
+                          className="w-2.5 h-2.5 hover:text-red-500 cursor-pointer"
+                          onClick={() => onRemoveTag(selectedMessage.id, tag)}
+                        />
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Add Tag input */}
+                  <div className="flex gap-1 pt-1">
+                    <input
+                      type="text"
+                      placeholder="+ إضافة تصنيف جديد..."
+                      value={newTagText}
+                      onChange={(e) => setNewTagText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newTagText.trim()) {
+                          onAddTag(selectedMessage.id, newTagText.trim());
+                          setNewTagText('');
+                        }
+                      }}
+                      className="flex-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                    />
+                    <button
+                      onClick={() => {
+                        if (newTagText.trim()) {
+                          onAddTag(selectedMessage.id, newTagText.trim());
+                          setNewTagText('');
+                        }
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: معلومات المحادثة والسيارة (Vehicle Specs & Info) */}
+              <div className="space-y-2.5 pb-3 border-b border-slate-100">
+                <div className="flex items-center justify-between text-xs font-black text-slate-900">
+                  <span>معلومات المحادثة</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+
+                <div className="space-y-1.5 text-[11px]">
+                  <div className="flex justify-between py-1 border-b border-slate-50">
+                    <span className="text-slate-400 font-medium">السيارة والموديل:</span>
+                    <span className="font-bold text-slate-800">{selectedMessage.leadInfo?.carModel || 'كيا / هيونداي'}</span>
+                  </div>
+
+                  <div className="flex justify-between py-1 border-b border-slate-50">
+                    <span className="text-slate-400 font-medium">القطعة المطلوبة:</span>
+                    <span className="font-bold text-blue-600">{selectedMessage.leadInfo?.interestType || 'قطع غيار'}</span>
+                  </div>
+
+                  {/* Prominent VIN */}
+                  <div className="pt-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-slate-400 font-medium">رقم الهيكل (VIN):</span>
+                      {selectedMessage.leadInfo?.vin && (
+                        <button
+                          onClick={() => onCopyText(selectedMessage.leadInfo.vin, 'vin')}
+                          className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 text-[10px]"
+                        >
+                          <Copy className="w-2.5 h-2.5" />
+                          نسخ
+                        </button>
+                      )}
+                    </div>
+                    {selectedMessage.leadInfo?.vin ? (
+                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-200 font-mono text-center text-xs font-bold text-slate-800 tracking-wider">
+                        {selectedMessage.leadInfo.vin}
+                      </div>
+                    ) : (
+                      <div className="p-1.5 rounded-lg bg-slate-50 text-center text-[10px] text-slate-400">
+                        لم يرسل العميل رقم الهيكل بعد
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between py-1 border-b border-slate-50">
+                    <span className="text-slate-400 font-medium">تم البدء في:</span>
+                    <span className="text-slate-600">{selectedMessage.rawTime ? new Date(selectedMessage.rawTime).toLocaleDateString('ar-SA') : 'Sun Jul 31 2022'}</span>
+                  </div>
+
+                  <div className="flex justify-between py-1 border-b border-slate-50">
+                    <span className="text-slate-400 font-medium">القناة:</span>
+                    <span className="font-bold text-slate-700">{selectedMessage.platform === 'meta_instagram' ? 'Instagram Direct' : 'Facebook Messenger'}</span>
+                  </div>
+
+                  <div className="flex justify-between py-1">
+                    <span className="text-slate-400 font-medium">المتصفح:</span>
+                    <span className="text-slate-600 font-mono">Chrome 103.0.0.0</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Branch Routing WhatsApp Buttons */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold text-slate-700 block mb-1">تحويل مباشر للفرع المختص:</span>
+                
+                <a
+                  href={getBranchWhatsAppLink('kia', selectedMessage.text)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-xs transition-all"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>فرع كيا (0539454377)</span>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-emerald-600" />
+                </a>
+
+                <a
+                  href={getBranchWhatsAppLink('hyundai', selectedMessage.text)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-2 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 font-bold text-xs transition-all"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-blue-600" />
+                    <span>فرع هيونداي (0530051360)</span>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-blue-600" />
+                </a>
+
+                <a
+                  href={getBranchWhatsAppLink('onlineStore', selectedMessage.text)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 font-bold text-xs transition-all"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <ShoppingCart className="w-3.5 h-3.5 text-purple-600" />
+                    <span>المتجر الإلكتروني (0538834212)</span>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-purple-600" />
+                </a>
+              </div>
+
+            </div>
+          ) : (
+            <div className="p-6 text-center text-slate-400 text-xs">
+              لا توجد بيانات عميل محددة
+            </div>
+          )}
+        </aside>
+
+      </div>
+    </div>
+  );
+}

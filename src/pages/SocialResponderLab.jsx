@@ -57,7 +57,16 @@ import {
   Sun,
   Moon,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Paperclip,
+  Smile,
+  Mic,
+  Quote,
+  CheckCheck,
+  Mail,
+  Users,
+  ChevronDown,
+  X
 } from 'lucide-react';
 import {
   loadResponderSettings,
@@ -86,6 +95,7 @@ import { loadMetaConfig } from '../lib/metaIntegration';
 import { loadTikTokConfig } from '../lib/tiktokIntegration';
 import MetaIntegrationModal from '../components/shared/MetaIntegrationModal';
 import TikTokIntegrationModal from '../components/shared/TikTokIntegrationModal';
+import OmnichannelInboxView from '../components/social/OmnichannelInboxView';
 
 // Social-Bot.io Default Keyword Triggers
 const DEFAULT_KEYWORD_TRIGGERS = [
@@ -235,6 +245,20 @@ export default function SocialResponderLab() {
     't_1029118809979259': 'العميل يفضل الاستلام المباشر من فرع بريدة بعد الطلب من رابط المتجر (75 ريال).',
     't_2052583308797368': 'رقم الهيكل KNAUP752929305834 تم تحويله لفرع كيا لتأكيد كراسي المكينة والقير.'
   });
+
+  // 4-Column Professional SaaS CRM States (Karzoun / Crisp style)
+  const [composerMode, setComposerMode] = useState('reply'); // 'reply' | 'note'
+  const [noteDraft, setNoteDraft] = useState('');
+  const [subFilter, setSubFilter] = useState('all'); // 'all' | 'unassigned' | 'mine'
+  const [chatSubTab, setChatSubTab] = useState('messages'); // 'messages' | 'notifications'
+  const [assignedAgents, setAssignedAgents] = useState({
+    default: 'أحمد العتيبي (خدمة العملاء)'
+  });
+  const [assignedDepts, setAssignedDepts] = useState({
+    default: 'خدمة العملاء والمبيعات'
+  });
+  const [closedConversations, setClosedConversations] = useState(new Set());
+  const [inboxStatusFilter, setInboxStatusFilter] = useState('open'); // 'open' | 'closed' | 'all'
 
   // Auto-sync on mount
   useEffect(() => {
@@ -402,6 +426,42 @@ export default function SocialResponderLab() {
     }
     setNewTagInput('');
     showToast('تمت إضافة الوسم بنجاح! 🏷️');
+  };
+
+  // Remove Tag
+  const handleRemoveTag = (msgId, tagToRemove) => {
+    const current = customerTags[msgId] || [];
+    setCustomerTags({
+      ...customerTags,
+      [msgId]: current.filter(t => t !== tagToRemove)
+    });
+    showToast('تم حذف الوسم');
+  };
+
+  // Toggle Close / Reopen Conversation (Matching green button in reference screenshot)
+  const handleToggleCloseConversation = (msgId) => {
+    setClosedConversations(prev => {
+      const next = new Set(prev);
+      if (next.has(msgId)) {
+        next.delete(msgId);
+        showToast('تمت إعادة فتح المحادثة 🟢');
+      } else {
+        next.add(msgId);
+        showToast('تم إغلاق وتوثيق المحادثة بنجاح ✓');
+      }
+      return next;
+    });
+  };
+
+  // Save Private Internal Note
+  const handleSavePrivateNote = (msgId) => {
+    if (!noteDraft.trim()) return;
+    setCustomerNotes(prev => ({
+      ...prev,
+      [msgId]: (prev[msgId] ? prev[msgId] + '\n• ' : '• ') + noteDraft.trim()
+    }));
+    setNoteDraft('');
+    showToast('تم حفظ الملاحظة الخاصة بالفريق 📝');
   };
 
   // Save Schedule Settings
@@ -698,710 +758,42 @@ export default function SocialResponderLab() {
       <main className="flex-1 max-w-[1750px] w-full mx-auto p-4 flex flex-col">
         
         {/* ========================================================================= */}
-        {/* VIEW 1: OMNICHANNEL INBOX (3-COLUMN SOCIAL-BOT WORKSPACE)                  */}
+        {/* VIEW 1: OMNICHANNEL INBOX (4-COLUMN WORLD-CLASS SAAS WORKSPACE)             */}
         {/* ========================================================================= */}
         {activeTab === 'inbox' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 h-[calc(100vh-175px)] min-h-[650px]">
-            
-            {/* ---------------- COLUMN 1: CONVERSATIONS LIST & CHANNELS (lg:col-span-3) ---------------- */}
-            <div className="lg:col-span-4 xl:col-span-3 bg-[#0d152a] rounded-2xl border border-slate-800 flex flex-col overflow-hidden shadow-xl">
-              
-              {/* Channel Filter Chips */}
-              <div className="p-3 border-b border-slate-800/90 bg-[#0b1122]">
-                <div className="text-[11px] font-bold text-slate-400 mb-2 flex items-center justify-between">
-                  <span>قنوات التواصل المتزامنة</span>
-                  <span className="text-teal-400">{filteredInbox.length} محادثة متزامنة</span>
-                </div>
-                <div className="grid grid-cols-5 gap-1">
-                  <button
-                    onClick={() => setActivePlatformFilter('all')}
-                    className={`py-1.5 px-1 rounded-lg text-[10px] font-bold text-center transition-all ${
-                      activePlatformFilter === 'all'
-                        ? 'bg-teal-500 text-white shadow-md shadow-teal-500/30'
-                        : 'bg-slate-800/70 text-slate-300 hover:bg-slate-700'
-                    }`}
-                  >
-                    الكل ({countAll})
-                  </button>
-                  <button
-                    onClick={() => setActivePlatformFilter('meta_facebook')}
-                    className={`py-1.5 px-1 rounded-lg text-[10px] font-bold flex flex-col items-center gap-0.5 transition-all ${
-                      activePlatformFilter === 'meta_facebook'
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                        : 'bg-slate-800/70 text-blue-300 hover:bg-slate-700'
-                    }`}
-                  >
-                    <Facebook className="w-3 h-3" />
-                    <span>ماسنجر ({countFacebook})</span>
-                  </button>
-                  <button
-                    onClick={() => setActivePlatformFilter('meta_instagram')}
-                    className={`py-1.5 px-1 rounded-lg text-[10px] font-bold flex flex-col items-center gap-0.5 transition-all ${
-                      activePlatformFilter === 'meta_instagram'
-                        ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-md shadow-pink-600/30'
-                        : 'bg-slate-800/70 text-pink-300 hover:bg-slate-700'
-                    }`}
-                  >
-                    <Instagram className="w-3 h-3" />
-                    <span>انستقرام ({countInstagram})</span>
-                  </button>
-                  <button
-                    onClick={() => setActivePlatformFilter('meta_whatsapp')}
-                    className={`py-1.5 px-1 rounded-lg text-[10px] font-bold flex flex-col items-center gap-0.5 transition-all ${
-                      activePlatformFilter === 'meta_whatsapp'
-                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                        : 'bg-slate-800/70 text-emerald-300 hover:bg-slate-700'
-                    }`}
-                  >
-                    <Phone className="w-3 h-3" />
-                    <span>واتساب ({countWhatsApp})</span>
-                  </button>
-                  <button
-                    onClick={() => setActivePlatformFilter('tiktok')}
-                    className={`py-1.5 px-1 rounded-lg text-[10px] font-bold flex flex-col items-center gap-0.5 transition-all ${
-                      activePlatformFilter === 'tiktok'
-                        ? 'bg-slate-700 text-white shadow-md'
-                        : 'bg-slate-800/70 text-slate-300 hover:bg-slate-700'
-                    }`}
-                  >
-                    <Video className="w-3 h-3" />
-                    <span>تيك توك ({countTikTok})</span>
-                  </button>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative mt-2.5">
-                  <Search className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="ابحث بالاسم، الموديل، الهيكل VIN، القطعة..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-all"
-                  />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">✕</button>
-                  )}
-                </div>
-
-                {/* Sub-Filter Pills */}
-                <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto no-scrollbar">
-                  <button
-                    onClick={() => setActiveStatusFilter('all')}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap ${
-                      activeStatusFilter === 'all' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800'
-                    }`}
-                  >
-                    الكل
-                  </button>
-                  <button
-                    onClick={() => setActiveStatusFilter('pending')}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap flex items-center gap-1 ${
-                      activeStatusFilter === 'pending' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'text-slate-400 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                    بانتظار رد ({countPending})
-                  </button>
-                  <button
-                    onClick={() => setActiveStatusFilter('replied')}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap flex items-center gap-1 ${
-                      activeStatusFilter === 'replied' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'text-slate-400 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                    تم الرد
-                  </button>
-                  <button
-                    onClick={() => setActiveStatusFilter('comment_dm')}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap flex items-center gap-1 ${
-                      activeStatusFilter === 'comment_dm' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'text-slate-400 hover:bg-slate-800'
-                    }`}
-                  >
-                    <Share2 className="w-2.5 h-2.5 text-blue-400" />
-                    تعليقات للخاص
-                  </button>
-                </div>
-              </div>
-
-              {/* Conversations Scroll Area */}
-              <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60 custom-scrollbar">
-                {filteredInbox.length === 0 ? (
-                  <div className="p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center h-full">
-                    {activePlatformFilter === 'meta_instagram' ? (
-                      <div className="space-y-3 max-w-xs">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500/20 to-purple-500/20 border border-pink-500/40 flex items-center justify-center mx-auto text-pink-400">
-                          <Instagram className="w-6 h-6" />
-                        </div>
-                        <h4 className="font-bold text-white text-sm">بانتظار ربط حساب انستقرام بميتا</h4>
-                        <p className="text-[11px] text-slate-400 leading-relaxed">
-                          لم يتم ربط حساب Instagram Professional بصفحة «درة السيارة» في Meta Business Suite بعد.
-                        </p>
-                        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-300 text-right leading-relaxed">
-                          💡 <strong>طريقة الربط:</strong> افتح إعدادات صفحة فيسبوك ➔ الحسابات المرتبطة ➔ ربط Instagram ➔ وسيتم سحب الرسائل والتعليقات الحية هنا فوراً بدون إضافة أي حسابات وهمية.
-                        </div>
-                      </div>
-                    ) : activePlatformFilter === 'meta_whatsapp' ? (
-                      <div className="space-y-3 max-w-xs">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center mx-auto text-emerald-400">
-                          <Phone className="w-6 h-6" />
-                        </div>
-                        <h4 className="font-bold text-white text-sm">حملة تفاعل واتساب ميتا</h4>
-                        <p className="text-[11px] text-slate-400 leading-relaxed">
-                          1,617 محادثة مسجلة في إعلانات ميتا تم توجيهها مباشرة إلى أرقام هواتف الفروع المعتمدة (كيا 0539454377 • هيونداي 0530051360 • المتجر 0538834212).
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-500" />
-                        <p className="font-bold text-slate-300">لا توجد محادثات متزامنة مطابقة لخيارات الفلترة</p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  filteredInbox.map((msg) => {
-                    const isSelected = selectedMessage?.id === msg.id;
-                    const isPending = msg.status === 'pending';
-                    const hasVin = Boolean(msg.leadInfo?.vin);
-
-                    // Platform Badge Colors
-                    let platformIcon = <Facebook className="w-3 h-3 text-blue-400" />;
-                    let platformBadgeBg = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-                    let platformLabel = 'ماسنجر';
-
-                    return (
-                      <div
-                        key={msg.id}
-                        onClick={() => handleSelectMessage(msg)}
-                        className={`p-3.5 cursor-pointer transition-all flex items-start gap-3 relative border-r-4 ${
-                          isSelected
-                            ? 'bg-[#131d38] border-r-teal-400 shadow-md shadow-teal-500/5'
-                            : 'hover:bg-slate-800/40 border-r-transparent'
-                        }`}
-                      >
-                        {/* Customer Avatar with Platform Badge */}
-                        <div className="relative shrink-0">
-                          <img
-                            src={msg.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.senderName)}&background=1e293b&color=fff`}
-                            alt={msg.senderName}
-                            className="w-10 h-10 rounded-full object-cover border border-slate-700"
-                          />
-                          <div className="absolute -bottom-1 -left-1 w-4 h-4 rounded-full bg-slate-900 flex items-center justify-center border border-slate-700">
-                            {platformIcon}
-                          </div>
-                        </div>
-
-                        {/* Customer & Message Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-1 mb-1">
-                            <span className="font-bold text-xs text-white truncate max-w-[140px]">
-                              {msg.senderName}
-                            </span>
-                            <span className="text-[10px] text-slate-400 shrink-0">
-                              {msg.timestamp}
-                            </span>
-                          </div>
-
-                          {/* Message snippet */}
-                          <p className="text-xs text-slate-300 line-clamp-1 mb-1.5 leading-relaxed">
-                            {msg.text}
-                          </p>
-
-                          {/* Tag Chips */}
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            {/* Platform source */}
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${platformBadgeBg}`}>
-                              {platformLabel}
-                            </span>
-
-                            {/* Car badge */}
-                            {msg.leadInfo?.carModel && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-teal-300 border border-slate-700 flex items-center gap-1 truncate max-w-[130px]">
-                                <Car className="w-2.5 h-2.5 shrink-0" />
-                                {msg.leadInfo.carModel}
-                              </span>
-                            )}
-
-                            {/* VIN badge */}
-                            {hasVin && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-800/40">
-                                VIN 🔑
-                              </span>
-                            )}
-
-                            {/* Status indicator */}
-                            {isPending ? (
-                              <span className="mr-auto text-[9px] font-bold text-amber-400 flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                                بانتظار رد
-                              </span>
-                            ) : (
-                              <span className="mr-auto text-[9px] font-bold text-emerald-400 flex items-center gap-1">
-                                <Check className="w-2.5 h-2.5" />
-                                تم الرد
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* ---------------- COLUMN 2: INTERACTIVE CHAT STREAM & SMART AI RESPONDER (lg:col-span-5) ---------------- */}
-            <div className="lg:col-span-5 xl:col-span-6 bg-[#0d152a] rounded-2xl border border-slate-800 flex flex-col overflow-hidden shadow-xl">
-              {selectedMessage ? (
-                <>
-                  {/* Chat Conversation Header */}
-                  <div className="p-3.5 border-b border-slate-800 bg-[#0b1122] flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="relative">
-                        <img
-                          src={selectedMessage.avatar}
-                          alt={selectedMessage.senderName}
-                          className="w-10 h-10 rounded-full object-cover border border-slate-700"
-                        />
-                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0b1122]"></span>
-                      </div>
-                      <div className="min-w-0">
-                        <h2 className="text-sm font-bold text-white flex items-center gap-2 truncate">
-                          {selectedMessage.senderName}
-                          <span className="text-[10px] font-normal px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
-                            {selectedMessage.platform === 'meta_facebook' ? 'فيسبوك ماسنجر' : 'محادثة متزامنة'}
-                          </span>
-                        </h2>
-                        <p className="text-[11px] text-slate-400 flex items-center gap-2">
-                          <span>{selectedMessage.adTitle || 'محادثة استفسار قطع غيار'}</span>
-                          <span>•</span>
-                          <span className="text-teal-400 font-semibold">{selectedMessage.timestamp}</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Quick WhatsApp Branch Transfer button */}
-                    <div className="flex items-center gap-2">
-                      {selectedMessage.leadInfo?.carModel?.includes('كيا') ? (
-                        <a
-                          href={getBranchWhatsAppLink('kia', selectedMessage.text)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition-all"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>واتساب كيا (0539454377)</span>
-                        </a>
-                      ) : (
-                        <a
-                          href={getBranchWhatsAppLink('hyundai', selectedMessage.text)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs font-bold transition-all"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>واتساب هيونداي (0530051360)</span>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Chat Messages Bubbles Stream */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#080d1a]/60 custom-scrollbar">
-                    
-                    {/* Notice if Comment-to-DM thread */}
-                    {selectedMessage.channelType === 'comment_dm' && (
-                      <div className="p-2.5 rounded-xl bg-blue-950/50 border border-blue-500/30 text-center text-xs text-blue-300 flex items-center justify-center gap-2">
-                        <Share2 className="w-4 h-4 text-blue-400 shrink-0" />
-                        <span>أنشأ فيسبوك هذه المحادثة استجابة لتعليق العميل على إعلان قطع الغيار لدرة السيارة</span>
-                      </div>
-                    )}
-
-                    {/* Render Chat History */}
-                    {selectedMessage.chatHistory && selectedMessage.chatHistory.length > 0 ? (
-                      selectedMessage.chatHistory.map((chat) => (
-                        <div
-                          key={chat.id}
-                          className={`flex items-start gap-2.5 ${chat.isPage ? 'flex-row-reverse' : 'flex-row'}`}
-                        >
-                          <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-700">
-                            {chat.isPage ? (
-                              <div className="w-full h-full bg-gradient-to-br from-teal-500 to-indigo-600 flex items-center justify-center text-white font-bold text-[10px]">
-                                درة
-                              </div>
-                            ) : (
-                              <img src={selectedMessage.avatar} alt={chat.sender} className="w-full h-full object-cover" />
-                            )}
-                          </div>
-
-                          <div className={`max-w-[78%] rounded-2xl p-3.5 text-xs leading-relaxed ${
-                            chat.isPage
-                              ? 'bg-gradient-to-r from-teal-600/90 to-indigo-600/90 text-white rounded-br-none shadow-md shadow-teal-900/20'
-                              : 'bg-slate-800 text-slate-100 rounded-bl-none border border-slate-700/80 shadow-md'
-                          }`}>
-                            <div className="flex items-center justify-between gap-2 mb-1 opacity-75 text-[10px]">
-                              <span className="font-bold">{chat.isPage ? 'درة السيارة لقطع الغيار' : selectedMessage.senderName}</span>
-                              <span>{chat.time ? new Date(chat.time).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
-                            </div>
-                            <p className="whitespace-pre-wrap">{chat.message}</p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      /* Fallback if no chatHistory array */
-                      <div className="flex items-start gap-2.5">
-                        <img src={selectedMessage.avatar} alt={selectedMessage.senderName} className="w-8 h-8 rounded-full object-cover border border-slate-700" />
-                        <div className="max-w-[75%] rounded-2xl rounded-bl-none p-3.5 bg-slate-800 text-slate-100 text-xs leading-relaxed border border-slate-700/80">
-                          <div className="flex items-center justify-between gap-2 mb-1 opacity-75 text-[10px]">
-                            <span className="font-bold">{selectedMessage.senderName}</span>
-                            <span>{selectedMessage.timestamp}</span>
-                          </div>
-                          <p className="whitespace-pre-wrap">{selectedMessage.text}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Show saved reply if not in chat history */}
-                    {selectedMessage.reply && (!selectedMessage.chatHistory || selectedMessage.chatHistory.length <= 1) && (
-                      <div className="flex items-start gap-2.5 flex-row-reverse">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-indigo-600 flex items-center justify-center text-white font-bold text-[10px] shrink-0">
-                          درة
-                        </div>
-                        <div className="max-w-[78%] rounded-2xl rounded-br-none p-3.5 bg-gradient-to-r from-teal-600/90 to-indigo-600/90 text-white text-xs leading-relaxed shadow-md">
-                          <div className="flex items-center justify-between gap-2 mb-1 opacity-75 text-[10px]">
-                            <span className="font-bold">درة السيارة لقطع الغيار</span>
-                            <span>{selectedMessage.repliedAt || 'تم الرد'}</span>
-                          </div>
-                          <p className="whitespace-pre-wrap">{selectedMessage.reply}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Smart AI Copilot & Reply Dispatch Box */}
-                  <div className="p-3.5 border-t border-slate-800 bg-[#0b1122] flex flex-col gap-2.5">
-                    
-                    {/* Official Routing Advice Indicator */}
-                    <div className="flex items-center justify-between text-xs px-2 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <Bot className="w-4 h-4 text-teal-400" />
-                        <span className="font-bold text-slate-200">الرد المقترح وفق دستور درة السيارة:</span>
-                        {selectedMessage.leadInfo?.carModel?.includes('كيا') ? (
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
-                            توجيه فرع كيا: 0539454377
-                          </span>
-                        ) : selectedMessage.leadInfo?.carModel?.includes('هيونداي') ? (
-                          <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 font-bold text-[10px]">
-                            توجيه فرع هيونداي: 0530051360
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 font-bold text-[10px]">
-                            توجيه المتجر والشحن: 0538834212
-                          </span>
-                        )}
-                      </div>
-                      
-                      <button
-                        onClick={() => handleInsertTemplate(selectedMessage.suggestedReply || '')}
-                        className="text-[11px] text-teal-400 hover:text-teal-300 font-bold flex items-center gap-1"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                        استعادة الاقتراح الذكي
-                      </button>
-                    </div>
-
-                    {/* Quick Template Chips */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                      {QUICK_REPLY_TEMPLATES.map((tmpl, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleInsertTemplate(tmpl.text)}
-                          className="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold whitespace-nowrap border border-slate-700/60 transition-all hover:border-teal-500/40"
-                        >
-                          {tmpl.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Reply Textarea */}
-                    <textarea
-                      rows={3}
-                      value={replyDraft}
-                      onChange={(e) => setReplyDraft(e.target.value)}
-                      placeholder="اكتب ردك هنا أو عدّل على الاقتراح الذكي..."
-                      className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500 leading-relaxed custom-scrollbar"
-                    />
-
-                    {/* Actions Row */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        {/* Send directly to Meta / Messenger */}
-                        <button
-                          onClick={handleSendReply}
-                          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-400 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-teal-500/20 transition-all"
-                        >
-                          <Send className="w-3.5 h-3.5" />
-                          <span>إرسال مباشر للعميل (ميتا لايف)</span>
-                        </button>
-
-                        {/* Copy reply */}
-                        <button
-                          onClick={() => handleCopyText(replyDraft, 'reply')}
-                          className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition-all"
-                        >
-                          {copiedId === 'reply' ? <Check className="w-3.5 h-3.5 text-teal-400" /> : <Copy className="w-3.5 h-3.5" />}
-                          <span>نسخ الرد</span>
-                        </button>
-                      </div>
-
-                      {/* External WhatsApp launcher */}
-                      <a
-                        href={
-                          selectedMessage.leadInfo?.carModel?.includes('كيا')
-                            ? getBranchWhatsAppLink('kia', replyDraft)
-                            : getBranchWhatsAppLink('hyundai', replyDraft)
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition-all"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>فتح واتساب الفرع بالنص</span>
-                      </a>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500">
-                  <Bot className="w-12 h-12 mb-3 text-slate-600" />
-                  <p className="text-sm font-bold text-slate-400">حدد محادثة من القائمة لعرض تفاصيلها والرد الذكي</p>
-                </div>
-              )}
-            </div>
-
-            {/* ---------------- COLUMN 3: CUSTOMER 360 CRM & BRANCH COPILOT (lg:col-span-4 xl:col-span-3) ---------------- */}
-            <div className="lg:col-span-3 xl:col-span-3 bg-[#0d152a] rounded-2xl border border-slate-800 flex flex-col overflow-hidden shadow-xl">
-              {selectedMessage ? (
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                  
-                  {/* Customer Profile Card */}
-                  <div className="p-3.5 rounded-xl bg-[#0b1122] border border-slate-800 text-center">
-                    <img
-                      src={selectedMessage.avatar}
-                      alt={selectedMessage.senderName}
-                      className="w-14 h-14 rounded-full mx-auto mb-2.5 object-cover border-2 border-teal-500/40 shadow-lg shadow-teal-500/10"
-                    />
-                    <h3 className="text-sm font-bold text-white mb-0.5">{selectedMessage.senderName}</h3>
-                    <p className="text-xs text-slate-400 flex items-center justify-center gap-1">
-                      <MapPin className="w-3 h-3 text-teal-400" />
-                      <span>{selectedMessage.leadInfo?.city || 'المملكة العربية السعودية'}</span>
-                    </p>
-                    <div className="mt-2 text-[10px] text-slate-500 font-mono">
-                      معرف المنصة: {selectedMessage.senderId}
-                    </div>
-                  </div>
-
-                  {/* Vehicle Specs & Part Card */}
-                  <div className="p-3.5 rounded-xl bg-[#0b1122] border border-slate-800 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <Car className="w-4 h-4 text-teal-400" />
-                        بيانات المركبة والقطعة
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-teal-300 font-bold">
-                        مستخرجة آلياً
-                      </span>
-                    </div>
-
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between py-1 border-b border-slate-800">
-                        <span className="text-slate-400">السيارة:</span>
-                        <span className="text-white font-bold">{selectedMessage.leadInfo?.carModel || 'غير محدد'}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-slate-800">
-                        <span className="text-slate-400">القطعة المطلوبة:</span>
-                        <span className="text-teal-300 font-bold">{selectedMessage.leadInfo?.interestType || 'قطع غيار'}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-slate-800">
-                        <span className="text-slate-400">نوع المحرك:</span>
-                        <span className="text-purple-300 font-bold">
-                          {selectedMessage.text?.includes('ديزل') ? 'ديزل كوري متخصص' : 'بنزين'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Prominent VIN with Copy Button */}
-                    <div className="mt-2 pt-2 border-t border-slate-800">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
-                          <Hash className="w-3 h-3 text-purple-400" />
-                          رقم الهيكل (VIN):
-                        </span>
-                        {selectedMessage.leadInfo?.vin && (
-                          <button
-                            onClick={() => handleCopyText(selectedMessage.leadInfo.vin, 'vin')}
-                            className="text-[10px] text-purple-300 hover:text-white flex items-center gap-1 font-bold"
-                          >
-                            <Copy className="w-3 h-3" />
-                            نسخ الهيكل
-                          </button>
-                        )}
-                      </div>
-
-                      {selectedMessage.leadInfo?.vin ? (
-                        <div className="p-2 rounded-lg bg-purple-950/50 border border-purple-800/60 font-mono text-center text-xs font-bold text-purple-200 tracking-wider">
-                          {selectedMessage.leadInfo.vin}
-                        </div>
-                      ) : (
-                        <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-center text-[11px] text-slate-500">
-                          لم يرسل العميل رقم الهيكل بعد
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 1-Click Branch Routing Cards */}
-                  <div className="p-3.5 rounded-xl bg-[#0b1122] border border-slate-800 space-y-2">
-                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                      <Phone className="w-4 h-4 text-emerald-400" />
-                      التحويل المباشر لأرقام الفروع
-                    </span>
-
-                    <a
-                      href={getBranchWhatsAppLink('kia', selectedMessage.text)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl bg-emerald-950/40 hover:bg-emerald-950/70 border border-emerald-500/30 text-emerald-200 text-xs font-bold transition-all group"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-600/30 flex items-center justify-center">
-                          <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                        </div>
-                        <div className="text-right">
-                          <div className="text-white text-xs">فرع كيا</div>
-                          <div className="text-[10px] text-emerald-400">0539454377</div>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition-transform" />
-                    </a>
-
-                    <a
-                      href={getBranchWhatsAppLink('hyundai', selectedMessage.text)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl bg-blue-950/40 hover:bg-blue-950/70 border border-blue-500/30 text-blue-200 text-xs font-bold transition-all group"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-600/30 flex items-center justify-center">
-                          <Phone className="w-3.5 h-3.5 text-blue-400" />
-                        </div>
-                        <div className="text-right">
-                          <div className="text-white text-xs">فرع الرواف هيونداي</div>
-                          <div className="text-[10px] text-blue-400">0530051360</div>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-blue-400 group-hover:-translate-x-1 transition-transform" />
-                    </a>
-
-                    <a
-                      href={getBranchWhatsAppLink('onlineStore', selectedMessage.text)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl bg-purple-950/40 hover:bg-purple-950/70 border border-purple-500/30 text-purple-200 text-xs font-bold transition-all group"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-purple-600/30 flex items-center justify-center">
-                          <ShoppingCart className="w-3.5 h-3.5 text-purple-400" />
-                        </div>
-                        <div className="text-right">
-                          <div className="text-white text-xs">المتجر الإلكتروني والشحن</div>
-                          <div className="text-[10px] text-purple-400">0538834212</div>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-purple-400 group-hover:-translate-x-1 transition-transform" />
-                    </a>
-                  </div>
-
-                  {/* Salla Store Link */}
-                  <div className="p-3.5 rounded-xl bg-[#0b1122] border border-slate-800 space-y-2.5">
-                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                      <CreditCard className="w-4 h-4 text-amber-400" />
-                      متجر سلة والتقسيط
-                    </span>
-
-                    <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs space-y-1.5">
-                      <div className="flex justify-between text-slate-300 font-bold">
-                        <span>رابط المتجر الرسمي:</span>
-                        <a
-                          href="https://doracars.com/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-teal-400 hover:underline flex items-center gap-1"
-                        >
-                          doracars.com
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </div>
-                      <p className="text-[11px] text-slate-400">
-                        متاح التقسيط على 4 دفعات بدون فوائد عبر تابي وتمارا بالمتجر الإلكتروني والفروع.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Customer Tags & Notes */}
-                  <div className="p-3.5 rounded-xl bg-[#0b1122] border border-slate-800 space-y-2">
-                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                      <BookmarkPlus className="w-4 h-4 text-pink-400" />
-                      وسوم وملاحظات المحادثة
-                    </span>
-
-                    <div className="flex flex-wrap gap-1">
-                      {(customerTags[selectedMessage.id] || ['محادثة متزامنة']).map((tag, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-slate-300 text-[10px]">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-1 mt-1.5">
-                      <input
-                        type="text"
-                        placeholder="إضافة وسم..."
-                        value={newTagInput}
-                        onChange={(e) => setNewTagInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAddTag(selectedMessage.id)}
-                        className="flex-1 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200"
-                      />
-                      <button
-                        onClick={() => handleAddTag(selectedMessage.id)}
-                        className="px-2 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold"
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    {/* Internal Team Note */}
-                    <div className="mt-2 pt-2 border-t border-slate-800">
-                      <label className="text-[10px] text-slate-400 block mb-1">ملاحظة داخلية للفريق:</label>
-                      <textarea
-                        rows={2}
-                        value={customerNotes[selectedMessage.id] || ''}
-                        onChange={(e) => setCustomerNotes({ ...customerNotes, [selectedMessage.id]: e.target.value })}
-                        placeholder="اكتب ملاحظة خاصة بالعميل..."
-                        className="w-full p-2 rounded-lg bg-slate-900 border border-slate-700 text-[11px] text-slate-300 placeholder-slate-600 focus:outline-none focus:border-teal-500"
-                      />
-                    </div>
-                  </div>
-
-                </div>
-              ) : (
-                <div className="flex-1 flex items-center justify-center p-6 text-center text-slate-500 text-xs">
-                  لا توجد محادثة محددة
-                </div>
-              )}
-            </div>
-
-          </div>
+          <OmnichannelInboxView
+            inbox={inbox}
+            selectedMessage={selectedMessage}
+            onSelectMessage={handleSelectMessage}
+            activePlatformFilter={activePlatformFilter}
+            onSetPlatformFilter={setActivePlatformFilter}
+            searchQuery={searchQuery}
+            onSetSearchQuery={setSearchQuery}
+            replyDraft={replyDraft}
+            onSetReplyDraft={setReplyDraft}
+            onSendReply={handleSendReply}
+            onInsertTemplate={handleInsertTemplate}
+            onCopyText={handleCopyText}
+            customerTags={customerTags}
+            onAddTag={handleAddTag}
+            onRemoveTag={handleRemoveTag}
+            customerNotes={customerNotes}
+            onSavePrivateNote={handleSavePrivateNote}
+            closedConversations={closedConversations}
+            onToggleCloseConversation={handleToggleCloseConversation}
+            getBranchWhatsAppLink={getBranchWhatsAppLink}
+            onSyncLive={handleLiveSync}
+            isSyncingLive={isSyncingLive}
+            syncStatusMsg={syncStatusMsg}
+            counts={{
+              all: countAll,
+              facebook: countFacebook,
+              instagram: countInstagram,
+              whatsapp: countWhatsApp,
+              tiktok: countTikTok,
+              pending: countPending
+            }}
+          />
         )}
 
         {/* ========================================================================= */}
