@@ -282,6 +282,95 @@ export default function OmnichannelInboxView({
     }
   };
 
+  // ── أدوات شريط الإرسال (الإملاء الصوتي، الرموز التعبيرية، المرفقات، الاقتباس) ──
+  const [isListening, setIsListening] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const recognitionRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const toggleVoiceDictation = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('متصفحك لا يدعم الإملاء الصوتي المباشر. يُرجى استخدام متصفح Google Chrome أو Microsoft Edge.');
+      return;
+    }
+
+    if (isListening) {
+      try {
+        recognitionRef.current?.stop();
+      } catch (e) {}
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ar-SA';
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event) => {
+        let textSpoken = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            textSpoken += event.results[i][0].transcript;
+          }
+        }
+        if (textSpoken.trim()) {
+          if (composerMode === 'reply') {
+            onSetReplyDraft((prev) => (prev ? `${prev} ${textSpoken.trim()}` : textSpoken.trim()));
+          } else {
+            setNoteInput((prev) => (prev ? `${prev} ${textSpoken.trim()}` : textSpoken.trim()));
+          }
+        }
+      };
+
+      recognition.onerror = (err) => {
+        console.warn('Voice dictation error:', err);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error('Failed to start voice dictation:', err);
+      setIsListening(false);
+    }
+  };
+
+  const handleInsertEmoji = (emoji) => {
+    if (composerMode === 'reply') {
+      onSetReplyDraft((prev) => (prev ? `${prev} ${emoji}` : emoji));
+    } else {
+      setNoteInput((prev) => (prev ? `${prev} ${emoji}` : emoji));
+    }
+  };
+
+  const handleInsertQuote = () => {
+    const quoteText = selectedMessage?.text ? `> ${selectedMessage.text}\n` : '> ';
+    if (composerMode === 'reply') {
+      onSetReplyDraft((prev) => (prev ? `${prev}\n${quoteText}` : quoteText));
+    }
+  };
+
+  const handleFileAttach = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const attachNotice = `[مرفق: ${file.name}]`;
+      if (composerMode === 'reply') {
+        onSetReplyDraft((prev) => (prev ? `${prev} ${attachNotice}` : attachNotice));
+      }
+    }
+  };
+
   // Computed conversations based on filters
   const filteredList = inbox.filter((m) => {
     // 1. Platform filter
@@ -1217,22 +1306,102 @@ export default function OmnichannelInboxView({
                   </div>
                 )}
 
+                {/* Visual Banner when listening */}
+                {isListening && (
+                  <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between text-xs text-red-700 animate-pulse">
+                    <div className="flex items-center gap-2 font-bold">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping"></span>
+                      <span>🎙️ جاري الاستماع باللغة العربية... تكلّم الآن وسيتم تحويل صوتك لنص فوراً</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={toggleVoiceDictation}
+                      className="px-2.5 py-0.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold cursor-pointer"
+                    >
+                      إيقاف
+                    </button>
+                  </div>
+                )}
+
+                {/* Quick Emoji Picker */}
+                {showEmojiPicker && (
+                  <div className="mb-2 p-2 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold text-slate-400 ml-1">رموز سريعة:</span>
+                    {['🌹', '😊', '🌟', '🚗', '🔧', '📦', '📞', '💬', '📍', '👍', '🙏', '✅', '❤️', '💡'].map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => handleInsertEmoji(emoji)}
+                        className="text-base p-1 hover:bg-white hover:scale-125 rounded-md transition-all cursor-pointer"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(false)}
+                      className="text-xs text-slate-400 hover:text-slate-600 mr-auto p-1 cursor-pointer"
+                      title="إغلاق"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Hidden File Input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileAttach}
+                  className="hidden"
+                  accept="image/*,.pdf,.doc,.docx"
+                />
+
                 {/* Bottom Action Toolbar */}
                 <div className="flex items-center justify-between pt-1">
                   
                   {/* Tool icons (Paperclip, Emoji, Quote, Mic) */}
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <button className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all" title="إرفاق ملف">
+                  <div className="flex items-center gap-1.5 text-slate-400">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-700 transition-all cursor-pointer"
+                      title="إرفاق صورة أو مستند"
+                    >
                       <Paperclip className="w-4 h-4" />
                     </button>
-                    <button className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all" title="رموز تعبيرية">
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(prev => !prev)}
+                      className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                        showEmojiPicker ? 'bg-amber-100 text-amber-700' : 'hover:bg-slate-100 hover:text-slate-700'
+                      }`}
+                      title="رموز تعبيرية جاهزة لخدمة العملاء"
+                    >
                       <Smile className="w-4 h-4" />
                     </button>
-                    <button className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all" title="اقتباس">
+                    <button
+                      type="button"
+                      onClick={handleInsertQuote}
+                      className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-700 transition-all cursor-pointer"
+                      title="اقتباس رسالة العميل"
+                    >
                       <Quote className="w-4 h-4" />
                     </button>
-                    <button className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all" title="تسجيل صوتي">
+                    <button
+                      type="button"
+                      onClick={toggleVoiceDictation}
+                      className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${
+                        isListening
+                          ? 'bg-red-500 text-white animate-pulse shadow-md shadow-red-500/40 ring-2 ring-red-300'
+                          : 'hover:bg-blue-50 hover:text-blue-600 text-slate-500 border border-slate-200'
+                      }`}
+                      title={isListening ? 'إيقاف الإملاء الصوتي' : 'تسجيل وإملاء صوتي بالذكاء الاصطناعي (تكلّم ليُكتب الرد باللغة العربية)'}
+                    >
                       <Mic className="w-4 h-4" />
+                      {isListening && (
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-600 border-2 border-white animate-ping"></span>
+                      )}
                     </button>
                   </div>
 
@@ -1241,7 +1410,7 @@ export default function OmnichannelInboxView({
                     <button
                       onClick={onSendReply}
                       disabled={!replyDraft.trim()}
-                      className="flex items-center gap-2 px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 disabled:opacity-40"
+                      className="flex items-center gap-2 px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 disabled:opacity-40 cursor-pointer"
                     >
                       <span>إرسال</span>
                       <Send className="w-3.5 h-3.5" />
@@ -1253,7 +1422,7 @@ export default function OmnichannelInboxView({
                         setNoteInput('');
                       }}
                       disabled={!noteInput.trim()}
-                      className="flex items-center gap-2 px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all shadow-md shadow-amber-600/20 disabled:opacity-40"
+                      className="flex items-center gap-2 px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all shadow-md shadow-amber-600/20 disabled:opacity-40 cursor-pointer"
                     >
                       <span>حفظ الملاحظة</span>
                       <BookmarkPlus className="w-3.5 h-3.5" />
