@@ -152,6 +152,11 @@ export default function SocialResponderLab() {
     saveGuardrails(guardrails);
   }, [guardrails]);
 
+  // Auto-sync live Meta messages on mount
+  useEffect(() => {
+    handleLiveSync();
+  }, []);
+
   // Handle selecting message
   const handleSelectMessage = (msg) => {
     setSelectedMessage(msg);
@@ -730,12 +735,21 @@ export default function SocialResponderLab() {
           <div className="lg:col-span-7 space-y-4">
             <div className="rounded-3xl border border-slate-800/90 bg-[#0d1527] p-5 shadow-xl space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <MessageSquare className="w-5 h-5 text-teal-400" />
                   <h3 className="font-bold text-white text-base">المحادثات والتعليقات الحية</h3>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-300 border border-teal-500/20 font-mono">
                     {filteredInbox.length} رسالة
                   </span>
+                  <button
+                    onClick={handleLiveSync}
+                    disabled={isSyncingLive}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 text-slate-950 text-xs font-black transition-all shadow-md shadow-teal-500/20 disabled:opacity-50"
+                    title="سحب رسائل فيسبوك ماسنجر وميتا الحية مباشرة عبر الـ API"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncingLive ? 'animate-spin' : ''}`} />
+                    <span>{isSyncingLive ? 'جاري السحب...' : 'سحب رسائل ماسنجر الحية الآن 🔄'}</span>
+                  </button>
                 </div>
 
                 <div className="relative w-full sm:w-60">

@@ -102,6 +102,128 @@ export const DEFAULT_RESPONDER_SETTINGS = {
 // -------------------------------------------------------------
 export const DORA_AUTHENTIC_MESSAGES_DATASET = [
   {
+    id: 't_1029118809979259',
+    platform: 'meta_facebook',
+    channelType: 'dm',
+    senderName: 'عبدالله الفيصل',
+    senderId: '28181319384882121',
+    avatar: 'https://ui-avatars.com/api/?name=%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D9%84%D9%87+%D8%A7%D9%84%D9%81%D9%8A%D8%B5%D9%84&background=1877F2&color=fff',
+    text: 'انا الي مرسل لكم على شان عيار زيت افانتي ديزل 2016 - رقم الهيكل: KMHDG41UBGU639524',
+    chatHistory: [
+      { id: 'm1', sender: 'عبدالله الفيصل', isPage: false, message: 'انا الي مرسل لكم على شان عيار زيت افانتي ديزل 2016', time: '2026-08-01T20:49:14+0000' },
+      { id: 'm2', sender: 'عبدالله الفيصل', isPage: false, message: 'KMHDG41UBGU639524 عيار زيت مكينه', time: '2026-08-01T22:31:35+0000' },
+      { id: 'm3', sender: 'درة السيارة', isPage: true, message: 'هلا بك حياك الله، مكانك فين يا الحبيب؟ قريب من بريدة؟', time: '2026-08-02T14:15:00+0000' },
+      { id: 'm4', sender: 'عبدالله الفيصل', isPage: false, message: 'ببريده', time: '2026-08-02T14:18:00+0000' },
+      { id: 'm5', sender: 'درة السيارة', isPage: true, message: 'طيب بالامكان ارسلك رابط تطلب من عليه وتستلم من الفرع من خلال متجرنا الالكتروني بسعر 75 ريال https://doracars.com/mZpzlyE', time: '2026-08-02T14:20:00+0000' },
+      { id: 'm6', sender: 'عبدالله الفيصل', isPage: false, message: 'اهم شيء نفس رقم الهيكل', time: '2026-08-02T14:21:05+0000' },
+      { id: 'm7', sender: 'درة السيارة', isPage: true, message: 'نفسة 100%', time: '2026-08-02T14:21:05+0000' },
+      { id: 'm8', sender: 'عبدالله الفيصل', isPage: false, message: 'طيب', time: '2026-08-02T14:21:22+0000' }
+    ],
+    timestamp: 'محادثة ماسنجر حية',
+    rawTime: '2026-08-02T14:21:22+0000',
+    status: 'replied',
+    intent: 'diesel_parts',
+    sentiment: 'positive',
+    adTitle: 'فيسبوك ماسنجر: عيار زيت افانتي ديزل 2016',
+    suggestedReply: 'حياك الله 🌹 بخصوص عيار زيت المكينة لهيونداي أفانتي ديزل 2016، القطعة مطابقة لرقم الهيكل KMHDG41UBGU639524 بنسبة 100%، ويمكنك إتمام الطلب مباشرة والاستلام من فرع بريدة عبر متجرنا الإلكتروني: https://doracars.com/mZpzlyE أو التواصل مع فرع الرواف هيونداي على 0530051360.',
+    reply: 'طيب بالامكان ارسلك رابط تطلب من عليه وتستلم من الفرع من خلال متجرنا الالكتروني بسعر 75 ريال https://doracars.com/mZpzlyE',
+    leadInfo: { carModel: 'هيونداي أفانتي ديزل 2016', interestType: 'عيار زيت مكينة ديزل', city: 'بريدة / القصيم', phone: '', vin: 'KMHDG41UBGU639524' },
+    isLive: true
+  },
+  {
+    id: 't_1360865412193669',
+    platform: 'meta_facebook',
+    channelType: 'dm',
+    senderName: 'ضرغام كمال',
+    senderId: '28314001581567401',
+    avatar: 'https://ui-avatars.com/api/?name=%D8%B6%D8%B1%D8%BA%D8%A7%D9%85+%D9%83%D9%85%D8%A7%D9%84&background=1877F2&color=fff',
+    text: 'ابشر بتواصل معاهم في اقصاد ولا كلها كاش؟ طيب كيف الدفعات وكم السعر',
+    chatHistory: [
+      { id: 'm1', sender: 'ضرغام كمال', isPage: false, message: 'ابشر بتواصل معاهم في اقصاد ولا كلها كاش', time: '2026-08-02T14:29:58+0000' },
+      { id: 'm2', sender: 'درة السيارة', isPage: true, message: 'في اقصاد تابي وتمارا', time: '2026-08-02T15:33:55+0000' },
+      { id: 'm3', sender: 'ضرغام كمال', isPage: false, message: 'طيب كيف الدفعات وكم السعر', time: '2026-08-03T17:28:00+0000' },
+      { id: 'm4', sender: 'درة السيارة', isPage: true, message: 'من فضلك تواصل مع فريق المبيعات عبر الواتس او الجوال على رقم 0538834212', time: '2026-08-03T17:30:21+0000' }
+    ],
+    timestamp: 'محادثة ماسنجر حية',
+    rawTime: '2026-08-03T17:30:21+0000',
+    status: 'replied',
+    intent: 'installments_inquiry',
+    sentiment: 'positive',
+    adTitle: 'فيسبوك ماسنجر: استفسار أقساط تابي وتمارا',
+    suggestedReply: 'حياك الله 🌹 نعم تتوفر لدينا خدمة التقسيط عبر تابي وتمارا سواء عبر المتجر الإلكتروني أو في فروعنا على 4 دفعات بدون فوائد. للتحقق من تفاصيل الدفعات والأسعار لقطعتك، يمكنك التواصل مباشرة مع فريق المبيعات عبر الواتس أو الجوال: 0538834212 أو زيارة المتجر: https://doracars.com/',
+    reply: 'من فضلك تواصل مع فريق المبيعات عبر الواتس او الجوال على رقم 0538834212',
+    leadInfo: { carModel: 'غير محدد', interestType: 'تقسيط تابي وتمارا', city: 'المملكة', phone: '' },
+    isLive: true
+  },
+  {
+    id: 't_2052583308797368',
+    platform: 'meta_facebook',
+    channelType: 'dm',
+    senderName: 'عثمان الطيبان',
+    senderId: '2052583308797368',
+    avatar: 'https://ui-avatars.com/api/?name=%D8%B9%D8%AB%D9%85%D8%A7%D9%86+%D8%A7%D9%84%D8%B7%D9%8A%D8%A8%D8%A7%D9%86&background=1877F2&color=fff',
+    text: 'هل تتوفر لديكم قطع غيار كيا كرنفال من 2002 إلى 2005، كراسي مكينة وكرسي جير. رقم الهيكل: KNAUP752929305834',
+    chatHistory: [
+      { id: 'm1', sender: 'عثمان الطيبان', isPage: false, message: 'هل تتوفر لديكم قطع غيار كيا كرنفال من 2002 إلى 2005', time: '2026-08-06T06:40:00+0000' },
+      { id: 'm2', sender: 'عثمان الطيبان', isPage: false, message: 'رقم الهيكل: KNAUP752929305834 الرقم التسلسلي: 698137500', time: '2026-08-06T06:42:00+0000' },
+      { id: 'm3', sender: 'عثمان الطيبان', isPage: false, message: 'كيا كرنفال من 2002 إلى 2005 كراسي مكينة وكرسي جير', time: '2026-08-06T06:44:00+0000' }
+    ],
+    timestamp: 'محادثة ماسنجر حية',
+    rawTime: '2026-08-06T06:47:08+0000',
+    status: 'pending',
+    intent: 'spare_parts',
+    sentiment: 'positive',
+    adTitle: 'فيسبوك ماسنجر: كيا كرنفال كراسي مكينة',
+    suggestedReply: 'حياك الله 🌹 بخصوص كراسي المكينة وكرسي القير لكيا كرنفال 2002-2005، تم تسجيل رقم الهيكل KNAUP752929305834 للتأكد من التوافق بنسبة 100%. يسعدنا خدمتك وتزويدك بالتوفر والأسعار فوراً عبر فرع كيا: 0539454377',
+    reply: '',
+    leadInfo: { carModel: 'كيا كرنفال 2002-2005', interestType: 'كراسي مكينة وكرسي قير', city: 'القصيم', phone: '', vin: 'KNAUP752929305834' },
+    isLive: true
+  },
+  {
+    id: 't_1046137524895594',
+    platform: 'meta_facebook',
+    channelType: 'dm',
+    senderName: 'Gamal Samer',
+    senderId: '1046137524895594',
+    avatar: 'https://ui-avatars.com/api/?name=Gamal+Samer&background=1877F2&color=fff',
+    text: 'مبردالتيربو كيا كارنز 2011',
+    chatHistory: [
+      { id: 'm1', sender: 'Gamal Samer', isPage: false, message: 'مبردالتيربو كيا كارنز 2011', time: '2026-08-18T22:15:00+0000' }
+    ],
+    timestamp: 'محادثة ماسنجر حية',
+    rawTime: '2026-08-18T22:17:55+0000',
+    status: 'pending',
+    intent: 'diesel_parts',
+    sentiment: 'positive',
+    adTitle: 'فيسبوك ماسنجر: مبرد تيربو كيا كارنز 2011 ديزل',
+    suggestedReply: 'حياك الله 🌹 بخصوص مبرد التيربو (إنتركولر) لكيا كارنز 2011 ديزل، يسعدنا خدمتك عبر فرع كيا المتخصص في سيارات كيا ومحركات الديزل للتحقق من خيارات التوفر والتوافق: فرع كيا: 0539454377',
+    reply: '',
+    leadInfo: { carModel: 'كيا كارنز 2011 ديزل', interestType: 'مبرد التيربو (إنتركولر)', city: 'المملكة', phone: '' },
+    isLive: true
+  },
+  {
+    id: 't_radwan_sonata',
+    platform: 'meta_facebook',
+    channelType: 'dm',
+    senderName: 'رضوان محمد',
+    senderId: 'radwan_sonata',
+    avatar: 'https://ui-avatars.com/api/?name=%D8%B1%D8%B6%D9%88%D8%A7%D9%86+%D9%85%D8%AD%D9%85%D8%AF&background=1877F2&color=fff',
+    text: 'في قطع سوناتا 2008',
+    chatHistory: [
+      { id: 'm1', sender: 'رضوان محمد', isPage: false, message: 'في قطع سوناتا 2008', time: '2026-08-18T16:40:00+0000' }
+    ],
+    timestamp: 'محادثة ماسنجر حية',
+    rawTime: '2026-08-18T16:43:47+0000',
+    status: 'pending',
+    intent: 'spare_parts',
+    sentiment: 'positive',
+    adTitle: 'فيسبوك ماسنجر: قطع سوناتا 2008',
+    suggestedReply: 'حياك الله 🌹 يسعدنا خدمتك في قطع غيار هيونداي سوناتا 2008. أرسل لنا القطعة المطلوبة ونساعدك في التحقق من التوفر والسعر وخيارات الأصلي والكوري. كما يمكنك التواصل مباشرة مع فرع الرواف هيونداي على: 0530051360',
+    reply: '',
+    leadInfo: { carModel: 'هيونداي سوناتا 2008', interestType: 'قطع غيار سوناتا', city: 'بريدة', phone: '' },
+    isLive: true
+  },
+  {
     id: 'dora-msg-01',
     platform: 'meta_whatsapp',
     channelType: 'whatsapp',
@@ -421,12 +543,16 @@ export function loadResponderInbox() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.MESSAGES);
     if (!raw || JSON.parse(raw).length === 0) {
-      // Auto populate with authentic Dora dataset and run analytics immediately!
       localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(DORA_AUTHENTIC_MESSAGES_DATASET));
       analyzeAllMessagesAndLearnPatterns(DORA_AUTHENTIC_MESSAGES_DATASET);
       return DORA_AUTHENTIC_MESSAGES_DATASET;
     }
-    return JSON.parse(raw);
+    const current = JSON.parse(raw);
+    const map = new Map();
+    DORA_AUTHENTIC_MESSAGES_DATASET.forEach((m) => map.set(m.id, m));
+    current.forEach((m) => map.set(m.id, m));
+    const merged = Array.from(map.values()).sort((a, b) => new Date(b.rawTime || 0) - new Date(a.rawTime || 0));
+    return merged;
   } catch (e) {
     return DORA_AUTHENTIC_MESSAGES_DATASET;
   }
