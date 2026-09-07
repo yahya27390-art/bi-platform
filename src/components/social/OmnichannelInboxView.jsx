@@ -39,9 +39,25 @@ import {
   Sliders,
   CheckCircle2,
   User,
-  ArrowDown
+  ArrowDown,
+  Download,
+  Plus,
+  MessageCircle
 } from 'lucide-react';
 import { QUICK_REPLY_TEMPLATES, DORA_SOCIAL_KNOWLEDGE } from '../../lib/socialResponderAgent';
+
+// الوسوم والتصنيفات المقترحة المسبقة لخدمة العملاء
+const SUGGESTED_TAGS = [
+  { label: 'طلب تسعير', bg: 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200' },
+  { label: 'بانتظار الهيكل (VIN)', bg: 'bg-orange-50 hover:bg-orange-100 text-orange-900 border-orange-200' },
+  { label: 'عميل VIP', bg: 'bg-purple-50 hover:bg-purple-100 text-purple-900 border-purple-200' },
+  { label: 'تحويل لفرع كيا', bg: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200' },
+  { label: 'تحويل لهيونداي', bg: 'bg-blue-50 hover:bg-blue-100 text-blue-900 border-blue-200' },
+  { label: 'قطع ديزل', bg: 'bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border-cyan-200' },
+  { label: 'طلب متجر إلكتروني', bg: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border-indigo-200' },
+  { label: 'تم الشراء والتنفيذ', bg: 'bg-green-50 hover:bg-green-100 text-green-900 border-green-200' },
+  { label: 'متابعة لاحقة', bg: 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300' }
+];
 
 // Helper: فحص وتنسيق إشعارات تعليقات فيسبوك التلقائية لمنع زحمة الكلام
 function parseCommentNotice(text) {
@@ -133,6 +149,9 @@ export default function OmnichannelInboxView({
   onRemoveTag,
   customerNotes = {},
   onSavePrivateNote,
+  customerProfiles = {},
+  onUpdateCustomerProfile,
+  onExportCRMReport,
   closedConversations = new Set(),
   onToggleCloseConversation,
   getBranchWhatsAppLink,
@@ -160,6 +179,64 @@ export default function OmnichannelInboxView({
   // Assigned Agent & Department state
   const [assignedAgent, setAssignedAgent] = useState('أحمد العتيبي (أنت)');
   const [assignedDept, setAssignedDept] = useState('خدمة العملاء والمبيعات');
+
+  // ── CRM: بيانات العميل الحقيقية المخصصة (الهاتف، السيارة، الهيكل) ──
+  const customProf = selectedMessage
+    ? (customerProfiles[selectedMessage.id] || customerProfiles[selectedMessage.senderId] || {})
+    : {};
+
+  const currentPhone = customProf.phone || selectedMessage?.leadInfo?.phone || '';
+  const currentCar = customProf.carModel || selectedMessage?.leadInfo?.carModel || '';
+  const currentPart = customProf.part || selectedMessage?.leadInfo?.interestType || '';
+  const currentVin = customProf.vin || selectedMessage?.leadInfo?.vin || '';
+
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [isEditingCar, setIsEditingCar] = useState(false);
+  const [carInput, setCarInput] = useState('');
+  const [isEditingPart, setIsEditingPart] = useState(false);
+  const [partInput, setPartInput] = useState('');
+  const [isEditingVin, setIsEditingVin] = useState(false);
+  const [vinInput, setVinInput] = useState('');
+
+  useEffect(() => {
+    setIsEditingPhone(false);
+    setIsEditingCar(false);
+    setIsEditingPart(false);
+    setIsEditingVin(false);
+    setPhoneInput(currentPhone);
+    setCarInput(currentCar);
+    setPartInput(currentPart);
+    setVinInput(currentVin);
+  }, [selectedMessage?.id, currentPhone, currentCar, currentPart, currentVin]);
+
+  const handleSavePhone = () => {
+    if (onUpdateCustomerProfile && selectedMessage) {
+      onUpdateCustomerProfile(selectedMessage.id, { phone: phoneInput.trim() });
+    }
+    setIsEditingPhone(false);
+  };
+
+  const handleSaveCar = () => {
+    if (onUpdateCustomerProfile && selectedMessage) {
+      onUpdateCustomerProfile(selectedMessage.id, { carModel: carInput.trim() });
+    }
+    setIsEditingCar(false);
+  };
+
+  const handleSavePart = () => {
+    if (onUpdateCustomerProfile && selectedMessage) {
+      onUpdateCustomerProfile(selectedMessage.id, { part: partInput.trim() });
+    }
+    setIsEditingPart(false);
+  };
+
+  const handleSaveVin = () => {
+    if (onUpdateCustomerProfile && selectedMessage) {
+      onUpdateCustomerProfile(selectedMessage.id, { vin: vinInput.trim().toUpperCase() });
+    }
+    setIsEditingVin(false);
+  };
 
   // ── تثبيت المحادثة والسكرول لمنع القفز وتسهيل تصفح الرسائل القديمة ──
   const scrollContainerRef = useRef(null);
@@ -272,6 +349,16 @@ export default function OmnichannelInboxView({
             <span className="text-xs text-slate-600 bg-white px-2.5 py-1 rounded-lg border border-slate-200 font-medium animate-fadeIn">
               {syncStatusMsg}
             </span>
+          )}
+          {onExportCRMReport && (
+            <button
+              onClick={onExportCRMReport}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm active:scale-95"
+              title="تصدير تقرير شامل للعملاء وتصنيفاتهم بصيغة Excel / CSV"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>تصدير تقرير التصنيفات (Excel)</span>
+            </button>
           )}
           <button
             onClick={onSyncLive}
@@ -1116,14 +1203,26 @@ export default function OmnichannelInboxView({
           {selectedMessage ? (
             <div className="p-4 space-y-4">
               
-              {/* Customer Profile Card */}
+              {/* Customer Profile Card - 100% Genuine Profile Data */}
               <div className="text-center pb-3 border-b border-slate-100">
                 <div className="relative inline-block mx-auto mb-2">
-                  <img
-                    src={selectedMessage.avatar}
-                    alt={selectedMessage.senderName}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-blue-500/30 shadow-md"
-                  />
+                  {selectedMessage.avatar ? (
+                    <img
+                      src={selectedMessage.avatar}
+                      alt={selectedMessage.senderName}
+                      className="w-16 h-16 rounded-full object-cover border-2 border-blue-500/30 shadow-md"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    style={{ display: selectedMessage.avatar ? 'none' : 'flex' }}
+                    className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xl items-center justify-center shadow-md border-2 border-blue-400/30"
+                  >
+                    {selectedMessage.senderName?.trim() ? selectedMessage.senderName.trim().slice(0, 2) : 'عم'}
+                  </div>
                   <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${
                     isSelectedClosed ? 'bg-slate-400' : 'bg-emerald-500'
                   }`}></span>
@@ -1131,105 +1230,245 @@ export default function OmnichannelInboxView({
 
                 <div className="flex items-center justify-center gap-1.5 mb-1">
                   <h3 className="font-black text-sm text-slate-900">{selectedMessage.senderName}</h3>
-                  <Edit3 className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-pointer" />
                 </div>
 
-                {/* Email with copy icon */}
-                <div className="text-[11px] text-slate-500 flex items-center justify-center gap-1.5 mb-1">
-                  <span>{selectedMessage.leadInfo?.email || `${selectedMessage.senderId.slice(-8)}@customer.dora`}</span>
-                  <Copy
-                    className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-pointer"
-                    onClick={() => onCopyText(selectedMessage.leadInfo?.email || selectedMessage.senderId, 'email')}
-                  />
+                {/* Platform Badge & Genuine Profile Link */}
+                <div className="flex flex-col items-center gap-1 mb-2">
+                  {selectedMessage.platform === 'meta_instagram' ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-700 text-[10px] font-bold border border-pink-200">
+                        <Instagram className="w-3 h-3 text-pink-600" />
+                        <span>Instagram Direct (@{selectedMessage.senderName.replace(/^@/, '')})</span>
+                      </span>
+                      <a
+                        href={`https://instagram.com/${encodeURIComponent(selectedMessage.senderName.replace(/^@/, ''))}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] text-pink-600 hover:text-pink-700 font-bold hover:underline"
+                      >
+                        <span>فتح ملف الحساب على إنستغرام</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200">
+                        <Facebook className="w-3 h-3 text-blue-600" />
+                        <span>Facebook Messenger</span>
+                      </span>
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                        <span className="font-mono text-[10px]">PSID: {selectedMessage.senderId}</span>
+                        <Copy
+                          className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                          onClick={() => onCopyText(selectedMessage.senderId, 'psid')}
+                          title="نسخ معرف العميل"
+                        />
+                      </div>
+                      <a
+                        href={`https://facebook.com/${selectedMessage.senderId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-700 font-bold hover:underline"
+                      >
+                        <span>فتح ملف الحساب على فيسبوك</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
                 </div>
 
-                {/* Phone */}
-                <div className="text-[11px] font-bold text-slate-700 flex items-center justify-center gap-1.5 mb-2">
-                  <span>{selectedMessage.leadInfo?.phone || '+966 50 550 0000'}</span>
-                  <Copy
-                    className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-pointer"
-                    onClick={() => onCopyText(selectedMessage.leadInfo?.phone || '+966505500000', 'phone')}
-                  />
+                {/* Real Phone Number (Editable) */}
+                <div className="mb-2">
+                  {isEditingPhone ? (
+                    <div className="flex items-center gap-1 max-w-[240px] mx-auto">
+                      <input
+                        type="text"
+                        dir="ltr"
+                        placeholder="05xxxxxxxx"
+                        value={phoneInput}
+                        onChange={(e) => setPhoneInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSavePhone();
+                          if (e.key === 'Escape') setIsEditingPhone(false);
+                        }}
+                        className="w-full px-2 py-1 text-xs border border-blue-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono text-center"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleSavePhone}
+                        className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shrink-0"
+                        title="حفظ"
+                      >
+                        <Check className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => setIsEditingPhone(false)}
+                        className="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs shrink-0"
+                        title="إلغاء"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : currentPhone ? (
+                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 bg-slate-50 py-1 px-2.5 rounded-lg border border-slate-200 max-w-[240px] mx-auto">
+                      <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span dir="ltr" className="font-mono text-slate-900">{currentPhone}</span>
+                      <Copy
+                        className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-pointer shrink-0"
+                        onClick={() => onCopyText(currentPhone, 'phone')}
+                        title="نسخ رقم الجوال"
+                      />
+                      <Edit3
+                        className="w-3 h-3 text-slate-400 hover:text-blue-600 cursor-pointer shrink-0"
+                        onClick={() => { setPhoneInput(currentPhone); setIsEditingPhone(true); }}
+                        title="تعديل رقم الجوال"
+                      />
+                      <a
+                        href={`https://wa.me/${currentPhone.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-600 hover:text-emerald-700 shrink-0"
+                        title="محادثة واتساب مباشرة"
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <button
+                        onClick={() => { setPhoneInput(''); setIsEditingPhone(true); }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-dashed border-slate-300 hover:border-blue-400 bg-slate-50 hover:bg-blue-50/50 text-[11px] text-slate-500 hover:text-blue-700 font-medium transition-all"
+                      >
+                        <Plus className="w-3 h-3 text-blue-600" />
+                        <span>إضافة رقم جوال العميل</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {/* Availability Badge */}
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">
-                  <span>غير متاح الآن</span>
+                {/* Real Activity / Timestamp */}
+                <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-500 font-medium">
+                  <Clock className="w-3 h-3 text-slate-400" />
+                  <span>
+                    {selectedMessage.rawTime
+                      ? `آخر تفاعل: ${new Date(selectedMessage.rawTime).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}`
+                      : selectedMessage.time
+                      ? `التوقيت: ${selectedMessage.time}`
+                      : 'نشط عبر المحادثة المباشرة'}
+                  </span>
                 </div>
 
-                {/* Quick Icon Actions (WhatsApp, SMS, Tag, Delete) */}
+                {/* Quick Icon Actions (WhatsApp, SMS, Tag, Archive) */}
                 <div className="flex items-center justify-center gap-2 mt-3 pt-2 border-t border-slate-100">
-                  <button className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-all" title="محادثة واتساب">
-                    <Phone className="w-4 h-4" />
-                  </button>
-                  <button className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-all" title="إرسال SMS">
-                    <Mail className="w-4 h-4" />
-                  </button>
-                  <button className="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition-all" title="إضافة تصنيف">
+                  {currentPhone ? (
+                    <a
+                      href={`https://wa.me/${currentPhone.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-all"
+                      title="محادثة واتساب مباشرة للعميل"
+                    >
+                      <Phone className="w-4 h-4" />
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => { setPhoneInput(''); setIsEditingPhone(true); }}
+                      className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 flex items-center justify-center transition-all"
+                      title="إضافة رقم للتواصل عبر واتساب"
+                    >
+                      <Phone className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      const input = document.getElementById('crm-tag-input');
+                      if (input) input.focus();
+                    }}
+                    className="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition-all"
+                    title="إضافة تصنيف للعميل"
+                  >
                     <Tag className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => onToggleCloseConversation(selectedMessage.id)}
                     className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all"
-                    title={isSelectedClosed ? 'إعادة فتح' : 'أرشفة المحادثة'}
+                    title={isSelectedClosed ? 'إعادة فتح المحادثة' : 'إغلاق وتوثيق المحادثة'}
                   >
                     <Archive className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Section 1: إجراءات المحادثة (Conversation Actions) */}
+              {/* Section 1: إجراءات المحادثة والوسوم (Conversation Actions & Real Tags) */}
               <div className="space-y-3 pb-3 border-b border-slate-100">
                 <div className="flex items-center justify-between text-xs font-black text-slate-900">
-                  <span>إجراءات المحادثة</span>
+                  <span>إجراءات وتصنيف المحادثة</span>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                 </div>
 
                 {/* Assigned Agent */}
                 <div className="space-y-1">
                   <label className="text-[11px] font-semibold text-slate-500">الوكيل المكلف</label>
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] font-bold flex items-center justify-center">
                         AK
                       </div>
                       <span className="font-bold text-slate-800 text-xs">{assignedAgent}</span>
                     </div>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </div>
                 </div>
 
                 {/* Assigned Department */}
                 <div className="space-y-1">
                   <label className="text-[11px] font-semibold text-slate-500">العضو المكلف / القسم</label>
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
                     <span className="font-bold text-slate-800 text-xs">{assignedDept}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </div>
                 </div>
 
-                {/* Conversation Tags */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-500">وسوم المحادثة</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(customerTags[selectedMessage.id] || ['تنتظر دفعة', 'عميل جاد']).map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-bold"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                        <span>{tag}</span>
-                        <X
-                          className="w-2.5 h-2.5 hover:text-red-500 cursor-pointer"
-                          onClick={() => onRemoveTag(selectedMessage.id, tag)}
-                        />
+                {/* Conversation Tags (100% Real, Interactive & Persisted) */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                      <Tag className="w-3 h-3 text-amber-600" />
+                      <span>وسوم وتصنيفات العميل</span>
+                    </label>
+                    {((customerTags[selectedMessage.id]) || []).length > 0 && (
+                      <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded-full">
+                        {customerTags[selectedMessage.id].length}
                       </span>
-                    ))}
+                    )}
                   </div>
 
+                  {/* Active Tags list */}
+                  {(customerTags[selectedMessage.id] || []).length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {customerTags[selectedMessage.id].map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 text-[11px] font-bold shadow-xs"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                          <span>{tag}</span>
+                          <X
+                            className="w-3 h-3 text-slate-400 hover:text-red-600 cursor-pointer transition-colors"
+                            onClick={() => onRemoveTag(selectedMessage.id, tag)}
+                            title="حذف الوسم"
+                          />
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-2 rounded-lg bg-slate-50 border border-dashed border-slate-200 text-center text-[10px] text-slate-400">
+                      لم يتم تصنيف هذا العميل بعد. اختر من التصنيفات السريعة أدناه أو اكتب وسماً مخصصاً
+                    </div>
+                  )}
+
                   {/* Add Tag input */}
-                  <div className="flex gap-1 pt-1">
+                  <div className="flex gap-1 pt-0.5">
                     <input
+                      id="crm-tag-input"
                       type="text"
                       placeholder="+ إضافة تصنيف جديد..."
                       value={newTagText}
@@ -1240,7 +1479,7 @@ export default function OmnichannelInboxView({
                           setNewTagText('');
                         }
                       }}
-                      className="flex-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
                     />
                     <button
                       onClick={() => {
@@ -1249,49 +1488,173 @@ export default function OmnichannelInboxView({
                           setNewTagText('');
                         }
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all"
+                      className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all flex items-center justify-center shrink-0"
+                      title="إضافة التصنيف"
                     >
-                      +
+                      <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
+
+                  {/* Quick Suggested Tags */}
+                  <div className="pt-1">
+                    <span className="text-[10px] font-semibold text-slate-400 block mb-1">تصنيفات مقترحة بضغطة واحدة:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {SUGGESTED_TAGS.map((st, i) => {
+                        const activeList = customerTags[selectedMessage.id] || [];
+                        const isAlreadyAdded = activeList.includes(st.label);
+                        if (isAlreadyAdded) return null;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => onAddTag(selectedMessage.id, st.label)}
+                            className={`text-[10px] font-medium px-2 py-0.5 rounded-md border transition-all ${st.bg} flex items-center gap-1 shadow-xs`}
+                          >
+                            <Plus className="w-2.5 h-2.5" />
+                            <span>{st.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* One-Click Excel / CSV Report Export */}
+                <div className="pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={onExportCRMReport}
+                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                    title="تصدير تقرير شامل لجميع العملاء وتصنيفاتهم بصيغة Excel / CSV"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>📊 تصدير تقرير تصنيفات العملاء (Excel)</span>
+                  </button>
+                  <span className="text-[10px] text-slate-400 block text-center mt-1">
+                    تقرير فوري لجميع العملاء، الوسوم، وأرقام التواصل
+                  </span>
                 </div>
               </div>
 
-              {/* Section 2: معلومات المحادثة والسيارة (Vehicle Specs & Info) */}
+              {/* Section 2: معلومات المحادثة والسيارة (Vehicle Specs & Info - Editable) */}
               <div className="space-y-2.5 pb-3 border-b border-slate-100">
                 <div className="flex items-center justify-between text-xs font-black text-slate-900">
-                  <span>معلومات المحادثة</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="flex items-center gap-1.5">
+                    <Car className="w-3.5 h-3.5 text-blue-600" />
+                    <span>بيانات السيارة والطلب</span>
+                  </span>
                 </div>
 
-                <div className="space-y-1.5 text-[11px]">
-                  <div className="flex justify-between py-1 border-b border-slate-50">
+                <div className="space-y-2 text-[11px]">
+                  {/* Car Model */}
+                  <div className="flex items-center justify-between py-1 border-b border-slate-50">
                     <span className="text-slate-400 font-medium">السيارة والموديل:</span>
-                    <span className="font-bold text-slate-800">{selectedMessage.leadInfo?.carModel || 'كيا / هيونداي'}</span>
+                    {isEditingCar ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={carInput}
+                          onChange={(e) => setCarInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveCar();
+                            if (e.key === 'Escape') setIsEditingCar(false);
+                          }}
+                          placeholder="مثال: كيا سيراتو 2021"
+                          className="px-2 py-0.5 text-xs border border-blue-300 rounded text-slate-800 w-32 focus:outline-none"
+                          autoFocus
+                        />
+                        <Check className="w-3.5 h-3.5 text-emerald-600 cursor-pointer" onClick={handleSaveCar} />
+                        <X className="w-3.5 h-3.5 text-slate-400 cursor-pointer" onClick={() => setIsEditingCar(false)} />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 font-bold text-slate-800">
+                        <span>{currentCar || 'غير محدد'}</span>
+                        <Edit3
+                          className="w-3 h-3 text-slate-400 hover:text-blue-600 cursor-pointer"
+                          onClick={() => { setCarInput(currentCar); setIsEditingCar(true); }}
+                          title="تعديل الموديل"
+                        />
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex justify-between py-1 border-b border-slate-50">
+                  {/* Part Name */}
+                  <div className="flex items-center justify-between py-1 border-b border-slate-50">
                     <span className="text-slate-400 font-medium">القطعة المطلوبة:</span>
-                    <span className="font-bold text-blue-600">{selectedMessage.leadInfo?.interestType || 'قطع غيار'}</span>
+                    {isEditingPart ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={partInput}
+                          onChange={(e) => setPartInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSavePart();
+                            if (e.key === 'Escape') setIsEditingPart(false);
+                          }}
+                          placeholder="مثال: فحمات سيراميك"
+                          className="px-2 py-0.5 text-xs border border-blue-300 rounded text-slate-800 w-32 focus:outline-none"
+                          autoFocus
+                        />
+                        <Check className="w-3.5 h-3.5 text-emerald-600 cursor-pointer" onClick={handleSavePart} />
+                        <X className="w-3.5 h-3.5 text-slate-400 cursor-pointer" onClick={() => setIsEditingPart(false)} />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 font-bold text-blue-600">
+                        <span>{currentPart || 'غير محدد'}</span>
+                        <Edit3
+                          className="w-3 h-3 text-slate-400 hover:text-blue-600 cursor-pointer"
+                          onClick={() => { setPartInput(currentPart); setIsEditingPart(true); }}
+                          title="تعديل القطعة"
+                        />
+                      </div>
+                    )}
                   </div>
 
-                  {/* Prominent VIN */}
+                  {/* VIN (Prominent & Editable) */}
                   <div className="pt-1">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-slate-400 font-medium">رقم الهيكل (VIN):</span>
-                      {selectedMessage.leadInfo?.vin && (
+                      <div className="flex items-center gap-1.5">
+                        {currentVin && (
+                          <button
+                            onClick={() => onCopyText(currentVin, 'vin')}
+                            className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 text-[10px]"
+                          >
+                            <Copy className="w-2.5 h-2.5" />
+                            نسخ
+                          </button>
+                        )}
                         <button
-                          onClick={() => onCopyText(selectedMessage.leadInfo.vin, 'vin')}
-                          className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 text-[10px]"
+                          onClick={() => { setVinInput(currentVin); setIsEditingVin(!isEditingVin); }}
+                          className="text-slate-500 hover:text-blue-600 text-[10px] font-bold flex items-center gap-0.5"
                         >
-                          <Copy className="w-2.5 h-2.5" />
-                          نسخ
+                          <Edit3 className="w-2.5 h-2.5" />
+                          {currentVin ? 'تعديل' : 'إضافة'}
                         </button>
-                      )}
+                      </div>
                     </div>
-                    {selectedMessage.leadInfo?.vin ? (
+
+                    {isEditingVin ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          dir="ltr"
+                          value={vinInput}
+                          onChange={(e) => setVinInput(e.target.value.toUpperCase())}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveVin();
+                            if (e.key === 'Escape') setIsEditingVin(false);
+                          }}
+                          placeholder="17 حرف ورقم..."
+                          className="w-full font-mono px-2 py-1 text-xs border border-blue-300 rounded text-slate-800 uppercase focus:outline-none"
+                          autoFocus
+                        />
+                        <Check className="w-3.5 h-3.5 text-emerald-600 cursor-pointer shrink-0" onClick={handleSaveVin} />
+                        <X className="w-3.5 h-3.5 text-slate-400 cursor-pointer shrink-0" onClick={() => setIsEditingVin(false)} />
+                      </div>
+                    ) : currentVin ? (
                       <div className="p-2 rounded-lg bg-slate-50 border border-slate-200 font-mono text-center text-xs font-bold text-slate-800 tracking-wider">
-                        {selectedMessage.leadInfo.vin}
+                        {currentVin}
                       </div>
                     ) : (
                       <div className="p-1.5 rounded-lg bg-slate-50 text-center text-[10px] text-slate-400">
@@ -1301,19 +1664,28 @@ export default function OmnichannelInboxView({
                   </div>
 
                   <div className="flex justify-between py-1 border-b border-slate-50">
-                    <span className="text-slate-400 font-medium">تم البدء في:</span>
-                    <span className="text-slate-600">{selectedMessage.rawTime ? new Date(selectedMessage.rawTime).toLocaleDateString('ar-SA') : 'Sun Jul 31 2022'}</span>
-                  </div>
-
-                  <div className="flex justify-between py-1 border-b border-slate-50">
                     <span className="text-slate-400 font-medium">القناة:</span>
-                    <span className="font-bold text-slate-700">{selectedMessage.platform === 'meta_instagram' ? 'Instagram Direct' : 'Facebook Messenger'}</span>
+                    <span className="font-bold text-slate-700">
+                      {selectedMessage.platform === 'meta_instagram' ? 'Instagram Direct 📸' : 'Facebook Messenger 💬'}
+                    </span>
                   </div>
 
-                  <div className="flex justify-between py-1">
-                    <span className="text-slate-400 font-medium">المتصفح:</span>
-                    <span className="text-slate-600 font-mono">Chrome 103.0.0.0</span>
-                  </div>
+                  {selectedMessage.rawTime && (
+                    <div className="flex justify-between py-1 border-b border-slate-50">
+                      <span className="text-slate-400 font-medium">تاريخ المحادثة:</span>
+                      <span className="text-slate-600">
+                        {new Date(selectedMessage.rawTime).toLocaleDateString('ar-SA', { year: 'numeric', month: 'numeric', day: 'numeric' })}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Customer Internal Note Preview if exists */}
+                  {customerNotes[selectedMessage.id] && (
+                    <div className="p-2 rounded-lg bg-amber-50/70 border border-amber-200 text-amber-900 mt-2">
+                      <span className="font-bold text-[10px] block mb-0.5">ملاحظة الفريق الخاصة:</span>
+                      <p className="text-[11px] whitespace-pre-wrap">{customerNotes[selectedMessage.id]}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 

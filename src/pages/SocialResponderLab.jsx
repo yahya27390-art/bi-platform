@@ -89,7 +89,14 @@ import {
   DORA_AUTHENTIC_MESSAGES_DATASET,
   QUICK_REPLY_TEMPLATES,
   DORA_SOCIAL_KNOWLEDGE,
-  DORA_PARTS_OFFICIAL_SYSTEM_PROMPT
+  DORA_PARTS_OFFICIAL_SYSTEM_PROMPT,
+  loadCustomerTags,
+  saveCustomerTags,
+  loadCustomerNotes,
+  saveCustomerNotes,
+  loadCustomerCustomProfiles,
+  saveCustomerCustomProfile,
+  exportCustomerTagsReportCSV
 } from '../lib/socialResponderAgent';
 import { loadMetaConfig } from '../lib/metaIntegration';
 import { loadTikTokConfig } from '../lib/tiktokIntegration';
@@ -232,19 +239,15 @@ export default function SocialResponderLab() {
   const [rules, setRules] = useState(loadTrainingRules());
   const [guardrails, setGuardrails] = useState(loadGuardrails());
 
-  // Customer Tag addition state
+  // Customer Tag addition state (Persisted in localStorage)
   const [newTagInput, setNewTagInput] = useState('');
-  const [customerTags, setCustomerTags] = useState({
-    't_1029118809979259': ['عميل جاد', 'ديزل', 'استلام بريدة'],
-    't_1360865412193669': ['استفسار أقساط', 'تابي وتمارا'],
-    't_2052583308797368': ['كيا كرنفال', 'رقم هيكل مؤكد']
-  });
+  const [customerTags, setCustomerTags] = useState(() => loadCustomerTags());
 
-  // Customer team notes state
-  const [customerNotes, setCustomerNotes] = useState({
-    't_1029118809979259': 'العميل يفضل الاستلام المباشر من فرع بريدة بعد الطلب من رابط المتجر (75 ريال).',
-    't_2052583308797368': 'رقم الهيكل KNAUP752929305834 تم تحويله لفرع كيا لتأكيد كراسي المكينة والقير.'
-  });
+  // Customer team notes state (Persisted in localStorage)
+  const [customerNotes, setCustomerNotes] = useState(() => loadCustomerNotes());
+
+  // Customer custom profile attributes (phone, car, vin - Persisted in localStorage)
+  const [customerProfiles, setCustomerProfiles] = useState(() => loadCustomerCustomProfiles());
 
   // 4-Column Professional SaaS CRM States (Karzoun / Crisp style)
   const [composerMode, setComposerMode] = useState('reply'); // 'reply' | 'note'
@@ -414,33 +417,36 @@ export default function SocialResponderLab() {
     return `https://wa.me/${phone}?text=${text}`;
   };
 
-  // Add Tag
-  const handleAddTag = (msgId) => {
-    if (!newTagInput.trim()) return;
-    const current = customerTags[msgId] || [];
-    if (!current.includes(newTagInput.trim())) {
-      setCustomerTags({
-        ...customerTags,
-        [msgId]: [...current, newTagInput.trim()]
-      });
-    }
+  // Add Tag (Persists to localStorage)
+  const handleAddTag = (msgId, tagText) => {
+    const text = (tagText || newTagInput || '').trim();
+    if (!msgId || !text) return;
+    setCustomerTags((prev) => {
+      const current = prev[msgId] || [];
+      if (current.includes(text)) return prev;
+      const updated = { ...prev, [msgId]: [...current, text] };
+      saveCustomerTags(updated);
+      return updated;
+    });
     setNewTagInput('');
-    showToast('تمت إضافة الوسم بنجاح! 🏷️');
+    showToast(`تمت إضافة الوسم «${text}» بنجاح! 🏷️`);
   };
 
-  // Remove Tag
+  // Remove Tag (Persists to localStorage)
   const handleRemoveTag = (msgId, tagToRemove) => {
-    const current = customerTags[msgId] || [];
-    setCustomerTags({
-      ...customerTags,
-      [msgId]: current.filter(t => t !== tagToRemove)
+    if (!msgId || !tagToRemove) return;
+    setCustomerTags((prev) => {
+      const current = prev[msgId] || [];
+      const updated = { ...prev, [msgId]: current.filter((t) => t !== tagToRemove) };
+      saveCustomerTags(updated);
+      return updated;
     });
-    showToast('تم حذف الوسم');
+    showToast(`تم حذف الوسم «${tagToRemove}»`);
   };
 
   // Toggle Close / Reopen Conversation (Matching green button in reference screenshot)
   const handleToggleCloseConversation = (msgId) => {
-    setClosedConversations(prev => {
+    setClosedConversations((prev) => {
       const next = new Set(prev);
       if (next.has(msgId)) {
         next.delete(msgId);
@@ -453,15 +459,34 @@ export default function SocialResponderLab() {
     });
   };
 
-  // Save Private Internal Note
-  const handleSavePrivateNote = (msgId) => {
-    if (!noteDraft.trim()) return;
-    setCustomerNotes(prev => ({
-      ...prev,
-      [msgId]: (prev[msgId] ? prev[msgId] + '\n• ' : '• ') + noteDraft.trim()
-    }));
+  // Save Private Internal Note (Persists to localStorage)
+  const handleSavePrivateNote = (msgId, noteContent) => {
+    const text = (noteContent || noteDraft || '').trim();
+    if (!msgId || !text) return;
+    setCustomerNotes((prev) => {
+      const updated = { ...prev, [msgId]: text };
+      saveCustomerNotes(updated);
+      return updated;
+    });
     setNoteDraft('');
-    showToast('تم حفظ الملاحظة الخاصة بالفريق 📝');
+    showToast('تم حفظ ملاحظة الفريق الخاصة بنجاح 📝');
+  };
+
+  // Update Customer Profile Data (Phone, Car, VIN - Persists to localStorage)
+  const handleUpdateCustomerProfile = (msgId, profileData) => {
+    if (!msgId || !profileData) return;
+    setCustomerProfiles((prev) => {
+      const updated = { ...prev, [msgId]: { ...(prev[msgId] || {}), ...profileData } };
+      saveCustomerCustomProfile(msgId, profileData);
+      return updated;
+    });
+    showToast('تم حفظ وتحديث بطاقة العميل بنجاح 💾');
+  };
+
+  // Export Customer Tags & CRM Report as CSV
+  const handleExportCRMReport = () => {
+    exportCustomerTagsReportCSV(inbox, customerTags, customerNotes, customerProfiles);
+    showToast('جاري تصدير تقرير العملاء بصيغة Excel / CSV 📊');
   };
 
   // Save Schedule Settings
@@ -779,6 +804,9 @@ export default function SocialResponderLab() {
             onRemoveTag={handleRemoveTag}
             customerNotes={customerNotes}
             onSavePrivateNote={handleSavePrivateNote}
+            customerProfiles={customerProfiles}
+            onUpdateCustomerProfile={handleUpdateCustomerProfile}
+            onExportCRMReport={handleExportCRMReport}
             closedConversations={closedConversations}
             onToggleCloseConversation={handleToggleCloseConversation}
             getBranchWhatsAppLink={getBranchWhatsAppLink}

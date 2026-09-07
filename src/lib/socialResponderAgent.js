@@ -20,6 +20,9 @@ const STORAGE_KEYS = {
   LIVE_SYNC_LOGS: 'dora_social_sync_logs',
   OFFICIAL_PROMPT: 'dora_social_official_prompt',
   LEARNED_INSIGHTS: 'dora_social_learned_insights',
+  CUSTOMER_TAGS: 'dora_social_customer_tags',
+  CUSTOMER_NOTES: 'dora_social_customer_notes',
+  CUSTOMER_PROFILES: 'dora_social_customer_profiles',
 };
 
 // -------------------------------------------------------------
@@ -846,6 +849,118 @@ export function saveResponderSettings(settings) {
   try {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   } catch (e) {}
+}
+
+// ── CRM: وسوم العملاء وتصنيفاتهم الدائمة ──────────────────────
+export function loadCustomerTags() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.CUSTOMER_TAGS);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+export function saveCustomerTags(tagsMap) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.CUSTOMER_TAGS, JSON.stringify(tagsMap));
+  } catch (e) {}
+}
+
+// ── CRM: ملاحظات الفريق الداخلية على العميل ──────────────────
+export function loadCustomerNotes() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.CUSTOMER_NOTES);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+export function saveCustomerNotes(notesMap) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.CUSTOMER_NOTES, JSON.stringify(notesMap));
+  } catch (e) {}
+}
+
+// ── CRM: بيانات العميل الحقيقية المخصصة (الهاتف، السيارة، الهيكل) ─
+export function loadCustomerCustomProfiles() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.CUSTOMER_PROFILES);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+export function saveCustomerCustomProfile(keyId, profileData) {
+  try {
+    const profiles = loadCustomerCustomProfiles();
+    profiles[keyId] = { ...(profiles[keyId] || {}), ...profileData, updatedAt: new Date().toISOString() };
+    localStorage.setItem(STORAGE_KEYS.CUSTOMER_PROFILES, JSON.stringify(profiles));
+    return profiles;
+  } catch (e) {
+    return {};
+  }
+}
+
+// ── CRM: تصدير تقرير تصنيفات وبيانات العملاء بملف Excel / CSV رسمي ──
+export function exportCustomerTagsReportCSV(inbox = [], tagsMap = {}, notesMap = {}, customProfiles = {}) {
+  const headers = [
+    'اسم العميل',
+    'معرف الحساب (Meta ID)',
+    'القناة',
+    'رابط الملف الشخصي',
+    'رقم الجوال',
+    'السيارة والموديل',
+    'القطعة المطلوبة',
+    'رقم الهيكل (VIN)',
+    'الوسوم والتصنيفات',
+    'ملاحظة الموظف',
+    'حالة المحادثة',
+    'تاريخ آخر تواصل'
+  ];
+
+  const rows = inbox.map((msg) => {
+    const custom = customProfiles[msg.id] || customProfiles[msg.senderId] || {};
+    const tags = tagsMap[msg.id] || [];
+    const note = notesMap[msg.id] || '';
+    const phone = custom.phone || msg.leadInfo?.phone || '';
+    const carModel = custom.carModel || msg.leadInfo?.carModel || '';
+    const part = custom.part || msg.leadInfo?.interestType || '';
+    const vin = custom.vin || msg.leadInfo?.vin || '';
+    const channel = msg.platform === 'meta_instagram' ? 'Instagram Direct' : 'Facebook Messenger';
+    const profileUrl = msg.platform === 'meta_instagram'
+      ? `https://instagram.com/${msg.senderName}`
+      : `https://facebook.com/${msg.senderId}`;
+
+    return [
+      `"${(msg.senderName || '').replace(/"/g, '""')}"`,
+      `"${(msg.senderId || '').replace(/"/g, '""')}"`,
+      `"${channel}"`,
+      `"${profileUrl}"`,
+      `"${phone}"`,
+      `"${carModel.replace(/"/g, '""')}"`,
+      `"${part.replace(/"/g, '""')}"`,
+      `"${vin}"`,
+      `"${tags.join(' | ')}"`,
+      `"${note.replace(/"/g, '""')}"`,
+      `"${msg.status === 'replied' ? 'تم الرد' : 'بانتظار رد'}"`,
+      `"${msg.rawTime || msg.timestamp || ''}"`
+    ].join(',');
+  });
+
+  const bom = '\uFEFF'; // UTF-8 BOM لضمان فتح اللغة العربية بسلاسة في Excel
+  const csvContent = bom + [headers.join(','), ...rows].join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `تقرير_عملاء_وتصنيفات_درة_السيارة_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 export const INITIAL_TRAINING_RULES = [
