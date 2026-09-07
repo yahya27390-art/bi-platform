@@ -180,6 +180,25 @@ export default function SocialResponderLab() {
   const [activePlatformFilter, setActivePlatformFilter] = useState('all');
   const [activeStatusFilter, setActiveStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // ضمان مزامنة المحادثات وتحميل محادثات إنستغرام الحقيقية عند فتح الصفحة
+  useEffect(() => {
+    const freshInbox = loadResponderInbox();
+    setInbox(freshInbox);
+    setSelectedMessage(prev => prev || freshInbox[0] || null);
+  }, []);
+
+  const handleSetPlatformFilter = (platform) => {
+    setActivePlatformFilter(platform);
+    if (platform === 'meta_instagram') {
+      const firstIg = inbox.find(m => m.platform === 'meta_instagram');
+      if (firstIg) handleSelectMessage(firstIg);
+    } else if (platform === 'meta_facebook') {
+      const firstFb = inbox.find(m => m.platform === 'meta_facebook');
+      if (firstFb) handleSelectMessage(firstFb);
+    }
+  };
+
   const [replyDraft, setReplyDraft] = useState(() => {
     const initial = loadResponderInbox();
     const first = initial && initial.length > 0 ? initial[0] : (DORA_AUTHENTIC_MESSAGES_DATASET[0] || null);
@@ -798,10 +817,11 @@ export default function SocialResponderLab() {
         {activeTab === 'inbox' && (
           <OmnichannelInboxView
             inbox={inbox}
+            onUpdateInbox={setInbox}
             selectedMessage={selectedMessage}
             onSelectMessage={handleSelectMessage}
             activePlatformFilter={activePlatformFilter}
-            onSetPlatformFilter={setActivePlatformFilter}
+            onSetPlatformFilter={handleSetPlatformFilter}
             searchQuery={searchQuery}
             onSetSearchQuery={setSearchQuery}
             replyDraft={replyDraft}

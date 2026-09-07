@@ -307,7 +307,17 @@ export function loadResponderInbox() {
     const current = JSON.parse(raw);
     const cleaned = (Array.isArray(current) ? current : []).filter(m => !m.id.startsWith('t_34028236684171030124426020012723597676'));
 
-    return cleaned.sort((a, b) => {
+    // ضمان وجود المحادثات الحقيقية المزامنة من إنستغرام دائماً
+    const igAuthentic = DORA_AUTHENTIC_MESSAGES_DATASET.filter(m => m.platform === 'meta_instagram');
+    const existingIds = new Set(cleaned.map(m => m.id));
+    const missingIg = igAuthentic.filter(m => !existingIds.has(m.id));
+    const fullList = [...missingIg, ...cleaned];
+
+    if (missingIg.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(fullList));
+    }
+
+    return fullList.sort((a, b) => {
       // الرسائل الحية أولاً، ثم الأحدث تاريخاً
       if (a.isLive && !b.isLive) return -1;
       if (!a.isLive && b.isLive) return 1;

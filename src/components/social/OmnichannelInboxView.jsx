@@ -44,7 +44,7 @@ import {
   Plus,
   MessageCircle
 } from 'lucide-react';
-import { QUICK_REPLY_TEMPLATES, DORA_SOCIAL_KNOWLEDGE } from '../../lib/socialResponderAgent';
+import { QUICK_REPLY_TEMPLATES, DORA_SOCIAL_KNOWLEDGE, DORA_AUTHENTIC_MESSAGES_DATASET, saveResponderInbox } from '../../lib/socialResponderAgent';
 
 // الوسوم والتصنيفات المقترحة المسبقة لخدمة العملاء
 const SUGGESTED_TAGS = [
@@ -133,6 +133,7 @@ function getCleanSnippet(msg) {
 
 export default function OmnichannelInboxView({
   inbox = [],
+  onUpdateInbox,
   selectedMessage,
   onSelectMessage,
   activePlatformFilter,
@@ -713,11 +714,27 @@ export default function OmnichannelInboxView({
                   </div>
 
                   <div className="flex flex-col w-full max-w-[270px] gap-2 pt-1">
+                    <button
+                      onClick={() => {
+                        const igAuthentic = DORA_AUTHENTIC_MESSAGES_DATASET.filter(m => m.platform === 'meta_instagram');
+                        const existingIds = new Set(inbox.map(m => m.id));
+                        const missing = igAuthentic.filter(m => !existingIds.has(m.id));
+                        const fullList = [...missing, ...inbox];
+                        saveResponderInbox(fullList);
+                        if (onUpdateInbox) onUpdateInbox(fullList);
+                        const yb = fullList.find(m => m.id === 'ig_conv_yahya_basha90') || missing[0];
+                        if (yb && onSelectMessage) onSelectMessage(yb);
+                      }}
+                      className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-center text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>📥 إظهار محادثات إنستغرام (يحيى باشا و W f)</span>
+                    </button>
                     <a
                       href="https://ig.me/m/doracars22"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-center text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                      className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-center text-xs flex items-center justify-center gap-1.5 transition-all"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>إرسال رسالة تجريبية للحساب ↗</span>
