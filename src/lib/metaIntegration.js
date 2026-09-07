@@ -34,9 +34,9 @@ export const DEFAULT_META_CONFIG = {
     whatsappWabaId: '',
     facebookPageId: '',
     instagramBusinessId: '',
-    messagingAccessToken: '', // Page token or System user token
-    isMessagingConnected: false,
-    scopes: [],
+    messagingAccessToken: 'EAAeg0uiXakwBSXskBGtev4AbcYG7OatX5eBoMACdUN65eoC11avAWTksg2C6npTEEVdN0mjM8qXEe285rHAC015zeh40DnA6EZCXPSdwvCjbUUdBMXEQUuzQWZBATZBFZCZCkgtbNR4b3JhSb4HHjK6aijwbQq4IRZARN5hoGBND5kM35I6oide7oPo1ldQFCQ2ereuI0yMoPZChscg3kGeNVLdaS9ZBgZBT1hShrBuYK6C0lhbRzxlxKawaCZAWn16lxOW0ISDnhvkGrjK0wZBkXQw',
+    isMessagingConnected: true,
+    scopes: ['pages_show_list', 'pages_messaging', 'public_profile'],
   },
 
   // Live and August aggregate metrics (from official Dora Cars Meta report)
