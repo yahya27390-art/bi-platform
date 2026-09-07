@@ -146,15 +146,17 @@ export default function SocialResponderLab() {
   // Inbox & Settings State
   const [settings, setSettings] = useState(loadResponderSettings());
   const [inbox, setInbox] = useState(() => {
-    const loaded = loadResponderInbox();
-    return loaded && loaded.length > 0 ? loaded : DORA_AUTHENTIC_MESSAGES_DATASET;
+    // نبدأ من localStorage فقط - لا نحقن الـ dataset تلقائياً
+    return loadResponderInbox();
   });
   const [learnedInsights, setLearnedInsights] = useState(() => loadLearnedInsights());
   
   // Selected Message in Omnichannel Inbox
   const [selectedMessage, setSelectedMessage] = useState(() => {
     const initial = loadResponderInbox();
-    return initial && initial.length > 0 ? initial[0] : (DORA_AUTHENTIC_MESSAGES_DATASET[0] || null);
+    // اختر أول رسالة حية إن وجدت، وإلا أول رسالة
+    const firstLive = initial.find(m => m.isLive);
+    return firstLive || initial[0] || null;
   });
 
   // Channel & Filter Tabs
@@ -282,11 +284,20 @@ export default function SocialResponderLab() {
       if (res.learnedInsights) {
         setLearnedInsights(res.learnedInsights);
       }
-      setSyncStatusMsg(`تمت المزامنة بنجاح! تم تحميل ${updatedInbox.length} محادثة حقيقية متزامنة من ميتا.`);
-      setTimeout(() => setSyncStatusMsg(''), 5000);
+
+      const liveCount = updatedInbox.filter(m => m.isLive).length;
+      const histCount = updatedInbox.filter(m => m.isHistorical).length;
+
+      if (res.newCount > 0) {
+        const via = res.proxyWorked ? 'عبر Cloudflare Worker ✅' : 'مباشرة من Meta ✅';
+        setSyncStatusMsg(`✅ تمت المزامنة ${via}! ${liveCount} رسالة حية جديدة • ${histCount} رسالة تاريخية في الأرشيف.`);
+      } else {
+        setSyncStatusMsg(`📡 المزامنة تمت. لا توجد رسائل جديدة حالياً. ${liveCount} رسالة حية • ${histCount} تاريخية محفوظة.`);
+      }
+      setTimeout(() => setSyncStatusMsg(''), 6000);
     } catch (e) {
-      setSyncStatusMsg(`تم استعراض المحادثات الحية بنجاح (${inbox.length} محادثة متزامنة معتمدة).`);
-      setTimeout(() => setSyncStatusMsg(''), 5000);
+      setSyncStatusMsg(`⚠️ تعذّر الاتصال بـ Meta API مباشرة (CORS). للرسائل الحية يُرجى نشر Cloudflare Worker وضبط META_PROXY_URL.`);
+      setTimeout(() => setSyncStatusMsg(''), 8000);
     } finally {
       setIsSyncingLive(false);
     }

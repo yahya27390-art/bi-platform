@@ -5,6 +5,13 @@
 import { loadMetaConfig } from './metaIntegration';
 import { loadTikTokConfig } from './tiktokIntegration';
 
+// Cloudflare Worker Proxy URL - يحل مشكلة CORS لـ Meta Graph API
+// تم النشر تلقائياً على Cloudflare Workers (مجاني)
+export const META_PROXY_URL = 'https://dora-meta-proxy.quaint-walnut-273.workers.dev';
+// للنشر الدائم: سجّل الدخول للحساب عبر الرابط:
+// https://dash.cloudflare.com/claim-preview?claimToken=1KMAtzmnpv2-FDT-lqUEkMzK-yijDkWWTdwN0KkLWaM
+
+
 const STORAGE_KEYS = {
   SETTINGS: 'dora_social_responder_settings',
   MESSAGES: 'dora_social_responder_inbox',
@@ -280,26 +287,34 @@ export function loadLearnedInsights() {
   }
 }
 
-export const INBOX_DATA_VERSION = 'v6_only_synced_real_data';
+// v7: فصل الرسائل الحية عن التاريخية - لا يتم حقن الـ dataset المحلية تلقائياً
+export const INBOX_DATA_VERSION = 'v7_live_only_no_forced_dataset';
 
 export function loadResponderInbox() {
   try {
     const storedVersion = localStorage.getItem('dora_inbox_data_version');
     const raw = localStorage.getItem(STORAGE_KEYS.MESSAGES);
-    if (!raw || storedVersion !== INBOX_DATA_VERSION) {
-      localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(DORA_AUTHENTIC_MESSAGES_DATASET));
+
+    // إذا كانت نسخة قديمة (v6 أو أقل) → امسح الـ cache القديم وابدأ نظيفاً
+    if (storedVersion !== INBOX_DATA_VERSION || !raw) {
+      // مسح الـ cache القديم الذي كان يحتوي على الـ dataset المحلية المحقونة
+      localStorage.removeItem(STORAGE_KEYS.MESSAGES);
       localStorage.setItem('dora_inbox_data_version', INBOX_DATA_VERSION);
-      analyzeAllMessagesAndLearnPatterns(DORA_AUTHENTIC_MESSAGES_DATASET);
-      return DORA_AUTHENTIC_MESSAGES_DATASET;
+      // إرجاع الـ dataset التاريخية مرة واحدة كنقطة بداية (مع علامة isHistorical)
+      const historical = DORA_AUTHENTIC_MESSAGES_DATASET.map(m => ({ ...m, isHistorical: true, isLive: false }));
+      localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(historical));
+      return historical;
     }
+
     const current = JSON.parse(raw);
-    const map = new Map();
-    DORA_AUTHENTIC_MESSAGES_DATASET.forEach((m) => map.set(m.id, m));
-    current.forEach((m) => map.set(m.id, m));
-    const merged = Array.from(map.values()).sort((a, b) => new Date(b.rawTime || 0) - new Date(a.rawTime || 0));
-    return merged;
+    return current.sort((a, b) => {
+      // الرسائل الحية أولاً، ثم الأحدث تاريخاً
+      if (a.isLive && !b.isLive) return -1;
+      if (!a.isLive && b.isLive) return 1;
+      return new Date(b.rawTime || 0) - new Date(a.rawTime || 0);
+    });
   } catch (e) {
-    return DORA_AUTHENTIC_MESSAGES_DATASET;
+    return DORA_AUTHENTIC_MESSAGES_DATASET.map(m => ({ ...m, isHistorical: true, isLive: false }));
   }
 }
 
@@ -314,94 +329,152 @@ export function saveResponderInbox(messages) {
 // LIVE SYNC ENGINE (Meta + TikTok + Dataset Ingestion)
 // -------------------------------------------------------------
 
+// ── Helper: تحويل بيانات محادثة Meta API إلى صيغة الـ inbox ──────────────────
+// platform: 'meta_facebook' | 'meta_instagram'
+function mapMetaConvToInboxItem(t, pageId, platform = 'meta_facebook') {
+  const isInstagram = platform === 'meta_instagram';
+  const defaultSenderName = isInstagram ? 'عميل انستغرام' : 'عميل فيسبوك';
+  const avatarBg = isInstagram ? 'C13584' : '1877F2';  // لون انستغرام vs فيسبوك
+
+  const customerSender = t.senders?.data?.find((s) => s.id !== pageId) ||
+    t.senders?.data?.[0] || { name: defaultSenderName, id: 'unknown' };
+
+  const msgs = (t.messages?.data || []).slice().reverse();
+  const customerMsgs = msgs.filter((m) => m.from?.id !== pageId);
+  const pageMsgs     = msgs.filter((m) => m.from?.id === pageId);
+
+  const lastMsg         = msgs[msgs.length - 1];
+  const lastCustomerMsg = customerMsgs[customerMsgs.length - 1] || lastMsg;
+  const inquiryText     = lastCustomerMsg?.message || (isInstagram ? 'استفسار عبر انستغرام DM' : 'استفسار عبر ماسنجر');
+
+  const isAnswered      = pageMsgs.length > 0 && msgs[msgs.length - 1]?.from?.id === pageId;
+  const latestPageReply = isAnswered ? msgs[msgs.length - 1].message : '';
+
+  const analysis       = analyzeCustomerText(inquiryText);
+  const suggestedReply = generateSmartSocialReply(inquiryText, customerSender.name, platform, false);
+
+  const timeDiff = Date.now() - new Date(t.updated_time).getTime();
+  const minsAgo  = Math.max(1, Math.floor(timeDiff / 60000));
+  let relativeTime = 'منذ لحظات';
+  if (minsAgo < 60)   relativeTime = `منذ ${minsAgo} دقيقة`;
+  else if (minsAgo < 1440) relativeTime = `منذ ${Math.floor(minsAgo / 60)} ساعة`;
+  else                relativeTime = `منذ ${Math.floor(minsAgo / 1440)} يوم`;
+
+  return {
+    id: t.id,
+    platform,
+    channelType: 'dm',
+    senderName: customerSender.name || defaultSenderName,
+    senderId: customerSender.id,
+    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(customerSender.name || 'Dora')}&background=${avatarBg}&color=fff`,
+    text: inquiryText,
+    chatHistory: msgs.map((m) => ({
+      id: m.id,
+      sender: m.from?.id === pageId ? 'درة السيارة' : (customerSender.name || 'العميل'),
+      isPage: m.from?.id === pageId,
+      message: m.message,
+      time: m.created_time,
+    })),
+    timestamp: relativeTime,
+    rawTime: t.updated_time,
+    status: isAnswered ? 'replied' : 'pending',
+    intent: analysis.intent || 'spare_parts',
+    sentiment: 'positive',
+    adTitle: isInstagram ? 'رسالة انستغرام DM حية - حساب Dora Cars' : 'محادثة فيسبوك ماسنجر حية - صفحة Dora Cars',
+    suggestedReply,
+    reply: latestPageReply,
+    leadInfo: {
+      carModel: analysis.leadInfo?.carModel || '',
+      interestType: analysis.part || 'قطع غيار',
+      city: analysis.leadInfo?.city || 'القصيم / بريدة',
+      phone: analysis.phone || '',
+      vin: analysis.vin || '',
+    },
+    isLive: true,
+    isHistorical: false,
+  };
+}
+
 export async function syncLiveSocialData() {
-  let liveItems = [];
+  const metaConfig = loadMetaConfig();
+  const pageToken  = metaConfig.messaging?.facebookPageToken || '';
+  const pageId     = metaConfig.messaging?.facebookPageId || '560031747184578';
 
-  // Try live Meta Graph API call with Page Token
-  try {
-    const metaConfig = loadMetaConfig();
-    const pageToken = metaConfig.messaging?.facebookPageToken || 'EAAeg0uiXakwBSTdf3pZC1CmD4H4E91q0Y4g13NWjlZChAZAdkQJyc9nK8UikcTp02TE3NMYvZA8qPNDxuV40HfiZCOdGmLTclafYKtrx7ZAwkwxjGFED4PXBPV7iZCXmXhal16DBX1O2Ek6HyZAk8zDejy1jjjavVnHMixRGWojdPJquUjGE3tssA0IpBTHlChl12ZAqVD5VF';
-    const pageId = metaConfig.messaging?.facebookPageId || '560031747184578';
+  let messengerItems = [];
+  let instagramItems = [];
+  let proxyWorked    = false;
 
-    const convUrl = `https://graph.facebook.com/v20.0/${pageId}/conversations?fields=id,updated_time,unread_count,senders,messages.limit(10){id,message,created_time,from}&limit=25&access_token=${encodeURIComponent(pageToken)}`;
-    const convRes = await fetch(convUrl);
-    const convData = await convRes.json();
+  const hasProxy = META_PROXY_URL &&
+    META_PROXY_URL !== 'https://dora-meta-proxy.workers.dev' &&
+    META_PROXY_URL.startsWith('https://');
 
-    if (convData && convData.data && Array.isArray(convData.data)) {
-      liveItems = convData.data.map((t) => {
-        const customerSender = t.senders?.data?.find((s) => s.id !== pageId) || t.senders?.data?.[0] || { name: 'عميل فيسبوك', id: 'unknown' };
-        const msgs = (t.messages?.data || []).slice().reverse();
-        const customerMsgs = msgs.filter((m) => m.from?.id !== pageId);
-        const pageMsgs = msgs.filter((m) => m.from?.id === pageId);
+  // ── 1. جلب ماسنجر + انستغرام بالتوازي عبر الـ Proxy ─────────────────────
+  if (hasProxy) {
+    const baseParams = `pageId=${encodeURIComponent(pageId)}&token=${encodeURIComponent(pageToken)}&limit=50`;
 
-        const lastMsg = msgs[msgs.length - 1];
-        const lastCustomerMsg = customerMsgs[customerMsgs.length - 1] || lastMsg;
-        const inquiryText = lastCustomerMsg?.message || 'استفسار عبر ماسنجر';
+    const [msgrResult, igResult] = await Promise.allSettled([
+      // ماسنجر
+      fetch(`${META_PROXY_URL}/conversations?${baseParams}&platform=messenger`, { signal: AbortSignal.timeout(10000) })
+        .then(r => r.json()),
+      // انستغرام DM
+      fetch(`${META_PROXY_URL}/instagram-conversations?${baseParams}`, { signal: AbortSignal.timeout(10000) })
+        .then(r => r.json()),
+    ]);
 
-        const isAnswered = pageMsgs.length > 0 && msgs[msgs.length - 1]?.from?.id === pageId;
-        const latestPageReply = isAnswered ? msgs[msgs.length - 1].message : '';
-
-        const analysis = analyzeCustomerText(inquiryText);
-        const suggestedReply = generateSmartSocialReply(inquiryText, customerSender.name, 'meta_facebook', false);
-
-        // Calculate relative time
-        const timeDiff = Date.now() - new Date(t.updated_time).getTime();
-        const minsAgo = Math.max(1, Math.floor(timeDiff / 60000));
-        let relativeTime = 'منذ لحظات';
-        if (minsAgo < 60) relativeTime = `منذ ${minsAgo} دقيقة`;
-        else if (minsAgo < 1440) relativeTime = `منذ ${Math.floor(minsAgo / 60)} ساعة`;
-        else relativeTime = `منذ ${Math.floor(minsAgo / 1440)} يوم`;
-
-        return {
-          id: t.id,
-          platform: 'meta_facebook',
-          channelType: 'dm',
-          senderName: customerSender.name || 'عميل فيسبوك',
-          senderId: customerSender.id,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(customerSender.name || 'Dora Customer')}&background=1877F2&color=fff`,
-          text: inquiryText,
-          chatHistory: msgs.map((m) => ({
-            id: m.id,
-            sender: m.from?.id === pageId ? 'درة السيارة' : (customerSender.name || 'العميل'),
-            isPage: m.from?.id === pageId,
-            message: m.message,
-            time: m.created_time,
-          })),
-          timestamp: relativeTime,
-          rawTime: t.updated_time,
-          status: isAnswered ? 'replied' : 'pending',
-          intent: analysis.intent || 'spare_parts',
-          sentiment: 'positive',
-          adTitle: 'محادثة فيسبوك ماسنجر حية - صفحة Dora Cars',
-          suggestedReply,
-          reply: latestPageReply,
-          leadInfo: {
-            carModel: analysis.leadInfo?.carModel || (analysis.brand !== 'unknown' ? `${analysis.brand} ${analysis.model} ${analysis.year}`.trim() : ''),
-            interestType: analysis.part || 'قطع غيار',
-            city: analysis.leadInfo?.city || 'القصيم / بريدة',
-            phone: analysis.phone || '',
-            vin: analysis.vin || '',
-          },
-          isLive: true,
-        };
-      });
+    // معالجة نتيجة ماسنجر
+    if (msgrResult.status === 'fulfilled' && msgrResult.value?.success) {
+      messengerItems = msgrResult.value.data.map((t) => mapMetaConvToInboxItem(t, pageId, 'meta_facebook'));
+      proxyWorked = true;
+      console.log(`✅ Messenger Proxy: ${messengerItems.length} محادثة حية`);
+    } else if (msgrResult.status === 'fulfilled' && msgrResult.value?.error) {
+      console.warn('Messenger proxy error:', msgrResult.value.message);
     }
-  } catch (e) {
-    console.warn('Live Meta API browser call note:', e.message);
+
+    // معالجة نتيجة انستغرام
+    if (igResult.status === 'fulfilled' && igResult.value?.success) {
+      instagramItems = igResult.value.data.map((t) => mapMetaConvToInboxItem(t, pageId, 'meta_instagram'));
+      console.log(`✅ Instagram Proxy: ${instagramItems.length} رسالة DM حية`);
+    } else if (igResult.status === 'fulfilled' && igResult.value?.error) {
+      console.warn('Instagram proxy note:', igResult.value.message);
+    }
   }
 
-  // Load current inbox or seeded dataset
+  // ── 2. إذا فشل الـ Proxy، جرّب مباشرة (سيُحجب CORS غالباً في المتصفح) ─────
+  if (!proxyWorked) {
+    try {
+      const convUrl = `https://graph.facebook.com/v20.0/${pageId}/conversations?fields=id,updated_time,unread_count,senders,messages.limit(10){id,message,created_time,from}&limit=50&access_token=${encodeURIComponent(pageToken)}`;
+      const convRes  = await fetch(convUrl, { signal: AbortSignal.timeout(8000) });
+      const convData = await convRes.json();
+      if (convData?.data && Array.isArray(convData.data)) {
+        messengerItems = convData.data.map((t) => mapMetaConvToInboxItem(t, pageId, 'meta_facebook'));
+        console.log(`✅ Meta Direct: ${messengerItems.length} محادثة حية مباشرة`);
+      }
+    } catch (e) {
+      console.warn('Meta direct call note (CORS expected in browser):', e.message);
+    }
+  }
+
+  const liveItems = [...messengerItems, ...instagramItems];
+
+  // ── 3. بناء الـ inbox المحدث ───────────────────────────────────────────────
+  // نقرأ الـ inbox الحالي من localStorage (قد يحتوي على رسائل تاريخية)
   const currentInbox = loadResponderInbox();
+
+  // نبني Map بالأولوية: الرسائل الحية تستبدل التاريخية بنفس الـ id
   const inboxMap = new Map();
 
-  // Seeded dataset items
-  DORA_AUTHENTIC_MESSAGES_DATASET.forEach((m) => inboxMap.set(m.id, m));
-  // Preserved inbox items (local state & replies)
+  // 1) الرسائل الحالية في localStorage (تاريخية + حية سابقة)
   currentInbox.forEach((m) => inboxMap.set(m.id, m));
-  // Live items fetched from Meta (highest priority)
-  liveItems.forEach((m) => inboxMap.set(m.id, m));
 
-  const updatedInbox = Array.from(inboxMap.values()).sort((a, b) => new Date(b.rawTime || 0) - new Date(a.rawTime || 0));
+  // 2) الرسائل الجديدة الحية من Meta (الأولوية القصوى)
+  liveItems.forEach((m) => inboxMap.set(m.id, { ...m, isLive: true, isHistorical: false }));
+
+  // ترتيب: الحية أولاً، ثم التاريخية، ثم الأحدث
+  const updatedInbox = Array.from(inboxMap.values()).sort((a, b) => {
+    if (a.isLive && !b.isLive) return -1;
+    if (!a.isLive && b.isLive) return 1;
+    return new Date(b.rawTime || 0) - new Date(a.rawTime || 0);
+  });
 
   saveResponderInbox(updatedInbox);
   const learned = analyzeAllMessagesAndLearnPatterns(updatedInbox);
@@ -409,6 +482,7 @@ export async function syncLiveSocialData() {
   return {
     totalFetched: updatedInbox.length,
     newCount: liveItems.length,
+    proxyWorked,
     learnedInsights: learned,
   };
 }
@@ -611,16 +685,38 @@ export function generateSmartSocialReply(customerText, senderName = '', platform
 يسعدنا خدمتك. أرسل لنا نوع السيارة + الموديل + سنة الصنع + القطعة المطلوبة، ونساعدك في التحقق من القطعة المناسبة وتوجيهك للفرع المختص.`;
 }
 
-// Send live message reply via Meta Graph API
+// Send live message reply via Meta Graph API (via Cloudflare Worker proxy or direct)
 export async function sendLiveReplyToMeta({ recipientId, messageText }) {
   const metaConfig = loadMetaConfig();
-  const pageToken = metaConfig.messaging?.facebookPageToken || 'EAAeg0uiXakwBSTdf3pZC1CmD4H4E91q0Y4g13NWjlZChAZAdkQJyc9nK8UikcTp02TE3NMYvZA8qPNDxuV40HfiZCOdGmLTclafYKtrx7ZAwkwxjGFED4PXBPV7iZCXmXhal16DBX1O2Ek6HyZAk8zDejy1jjjavVnHMixRGWojdPJquUjGE3tssA0IpBTHlChl12ZAqVD5VF';
-  const pageId = metaConfig.messaging?.facebookPageId || '560031747184578';
+  const pageToken = metaConfig.messaging?.facebookPageToken || '';
+  const pageId    = metaConfig.messaging?.facebookPageId || '560031747184578';
 
   if (!recipientId || !messageText) {
     throw new Error('يرجى تحديد العميل ونص الرسالة.');
   }
 
+  // ── 1. جرّب الـ Cloudflare Worker Proxy أولاً (بدون CORS) ────────────────
+  if (META_PROXY_URL && META_PROXY_URL !== 'https://dora-meta-proxy.workers.dev') {
+    try {
+      const proxyRes = await fetch(`${META_PROXY_URL}/send-message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipientId, messageText, pageId, token: pageToken }),
+        signal: AbortSignal.timeout(10000),
+      });
+      const proxyData = await proxyRes.json();
+      if (proxyData.success) {
+        return { success: true, via: 'proxy', messageId: proxyData.messageId };
+      }
+      if (proxyData.error) {
+        throw new Error(proxyData.message || 'فشل إرسال الرسالة عبر Proxy');
+      }
+    } catch (proxyErr) {
+      console.warn('Proxy send failed, trying direct:', proxyErr.message);
+    }
+  }
+
+  // ── 2. جرّب مباشرة (قد يُحجب CORS في المتصفح) ───────────────────────────
   const endpoint = `https://graph.facebook.com/v20.0/${pageId}/messages?access_token=${encodeURIComponent(pageToken)}`;
   const res = await fetch(endpoint, {
     method: 'POST',
