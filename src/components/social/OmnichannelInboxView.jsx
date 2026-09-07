@@ -1297,19 +1297,26 @@ export default function OmnichannelInboxView({
                 <div className="flex flex-col items-center gap-1 mb-2">
                   {selectedMessage.platform === 'meta_instagram' ? (
                     <div className="flex flex-col items-center gap-1">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-700 text-[10px] font-bold border border-pink-200">
-                        <Instagram className="w-3 h-3 text-pink-600" />
-                        <span>Instagram Direct (@{selectedMessage.senderName.replace(/^@/, '')})</span>
-                      </span>
-                      <a
-                        href={`https://instagram.com/${encodeURIComponent(selectedMessage.senderName.replace(/^@/, ''))}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-pink-600 hover:text-pink-700 font-bold hover:underline"
-                      >
-                        <span>فتح ملف الحساب على إنستغرام</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
+                      {(() => {
+                        const igHandle = (selectedMessage.senderUsername || selectedMessage.senderName || '').replace(/^@/, '');
+                        return (
+                          <>
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-700 text-[10px] font-bold border border-pink-200">
+                              <Instagram className="w-3 h-3 text-pink-600" />
+                              <span>Instagram Direct (@{igHandle})</span>
+                            </span>
+                            <a
+                              href={`https://instagram.com/${encodeURIComponent(igHandle)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] text-pink-600 hover:text-pink-700 font-bold hover:underline"
+                            >
+                              <span>فتح ملف @{igHandle} على إنستغرام</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </>
+                        );
+                      })()}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-1">

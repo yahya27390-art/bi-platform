@@ -288,8 +288,8 @@ export function loadLearnedInsights() {
   }
 }
 
-// v9: رسائل حقيقية متزامنة من Meta فقط 100% - بدون أي رسائل وهمية أو مصطنعة
-export const INBOX_DATA_VERSION = 'v9_strictly_genuine_no_mock';
+// v10: رسائل حقيقية متزامنة من Meta وإنستغرام (محادثات يحيى باشا وطلبات قطع كيا)
+export const INBOX_DATA_VERSION = 'v10_with_authentic_instagram_chats';
 
 export function loadResponderInbox() {
   try {

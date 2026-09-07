@@ -4,6 +4,209 @@
 
 export const DORA_AUTHENTIC_MESSAGES_DATASET = [
   {
+    "id": "ig_conv_yahya_basha90",
+    "platform": "meta_instagram",
+    "channelType": "dm",
+    "senderName": "Yahya Basha",
+    "senderUsername": "yahya_basha90",
+    "senderId": "yahya_basha90",
+    "avatar": "https://ui-avatars.com/api/?name=Yahya+Basha&background=C13584&color=fff",
+    "text": "فيه فحمات خلفيه كيا بيكانتو ؟؟",
+    "chatHistory": [
+      {
+        "id": "ig_m_yb_01",
+        "sender": "Yahya Basha",
+        "isPage": false,
+        "message": "السلام عليكم",
+        "time": "2026-04-16T11:55:00+03:00"
+      },
+      {
+        "id": "ig_m_yb_02",
+        "sender": "Yahya Basha",
+        "isPage": false,
+        "message": "حد موجود",
+        "time": "2026-04-16T11:56:00+03:00"
+      },
+      {
+        "id": "ig_m_yb_03",
+        "sender": "درة السيارة",
+        "isPage": true,
+        "message": "هلا حياك الله",
+        "time": "2026-04-16T17:24:00+03:00"
+      },
+      {
+        "id": "ig_m_yb_04",
+        "sender": "Yahya Basha",
+        "isPage": false,
+        "message": "السلام عليكم",
+        "time": "2026-09-06T20:58:00+03:00"
+      },
+      {
+        "id": "ig_m_yb_05",
+        "sender": "Yahya Basha",
+        "isPage": false,
+        "message": "فيه فحمات خلفيه كيا بيكانتو ؟؟",
+        "time": "2026-09-06T20:58:30+03:00"
+      },
+      {
+        "id": "ig_m_yb_06",
+        "sender": "Yahya Basha",
+        "isPage": false,
+        "message": "السلام عليكم",
+        "time": "2026-09-07T17:07:00+03:00"
+      },
+      {
+        "id": "ig_m_yb_07",
+        "sender": "Yahya Basha",
+        "isPage": false,
+        "message": "فيه قطع كيا",
+        "time": "2026-09-07T17:07:30+03:00"
+      },
+      {
+        "id": "ig_m_yb_08",
+        "sender": "درة السيارة",
+        "isPage": true,
+        "message": "السلام عليكم",
+        "time": "2026-09-07T17:40:00+03:00"
+      },
+      {
+        "id": "ig_m_yb_09",
+        "sender": "درة السيارة",
+        "isPage": true,
+        "message": "هل من احد هنا",
+        "time": "2026-09-07T17:40:30+03:00"
+      }
+    ],
+    "timestamp": "منذ دقائق",
+    "rawTime": "2026-09-07T17:40:30+03:00",
+    "status": "replied",
+    "intent": "spare_parts",
+    "sentiment": "positive",
+    "adTitle": "انستغرام DM: محادثة حية عبر Instagram Direct (@yahya_basha90)",
+    "suggestedReply": "أهلاً أستاذ يحيى 🌹 متوفرة فحمات فرامل كيا بيكانتو (أصلي وكوري عالي الجودة). برجاء تزويدنا بموديل وسنة الصنع أو رقم الهيكل لتأكيد التطابق 100%. كما يمكنك التواصل مباشرة مع فرع كيا: 0539454377 أو واتساب المتجر: 0538834212",
+    "reply": "هل من احد هنا",
+    "leadInfo": {
+      "carModel": "كيا بيكانتو (Kia Picanto)",
+      "interestType": "فحمات خلفية",
+      "city": "القصيم / بريدة",
+      "phone": "",
+      "vin": ""
+    },
+    "isLive": true
+  },
+  {
+    "id": "ig_conv_wf_sportage",
+    "platform": "meta_instagram",
+    "channelType": "dm",
+    "senderName": "W f",
+    "senderUsername": "w_f_cars",
+    "senderId": "w_f_cars",
+    "avatar": "https://ui-avatars.com/api/?name=W+f&background=C13584&color=fff",
+    "text": "ابي قربة مايه حق الرديتر اسبورتاج 2014",
+    "chatHistory": [
+      {
+        "id": "ig_m_wf_01",
+        "sender": "W f",
+        "isPage": false,
+        "message": "ابي قربة مايه حق الرديتر اسبورتاج 2014",
+        "time": "2026-09-07T12:46:00+03:00"
+      },
+      {
+        "id": "ig_m_wf_02",
+        "sender": "درة السيارة",
+        "isPage": true,
+        "message": "أهلاً بك 🌹 متوفرة قربة ماء الرديتر كيا سبورتاج 2014 وارد كوري كاملة بالغطاء والوصلات. يمكنك استلامها من فرع كيا بصناعية السليم: 0539454377 أو الطلب أونلاين والشحن عبر المتجر: 0538834212",
+        "time": "2026-09-07T12:50:00+03:00"
+      }
+    ],
+    "timestamp": "12:46 PM",
+    "rawTime": "2026-09-07T12:46:00+03:00",
+    "status": "replied",
+    "intent": "cooling_system",
+    "sentiment": "positive",
+    "adTitle": "انستغرام DM: طلب قربة ماء رديتر كيا سبورتاج 2014",
+    "suggestedReply": "حياك الله 🌹 متوفرة قربة رديتر سبورتاج 2014 جودة وكالة وضمان. تواصل مع فرع كيا: 0539454377 أو اطلبها من المتجر doracars.com",
+    "reply": "أهلاً بك 🌹 متوفرة قربة ماء الرديتر كيا سبورتاج 2014 وارد كوري كاملة بالغطاء والوصلات.",
+    "leadInfo": {
+      "carModel": "كيا سبورتاج 2014 (Kia Sportage)",
+      "interestType": "قربة ماء رديتر",
+      "city": "بريدة",
+      "phone": "",
+      "vin": ""
+    },
+    "isLive": true
+  },
+  {
+    "id": "ig_conv_homsy1979",
+    "platform": "meta_instagram",
+    "channelType": "dm",
+    "senderName": "homsy1979",
+    "senderUsername": "homsy1979",
+    "senderId": "homsy1979",
+    "avatar": "https://ui-avatars.com/api/?name=homsy1979&background=C13584&color=fff",
+    "text": "استفسار ومرفق بخصوص قطع غيار كيا وهيونداي",
+    "chatHistory": [
+      {
+        "id": "ig_m_homsy_01",
+        "sender": "homsy1979",
+        "isPage": false,
+        "message": "You sent an attachment.",
+        "time": "2026-09-07T00:48:00+03:00"
+      }
+    ],
+    "timestamp": "12:48 AM",
+    "rawTime": "2026-09-07T00:48:00+03:00",
+    "status": "pending",
+    "intent": "spare_parts",
+    "sentiment": "positive",
+    "adTitle": "انستغرام DM: استفسار ومرفق صوري لقطعة غيار",
+    "suggestedReply": "حياك الله أستاذ homsy1979 🌹 تم استلام صورتك ومرفق القطعة، وجاري مطابقتها بالنظام. يرجى تزويدنا برقم الهيكل (VIN) وسنة الصنع لمطابقة القطعة 100%.",
+    "reply": "",
+    "leadInfo": {
+      "carModel": "هيونداي / كيا",
+      "interestType": "قطع غيار ومرفقات",
+      "city": "المملكة",
+      "phone": "",
+      "vin": ""
+    },
+    "isLive": true
+  },
+  {
+    "id": "ig_conv_abdullah_shqaip",
+    "platform": "meta_instagram",
+    "channelType": "dm",
+    "senderName": "Abduallah shqaip",
+    "senderUsername": "abdullah_shqaip",
+    "senderId": "abdullah_shqaip",
+    "avatar": "https://ui-avatars.com/api/?name=Abduallah+shqaip&background=C13584&color=fff",
+    "text": "استفسار بخصوص قطع غيار سيارات كورية",
+    "chatHistory": [
+      {
+        "id": "ig_m_ash_01",
+        "sender": "Abduallah shqaip",
+        "isPage": false,
+        "message": "You sent an attachment.",
+        "time": "2026-09-06T18:20:00+03:00"
+      }
+    ],
+    "timestamp": "الأحد",
+    "rawTime": "2026-09-06T18:20:00+03:00",
+    "status": "pending",
+    "intent": "spare_parts",
+    "sentiment": "positive",
+    "adTitle": "انستغرام DM: استفسار قطع غيار كورية",
+    "suggestedReply": "مرحباً عبد الله 🌹 يسعدنا خدمتك بدرة السيارة. أرسل لنا نوع السيارة واسم القطعة المطلوبة للتأكد من توفرها وتزويدك بالسعر الفوري.",
+    "reply": "",
+    "leadInfo": {
+      "carModel": "",
+      "interestType": "قطع غيار",
+      "city": "القصيم / بريدة",
+      "phone": "",
+      "vin": ""
+    },
+    "isLive": true
+  },
+  {
     "id": "t_1041157875487013",
     "platform": "meta_facebook",
     "channelType": "comment_dm",
