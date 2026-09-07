@@ -932,6 +932,22 @@ export default function OmnichannelInboxView({
                     </button>
                   </div>
                 </div>
+              ) : activePlatformFilter === 'tiktok' ? (
+                <div className="p-8 text-center text-slate-500 text-xs flex flex-col items-center justify-center h-full space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-cyan-400/40 flex items-center justify-center text-xl shadow-md">
+                    🎵
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-black text-slate-800 text-sm">قناة تيك توك متصلة (@doracars22)</p>
+                    <p className="text-[11px] text-slate-500 max-w-xs leading-relaxed">
+                      حساب إعلانات درة 0524 والبيكسل مربوطان حياً. لا توجد رسائل واردة حالياً؛ ستظهر هنا الرسائل ونماذج الليدات فور إرسالها من العملاء عبر الويب هوك.
+                    </p>
+                  </div>
+                  <div className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    جاهز لاستقبال الرسائل الحية
+                  </div>
+                </div>
               ) : (
                 <div className="p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center h-full space-y-2">
                   <MessageSquare className="w-8 h-8 text-slate-300" />

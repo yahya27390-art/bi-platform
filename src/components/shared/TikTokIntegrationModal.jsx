@@ -37,32 +37,10 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
   const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'guide' | 'preview'
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isSimulatingLive, setIsSimulatingLive] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState(
     tiktokConfig.isConnected ? { type: 'success', msg: 'متصل حياً بـ TikTok Events API و DoraCars Pixel (13,733 حدث مسجل)' } : null
   );
   const [copiedStep, setCopiedStep] = useState(null);
-
-  const handleTriggerLiveSimulation = async () => {
-    setIsSimulatingLive(true);
-    try {
-      const res = await fetch('http://localhost:3005/api/simulate-tiktok');
-      const data = await res.json();
-      if (data.success) {
-        setConnectionStatus({
-          type: 'success',
-          msg: `⚡ وصلت رسالة حية من تيك توك بنجاح! "${data.item.senderName}": "${data.item.text}"`
-        });
-      }
-    } catch (e) {
-      setConnectionStatus({
-        type: 'error',
-        msg: 'تأكد من تشغيل خادم البث اللحظي المحلي.'
-      });
-    } finally {
-      setIsSimulatingLive(false);
-    }
-  };
 
   const handleTestAndSave = async (e) => {
     e?.preventDefault();
@@ -372,17 +350,6 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
                   >
                     <RefreshCw className={`w-3.5 h-3.5 text-[#00f2fe] ${isSyncing ? 'animate-spin' : ''}`} />
                     <span>{isSyncing ? 'جاري المزامنة...' : 'مزامنة الحملات الآن'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleTriggerLiveSimulation}
-                    disabled={isSimulatingLive}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600/30 to-pink-600/30 hover:from-cyan-600/50 hover:to-pink-600/50 text-cyan-200 border border-cyan-400/40 font-bold text-xs flex items-center gap-2 transition-all shadow-sm cursor-pointer"
-                    title="إرسال رسالة حية فورية من تيك توك لتجربة صندوق الوارد الموحد"
-                  >
-                    <span className="text-xs">🎵</span>
-                    <span>{isSimulatingLive ? 'جاري البث...' : 'تجربة رسالة حية ⚡'}</span>
                   </button>
                 </div>
 

@@ -288,8 +288,8 @@ export function loadLearnedInsights() {
   }
 }
 
-// v11: رسائل ومحادثات وليدات تيك توك المتزامنة مع إنستغرام وماسنجر
-export const INBOX_DATA_VERSION = 'v11_with_tiktok_and_instagram';
+// v13: منع تام للأسماء الوهمية - بيانات حقيقية متزامنة فقط من Meta والمحادثات الفعلية
+export const INBOX_DATA_VERSION = 'v13_strictly_authentic_no_dummy_data';
 
 export function loadResponderInbox() {
   try {
@@ -298,27 +298,29 @@ export function loadResponderInbox() {
 
     if (storedVersion !== INBOX_DATA_VERSION || !raw) {
       localStorage.setItem('dora_inbox_data_version', INBOX_DATA_VERSION);
-      // استخدام الرسائل الحقيقية المزامنة فقط
+      // استخدام الرسائل الحقيقية المزامنة فقط - بدون أي أسماء وهمية
       const genuine = DORA_AUTHENTIC_MESSAGES_DATASET.filter(m => m.isLive);
       localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(genuine));
       return genuine;
     }
 
     const current = JSON.parse(raw);
-    const cleaned = (Array.isArray(current) ? current : []).filter(m => !m.id.startsWith('t_34028236684171030124426020012723597676'));
+    const cleaned = (Array.isArray(current) ? current : []).filter(
+      m => !m.id.startsWith('t_34028236684171030124426020012723597676') &&
+           !m.id.startsWith('tt_conv_') &&
+           !m.id.startsWith('tt_live_') &&
+           !m.id.startsWith('sim_')
+    );
 
-    // ضمان وجود المحادثات الحقيقية المزامنة من تيك توك وإنستغرام دائماً
-    const essentialItems = DORA_AUTHENTIC_MESSAGES_DATASET.filter(m => m.platform === 'tiktok' || m.platform === 'meta_instagram');
+    // التحقق من ضمان وجود المحادثات الحقيقية المزامنة فقط
+    const genuineOnly = DORA_AUTHENTIC_MESSAGES_DATASET.filter(m => m.isLive);
     const existingIds = new Set(cleaned.map(m => m.id));
-    const missingItems = essentialItems.filter(m => !existingIds.has(m.id));
+    const missingItems = genuineOnly.filter(m => !existingIds.has(m.id));
     const fullList = [...missingItems, ...cleaned];
 
-    if (missingItems.length > 0) {
-      localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(fullList));
-    }
+    localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(fullList));
 
     return fullList.sort((a, b) => {
-      // الرسائل الحية أولاً، ثم الأحدث تاريخاً
       if (a.isLive && !b.isLive) return -1;
       if (!a.isLive && b.isLive) return 1;
       return new Date(b.rawTime || 0) - new Date(a.rawTime || 0);
