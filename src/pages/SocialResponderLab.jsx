@@ -96,7 +96,8 @@ import {
   saveCustomerNotes,
   loadCustomerCustomProfiles,
   saveCustomerCustomProfile,
-  exportCustomerTagsReportCSV
+  exportCustomerTagsReportCSV,
+  initRealtimeLiveStream
 } from '../lib/socialResponderAgent';
 import { loadMetaConfig } from '../lib/metaIntegration';
 import { loadTikTokConfig } from '../lib/tiktokIntegration';
@@ -181,11 +182,33 @@ export default function SocialResponderLab() {
   const [activeStatusFilter, setActiveStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [isStreamConnected, setIsStreamConnected] = useState(false);
+
   // ضمان مزامنة المحادثات وتحميل محادثات إنستغرام الحقيقية عند فتح الصفحة
   useEffect(() => {
     const freshInbox = loadResponderInbox();
     setInbox(freshInbox);
     setSelectedMessage(prev => prev || freshInbox[0] || null);
+
+    // الاتصال الفوري بخادم الويب هوك اللحظي (Dora Live Webhook Stream)
+    const cleanup = initRealtimeLiveStream(
+      (incomingMsg) => {
+        setInbox((prev) => {
+          const exists = prev.some(m => m.id === incomingMsg.id);
+          if (exists) return prev;
+          const updated = [incomingMsg, ...prev];
+          saveResponderInbox(updated);
+          return updated;
+        });
+        setSelectedMessage(incomingMsg);
+        showToast(`⚡ رسالة واردة حية من ${incomingMsg.senderName || 'عميل'}: "${(incomingMsg.text || '').slice(0, 30)}..."`);
+      },
+      (status) => {
+        setIsStreamConnected(status.isConnected);
+      }
+    );
+
+    return () => cleanup && cleanup();
   }, []);
 
   const handleSetPlatformFilter = (platform) => {
@@ -196,6 +219,9 @@ export default function SocialResponderLab() {
     } else if (platform === 'meta_facebook') {
       const firstFb = inbox.find(m => m.platform === 'meta_facebook');
       if (firstFb) handleSelectMessage(firstFb);
+    } else if (platform === 'tiktok') {
+      const firstTt = inbox.find(m => m.platform === 'tiktok');
+      if (firstTt) handleSelectMessage(firstTt);
     }
   };
 
@@ -216,6 +242,7 @@ export default function SocialResponderLab() {
   // Modals
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showMetaModal, setShowMetaModal] = useState(false);
+  const [showTikTokModal, setShowTikTokModal] = useState(false);
   const [showPromptModal, setShowPromptModal] = useState(false);
 
   // Schedule Draft State
@@ -633,6 +660,22 @@ export default function SocialResponderLab() {
               <span className="text-emerald-400 font-bold">1,617 محادثة مسجلة</span>
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
             </div>
+
+            {/* TikTok Live Status Badge */}
+            <button
+              onClick={() => setShowTikTokModal(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-[#00f2fe]/40 hover:border-[#ff0050]/60 text-xs transition-all cursor-pointer shadow-sm"
+              title="إعدادات وحالة ربط حساب تيك توك إعلانات والأحداث (انقر لفتح المركز)"
+            >
+              <span className="w-4 h-4 rounded-md bg-black text-[#00f2fe] flex items-center justify-center text-[10px] font-black shrink-0 border border-[#ff0050]">
+                🎵
+              </span>
+              <span className="text-slate-300 font-medium">تيك توك إعلانات:</span>
+              <span className="text-[#00f2fe] font-bold">
+                {countTikTok > 0 ? `${countTikTok} محادثات / ليد` : 'حساب 0524 متصل'}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </button>
           </div>
 
           {/* Quick Actions & Header Controls */}
@@ -707,6 +750,17 @@ export default function SocialResponderLab() {
             >
               <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
               <span>دستور درة (17 بند)</span>
+            </button>
+
+            {/* TikTok Integration Modal Button */}
+            <button
+              onClick={() => setShowTikTokModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-[#ff0050]/20 via-purple-500/20 to-[#00f2fe]/20 hover:from-[#ff0050]/30 hover:to-[#00f2fe]/30 text-white text-xs font-bold border border-[#00f2fe]/40 transition-all shadow-md"
+              title="مركز ربط ومزامنة حساب تيك توك إعلانات وليدات (TikTok Ads & Leads)"
+            >
+              <span className="text-xs">🎵</span>
+              <span>ربط تيك توك</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             </button>
 
             {/* Meta Integration Config */}
@@ -842,6 +896,7 @@ export default function SocialResponderLab() {
             getBranchWhatsAppLink={getBranchWhatsAppLink}
             onSyncLive={handleLiveSync}
             isSyncingLive={isSyncingLive}
+            isStreamConnected={isStreamConnected}
             syncStatusMsg={syncStatusMsg}
             counts={{
               all: countAll,
@@ -1295,6 +1350,17 @@ export default function SocialResponderLab() {
           onSuccess={() => {
             setShowMetaModal(false);
             handleLiveSync();
+          }}
+        />
+      )}
+
+      {/* ---------------- 5.2. MODAL: TIKTOK INTEGRATION CONFIG ---------------- */}
+      {showTikTokModal && (
+        <TikTokIntegrationModal
+          isOpen={showTikTokModal}
+          onClose={() => setShowTikTokModal(false)}
+          onSyncComplete={(updatedConfig) => {
+            showToast('تمت مزامنة بيانات وحملات TikTok بنجاح! 🎵');
           }}
         />
       )}

@@ -288,8 +288,8 @@ export function loadLearnedInsights() {
   }
 }
 
-// v10: رسائل حقيقية متزامنة من Meta وإنستغرام (محادثات يحيى باشا وطلبات قطع كيا)
-export const INBOX_DATA_VERSION = 'v10_with_authentic_instagram_chats';
+// v11: رسائل ومحادثات وليدات تيك توك المتزامنة مع إنستغرام وماسنجر
+export const INBOX_DATA_VERSION = 'v11_with_tiktok_and_instagram';
 
 export function loadResponderInbox() {
   try {
@@ -307,13 +307,13 @@ export function loadResponderInbox() {
     const current = JSON.parse(raw);
     const cleaned = (Array.isArray(current) ? current : []).filter(m => !m.id.startsWith('t_34028236684171030124426020012723597676'));
 
-    // ضمان وجود المحادثات الحقيقية المزامنة من إنستغرام دائماً
-    const igAuthentic = DORA_AUTHENTIC_MESSAGES_DATASET.filter(m => m.platform === 'meta_instagram');
+    // ضمان وجود المحادثات الحقيقية المزامنة من تيك توك وإنستغرام دائماً
+    const essentialItems = DORA_AUTHENTIC_MESSAGES_DATASET.filter(m => m.platform === 'tiktok' || m.platform === 'meta_instagram');
     const existingIds = new Set(cleaned.map(m => m.id));
-    const missingIg = igAuthentic.filter(m => !existingIds.has(m.id));
-    const fullList = [...missingIg, ...cleaned];
+    const missingItems = essentialItems.filter(m => !existingIds.has(m.id));
+    const fullList = [...missingItems, ...cleaned];
 
-    if (missingIg.length > 0) {
+    if (missingItems.length > 0) {
       localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(fullList));
     }
 
@@ -455,7 +455,7 @@ export async function syncLiveSocialData() {
   }
 
   // ── 2. جلب انستغرام مباشرة عبر Instagram Graph API (تدعم CORS تلقائياً) ──────
-  const igToken = metaConfig.messaging?.instagramAccessToken || 'IGAGiCpFwDnehBZAGI1NEdtdmtKNldXVHBFdWN4U0F2RW9TaGpfY1g4SnM0eWlPX1h1ekl6V0VrVTNEbklEbVRVU1VlMmwtcUx6YWgweS1aOTVxd0FVVUNjeGFhTXNVdmkzcjBENTA0bjZAFMk9vM2dNVVRSMFo3cHJMcG5neFlvYwZDZD';
+  const igToken = metaConfig.messaging?.instagramAccessToken || 'IGAAKfQ6eZBGVBBZAGFuUE1xT1UxRjRiYmE2U1lYZA2xMVU9TUGdFVXRhdlJxa21hb1E0Rm1DQ2hRbjhLT05SNUNJeExfbzBmOGVnV1E4OFR0S3RudkhfSnBKc0liaUN3NDdBRU0xUWJLNGpYTXpDcGVnX0FrdnQxZAWFxc01NcTd3MAZDZD';
   const igUserId = metaConfig.messaging?.instagramUserId || '28298689296452306';
 
   if (igToken && instagramItems.length === 0) {
@@ -725,7 +725,7 @@ export async function sendLiveReplyToMeta({ recipientId, messageText, platform =
   const isInstagram = platform === 'meta_instagram';
   const pageToken = metaConfig.messaging?.facebookPageToken || '';
   const pageId    = metaConfig.messaging?.facebookPageId || '560031747184578';
-  const igToken   = metaConfig.messaging?.instagramAccessToken || 'IGAGiCpFwDnehBZAGI1NEdtdmtKNldXVHBFdWN4U0F2RW9TaGpfY1g4SnM0eWlPX1h1ekl6V0VrVTNEbklEbVRVU1VlMmwtcUx6YWgweS1aOTVxd0FVVUNjeGFhTXNVdmkzcjBENTA0bjZAFMk9vM2dNVVRSMFo3cHJMcG5neFlvYwZDZD';
+  const igToken   = metaConfig.messaging?.instagramAccessToken || 'IGAAKfQ6eZBGVBBZAGFuUE1xT1UxRjRiYmE2U1lYZA2xMVU9TUGdFVXRhdlJxa21hb1E0Rm1DQ2hRbjhLT05SNUNJeExfbzBmOGVnV1E4OFR0S3RudkhfSnBKc0liaUN3NDdBRU0xUWJLNGpYTXpDcGVnX0FrdnQxZAWFxc01NcTd3MAZDZD';
 
   if (!recipientId || !messageText) {
     throw new Error('يرجى تحديد العميل ونص الرسالة.');
@@ -1134,5 +1134,76 @@ export const QUICK_REPLY_TEMPLATES = [
   {
     label: '⚠️ استفسار عطل (نصيحة الفحص)',
     text: 'حياك الله 🌹 قد يكون للمشكلة أكثر من سبب، لذلك الأفضل فحص السيارة للتأكد قبل تغيير القطعة. إذا تم التشخيص وتحتاج القطعة أرسل لنا موديل السيارة وسنة الصنع ونساعدك.'
+  },
+  {
+    label: '📍 مواقع الفروع (بريدة)',
+    text: 'حياك الله 🌹 تشرفنا بزيارتك لفروع درة في بريدة (منطقة القصيم):\n📍 فرع الرواف: طريق الملك عبد العزيز (متخصص هيونداي وجينيسيس)\n📍 فرع الخبيب: متخصص قطع كيا\nأهلاً وسهلاً بك في أي وقت!'
+  },
+  {
+    label: '⏱️ مواعيد الدوام الرسمي',
+    text: 'أهلاً بك 🌹 مواعيد العمل الرسمية لفروعنا من السبت إلى الخميس:\n☀️ الفترة الصباحية: 9:00 ص - 1:30 م\n🌙 الفترة المسائية: 4:00 م - 10:00 م\n(يوم الجمعة إجازة رسمية).'
   }
 ];
+
+// -------------------------------------------------------------
+// REAL-TIME AUDIO NOTIFICATION CHIME (Web Audio API Synthesizer)
+// -------------------------------------------------------------
+export function playNotificationChime() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+    osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.12); // A5
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.45);
+  } catch (e) {}
+}
+
+// -------------------------------------------------------------
+// DORA LIVE REALTIME STREAM CLIENT (SSE Connection to Webhook Hub)
+// -------------------------------------------------------------
+export function initRealtimeLiveStream(onMessageReceived, onStatusChange) {
+  const streamUrl = 'http://localhost:3005/api/live-stream';
+  let eventSource = null;
+
+  try {
+    eventSource = new EventSource(streamUrl);
+
+    eventSource.onopen = () => {
+      if (onStatusChange) onStatusChange({ isConnected: true, type: 'live_stream' });
+    };
+
+    eventSource.addEventListener('new_message', (e) => {
+      try {
+        const item = JSON.parse(e.data);
+        if (item) {
+          playNotificationChime();
+          if (onMessageReceived) onMessageReceived(item);
+        }
+      } catch (err) {
+        console.warn('Failed to parse incoming real-time SSE message:', err);
+      }
+    });
+
+    eventSource.onerror = () => {
+      if (onStatusChange) onStatusChange({ isConnected: false, type: 'live_stream' });
+    };
+
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  } catch (e) {
+    if (onStatusChange) onStatusChange({ isConnected: false, type: 'error' });
+    return () => {};
+  }
+}

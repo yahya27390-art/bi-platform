@@ -1,0 +1,115 @@
+{
+  "name": "Dora Cars - Meta Realtime Webhook & AI Responder Hub",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "dora-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-verify",
+      "name": "Meta Verify Webhook (GET)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 200]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dora-webhook",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "node-webhook-messages",
+      "name": "Meta Messages Webhook (POST)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.query['hub.mode'] }}",
+              "value2": "subscribe"
+            },
+            {
+              "value1": "={{ $json.query['hub.verify_token'] }}",
+              "value2": "dora_cars_webhook_secret_2026"
+            }
+          ]
+        }
+      },
+      "id": "node-check-verify-token",
+      "name": "Check Verify Token",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [440, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}"
+      },
+      "id": "node-respond-challenge",
+      "name": "Respond Challenge (200 OK)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 160]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3005/webhook",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body || $json) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "id": "node-forward-to-bi",
+      "name": "Forward to Dora Desk Local Engine",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 400]
+    }
+  ],
+  "connections": {
+    "Meta Verify Webhook (GET)": {
+      "main": [
+        [
+          {
+            "node": "Check Verify Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Verify Token": {
+      "main": [
+        [
+          {
+            "node": "Respond Challenge (200 OK)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meta Messages Webhook (POST)": {
+      "main": [
+        [
+          {
+            "node": "Forward to Dora Desk Local Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

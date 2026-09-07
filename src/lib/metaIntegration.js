@@ -41,7 +41,7 @@ export const DEFAULT_META_CONFIG = {
     instagramBusinessId: '17841410815501378',
     instagramUsername: 'doracars22',
     instagramUserId: '28298689296452306',
-    instagramAccessToken: 'IGAGiCpFwDnehBZAGI1NEdtdmtKNldXVHBFdWN4U0F2RW9TaGpfY1g4SnM0eWlPX1h1ekl6V0VrVTNEbklEbVRVU1VlMmwtcUx6YWgweS1aOTVxd0FVVUNjeGFhTXNVdmkzcjBENTA0bjZAFMk9vM2dNVVRSMFo3cHJMcG5neFlvYwZDZD',
+    instagramAccessToken: 'IGAAKfQ6eZBGVBBZAGFuUE1xT1UxRjRiYmE2U1lYZA2xMVU9TUGdFVXRhdlJxa21hb1E0Rm1DQ2hRbjhLT05SNUNJeExfbzBmOGVnV1E4OFR0S3RudkhfSnBKc0liaUN3NDdBRU0xUWJLNGpYTXpDcGVnX0FrdnQxZAWFxc01NcTd3MAZDZD',
     isMessagingConnected: true,
     scopes: ['pages_show_list', 'pages_messaging', 'pages_read_engagement', 'instagram_manage_messages', 'instagram_manage_comments', 'public_profile', 'instagram_business_basic', 'instagram_business_manage_messages'],
   },

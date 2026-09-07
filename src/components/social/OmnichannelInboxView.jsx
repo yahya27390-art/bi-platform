@@ -159,8 +159,24 @@ export default function OmnichannelInboxView({
   onSyncLive,
   isSyncingLive,
   syncStatusMsg,
+  isStreamConnected = false,
   counts = {}
 }) {
+  // وضع البوت الآلي الذكي (ManyChat Auto-Pilot Mode)
+  const [isBotAutoPilot, setIsBotAutoPilot] = useState(true);
+
+  const handleToggleBot = async () => {
+    const nextState = !isBotAutoPilot;
+    setIsBotAutoPilot(nextState);
+    try {
+      await fetch('http://localhost:3005/api/bot-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: nextState })
+      });
+    } catch (e) {}
+  };
+
   // Composer Mode: 'reply' | 'note'
   const [composerMode, setComposerMode] = useState('reply');
   const [noteInput, setNoteInput] = useState('');
@@ -430,16 +446,71 @@ export default function OmnichannelInboxView({
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Meta & Instagram Live
             </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-cyan-300 font-semibold border border-pink-500/40 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              🎵 TikTok Ads & Leads (حساب 0524)
+            </span>
           </div>
         </div>
 
         {/* Live sync button & status */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
+          {/* شارة حالة البث اللحظي للويب هوك (ManyChat Hub Stream) */}
+          {isStreamConnected ? (
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 text-xs shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span>البث اللحظي للويب هوك نشط ⚡</span>
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-medium border border-slate-200 text-xs">
+              <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+              <span>الويب هوك: جاهز محلياً</span>
+            </span>
+          )}
+
+          {/* زر اختبار وصول رسالة فورية حية */}
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const res = await fetch('http://localhost:3005/api/simulate-incoming');
+                const data = await res.json();
+                if (data.success && !isStreamConnected && data.item) {
+                  if (onUpdateInbox) onUpdateInbox([data.item, ...inbox]);
+                  if (onSelectMessage) onSelectMessage(data.item);
+                }
+              } catch (e) {
+                console.warn('Simulation failed:', e);
+              }
+            }}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs transition-all shadow-2xs active:scale-95 cursor-pointer"
+            title="محاكاة وصول رسالة فورية لاختبار الإشعار الصوتي وظهورها الفوري في الشاشة"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+            <span>🧪 تجربة رسالة فورية</span>
+          </button>
+
+          {/* زر تبديل وضع البوت الآلي الذكي (ManyChat Auto-Pilot Toggle) */}
+          <button
+            type="button"
+            onClick={handleToggleBot}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer ${
+              isBotAutoPilot
+                ? 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'
+                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+            }`}
+            title="تبديل الرد الآلي بالذكاء الاصطناعي (مثل ManyChat)"
+          >
+            <Bot className="w-3.5 h-3.5" />
+            <span>{isBotAutoPilot ? '🤖 درة بوت: مفعّل' : '👤 يدوي (بشري)'}</span>
+          </button>
+
           {syncStatusMsg && (
             <span className="text-xs text-slate-600 bg-white px-2.5 py-1 rounded-lg border border-slate-200 font-medium animate-fadeIn">
               {syncStatusMsg}
             </span>
           )}
+
           {onExportCRMReport && (
             <button
               onClick={onExportCRMReport}
@@ -447,16 +518,17 @@ export default function OmnichannelInboxView({
               title="تصدير تقرير شامل للعملاء وتصنيفاتهم بصيغة Excel / CSV"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>تصدير تقرير التصنيفات (Excel)</span>
+              <span>تصدير (Excel)</span>
             </button>
           )}
+
           <button
             onClick={onSyncLive}
             disabled={isSyncingLive}
             className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm disabled:opacity-50"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${isSyncingLive ? 'animate-spin' : ''}`} />
-            <span>{isSyncingLive ? 'جاري المزامنة...' : 'مزامنة الرسائل الحية'}</span>
+            <span>{isSyncingLive ? 'جاري المزامنة...' : 'مزامنة الرسائل'}</span>
           </button>
         </div>
       </div>
@@ -598,6 +670,28 @@ export default function OmnichannelInboxView({
                   activePlatformFilter === 'meta_whatsapp' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
                 }`}>
                   {counts.whatsapp || 3}
+                </span>
+              </button>
+
+              {/* TikTok Direct & Lead Gen */}
+              <button
+                onClick={() => onSetPlatformFilter('tiktok')}
+                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                  activePlatformFilter === 'tiktok'
+                    ? 'bg-slate-950 text-white font-bold shadow-md border border-cyan-400/60'
+                    : 'text-slate-700 hover:bg-slate-200/70 font-medium'
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <span className="w-4 h-4 rounded-md bg-black text-cyan-400 flex items-center justify-center text-[10px] font-black shrink-0 border border-pink-500">
+                    🎵
+                  </span>
+                  <span className="truncate">تيك توك (@doracars22)</span>
+                </div>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  activePlatformFilter === 'tiktok' ? 'bg-cyan-400 text-slate-950' : 'bg-slate-200 text-slate-700'
+                }`}>
+                  {counts.tiktok || 0}
                 </span>
               </button>
 
@@ -849,6 +943,7 @@ export default function OmnichannelInboxView({
               filteredList.map((msg) => {
                 const isSelected = selectedMessage?.id === msg.id;
                 const isInstagram = msg.platform === 'meta_instagram';
+                const isTikTok = msg.platform === 'tiktok';
                 const isClosed = closedConversations.has(msg.id);
 
                 return (
@@ -864,11 +959,18 @@ export default function OmnichannelInboxView({
                     {/* Channel handle badge */}
                     <div className="flex items-center justify-between mb-1.5">
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 ${
-                        isInstagram
+                        isTikTok
+                          ? 'bg-slate-950 text-cyan-300 border border-pink-500/40 shadow-2xs'
+                          : isInstagram
                           ? 'bg-pink-50 text-pink-700 border border-pink-200'
                           : 'bg-blue-50 text-blue-700 border border-blue-200'
                       }`}>
-                        {isInstagram ? (
+                        {isTikTok ? (
+                          <>
+                            <span className="text-[10px]">🎵</span>
+                            <span>{msg.channelType === 'lead' ? 'ليد تيك توك فوري' : '@TikTok doracars22'}</span>
+                          </>
+                        ) : isInstagram ? (
                           <>
                             <Instagram className="w-2.5 h-2.5 text-pink-600" />
                             <span>@Instagram doracars22</span>
@@ -976,15 +1078,23 @@ export default function OmnichannelInboxView({
                         {selectedMessage.senderName}
                       </h3>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        selectedMessage.platform === 'meta_instagram'
+                        selectedMessage.platform === 'tiktok'
+                          ? 'bg-slate-950 text-cyan-300 border border-pink-500/40 shadow-xs'
+                          : selectedMessage.platform === 'meta_instagram'
                           ? 'bg-pink-100 text-pink-800'
                           : 'bg-blue-100 text-blue-800'
                       }`}>
-                        {selectedMessage.platform === 'meta_instagram' ? '@doracars22 Instagram' : 'Facebook Messenger'}
+                        {selectedMessage.platform === 'tiktok'
+                          ? (selectedMessage.channelType === 'lead' ? '🎵 نموذج تيك توك الفوري (Lead Ad)' : '🎵 محادثة تيك توك حية (@doracars22)')
+                          : selectedMessage.platform === 'meta_instagram'
+                          ? '@doracars22 Instagram'
+                          : 'Facebook Messenger'}
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
-                      <span className="text-blue-600 font-semibold">{selectedMessage.platform === 'meta_instagram' ? '@doracars22' : 'Dora Cars'}</span>
+                      <span className="text-blue-600 font-semibold">
+                        {selectedMessage.platform === 'tiktok' ? 'حساب تيك توك: @doracars22 (0524)' : selectedMessage.platform === 'meta_instagram' ? '@doracars22' : 'Dora Cars'}
+                      </span>
                       <span>•</span>
                       <span>{isSelectedClosed ? 'المحادثة مغلقة وموثقة' : 'متصل الآن ومتاح للرد'}</span>
                     </p>
@@ -1227,6 +1337,40 @@ export default function OmnichannelInboxView({
               {/* ───────────────── DUAL TABBED COMPOSER (Bottom) ───────────────── */}
               <div className="bg-white border-t border-slate-200 p-3.5 space-y-2.5 shadow-md">
                 
+                {/* ── 24-HOUR META MESSAGING POLICY WINDOW GUARD ── */}
+                {selectedMessage && (() => {
+                  const lastIncomingMsg = selectedMessage?.chatHistory?.filter(m => !m.isPage).slice(-1)[0];
+                  const lastIncomingTime = lastIncomingMsg ? new Date(lastIncomingMsg.time).getTime() : (selectedMessage?.rawTime ? new Date(selectedMessage.rawTime).getTime() : Date.now());
+                  const hoursSince = (Date.now() - lastIncomingTime) / (1000 * 60 * 60);
+                  const isWithin24h = hoursSince < 24;
+                  const remainingHours = Math.max(0, Math.floor(24 - hoursSince));
+                  const remainingMins = Math.max(0, Math.floor((24 - hoursSince - remainingHours) * 60));
+
+                  return (
+                    <div className={`px-3 py-1.5 rounded-xl flex items-center justify-between text-xs border transition-all ${
+                      isWithin24h 
+                        ? 'bg-emerald-50/90 text-emerald-900 border-emerald-200 shadow-2xs' 
+                        : 'bg-amber-50 text-amber-900 border-amber-200'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <Clock className={`w-3.5 h-3.5 shrink-0 ${isWithin24h ? 'text-emerald-600' : 'text-amber-600'}`} />
+                        {isWithin24h ? (
+                          <span className="font-medium text-[11px]">
+                            نافذة الرد الرسمية لـ Meta (متبقي {remainingHours} ساعة و {remainingMins} دقيقة): <strong className="font-bold text-emerald-700">مسموح بالرد الآمن فوراً وبدون أي مخاطرة بحظر الحساب ✅</strong>
+                          </span>
+                        ) : (
+                          <span className="font-medium text-[11px]">
+                            تجاوزت المحادثة 24 ساعة: <strong className="font-bold text-amber-800">يُشترط رد العميل أولاً للامتثال لسياسات Meta وتفادي أي قيود على حساب الشركة 🛡️</strong>
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-white border border-slate-200 font-mono font-bold text-slate-700 shadow-2xs shrink-0 mr-2">
+                        Meta 24h Safe
+                      </span>
+                    </div>
+                  );
+                })()}
+
                 {/* Mode Tabs: [ إضافة رد ] | [ إضافة ملاحظة خاصة ] */}
                 <div className="flex items-center gap-4 text-xs font-bold border-b border-slate-100 pb-2">
                   <button
@@ -1268,14 +1412,14 @@ export default function OmnichannelInboxView({
                   </div>
                 )}
 
-                {/* Quick reply templates chips */}
+                {/* Quick reply templates chips (All 7 templates) */}
                 {composerMode === 'reply' && (
                   <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                    {QUICK_REPLY_TEMPLATES.slice(0, 5).map((tmpl, idx) => (
+                    {QUICK_REPLY_TEMPLATES.map((tmpl, idx) => (
                       <button
                         key={idx}
                         onClick={() => onInsertTemplate(tmpl.text)}
-                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold whitespace-nowrap border border-slate-200 transition-all"
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold whitespace-nowrap border border-slate-200 transition-all cursor-pointer hover:border-blue-300"
                       >
                         {tmpl.label}
                       </button>
@@ -1481,7 +1625,28 @@ export default function OmnichannelInboxView({
 
                 {/* Platform Badge & Genuine Profile Link */}
                 <div className="flex flex-col items-center gap-1 mb-2">
-                  {selectedMessage.platform === 'meta_instagram' ? (
+                  {selectedMessage.platform === 'tiktok' ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-950 text-cyan-300 text-[10px] font-bold border border-pink-500/40 shadow-xs">
+                        <span className="text-[11px]">🎵</span>
+                        <span>{selectedMessage.channelType === 'lead' ? 'نموذج تيك توك الفوري (Lead Gen)' : 'TikTok Direct (@doracars22)'}</span>
+                      </span>
+                      {selectedMessage.senderUsername && (
+                        <a
+                          href={`https://www.tiktok.com/@${encodeURIComponent(selectedMessage.senderUsername.replace(/^@/, ''))}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-cyan-600 hover:text-cyan-700 font-bold hover:underline"
+                        >
+                          <span>فتح ملف @{selectedMessage.senderUsername.replace(/^@/, '')} على تيك توك</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                        <span className="font-mono">حساب إعلانات 0524 | بيكسل درة النشط</span>
+                      </div>
+                    </div>
+                  ) : selectedMessage.platform === 'meta_instagram' ? (
                     <div className="flex flex-col items-center gap-1">
                       {(() => {
                         const igHandle = (selectedMessage.senderUsername || selectedMessage.senderName || '').replace(/^@/, '');

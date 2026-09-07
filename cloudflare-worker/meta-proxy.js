@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Cloudflare Worker - Meta Graph API CORS Proxy
  * Dora Cars Social Bot - v2 with Instagram Support
  * 
@@ -55,9 +55,33 @@ export default {
       if (path === '/health' || path === '/') {
         return jsonResponse({
           status: 'ok',
-          service: 'Dora Cars Meta Proxy v2 (Instagram Support)',
+          service: 'Dora Cars Meta Live Webhook Hub (ManyChat / Chatwoot Clone)',
           timestamp: new Date().toISOString(),
         }, 200, cors);
+      }
+
+      // ── GET /webhook (Meta Verification Challenge) ───────────────────────────
+      if (path === '/webhook' && request.method === 'GET') {
+        const mode = url.searchParams.get('hub.mode');
+        const token = url.searchParams.get('hub.verify_token');
+        const challenge = url.searchParams.get('hub.challenge');
+        const VERIFY_TOKEN = 'dora_cars_webhook_secret_2026';
+
+        if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+          return new Response(challenge, { status: 200, headers: { 'Content-Type': 'text/plain' } });
+        }
+        return new Response('Verification failed', { status: 403 });
+      }
+
+      // ── POST /webhook (Meta Real-Time Incoming Messages) ─────────────────────
+      if (path === '/webhook' && request.method === 'POST') {
+        try {
+          const payload = await request.json();
+          console.log('Incoming Meta Webhook:', JSON.stringify(payload));
+          return new Response('EVENT_RECEIVED', { status: 200 });
+        } catch (e) {
+          return new Response('BAD_REQUEST', { status: 400 });
+        }
       }
 
       // ── GET /conversations ────────────────────────────────────────────────────

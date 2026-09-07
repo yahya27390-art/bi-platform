@@ -37,10 +37,32 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
   const [activeTab, setActiveTab] = useState('connection'); // 'connection' | 'guide' | 'preview'
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isSimulatingLive, setIsSimulatingLive] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState(
     tiktokConfig.isConnected ? { type: 'success', msg: 'متصل حياً بـ TikTok Events API و DoraCars Pixel (13,733 حدث مسجل)' } : null
   );
   const [copiedStep, setCopiedStep] = useState(null);
+
+  const handleTriggerLiveSimulation = async () => {
+    setIsSimulatingLive(true);
+    try {
+      const res = await fetch('http://localhost:3005/api/simulate-tiktok');
+      const data = await res.json();
+      if (data.success) {
+        setConnectionStatus({
+          type: 'success',
+          msg: `⚡ وصلت رسالة حية من تيك توك بنجاح! "${data.item.senderName}": "${data.item.text}"`
+        });
+      }
+    } catch (e) {
+      setConnectionStatus({
+        type: 'error',
+        msg: 'تأكد من تشغيل خادم البث اللحظي المحلي.'
+      });
+    } finally {
+      setIsSimulatingLive(false);
+    }
+  };
 
   const handleTestAndSave = async (e) => {
     e?.preventDefault();
@@ -351,6 +373,17 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
                     <RefreshCw className={`w-3.5 h-3.5 text-[#00f2fe] ${isSyncing ? 'animate-spin' : ''}`} />
                     <span>{isSyncing ? 'جاري المزامنة...' : 'مزامنة الحملات الآن'}</span>
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={handleTriggerLiveSimulation}
+                    disabled={isSimulatingLive}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600/30 to-pink-600/30 hover:from-cyan-600/50 hover:to-pink-600/50 text-cyan-200 border border-cyan-400/40 font-bold text-xs flex items-center gap-2 transition-all shadow-sm cursor-pointer"
+                    title="إرسال رسالة حية فورية من تيك توك لتجربة صندوق الوارد الموحد"
+                  >
+                    <span className="text-xs">🎵</span>
+                    <span>{isSimulatingLive ? 'جاري البث...' : 'تجربة رسالة حية ⚡'}</span>
+                  </button>
                 </div>
 
                 {tiktokConfig.isConnected && (
@@ -409,6 +442,29 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
               <p className="text-slate-300 leading-relaxed">
                 داخل صفحة البيكسل، اضغط على تبويب <strong>Settings</strong>، وانزل لقسم <strong>Events API</strong> واضغط على زر <strong>Generate Access Token</strong> لنسخه.
               </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-mono text-xs">4</span>
+                  <span>رابط الويب هوك لاستلام ليدات تيك توك الحية (TikTok Lead Webhook)</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => handleCopy('https://3ca6809b833fdd.lhr.life/api/tiktok-webhook', 4)}
+                  className="flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300 font-bold"
+                >
+                  {copiedStep === 4 ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedStep === 4 ? 'تم النسخ!' : 'نسخ الرابط'}</span>
+                </button>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                في لوحة TikTok For Business أو عند إعداد إعلانات النماذج الفورية (Instant Forms)، يمكنك وضع رابط الويب هوك الخاص بنا لاستقبال استفسارات وأرقام العملاء فورياً في صندوق الوارد الموحد:
+              </p>
+              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-cyan-300 flex items-center justify-between select-all">
+                <span>https://3ca6809b833fdd.lhr.life/api/tiktok-webhook</span>
+              </div>
             </div>
           </div>
         )}
