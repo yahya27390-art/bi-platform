@@ -430,12 +430,31 @@ export async function syncLiveSocialData() {
       console.warn('Messenger proxy error:', msgrResult.value.message);
     }
 
-    // معالجة نتيجة انستغرام
+    // معالجة نتيجة انستغرام من الـ Proxy إن وجد
     if (igResult.status === 'fulfilled' && igResult.value?.success) {
       instagramItems = igResult.value.data.map((t) => mapMetaConvToInboxItem(t, pageId, 'meta_instagram'));
       console.log(`✅ Instagram Proxy: ${instagramItems.length} رسالة DM حية`);
     } else if (igResult.status === 'fulfilled' && igResult.value?.error) {
       console.warn('Instagram proxy note:', igResult.value.message);
+    }
+  }
+
+  // ── 2. جلب انستغرام مباشرة عبر Instagram Graph API (تدعم CORS تلقائياً) ──────
+  const igToken = metaConfig.messaging?.instagramAccessToken || 'IGAAKfQ6eZBGVBBZAGJnaHFHbjdJX21EWWJTSXFzTE8wRTRXdy1WS1BrbWxBMENsUHRYYVNZAQl9Nb0xoQzJiRUZAwVEEweW0wU2pjeTQyWUhkMkVNdmstQjdYbXF2WU1Ndk5PRms4Wk9WT0IxTWNBczUzbHJDSVJtZAWl6V0hneVlIcwZDZD';
+  const igUserId = metaConfig.messaging?.instagramUserId || '28005002229199703';
+
+  if (igToken && instagramItems.length === 0) {
+    try {
+      const igUrl = `https://graph.instagram.com/v20.0/me/conversations?fields=id,updated_time,unread_count,messages{id,message,created_time,from}&access_token=${encodeURIComponent(igToken)}`;
+      const igRes = await fetch(igUrl, { signal: AbortSignal.timeout(8000) });
+      const igData = await igRes.json();
+      if (igData?.data && Array.isArray(igData.data) && igData.data.length > 0) {
+        const directIgItems = igData.data.map((t) => mapMetaConvToInboxItem(t, igUserId, 'meta_instagram'));
+        instagramItems = directIgItems;
+        console.log(`✅ Instagram Direct Graph API: ${instagramItems.length} محادثة حية`);
+      }
+    } catch (igErr) {
+      console.warn('Instagram Direct fetch note:', igErr.message);
     }
   }
 
@@ -686,13 +705,37 @@ export function generateSmartSocialReply(customerText, senderName = '', platform
 }
 
 // Send live message reply via Meta Graph API (via Cloudflare Worker proxy or direct)
-export async function sendLiveReplyToMeta({ recipientId, messageText }) {
+export async function sendLiveReplyToMeta({ recipientId, messageText, platform = 'meta_facebook' }) {
   const metaConfig = loadMetaConfig();
+  const isInstagram = platform === 'meta_instagram';
   const pageToken = metaConfig.messaging?.facebookPageToken || '';
   const pageId    = metaConfig.messaging?.facebookPageId || '560031747184578';
+  const igToken   = metaConfig.messaging?.instagramAccessToken || 'IGAAKfQ6eZBGVBBZAGJnaHFHbjdJX21EWWJTSXFzTE8wRTRXdy1WS1BrbWxBMENsUHRYYVNZAQl9Nb0xoQzJiRUZAwVEEweW0wU2pjeTQyWUhkMkVNdmstQjdYbXF2WU1Ndk5PRms4Wk9WT0IxTWNBczUzbHJDSVJtZAWl6V0hneVlIcwZDZD';
 
   if (!recipientId || !messageText) {
     throw new Error('يرجى تحديد العميل ونص الرسالة.');
+  }
+
+  // ── 0. إذا كانت المحادثة على انستغرام، أرسل مباشرة عبر Instagram Graph API (بدون CORS) ──
+  if (isInstagram && igToken) {
+    try {
+      const igEndpoint = `https://graph.instagram.com/v20.0/me/messages?access_token=${encodeURIComponent(igToken)}`;
+      const igRes = await fetch(igEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipient: { id: recipientId },
+          message: { text: messageText },
+        }),
+      });
+      const igData = await igRes.json();
+      if (igData.error) {
+        throw new Error(igData.error.message || 'فشل إرسال الرد عبر انستغرام');
+      }
+      return { success: true, via: 'instagram_direct', messageId: igData.message_id || igData.id };
+    } catch (igSendErr) {
+      console.warn('Direct Instagram send note, falling back:', igSendErr.message);
+    }
   }
 
   // ── 1. جرّب الـ Cloudflare Worker Proxy أولاً (بدون CORS) ────────────────

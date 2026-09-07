@@ -350,15 +350,18 @@ export default function SocialResponderLab() {
       ]
     }));
 
-    if (selectedMessage.senderId && selectedMessage.platform === 'meta_facebook') {
+    if (selectedMessage.senderId && (selectedMessage.platform === 'meta_facebook' || selectedMessage.platform === 'meta_instagram')) {
       try {
-        setSyncStatusMsg('جاري إرسال الرد الحي إلى فيسبوك ماسنجر...');
+        const isIg = selectedMessage.platform === 'meta_instagram';
+        const channelName = isIg ? 'انستغرام DM' : 'فيسبوك ماسنجر';
+        setSyncStatusMsg(`جاري إرسال الرد الحي إلى ${channelName}...`);
         await sendLiveReplyToMeta({
           recipientId: selectedMessage.senderId,
           messageText: trimmedReply,
+          platform: selectedMessage.platform,
         });
-        showToast('🚀 تم إرسال الرد للعميل على فيسبوك ماسنجر حياً بنجاح!');
-        setSyncStatusMsg('تم تسليم الرسالة إلى ماسنجر! ✅');
+        showToast(`🚀 تم إرسال الرد للعميل على ${channelName} حياً بنجاح!`);
+        setSyncStatusMsg(`تم تسليم الرسالة إلى ${channelName}! ✅`);
         setTimeout(() => setSyncStatusMsg(''), 4000);
       } catch (err) {
         showToast('تم حفظ الرد وتجهيزه محلياً ✅');

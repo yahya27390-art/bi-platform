@@ -38,9 +38,12 @@ export const DEFAULT_META_CONFIG = {
     messagingAccessToken: 'EAAeg0uiXakwBSTVwEcWuUmWk6J8yxAmNJRtoZC1joXMFePz6nkQzC6NgaGDlPII5pW64RsSMErPnsFT44PHkLdhd1r0E7mpJtQep0qLlHSMCQTQtoE35OQj4LB4PEBxgVwsrT3YalDFXaHSZAsEhbjk2qexumsZCLaZBUjop3K3ii6jF78yYkZBQ13fF1FgZDZD',
     systemUserId: '122102798499465517',
     systemUserName: 'Dora Messaging',
-    instagramBusinessId: '',
+    instagramBusinessId: '17841410815501378',
+    instagramUsername: 'doracars22',
+    instagramUserId: '28005002229199703',
+    instagramAccessToken: 'IGAAKfQ6eZBGVBBZAGJnaHFHbjdJX21EWWJTSXFzTE8wRTRXdy1WS1BrbWxBMENsUHRYYVNZAQl9Nb0xoQzJiRUZAwVEEweW0wU2pjeTQyWUhkMkVNdmstQjdYbXF2WU1Ndk5PRms4Wk9WT0IxTWNBczUzbHJDSVJtZAWl6V0hneVlIcwZDZD',
     isMessagingConnected: true,
-    scopes: ['pages_show_list', 'pages_messaging', 'pages_read_engagement', 'instagram_manage_messages', 'instagram_manage_comments', 'public_profile'],
+    scopes: ['pages_show_list', 'pages_messaging', 'pages_read_engagement', 'instagram_manage_messages', 'instagram_manage_comments', 'public_profile', 'instagram_business_basic', 'instagram_business_manage_messages'],
   },
 
   // Live and August aggregate metrics (from official Dora Cars Meta report)
