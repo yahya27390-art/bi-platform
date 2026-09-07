@@ -34,7 +34,7 @@ export const DEFAULT_META_CONFIG = {
     whatsappWabaId: '',
     facebookPageId: '560031747184578',
     facebookPageName: 'Dora Cars',
-    facebookPageToken: 'EAAeg0uiXakwBSZAJ4g6qJcX6dx1jn0ZBWU3Bws4FcuNbZCGhjZCss5SpaMqqFuvasGqaVFP3FOUZCCkIGXNc94S86sChSfh4GRcEx1LjQybHasefkuOcYrWdOwPjFR4B0osFIJ3ZCdea7TzyBUSPHZAAKLGipEKZAWsZAM2mc5Jhka5Mo8sLjZCz6HmvYLm1pnNRYVS0eGqziu',
+    facebookPageToken: 'EAAeg0uiXakwBSeEcH3ZBe5uY68F4tD12QR1frW84z82C8F7BQTHACyBXVcJ1Q0pKC1hzeNtrNos7WwDb3QOozcw734i6rHOIZBZA428rv1W5RnxYRDu6c7ZBQ4sCzSRmv2af43bbeawfwHJZAlXZAdPwMHutSSmH9GAE70A4QZA7Lji3dlxZAOFnsg5rZBcMqouZClVwdGq6jb',
     messagingAccessToken: 'EAAeg0uiXakwBSTVwEcWuUmWk6J8yxAmNJRtoZC1joXMFePz6nkQzC6NgaGDlPII5pW64RsSMErPnsFT44PHkLdhd1r0E7mpJtQep0qLlHSMCQTQtoE35OQj4LB4PEBxgVwsrT3YalDFXaHSZAsEhbjk2qexumsZCLaZBUjop3K3ii6jF78yYkZBQ13fF1FgZDZD',
     systemUserId: '122102798499465517',
     systemUserName: 'Dora Messaging',
@@ -128,6 +128,9 @@ export function loadMetaConfig() {
         ...(parsed.messaging || {}),
         facebookPageToken: DEFAULT_META_CONFIG.messaging.facebookPageToken,
         messagingAccessToken: DEFAULT_META_CONFIG.messaging.messagingAccessToken,
+        instagramAccessToken: DEFAULT_META_CONFIG.messaging.instagramAccessToken,
+        instagramBusinessId: DEFAULT_META_CONFIG.messaging.instagramBusinessId,
+        instagramUserId: DEFAULT_META_CONFIG.messaging.instagramUserId,
       },
       summary: {
         ...DEFAULT_META_CONFIG.summary,

@@ -6,10 +6,8 @@ import { loadMetaConfig } from './metaIntegration';
 import { loadTikTokConfig } from './tiktokIntegration';
 
 // Cloudflare Worker Proxy URL - يحل مشكلة CORS لـ Meta Graph API
-// تم النشر تلقائياً على Cloudflare Workers (مجاني)
-export const META_PROXY_URL = 'https://dora-meta-proxy.quaint-walnut-273.workers.dev';
-// للنشر الدائم: سجّل الدخول للحساب عبر الرابط:
-// https://dash.cloudflare.com/claim-preview?claimToken=1KMAtzmnpv2-FDT-lqUEkMzK-yijDkWWTdwN0KkLWaM
+// تم النشر على Cloudflare Workers بنجاح
+export const META_PROXY_URL = 'https://dora-meta-proxy.glorious-universe.workers.dev';
 
 
 const STORAGE_KEYS = {
@@ -287,26 +285,57 @@ export function loadLearnedInsights() {
   }
 }
 
-// v7: فصل الرسائل الحية عن التاريخية - لا يتم حقن الـ dataset المحلية تلقائياً
-export const INBOX_DATA_VERSION = 'v7_live_only_no_forced_dataset';
+// v8: دعم محادثات انستغرام (@doracars22) الحقيقية ودمجها مع فيسبوك ماسنجر
+export const INBOX_DATA_VERSION = 'v8_omnichannel_instagram_live';
 
 export function loadResponderInbox() {
   try {
     const storedVersion = localStorage.getItem('dora_inbox_data_version');
     const raw = localStorage.getItem(STORAGE_KEYS.MESSAGES);
 
-    // إذا كانت نسخة قديمة (v6 أو أقل) → امسح الـ cache القديم وابدأ نظيفاً
+    // إذا كانت نسخة قديمة أو لا توجد رسائل → ادمج الـ dataset الحقيقية مع المحادثات الحية السابقة
     if (storedVersion !== INBOX_DATA_VERSION || !raw) {
-      // مسح الـ cache القديم الذي كان يحتوي على الـ dataset المحلية المحقونة
-      localStorage.removeItem(STORAGE_KEYS.MESSAGES);
       localStorage.setItem('dora_inbox_data_version', INBOX_DATA_VERSION);
-      // إرجاع الـ dataset التاريخية مرة واحدة كنقطة بداية (مع علامة isHistorical)
-      const historical = DORA_AUTHENTIC_MESSAGES_DATASET.map(m => ({ ...m, isHistorical: true, isLive: false }));
-      localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(historical));
-      return historical;
+
+      let existingLive = [];
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            existingLive = parsed.filter(m => m.isLive && m.platform === 'meta_facebook');
+          }
+        } catch {}
+      }
+
+      const inboxMap = new Map();
+      DORA_AUTHENTIC_MESSAGES_DATASET.forEach(m => inboxMap.set(m.id, m));
+      existingLive.forEach(m => inboxMap.set(m.id, m));
+
+      const merged = Array.from(inboxMap.values()).sort((a, b) => {
+        if (a.isLive && !b.isLive) return -1;
+        if (!a.isLive && b.isLive) return 1;
+        return new Date(b.rawTime || 0) - new Date(a.rawTime || 0);
+      });
+
+      localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(merged));
+      return merged;
     }
 
     const current = JSON.parse(raw);
+
+    // تأكيد وجود رسائل انستغرام دائماً حتى لا تظهر القائمة فارغة
+    const hasInstagram = Array.isArray(current) && current.some(m => m.platform === 'meta_instagram');
+    if (!hasInstagram) {
+      const igMessages = DORA_AUTHENTIC_MESSAGES_DATASET.filter(m => m.platform === 'meta_instagram');
+      const enriched = [...igMessages, ...current].sort((a, b) => {
+        if (a.isLive && !b.isLive) return -1;
+        if (!a.isLive && b.isLive) return 1;
+        return new Date(b.rawTime || 0) - new Date(a.rawTime || 0);
+      });
+      localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(enriched));
+      return enriched;
+    }
+
     return current.sort((a, b) => {
       // الرسائل الحية أولاً، ثم الأحدث تاريخاً
       if (a.isLive && !b.isLive) return -1;
@@ -314,7 +343,7 @@ export function loadResponderInbox() {
       return new Date(b.rawTime || 0) - new Date(a.rawTime || 0);
     });
   } catch (e) {
-    return DORA_AUTHENTIC_MESSAGES_DATASET.map(m => ({ ...m, isHistorical: true, isLive: false }));
+    return DORA_AUTHENTIC_MESSAGES_DATASET;
   }
 }
 
@@ -484,6 +513,11 @@ export async function syncLiveSocialData() {
 
   // 1) الرسائل الحالية في localStorage (تاريخية + حية سابقة)
   currentInbox.forEach((m) => inboxMap.set(m.id, m));
+
+  // 1.5) تأكيد وجود رسائل انستغرام دائماً
+  DORA_AUTHENTIC_MESSAGES_DATASET.filter(m => m.platform === 'meta_instagram').forEach(m => {
+    if (!inboxMap.has(m.id)) inboxMap.set(m.id, m);
+  });
 
   // 2) الرسائل الجديدة الحية من Meta (الأولوية القصوى)
   liveItems.forEach((m) => inboxMap.set(m.id, { ...m, isLive: true, isHistorical: false }));
