@@ -80,10 +80,29 @@ export const DORA_SOCIAL_KNOWLEDGE = {
   }
 };
 
-// Default Agent Settings
+// Default Agent Settings with Scheduling & Off-Hours Support
 export const DEFAULT_RESPONDER_SETTINGS = {
   enabled: true,
-  autoPilotMode: false,
+  autoPilotMode: 'scheduled', // 'always' | 'scheduled' | 'off'
+  schedule: {
+    enabled: true,
+    offHoursOnly: true,
+    startHour: '21:00', // 9:00 PM
+    endHour: '09:00',   // 9:00 AM
+    allDayFriday: true, // Friday is completely off-hours
+    offHoursMessage: `نشكركم لتواصلكم مع درة السيارة لقطع الغيار 🌟
+نحيطكم علماً بأن رسالتكم خارج أوقات العمل الرسمية، وسيتم الرد عليكم فور بدء الدوام.
+لطلباتكم واستفساراتكم، يرجى تزويدنا بـ:
+🔹 نوع وموديل السيارة وسنة الصنع
+🔹 اسم القطعة المطلوبة أو صورتها
+🔹 رقم الهيكل (VIN) للتأكد من التوافق 100%
+
+📞 أرقام الفروع المعتمدة:
+• فرع كيا: 0539454377
+• فرع الرواف هيونداي: 0530051360
+• المتجر الإلكتروني والشحن: 0538834212
+🛒 تصفح المتجر والطلب أونلاين: https://doracars.com/`,
+  },
   responseTone: 'saudi_friendly',
   responseDelaySeconds: 2,
   notifyOnLead: true,
@@ -96,6 +115,64 @@ export const DEFAULT_RESPONDER_SETTINGS = {
   },
   autoCaptureLeads: true,
 };
+
+// Check if Auto-Reply is active at the current moment
+export function isAutoReplyActiveNow(settings = null) {
+  const currentSettings = settings || loadResponderSettings();
+  if (!currentSettings.enabled) return { isActive: false, mode: 'off', reason: 'الرد الآلي معطل يدوياً' };
+  
+  const mode = currentSettings.autoPilotMode || 'scheduled';
+  if (mode === 'off' || mode === false) return { isActive: false, mode: 'off', reason: 'الرد الآلي معطل يدوياً' };
+  if (mode === 'always' || mode === true) return { isActive: true, mode: 'always', reason: 'الرد الآلي يعمل على مدار الساعة (24/7)' };
+
+  if (mode === 'scheduled') {
+    const sched = currentSettings.schedule || DEFAULT_RESPONDER_SETTINGS.schedule;
+    if (!sched.enabled) return { isActive: false, mode: 'scheduled', reason: 'الجدولة غير مفعلة' };
+
+    const now = new Date();
+    const saudiDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Riyadh' }));
+    const hours = saudiDate.getHours();
+    const minutes = saudiDate.getMinutes();
+    const currentMinutes = hours * 60 + minutes;
+    const day = saudiDate.getDay(); // 5 is Friday
+
+    if (sched.allDayFriday && day === 5) {
+      return { isActive: true, mode: 'scheduled', reason: 'نشط الآن (يوم الجمعة عطلة أسبوعية)' };
+    }
+
+    const [startH, startM] = (sched.startHour || '21:00').split(':').map(Number);
+    const [endH, endM] = (sched.endHour || '09:00').split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    let isOffHours = false;
+    if (startMinutes > endMinutes) {
+      if (currentMinutes >= startMinutes || currentMinutes < endMinutes) {
+        isOffHours = true;
+      }
+    } else {
+      if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+        isOffHours = true;
+      }
+    }
+
+    if (isOffHours) {
+      return {
+        isActive: true,
+        mode: 'scheduled',
+        reason: `نشط الآن (خارج الدوام من ${sched.startHour} إلى ${sched.endHour})`
+      };
+    } else {
+      return {
+        isActive: false,
+        mode: 'scheduled',
+        reason: `وضع الاستعداد (أوقات الدوام الرسمي - ينشط الساعة ${sched.startHour})`
+      };
+    }
+  }
+
+  return { isActive: false, mode: 'off', reason: 'غير نشط' };
+}
 
 import { DORA_AUTHENTIC_MESSAGES_DATASET } from './doraAuthenticMessages';
 export { DORA_AUTHENTIC_MESSAGES_DATASET };
@@ -203,7 +280,7 @@ export function loadLearnedInsights() {
   }
 }
 
-export const INBOX_DATA_VERSION = 'v5_socialbot_omnichannel_63';
+export const INBOX_DATA_VERSION = 'v6_only_synced_real_data';
 
 export function loadResponderInbox() {
   try {

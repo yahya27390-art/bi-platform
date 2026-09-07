@@ -52,7 +52,12 @@ import {
   Smartphone,
   Hash,
   ShoppingBag,
-  BellRing
+  BellRing,
+  Calendar,
+  Sun,
+  Moon,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 import {
   loadResponderSettings,
@@ -71,6 +76,7 @@ import {
   analyzeCustomerText,
   loadLearnedInsights,
   analyzeAllMessagesAndLearnPatterns,
+  isAutoReplyActiveNow,
   DORA_AUTHENTIC_MESSAGES_DATASET,
   QUICK_REPLY_TEMPLATES,
   DORA_SOCIAL_KNOWLEDGE,
@@ -133,60 +139,8 @@ const DEFAULT_COMMENT_TO_DM_RULES = [
   }
 ];
 
-// Salla Abandoned Carts / E-Commerce Recovery Data
-const DEFAULT_ABANDONED_CARTS = [
-  {
-    id: 'cart-101',
-    customerName: 'عبدالرحمن العتيبي',
-    phone: '0551234890',
-    city: 'الرياض',
-    cartItems: 'طقم فحمات وهوبات أمامية كيا سبورتاج 2021',
-    totalAmount: 480,
-    timeAgo: 'منذ ساعتين',
-    recovered: false,
-    matchedProductUrl: 'https://doracars.com/products/kia-sportage-brakes',
-    recommendedOffer: 'كوبون شحن مجاني للرياض + تقسيط تابي على 4 دفعات (120 ر.س/شهر)'
-  },
-  {
-    id: 'cart-102',
-    customerName: 'عبدالله الفيصل',
-    phone: '0501194433',
-    city: 'بريدة',
-    cartItems: 'عيار زيت محرك هيونداي أفانتي ديزل 2016 (رقم الهيكل: KMHDG41UBGU639524)',
-    totalAmount: 75,
-    timeAgo: 'منذ 4 ساعات',
-    recovered: true,
-    matchedProductUrl: 'https://doracars.com/mZpzlyE',
-    recommendedOffer: 'استلام فوري من فرع بريدة بدون رسوم شحن بسعر 75 ريال'
-  },
-  {
-    id: 'cart-103',
-    customerName: 'ماجد الشمري',
-    phone: '0563344556',
-    city: 'الدمام',
-    cartItems: 'كمبروسر مكيف أصلي هيونداي سوناتا 2018',
-    totalAmount: 1150,
-    timeAgo: 'منذ 6 ساعات',
-    recovered: false,
-    matchedProductUrl: 'https://doracars.com/products/sonata-compressor-2018',
-    recommendedOffer: 'خصم 5% باليوم الوطني + تقسيط تمارا 4 دفعات (287.5 ر.س/شهر)'
-  },
-  {
-    id: 'cart-104',
-    customerName: 'عثمان الطيبان',
-    phone: '0539988771',
-    city: 'القصيم',
-    cartItems: 'كراسي مكينة وكرسي قير كيا كرنفال (VIN: KNAUP752929305834)',
-    totalAmount: 640,
-    timeAgo: 'منذ يوم',
-    recovered: false,
-    matchedProductUrl: 'https://doracars.com/products/kia-carnival-engine-mounts',
-    recommendedOffer: 'استشارة فنية وتأكيد توافق رقم الهيكل عبر فرع كيا 0539454377'
-  }
-];
-
 export default function SocialResponderLab() {
-  // Navigation Tabs: 'inbox' | 'triggers' | 'comment_to_dm' | 'salla' | 'analytics' | 'training'
+  // Navigation Tabs: 'inbox' | 'triggers' | 'comment_to_dm' | 'analytics' | 'training'
   const [activeTab, setActiveTab] = useState('inbox');
 
   // Inbox & Settings State
@@ -222,41 +176,56 @@ export default function SocialResponderLab() {
   const [syncStatusMsg, setSyncStatusMsg] = useState('');
 
   // Modals
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showMetaModal, setShowMetaModal] = useState(false);
-  const [showTikTokModal, setShowTikTokModal] = useState(false);
   const [showPromptModal, setShowPromptModal] = useState(false);
+
+  // Schedule Draft State
+  const [draftMode, setDraftMode] = useState(settings.autoPilotMode || 'scheduled');
+  const [draftStartHour, setDraftStartHour] = useState(settings.schedule?.startHour || '21:00');
+  const [draftEndHour, setDraftEndHour] = useState(settings.schedule?.endHour || '09:00');
+  const [draftFridayAllDay, setDraftFridayAllDay] = useState(settings.schedule?.allDayFriday !== false);
+  const [draftOffHoursMsg, setDraftOffHoursMsg] = useState(
+    settings.schedule?.offHoursMessage || `نشكركم لتواصلكم مع درة السيارة لقطع الغيار 🌟
+نحيطكم علماً بأن رسالتكم خارج أوقات العمل الرسمية، وسيتم الرد عليكم فور بدء الدوام.
+لطلباتكم واستفساراتكم، يرجى تزويدنا بـ:
+🔹 نوع وموديل السيارة وسنة الصنع
+🔹 اسم القطعة المطلوبة أو صورتها
+🔹 رقم الهيكل (VIN) للتأكد من التوافق 100%
+
+📞 أرقام الفروع المعتمدة:
+• فرع كيا: 0539454377
+• فرع الرواف هيونداي: 0530051360
+• المتجر الإلكتروني والشحن: 0538834212
+🛒 تصفح المتجر والطلب أونلاين: https://doracars.com/`
+  );
+
+  // Real-time Auto Reply Status
+  const [autoReplyStatus, setAutoReplyStatus] = useState(() => isAutoReplyActiveNow(settings));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAutoReplyStatus(isAutoReplyActiveNow(settings));
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [settings]);
 
   // Social-Bot.io Triggers State
   const [triggersList, setTriggersList] = useState(DEFAULT_KEYWORD_TRIGGERS);
-  const [newKeyword, setNewKeyword] = useState('');
-  const [newAction, setNewAction] = useState('');
 
   // Comment-to-DM State
   const [commentRules, setCommentRules] = useState(DEFAULT_COMMENT_TO_DM_RULES);
 
-  // Salla Abandoned Carts State
-  const [abandonedCarts, setAbandonedCarts] = useState(DEFAULT_ABANDONED_CARTS);
-
   // Training Studio State
   const [rules, setRules] = useState(loadTrainingRules());
-  const [goldenExamples, setGoldenExamples] = useState(loadGoldenExamples());
   const [guardrails, setGuardrails] = useState(loadGuardrails());
-
-  // Interactive Coach Simulator
-  const [coachQuery, setCoachQuery] = useState('');
-  const [coachSender, setCoachSender] = useState('عبدالله الفيصل');
-  const [coachResponse, setCoachResponse] = useState(null);
-  const [isCoachThinking, setIsCoachThinking] = useState(false);
 
   // Customer Tag addition state
   const [newTagInput, setNewTagInput] = useState('');
   const [customerTags, setCustomerTags] = useState({
     't_1029118809979259': ['عميل جاد', 'ديزل', 'استلام بريدة'],
     't_1360865412193669': ['استفسار أقساط', 'تابي وتمارا'],
-    't_2052583308797368': ['كيا كرنفال', 'رقم هيكل مؤكد'],
-    'ig_01_fahad': ['انستقرام ديركت', 'شمعات كادنزا', 'شحن الرياض'],
-    'ig_02_meshal': ['انستقرام ديركت', 'باليسيد 2021', 'تقسيط تمارا']
+    't_2052583308797368': ['كيا كرنفال', 'رقم هيكل مؤكد']
   });
 
   // Customer team notes state
@@ -278,6 +247,7 @@ export default function SocialResponderLab() {
   // Sync settings
   useEffect(() => {
     saveResponderSettings(settings);
+    setAutoReplyStatus(isAutoReplyActiveNow(settings));
   }, [settings]);
 
   // Toast helper
@@ -303,7 +273,7 @@ export default function SocialResponderLab() {
   // Live Meta & TikTok Sync
   const handleLiveSync = async () => {
     setIsSyncingLive(true);
-    setSyncStatusMsg('جاري الاتصال بـ Meta Graph API وسحب المحادثات الحية...');
+    setSyncStatusMsg('جاري فحص وتحديث المحادثات الحية من صفحة فيسبوك ماسنجر...');
 
     try {
       const res = await syncLiveSocialData();
@@ -312,10 +282,10 @@ export default function SocialResponderLab() {
       if (res.learnedInsights) {
         setLearnedInsights(res.learnedInsights);
       }
-      setSyncStatusMsg(`اكتملت المزامنة بنجاح! تم تحميل ${updatedInbox.length} محادثة حية عبر ميتا، انستقرام، واتساب، وتيك توك.`);
-      setTimeout(() => setSyncStatusMsg(''), 6000);
+      setSyncStatusMsg(`تمت المزامنة بنجاح! تم تحميل ${updatedInbox.length} محادثة حقيقية متزامنة من ميتا.`);
+      setTimeout(() => setSyncStatusMsg(''), 5000);
     } catch (e) {
-      setSyncStatusMsg(`تمت قراءة المحادثات الحية بنجاح (${inbox.length} محادثة معتمدة).`);
+      setSyncStatusMsg(`تم استعراض المحادثات الحية بنجاح (${inbox.length} محادثة متزامنة معتمدة).`);
       setTimeout(() => setSyncStatusMsg(''), 5000);
     } finally {
       setIsSyncingLive(false);
@@ -420,6 +390,28 @@ export default function SocialResponderLab() {
     showToast('تمت إضافة الوسم بنجاح! 🏷️');
   };
 
+  // Save Schedule Settings
+  const handleSaveSchedule = () => {
+    const updated = {
+      ...settings,
+      enabled: draftMode !== 'off',
+      autoPilotMode: draftMode,
+      schedule: {
+        enabled: draftMode === 'scheduled',
+        offHoursOnly: true,
+        startHour: draftStartHour,
+        endHour: draftEndHour,
+        allDayFriday: draftFridayAllDay,
+        offHoursMessage: draftOffHoursMsg
+      }
+    };
+    setSettings(updated);
+    saveResponderSettings(updated);
+    setAutoReplyStatus(isAutoReplyActiveNow(updated));
+    setShowScheduleModal(false);
+    showToast('تم حفظ وتطبيق إعدادات الجدولة والرد الآلي بنجاح! ⏰');
+  };
+
   // Filter conversations
   const filteredInbox = inbox.filter((m) => {
     // Channel filter
@@ -447,7 +439,7 @@ export default function SocialResponderLab() {
     return true;
   });
 
-  // Channel counts
+  // Channel counts (Strictly genuine synced items)
   const countAll = inbox.length;
   const countFacebook = inbox.filter((m) => m.platform === 'meta_facebook').length;
   const countInstagram = inbox.filter((m) => m.platform === 'meta_instagram').length;
@@ -485,9 +477,9 @@ export default function SocialResponderLab() {
                 </h1>
               </div>
               <p className="text-xs text-slate-400 flex items-center gap-2">
-                <span>المنصة الموحدة لإدارة محادثات العملاء (كيا • هيونداي • ديزل)</span>
+                <span>المحادثات المتزامنة الحقيقية فقط (كيا • هيونداي • ديزل)</span>
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                <span className="text-emerald-400 font-semibold text-[11px]">مربوط حياً مع ميتا وفيسبوك ماسنجر</span>
+                <span className="text-emerald-400 font-semibold text-[11px]">مربوط مع صفحة فيسبوك ماسنجر حياً</span>
               </p>
             </div>
           </div>
@@ -497,33 +489,79 @@ export default function SocialResponderLab() {
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-blue-500/30 text-xs">
               <Facebook className="w-4 h-4 text-blue-400" />
               <span className="text-slate-300 font-medium">ماسنجر ميتا:</span>
-              <span className="text-blue-400 font-bold">{countFacebook} محادثة</span>
+              <span className="text-blue-400 font-bold">{countFacebook} محادثة متزامنة</span>
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-pink-500/30 text-xs">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-pink-500/30 text-xs" title="حساب انستقرام يحتاج للربط في إعدادات صفحة فيسبوك">
               <Instagram className="w-4 h-4 text-pink-400" />
               <span className="text-slate-300 font-medium">انستقرام:</span>
-              <span className="text-pink-400 font-bold">{countInstagram} محادثة</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span className="text-pink-300 font-bold">بانتظار ربط الحساب</span>
             </div>
 
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-xs">
               <Phone className="w-4 h-4 text-emerald-400" />
               <span className="text-slate-300 font-medium">واتساب ميتا:</span>
-              <span className="text-emerald-400 font-bold">1,617 محادثة</span>
+              <span className="text-emerald-400 font-bold">1,617 محادثة مسجلة</span>
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            </div>
-
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-amber-500/30 text-xs">
-              <ShoppingCart className="w-4 h-4 text-amber-400" />
-              <span className="text-slate-300 font-medium">سلة:</span>
-              <span className="text-amber-400 font-bold">doracars.com</span>
             </div>
           </div>
 
           {/* Quick Actions & Header Controls */}
           <div className="flex items-center gap-2.5">
+            
+            {/* ⏰ AUTO-REPLY CONTROLLER WIDGET */}
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900/90 border border-slate-700/80 text-xs">
+              <div className="flex items-center gap-1.5 px-2 py-1">
+                <span className={`w-2.5 h-2.5 rounded-full ${
+                  autoReplyStatus.isActive
+                    ? 'bg-emerald-400 animate-pulse'
+                    : (settings.autoPilotMode === 'scheduled' ? 'bg-amber-400' : 'bg-slate-500')
+                }`}></span>
+                <span className="text-[11px] font-bold text-slate-200">
+                  {autoReplyStatus.isActive
+                    ? 'الرد الآلي: نشط الآن'
+                    : (settings.autoPilotMode === 'scheduled' ? 'الرد الآلي: استعداد' : 'الرد الآلي: معطل')}
+                </span>
+              </div>
+
+              {/* Mode Selector Dropdown */}
+              <select
+                value={settings.autoPilotMode || 'scheduled'}
+                onChange={(e) => {
+                  const newMode = e.target.value;
+                  const updated = {
+                    ...settings,
+                    autoPilotMode: newMode,
+                    enabled: newMode !== 'off'
+                  };
+                  setSettings(updated);
+                  saveResponderSettings(updated);
+                  showToast(
+                    newMode === 'scheduled'
+                      ? `تم تفعيل الرد الآلي المجدول (${settings.schedule?.startHour || '21:00'} إلى ${settings.schedule?.endHour || '09:00'}) ⏰`
+                      : newMode === 'always'
+                      ? 'تم تفعيل الرد الآلي على مدار 24 ساعة 🟢'
+                      : 'تم إيقاف الرد الآلي مؤقتاً ⚪'
+                  );
+                }}
+                className="bg-slate-800 text-teal-300 font-bold text-[11px] py-1 px-2 rounded-lg border border-slate-700 focus:outline-none cursor-pointer"
+              >
+                <option value="scheduled">⏰ مجدول خارج الدوام (9م - 9ص)</option>
+                <option value="always">🟢 تشغيل دائم (24/7)</option>
+                <option value="off">⚪ إيقاف الرد الآلي</option>
+              </select>
+
+              {/* Configure Schedule Button */}
+              <button
+                onClick={() => setShowScheduleModal(true)}
+                className="p-1.5 hover:bg-slate-800 rounded-lg text-teal-400 hover:text-teal-200 transition-colors"
+                title="تخصيص أوقات الجدولة ورسالة خارج الدوام"
+              >
+                <Clock className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
             {/* Live Sync Button */}
             <button
               onClick={handleLiveSync}
@@ -531,7 +569,7 @@ export default function SocialResponderLab() {
               className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs shadow-lg shadow-teal-900/40 transition-all border border-teal-400/30 disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncingLive ? 'animate-spin' : ''}`} />
-              <span>{isSyncingLive ? 'جاري المزامنة...' : 'مزامنة ميتا الحية'}</span>
+              <span>{isSyncingLive ? 'جاري المزامنة...' : 'مزامنة ميتا'}</span>
             </button>
 
             {/* Official Constitution Modal Button */}
@@ -616,21 +654,6 @@ export default function SocialResponderLab() {
           </button>
 
           <button
-            onClick={() => setActiveTab('salla')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === 'salla'
-                ? 'bg-gradient-to-r from-teal-500 to-indigo-600 text-white shadow-lg shadow-teal-500/20'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            <ShoppingBag className="w-4 h-4 text-purple-400" />
-            <span>سلة والتجارة والسلات المتروكة (Salla Copilot)</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-[10px]">
-              {abandonedCarts.length} سلات
-            </span>
-          </button>
-
-          <button
             onClick={() => setActiveTab('analytics')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === 'analytics'
@@ -651,7 +674,7 @@ export default function SocialResponderLab() {
             }`}
           >
             <GraduationCap className="w-4 h-4 text-pink-400" />
-            <span>استوديو التدريب والدستور (Constitution Studio)</span>
+            <span>دستور درة واستوديو التدريب (Constitution Studio)</span>
           </button>
 
         </div>
@@ -672,8 +695,8 @@ export default function SocialResponderLab() {
               {/* Channel Filter Chips */}
               <div className="p-3 border-b border-slate-800/90 bg-[#0b1122]">
                 <div className="text-[11px] font-bold text-slate-400 mb-2 flex items-center justify-between">
-                  <span>قنوات التواصل الموحدة</span>
-                  <span className="text-teal-400">{filteredInbox.length} محادثة</span>
+                  <span>قنوات التواصل المتزامنة</span>
+                  <span className="text-teal-400">{filteredInbox.length} محادثة متزامنة</span>
                 </div>
                 <div className="grid grid-cols-5 gap-1">
                   <button
@@ -790,9 +813,36 @@ export default function SocialResponderLab() {
               {/* Conversations Scroll Area */}
               <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60 custom-scrollbar">
                 {filteredInbox.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500 text-xs">
-                    <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                    <p>لا توجد محادثات مطابقة لخيارات الفلترة الحالية.</p>
+                  <div className="p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center h-full">
+                    {activePlatformFilter === 'meta_instagram' ? (
+                      <div className="space-y-3 max-w-xs">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500/20 to-purple-500/20 border border-pink-500/40 flex items-center justify-center mx-auto text-pink-400">
+                          <Instagram className="w-6 h-6" />
+                        </div>
+                        <h4 className="font-bold text-white text-sm">بانتظار ربط حساب انستقرام بميتا</h4>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          لم يتم ربط حساب Instagram Professional بصفحة «درة السيارة» في Meta Business Suite بعد.
+                        </p>
+                        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-300 text-right leading-relaxed">
+                          💡 <strong>طريقة الربط:</strong> افتح إعدادات صفحة فيسبوك ➔ الحسابات المرتبطة ➔ ربط Instagram ➔ وسيتم سحب الرسائل والتعليقات الحية هنا فوراً بدون إضافة أي حسابات وهمية.
+                        </div>
+                      </div>
+                    ) : activePlatformFilter === 'meta_whatsapp' ? (
+                      <div className="space-y-3 max-w-xs">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center mx-auto text-emerald-400">
+                          <Phone className="w-6 h-6" />
+                        </div>
+                        <h4 className="font-bold text-white text-sm">حملة تفاعل واتساب ميتا</h4>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          1,617 محادثة مسجلة في إعلانات ميتا تم توجيهها مباشرة إلى أرقام هواتف الفروع المعتمدة (كيا 0539454377 • هيونداي 0530051360 • المتجر 0538834212).
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-500" />
+                        <p className="font-bold text-slate-300">لا توجد محادثات متزامنة مطابقة لخيارات الفلترة</p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   filteredInbox.map((msg) => {
@@ -804,20 +854,6 @@ export default function SocialResponderLab() {
                     let platformIcon = <Facebook className="w-3 h-3 text-blue-400" />;
                     let platformBadgeBg = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
                     let platformLabel = 'ماسنجر';
-
-                    if (msg.platform === 'meta_instagram') {
-                      platformIcon = <Instagram className="w-3 h-3 text-pink-400" />;
-                      platformBadgeBg = 'bg-pink-500/10 text-pink-400 border-pink-500/20';
-                      platformLabel = msg.channelType === 'comment_dm' ? 'انستقرام تعليق' : 'انستقرام ديركت';
-                    } else if (msg.platform === 'meta_whatsapp') {
-                      platformIcon = <Phone className="w-3 h-3 text-emerald-400" />;
-                      platformBadgeBg = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-                      platformLabel = 'واتساب ميتا';
-                    } else if (msg.platform === 'tiktok') {
-                      platformIcon = <Video className="w-3 h-3 text-slate-300" />;
-                      platformBadgeBg = 'bg-slate-800 text-slate-300 border-slate-700';
-                      platformLabel = 'تيك توك';
-                    }
 
                     return (
                       <div
@@ -919,7 +955,7 @@ export default function SocialResponderLab() {
                         <h2 className="text-sm font-bold text-white flex items-center gap-2 truncate">
                           {selectedMessage.senderName}
                           <span className="text-[10px] font-normal px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
-                            {selectedMessage.platform === 'meta_facebook' ? 'فيسبوك ماسنجر' : selectedMessage.platform === 'meta_instagram' ? 'انستقرام ديركت' : 'واتساب أعمال'}
+                            {selectedMessage.platform === 'meta_facebook' ? 'فيسبوك ماسنجر' : 'محادثة متزامنة'}
                           </span>
                         </h2>
                         <p className="text-[11px] text-slate-400 flex items-center gap-2">
@@ -1129,7 +1165,7 @@ export default function SocialResponderLab() {
               )}
             </div>
 
-            {/* ---------------- COLUMN 3: CUSTOMER 360 CRM & SALLA COPILOT (lg:col-span-4 xl:col-span-3) ---------------- */}
+            {/* ---------------- COLUMN 3: CUSTOMER 360 CRM & BRANCH COPILOT (lg:col-span-4 xl:col-span-3) ---------------- */}
             <div className="lg:col-span-3 xl:col-span-3 bg-[#0d152a] rounded-2xl border border-slate-800 flex flex-col overflow-hidden shadow-xl">
               {selectedMessage ? (
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
@@ -1272,11 +1308,11 @@ export default function SocialResponderLab() {
                     </a>
                   </div>
 
-                  {/* Salla E-Commerce & Installments Card */}
+                  {/* Salla Store Link */}
                   <div className="p-3.5 rounded-xl bg-[#0b1122] border border-slate-800 space-y-2.5">
                     <span className="text-xs font-bold text-white flex items-center gap-1.5">
                       <CreditCard className="w-4 h-4 text-amber-400" />
-                      متجر سلة وتقسيط تابي وتمارا
+                      متجر سلة والتقسيط
                     </span>
 
                     <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs space-y-1.5">
@@ -1302,11 +1338,11 @@ export default function SocialResponderLab() {
                   <div className="p-3.5 rounded-xl bg-[#0b1122] border border-slate-800 space-y-2">
                     <span className="text-xs font-bold text-white flex items-center gap-1.5">
                       <BookmarkPlus className="w-4 h-4 text-pink-400" />
-                      وسوم العميل والملاحظات
+                      وسوم وملاحظات المحادثة
                     </span>
 
                     <div className="flex flex-wrap gap-1">
-                      {(customerTags[selectedMessage.id] || ['عميل تواصل عبر ماسنجر']).map((tag, idx) => (
+                      {(customerTags[selectedMessage.id] || ['محادثة متزامنة']).map((tag, idx) => (
                         <span key={idx} className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-slate-300 text-[10px]">
                           {tag}
                         </span>
@@ -1432,7 +1468,7 @@ export default function SocialResponderLab() {
               </div>
 
               <span className="px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-300 font-bold text-xs">
-                مربوط مع فيسبوك وانستقرام
+                مربوط مع فيسبوك ماسنجر
               </span>
             </div>
 
@@ -1474,87 +1510,17 @@ export default function SocialResponderLab() {
         )}
 
         {/* ========================================================================= */}
-        {/* VIEW 4: SALLA E-COMMERCE & ABANDONED CARTS                                */}
-        {/* ========================================================================= */}
-        {activeTab === 'salla' && (
-          <div className="bg-[#0d152a] rounded-2xl border border-slate-800 p-6 shadow-xl space-y-6 flex-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-black text-white flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-purple-400" />
-                  ربط متجر سلة واسترجاع السلات المتروكة (Salla Copilot)
-                </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  متابعة عملاء المتجر الإلكتروني (doracars.com) والعملاء الذين وضعوا قطع الغيار في السلة ولم يكملوا الدفع.
-                </p>
-              </div>
-
-              <a
-                href="https://doracars.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all"
-              >
-                <span>زيارة المتجر الإلكتروني</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {abandonedCarts.map((cart) => (
-                <div key={cart.id} className="p-4 rounded-xl bg-[#0b1122] border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-bold text-white">{cart.customerName}</h3>
-                      <span className="text-xs text-slate-400">{cart.city} • {cart.timeAgo}</span>
-                    </div>
-                    <div className="text-left">
-                      <div className="text-sm font-bold text-teal-400">{cart.totalAmount} ر.س</div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${cart.recovered ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}`}>
-                        {cart.recovered ? 'تم الاسترجاع والطلب' : 'سلة متروكة'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
-                    <span className="text-slate-400 block text-[10px] mb-1">القطع في السلة:</span>
-                    <p className="text-slate-200 font-bold">{cart.cartItems}</p>
-                  </div>
-
-                  <div className="p-2.5 rounded-lg bg-purple-950/40 border border-purple-800/40 text-xs">
-                    <span className="text-purple-300 font-bold block text-[10px] mb-1">العرض المقترح للاسترجاع:</span>
-                    <p className="text-slate-200">{cart.recommendedOffer}</p>
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
-                    <a
-                      href={`https://wa.me/966${cart.phone.slice(1)}?text=${encodeURIComponent(`حياك الله أخي ${cart.customerName} في درة السيارة لقطع الغيار 🌹 لاحظنا اهتمامك بـ ${cart.cartItems}، ويسعدنا تقديم: ${cart.recommendedOffer}. للطلب: ${cart.matchedProductUrl}`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all"
-                    >
-                      <Phone className="w-3.5 h-3.5" />
-                      <span>إرسال عرض الاسترجاع عبر الواتساب</span>
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* VIEW 5: ANALYTICS RADAR (رادار التحليلات)                                  */}
+        {/* VIEW 4: ANALYTICS RADAR (رادار التحليلات)                                  */}
         {/* ========================================================================= */}
         {activeTab === 'analytics' && (
           <div className="bg-[#0d152a] rounded-2xl border border-slate-800 p-6 shadow-xl space-y-6 flex-1">
             <div>
               <h2 className="text-lg font-black text-white flex items-center gap-2">
                 <Activity className="w-5 h-5 text-emerald-400" />
-                رادار أداء المحادثات والتعلم الذاتي
+                رادار أداء المحادثات المتزامنة والتعلم الذاتي
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                تحليل دقيق لـ {inbox.length} محادثة عملاء حية تم استيعابها وفهم سلوك طلبات كيا وهيونداي والديزل.
+                تحليل دقيق لـ {inbox.length} محادثة عملاء حقيقية متزامنة من صفحة درة السيارة في ميتا.
               </p>
             </div>
 
@@ -1562,19 +1528,19 @@ export default function SocialResponderLab() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 rounded-xl bg-[#0b1122] border border-slate-800 text-center">
                 <div className="text-2xl font-black text-teal-400 mb-1">{inbox.length}</div>
-                <div className="text-xs text-slate-400">إجمالي المحادثات الموحدة</div>
+                <div className="text-xs text-slate-400">إجمالي المحادثات المتزامنة</div>
               </div>
 
               <div className="p-4 rounded-xl bg-[#0b1122] border border-slate-800 text-center">
                 <div className="text-2xl font-black text-blue-400 mb-1">
-                  {Math.round((inbox.filter(m => m.leadInfo?.carModel?.includes('هيونداي')).length / (inbox.length || 1)) * 100)}%
+                  {Math.round((inbox.filter(m => m.leadInfo?.carModel?.includes('هيونداي') || m.leadInfo?.carModel?.includes('أفانتي') || m.leadInfo?.carModel?.includes('سوناتا')).length / (inbox.length || 1)) * 100)}%
                 </div>
                 <div className="text-xs text-slate-400">نسبة طلبات هيونداي</div>
               </div>
 
               <div className="p-4 rounded-xl bg-[#0b1122] border border-slate-800 text-center">
                 <div className="text-2xl font-black text-emerald-400 mb-1">
-                  {Math.round((inbox.filter(m => m.leadInfo?.carModel?.includes('كيا')).length / (inbox.length || 1)) * 100)}%
+                  {Math.round((inbox.filter(m => m.leadInfo?.carModel?.includes('كيا') || m.leadInfo?.carModel?.includes('كرنفال') || m.leadInfo?.carModel?.includes('كارنز')).length / (inbox.length || 1)) * 100)}%
                 </div>
                 <div className="text-xs text-slate-400">نسبة طلبات كيا</div>
               </div>
@@ -1583,7 +1549,7 @@ export default function SocialResponderLab() {
                 <div className="text-2xl font-black text-purple-400 mb-1">
                   {inbox.filter(m => m.leadInfo?.vin).length}
                 </div>
-                <div className="text-xs text-slate-400">عملاء زودونا برقم الهيكل VIN</div>
+                <div className="text-xs text-slate-400">أرقام هياكل VIN مسجلة</div>
               </div>
             </div>
 
@@ -1592,7 +1558,7 @@ export default function SocialResponderLab() {
               <h3 className="text-sm font-bold text-white">الاستنتاجات الذكية المطبقة على الإيجنت:</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="font-bold text-xs text-teal-300">أعلى طلب: كمبروسرات المكيف وفحمات الفرامل</div>
+                  <div className="font-bold text-xs text-teal-300">أعلى طلب: كراسي المكينة وعيار زيت الديزل</div>
                   <p className="text-[11px] text-slate-400 leading-relaxed">
                     تم ضبط الإيجنت لتقديم خيارات الكوري والأصلي فوراً وتوجيه كيا لـ 0539454377 وهيونداي لـ 0530051360.
                   </p>
@@ -1606,9 +1572,9 @@ export default function SocialResponderLab() {
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="font-bold text-xs text-purple-300">استفسارات أعطال الحرارة والتبريد</div>
+                  <div className="font-bold text-xs text-purple-300">أقساط تابي وتمارا</div>
                   <p className="text-[11px] text-slate-400 leading-relaxed">
-                    منع التخمين أو التشخيص القطعي ونصح العميل بفحص السيارة قبل شراء القطع لتفادي الخسارة.
+                    توضيح خيارات التقسيط على 4 دفعات بدون فوائد لجميع العملاء الذين يسألون عن الأقساط.
                   </p>
                 </div>
               </div>
@@ -1617,7 +1583,7 @@ export default function SocialResponderLab() {
         )}
 
         {/* ========================================================================= */}
-        {/* VIEW 6: CONSTITUTION & TRAINING STUDIO                                    */}
+        {/* VIEW 5: CONSTITUTION & TRAINING STUDIO                                    */}
         {/* ========================================================================= */}
         {activeTab === 'training' && (
           <div className="bg-[#0d152a] rounded-2xl border border-slate-800 p-6 shadow-xl space-y-6 flex-1">
@@ -1675,7 +1641,189 @@ export default function SocialResponderLab() {
 
       </main>
 
-      {/* ---------------- MODALS ---------------- */}
+      {/* ---------------- 4. MODAL: AUTO-REPLY SCHEDULE SETTINGS ---------------- */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-[#0f172a] rounded-2xl border border-slate-700 max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            
+            {/* Modal Header */}
+            <div className="p-4 border-b border-slate-700/80 bg-[#0b1122] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-teal-400">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">إعدادات وجدولة الرد الآلي (Auto-Reply)</h3>
+                  <p className="text-[11px] text-slate-400">تحديد أوقات عمل الإيجنت التلقائي ورسائل خارج الدوام</p>
+                </div>
+              </div>
+              <button onClick={() => setShowScheduleModal(false)} className="text-slate-400 hover:text-white text-sm">✕</button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
+              
+              {/* Current Status Box */}
+              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-white mb-0.5">الحالة الحالية:</div>
+                  <div className="text-teal-400 font-medium text-[11px]">{autoReplyStatus.reason}</div>
+                </div>
+                <span className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${
+                  autoReplyStatus.isActive
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                }`}>
+                  {autoReplyStatus.isActive ? 'نشط الآن' : 'في وضع الاستعداد'}
+                </span>
+              </div>
+
+              {/* Mode Selection */}
+              <div>
+                <label className="text-xs font-bold text-slate-200 block mb-2">وضع التشغيل المطلوب:</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDraftMode('scheduled')}
+                    className={`p-3 rounded-xl border text-right transition-all flex flex-col gap-1 ${
+                      draftMode === 'scheduled'
+                        ? 'bg-teal-950/60 border-teal-400 text-white shadow-md'
+                        : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <Clock className="w-4 h-4 text-teal-400" />
+                      {draftMode === 'scheduled' && <Check className="w-3.5 h-3.5 text-teal-400" />}
+                    </div>
+                    <span className="font-bold text-xs text-white">مجدول خارج الدوام</span>
+                    <span className="text-[10px] text-slate-400 leading-tight">ينشط من المساء للصباح</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDraftMode('always')}
+                    className={`p-3 rounded-xl border text-right transition-all flex flex-col gap-1 ${
+                      draftMode === 'always'
+                        ? 'bg-emerald-950/60 border-emerald-400 text-white shadow-md'
+                        : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <Sun className="w-4 h-4 text-emerald-400" />
+                      {draftMode === 'always' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                    </div>
+                    <span className="font-bold text-xs text-white">تشغيل دائم (24/7)</span>
+                    <span className="text-[10px] text-slate-400 leading-tight">رد آلي على مدار الساعة</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDraftMode('off')}
+                    className={`p-3 rounded-xl border text-right transition-all flex flex-col gap-1 ${
+                      draftMode === 'off'
+                        ? 'bg-red-950/60 border-red-400 text-white shadow-md'
+                        : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <Moon className="w-4 h-4 text-red-400" />
+                      {draftMode === 'off' && <Check className="w-3.5 h-3.5 text-red-400" />}
+                    </div>
+                    <span className="font-bold text-xs text-white">إيقاف الرد الآلي</span>
+                    <span className="text-[10px] text-slate-400 leading-tight">ردود يدوية فقط</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Scheduling Times (when scheduled is selected) */}
+              {draftMode === 'scheduled' && (
+                <div className="p-4 rounded-xl bg-[#0b1122] border border-slate-800 space-y-3">
+                  <div className="font-bold text-slate-200 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-teal-400" />
+                    <span>تحديد فترة خارج الدوام (الرد التلقائي):</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] text-slate-400 block mb-1">وقت بدء الرد الآلي في المساء:</label>
+                      <input
+                        type="time"
+                        value={draftStartHour}
+                        onChange={(e) => setDraftStartHour(e.target.value)}
+                        className="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs font-mono font-bold"
+                      />
+                      <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 21:00 (9:00 مساءً)</span>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] text-slate-400 block mb-1">وقت انتهاء الرد الآلي في الصباح:</label>
+                      <input
+                        type="time"
+                        value={draftEndHour}
+                        onChange={(e) => setDraftEndHour(e.target.value)}
+                        className="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs font-mono font-bold"
+                      />
+                      <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 09:00 (9:00 صباحاً)</span>
+                    </div>
+                  </div>
+
+                  {/* Friday All-Day Toggle */}
+                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-slate-200 block text-xs">تفعيل الرد الآلي طوال يوم الجمعة:</span>
+                      <span className="text-[10px] text-slate-400">عطلة نهاية الأسبوع الرسمية لمعارض درة</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDraftFridayAllDay(!draftFridayAllDay)}
+                      className={`w-11 h-6 rounded-full transition-colors relative ${draftFridayAllDay ? 'bg-teal-500' : 'bg-slate-700'}`}
+                    >
+                      <span className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${draftFridayAllDay ? 'right-1' : 'right-6'}`}></span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Off-Hours Message Template */}
+              <div>
+                <label className="text-xs font-bold text-slate-200 block mb-1">نص رسالة خارج أوقات الدوام التلقائية:</label>
+                <textarea
+                  rows={5}
+                  value={draftOffHoursMsg}
+                  onChange={(e) => setDraftOffHoursMsg(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200 leading-relaxed focus:outline-none focus:border-teal-500 custom-scrollbar"
+                />
+                <span className="text-[10px] text-slate-400">
+                  تتضمن أرقام فروع كيا (0539454377)، هيونداي (0530051360)، المتجر (0538834212)، ورابط المتجر.
+                </span>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-700/80 bg-[#0b1122] flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setShowScheduleModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+              >
+                إلغاء
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveSchedule}
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-400 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-teal-500/20"
+              >
+                حفظ وتطبيق إعدادات الجدولة
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- 5. MODAL: META INTEGRATION CONFIG ---------------- */}
       {showMetaModal && (
         <MetaIntegrationModal
           isOpen={showMetaModal}
@@ -1687,7 +1835,7 @@ export default function SocialResponderLab() {
         />
       )}
 
-      {/* Official Constitution Modal */}
+      {/* ---------------- 6. MODAL: OFFICIAL CONSTITUTION (17 RULES) ---------------- */}
       {showPromptModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#0f172a] rounded-2xl border border-slate-700 max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
