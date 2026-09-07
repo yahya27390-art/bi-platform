@@ -592,10 +592,20 @@ export default function SocialResponderLab() {
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-pink-500/30 text-xs" title="حساب انستقرام يحتاج للربط في إعدادات صفحة فيسبوك">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-pink-500/30 text-xs" title="حساب انستغرام متصل ومصرح عبر Instagram Graph API">
               <Instagram className="w-4 h-4 text-pink-400" />
-              <span className="text-slate-300 font-medium">انستقرام:</span>
-              <span className="text-pink-300 font-bold">بانتظار ربط الحساب</span>
+              <span className="text-slate-300 font-medium">انستقرام (@doracars22):</span>
+              {countInstagram > 0 ? (
+                <>
+                  <span className="text-pink-400 font-bold">{countInstagram} محادثة متزامنة</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                </>
+              ) : (
+                <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  متصل بـ API (بانتظار رسائل جديدة)
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-xs">

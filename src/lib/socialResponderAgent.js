@@ -336,8 +336,13 @@ function mapMetaConvToInboxItem(t, pageId, platform = 'meta_facebook') {
   const defaultSenderName = isInstagram ? 'عميل انستغرام' : 'عميل فيسبوك';
   const avatarBg = isInstagram ? 'C13584' : '1877F2';  // لون انستغرام vs فيسبوك
 
-  const customerSender = t.senders?.data?.find((s) => s.id !== pageId) ||
-    t.senders?.data?.[0] || { name: defaultSenderName, id: 'unknown' };
+  const customerSender = isInstagram
+    ? (t.participants?.data?.find((s) => s.id !== pageId) || t.senders?.data?.find((s) => s.id !== pageId) || t.participants?.data?.[0] || t.senders?.data?.[0] || { name: defaultSenderName, id: 'unknown' })
+    : (t.senders?.data?.find((s) => s.id !== pageId) || t.senders?.data?.[0] || { name: defaultSenderName, id: 'unknown' });
+
+  const displayName = customerSender.username
+    ? `@${customerSender.username.replace(/^@/, '')}`
+    : (customerSender.name || defaultSenderName);
 
   const msgs = (t.messages?.data || []).slice().reverse();
   const customerMsgs = msgs.filter((m) => m.from?.id !== pageId);
@@ -351,7 +356,7 @@ function mapMetaConvToInboxItem(t, pageId, platform = 'meta_facebook') {
   const latestPageReply = isAnswered ? msgs[msgs.length - 1].message : '';
 
   const analysis       = analyzeCustomerText(inquiryText);
-  const suggestedReply = generateSmartSocialReply(inquiryText, customerSender.name, platform, false);
+  const suggestedReply = generateSmartSocialReply(inquiryText, displayName, platform, false);
 
   const timeDiff = Date.now() - new Date(t.updated_time).getTime();
   const minsAgo  = Math.max(1, Math.floor(timeDiff / 60000));
@@ -364,13 +369,13 @@ function mapMetaConvToInboxItem(t, pageId, platform = 'meta_facebook') {
     id: t.id,
     platform,
     channelType: 'dm',
-    senderName: customerSender.name || defaultSenderName,
+    senderName: displayName,
     senderId: customerSender.id,
-    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(customerSender.name || 'Dora')}&background=${avatarBg}&color=fff`,
+    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.replace(/^@/, '') || 'Dora')}&background=${avatarBg}&color=fff`,
     text: inquiryText,
     chatHistory: msgs.map((m) => ({
       id: m.id,
-      sender: m.from?.id === pageId ? 'درة السيارة' : (customerSender.name || 'العميل'),
+      sender: m.from?.id === pageId ? 'درة السيارة' : displayName,
       isPage: m.from?.id === pageId,
       message: m.message,
       time: m.created_time,
@@ -445,7 +450,7 @@ export async function syncLiveSocialData() {
 
   if (igToken && instagramItems.length === 0) {
     try {
-      const igUrl = `https://graph.instagram.com/v20.0/me/conversations?fields=id,updated_time,unread_count,messages{id,message,created_time,from}&access_token=${encodeURIComponent(igToken)}`;
+      const igUrl = `https://graph.instagram.com/v20.0/me/conversations?fields=id,updated_time,unread_count,participants{id,username},messages{id,message,created_time,from}&access_token=${encodeURIComponent(igToken)}`;
       const igRes = await fetch(igUrl, { signal: AbortSignal.timeout(8000) });
       const igData = await igRes.json();
       if (igData?.data && Array.isArray(igData.data) && igData.data.length > 0) {

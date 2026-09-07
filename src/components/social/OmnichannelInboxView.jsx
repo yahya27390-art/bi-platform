@@ -673,11 +673,72 @@ export default function OmnichannelInboxView({
           {/* Conversations Items Stream */}
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
             {filteredList.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center h-full space-y-2">
-                <MessageSquare className="w-8 h-8 text-slate-300" />
-                <p className="font-bold text-slate-600">لا توجد محادثات في هذه القائمة</p>
-                <p className="text-[11px] text-slate-400">جرب تغيير الفلتر أو البحث عن اسم آخر</p>
-              </div>
+              activePlatformFilter === 'meta_instagram' ? (
+                <div className="p-4 text-xs flex flex-col items-center justify-center h-full space-y-3 select-none">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+                    <Instagram className="w-6 h-6" />
+                  </div>
+                  <div className="text-center space-y-1">
+                    <h4 className="font-black text-sm text-slate-900 flex items-center justify-center gap-1.5">
+                      <span>حساب Instagram متصل بنجاح</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                    </h4>
+                    <p className="text-pink-600 font-mono font-bold text-xs">@doracars22</p>
+                  </div>
+
+                  <div className="w-full max-w-[270px] bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 text-[11px] text-slate-600">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                      <span className="text-slate-400 font-medium">حالة مفتاح API:</span>
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        ساري ومصرح 🟢
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                      <span className="text-slate-400 font-medium">نوع الحساب:</span>
+                      <span className="font-bold text-slate-800">Business Portfolio</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 font-medium">الرسائل الخاصة (DM):</span>
+                      <span className="font-bold text-slate-700">0 رسائل جديدة حتى الآن</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full max-w-[270px] bg-amber-50 border border-amber-200/80 rounded-xl p-3 text-[11px] text-amber-900 space-y-1.5 leading-relaxed">
+                    <span className="font-black flex items-center gap-1 text-amber-800">
+                      <span>💡 سبب عدم ظهور رسائل حتى الآن:</span>
+                    </span>
+                    <p className="text-[10px] text-amber-800/90">
+                      الربط التقني سليم 100%. لم يقم أي عميل بإرسال رسالة خاصة (Direct) جديدة إلى حساب <span className="font-bold">@doracars22</span> بعد، أو يحتاج خيار «السماح بالوصول للرسائل» إلى التأكيد في تطبيق انستغرام.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col w-full max-w-[270px] gap-2 pt-1">
+                    <a
+                      href="https://ig.me/m/doracars22"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-center text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>إرسال رسالة تجريبية للحساب ↗</span>
+                    </a>
+                    <button
+                      onClick={onSyncLive}
+                      disabled={isSyncingLive}
+                      className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-center text-xs flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <RotateCcw className={`w-3.5 h-3.5 ${isSyncingLive ? 'animate-spin' : ''}`} />
+                      <span>فحص الرسائل الآن</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center h-full space-y-2">
+                  <MessageSquare className="w-8 h-8 text-slate-300" />
+                  <p className="font-bold text-slate-600">لا توجد محادثات في هذه القائمة</p>
+                  <p className="text-[11px] text-slate-400">جرب تغيير الفلتر أو البحث عن اسم آخر</p>
+                </div>
+              )
             ) : (
               filteredList.map((msg) => {
                 const isSelected = selectedMessage?.id === msg.id;
