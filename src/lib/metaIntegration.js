@@ -32,7 +32,7 @@ export const DEFAULT_META_CONFIG = {
   messaging: {
     whatsappPhoneNumberId: '',
     whatsappWabaId: '',
-    facebookPageId: '',
+    facebookPageId: '560031747184578',
     instagramBusinessId: '',
     messagingAccessToken: 'EAAeg0uiXakwBSXskBGtev4AbcYG7OatX5eBoMACdUN65eoC11avAWTksg2C6npTEEVdN0mjM8qXEe285rHAC015zeh40DnA6EZCXPSdwvCjbUUdBMXEQUuzQWZBATZBFZCZCkgtbNR4b3JhSb4HHjK6aijwbQq4IRZARN5hoGBND5kM35I6oide7oPo1ldQFCQ2ereuI0yMoPZChscg3kGeNVLdaS9ZBgZBT1hShrBuYK6C0lhbRzxlxKawaCZAWn16lxOW0ISDnhvkGrjK0wZBkXQw',
     isMessagingConnected: true,
