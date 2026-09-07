@@ -437,8 +437,8 @@ export async function syncLiveSocialData() {
   }
 
   // ── 2. جلب انستغرام مباشرة عبر Instagram Graph API (تدعم CORS تلقائياً) ──────
-  const igToken = metaConfig.messaging?.instagramAccessToken || 'IGAAKfQ6eZBGVBBZAGJnaHFHbjdJX21EWWJTSXFzTE8wRTRXdy1WS1BrbWxBMENsUHRYYVNZAQl9Nb0xoQzJiRUZAwVEEweW0wU2pjeTQyWUhkMkVNdmstQjdYbXF2WU1Ndk5PRms4Wk9WT0IxTWNBczUzbHJDSVJtZAWl6V0hneVlIcwZDZD';
-  const igUserId = metaConfig.messaging?.instagramUserId || '28005002229199703';
+  const igToken = metaConfig.messaging?.instagramAccessToken || 'IGAGiCpFwDnehBZAGI1NEdtdmtKNldXVHBFdWN4U0F2RW9TaGpfY1g4SnM0eWlPX1h1ekl6V0VrVTNEbklEbVRVU1VlMmwtcUx6YWgweS1aOTVxd0FVVUNjeGFhTXNVdmkzcjBENTA0bjZAFMk9vM2dNVVRSMFo3cHJMcG5neFlvYwZDZD';
+  const igUserId = metaConfig.messaging?.instagramUserId || '28298689296452306';
 
   if (igToken && instagramItems.length === 0) {
     try {
@@ -707,7 +707,7 @@ export async function sendLiveReplyToMeta({ recipientId, messageText, platform =
   const isInstagram = platform === 'meta_instagram';
   const pageToken = metaConfig.messaging?.facebookPageToken || '';
   const pageId    = metaConfig.messaging?.facebookPageId || '560031747184578';
-  const igToken   = metaConfig.messaging?.instagramAccessToken || 'IGAAKfQ6eZBGVBBZAGJnaHFHbjdJX21EWWJTSXFzTE8wRTRXdy1WS1BrbWxBMENsUHRYYVNZAQl9Nb0xoQzJiRUZAwVEEweW0wU2pjeTQyWUhkMkVNdmstQjdYbXF2WU1Ndk5PRms4Wk9WT0IxTWNBczUzbHJDSVJtZAWl6V0hneVlIcwZDZD';
+  const igToken   = metaConfig.messaging?.instagramAccessToken || 'IGAGiCpFwDnehBZAGI1NEdtdmtKNldXVHBFdWN4U0F2RW9TaGpfY1g4SnM0eWlPX1h1ekl6V0VrVTNEbklEbVRVU1VlMmwtcUx6YWgweS1aOTVxd0FVVUNjeGFhTXNVdmkzcjBENTA0bjZAFMk9vM2dNVVRSMFo3cHJMcG5neFlvYwZDZD';
 
   if (!recipientId || !messageText) {
     throw new Error('يرجى تحديد العميل ونص الرسالة.');
