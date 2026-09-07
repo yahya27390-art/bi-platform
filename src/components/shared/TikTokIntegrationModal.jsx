@@ -452,7 +452,7 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
                 </h3>
                 <button
                   type="button"
-                  onClick={() => handleCopy('https://3ca6809b833fdd.lhr.life/api/tiktok-webhook', 4)}
+                  onClick={() => handleCopy('https://fb8b153d052e4e.lhr.life/api/tiktok-webhook', 4)}
                   className="flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300 font-bold"
                 >
                   {copiedStep === 4 ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -463,7 +463,7 @@ export default function TikTokIntegrationModal({ isOpen, onClose, onSyncComplete
                 في لوحة TikTok For Business أو عند إعداد إعلانات النماذج الفورية (Instant Forms)، يمكنك وضع رابط الويب هوك الخاص بنا لاستقبال استفسارات وأرقام العملاء فورياً في صندوق الوارد الموحد:
               </p>
               <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-cyan-300 flex items-center justify-between select-all">
-                <span>https://3ca6809b833fdd.lhr.life/api/tiktok-webhook</span>
+                <span>https://fb8b153d052e4e.lhr.life/api/tiktok-webhook</span>
               </div>
             </div>
           </div>
