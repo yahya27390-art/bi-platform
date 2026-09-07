@@ -13,11 +13,17 @@ import PrivateCampaignLab from './pages/PrivateCampaignLab';
 import SocialResponderLab from './pages/SocialResponderLab';
 import BILogin from './auth/BILogin';
 import BIProtectedRoute from './auth/BIProtectedRoute';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import DataDeletion from './pages/DataDeletion';
 
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<BILogin />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/data-deletion" element={<DataDeletion />} />
 
       <Route
         element={

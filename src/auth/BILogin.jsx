@@ -202,9 +202,24 @@ export default function BILogin() {
           )}
         </div>
 
-        {/* Security Notice */}
-        <div className="text-center text-[11px] text-slate-500 leading-relaxed">
-          🔒 منصة سرية ومحمية بموجب سياسة أمن المعلومات لشركة درة السيارة.
+        {/* Security Notice & Compliance Links */}
+        <div className="text-center space-y-2 pt-2 border-t border-white/5">
+          <div className="text-[11px] text-slate-500">
+            🔒 منصة إدارية رسمية لشركة درة السيارة لقطع غيار السيارات
+          </div>
+          <div className="flex items-center justify-center gap-3 text-[10px] text-slate-400">
+            <Link to="/privacy" className="hover:text-emerald-400 transition-colors underline">
+              سياسة الخصوصية
+            </Link>
+            <span>•</span>
+            <Link to="/terms" className="hover:text-emerald-400 transition-colors underline">
+              شروط الاستخدام
+            </Link>
+            <span>•</span>
+            <Link to="/data-deletion" className="hover:text-rose-400 transition-colors underline">
+              حذف البيانات
+            </Link>
+          </div>
         </div>
       </div>
     </div>
