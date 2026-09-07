@@ -666,8 +666,8 @@ export default function SocialResponderLab() {
           </div>
         </div>
 
-        {/* Sync Status Banner */}
-        {syncStatusMsg && (
+        {/* Sync Status Banner (Only on secondary tabs; Inbox has its own integrated status) */}
+        {syncStatusMsg && activeTab !== 'inbox' && (
           <div className="max-w-[1700px] mx-auto mt-2 px-4 py-1.5 rounded-lg bg-teal-950/70 border border-teal-500/30 text-xs text-teal-300 flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-teal-400" />

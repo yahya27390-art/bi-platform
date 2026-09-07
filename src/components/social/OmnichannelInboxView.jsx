@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -38,9 +38,82 @@ import {
   Radio,
   Sliders,
   CheckCircle2,
-  User
+  User,
+  ArrowDown
 } from 'lucide-react';
 import { QUICK_REPLY_TEMPLATES, DORA_SOCIAL_KNOWLEDGE } from '../../lib/socialResponderAgent';
+
+// Helper: فحص وتنسيق إشعارات تعليقات فيسبوك التلقائية لمنع زحمة الكلام
+function parseCommentNotice(text) {
+  if (!text) return null;
+  const isNotice = text.includes('أنت بصدد الرد على تعليق') || text.includes('comment_id=') || text.includes('عرض التعليق');
+  if (!isNotice) return null;
+
+  // استخراج رابط المنشور إن وجد
+  const urlMatch = text.match(/https?:\/\/[^\s\)\>]+/);
+  const commentUrl = urlMatch ? urlMatch[0] : null;
+
+  return {
+    isNotice: true,
+    commentUrl,
+  };
+}
+
+// Helper: تنسيق نصوص الرسائل الذكي لأرقام الهواتف والروابط
+function renderCleanMessageText(text) {
+  if (!text) return null;
+
+  // فصل النص حسب أرقام الهواتف السعودية أو الروابط
+  const parts = text.split(/(05\d{8}|9665\d{8}|\+9665\d{8}|https?:\/\/[^\s]+)/g);
+
+  return parts.map((part, i) => {
+    // أرقام هواتف
+    if (/^(05\d{8}|9665\d{8}|\+9665\d{8})$/.test(part)) {
+      const cleanNum = part.startsWith('+') ? part.slice(1) : part.startsWith('05') ? '966' + part.slice(1) : part;
+      return (
+        <a
+          key={i}
+          href={`https://wa.me/${cleanNum}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 px-2 py-0.5 mx-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-mono font-bold border border-emerald-200 text-xs transition-all shadow-2xs"
+          title="فتح في واتساب للمبيعات"
+        >
+          <span>{part}</span>
+          <Phone className="w-2.5 h-2.5 text-emerald-600" />
+        </a>
+      );
+    }
+
+    // روابط إنترنت
+    if (/^https?:\/\//.test(part)) {
+      return (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-0.5 text-blue-600 hover:text-blue-800 font-bold underline break-all mx-0.5"
+        >
+          <span>{part.length > 35 ? part.slice(0, 32) + '...' : part}</span>
+          <ExternalLink className="w-3 h-3 inline shrink-0" />
+        </a>
+      );
+    }
+
+    return part;
+  });
+}
+
+// Helper: استخراج معاينة نظيفة للمحادثة في العمود الثاني
+function getCleanSnippet(msg) {
+  let text = msg.reply || msg.text || '';
+  if (text.includes('أنت بصدد الرد على تعليق')) {
+    const realMsg = msg.chatHistory?.find(c => !c.message.includes('أنت بصدد الرد على تعليق'))?.message;
+    text = realMsg || 'رد على تعليق منشور فيسبوك';
+  }
+  return text;
+}
 
 export default function OmnichannelInboxView({
   inbox = [],
@@ -88,6 +161,49 @@ export default function OmnichannelInboxView({
   const [assignedAgent, setAssignedAgent] = useState('أحمد العتيبي (أنت)');
   const [assignedDept, setAssignedDept] = useState('خدمة العملاء والمبيعات');
 
+  // ── تثبيت المحادثة والسكرول لمنع القفز وتسهيل تصفح الرسائل القديمة ──
+  const scrollContainerRef = useRef(null);
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const isUserScrolledUp = useRef(false);
+  const prevSelectedId = useRef(selectedMessage?.id);
+
+  // عند الانتقال لمحادثة أخرى: التمرير لأسفل المحادثة تلقائياً لرؤية آخر الردود
+  useEffect(() => {
+    if (selectedMessage?.id !== prevSelectedId.current) {
+      prevSelectedId.current = selectedMessage?.id;
+      isUserScrolledUp.current = false;
+      setShowScrollBottom(false);
+      const timer = setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+        }
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedMessage?.id]);
+
+  // عند تحريك السكرول: إذا قام المستخدم بالتمرير لأعلى لقراءة القديم، نثبته ونمنع أي قفز!
+  const handleChatScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const isUp = distanceFromBottom > 90;
+    isUserScrolledUp.current = isUp;
+    setShowScrollBottom(isUp);
+  };
+
+  // زر العودة السريعة لأحدث رسالة في الأسفل
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+      isUserScrolledUp.current = false;
+      setShowScrollBottom(false);
+    }
+  };
+
   // Computed conversations based on filters
   const filteredList = inbox.filter((m) => {
     // 1. Platform filter
@@ -125,7 +241,7 @@ export default function OmnichannelInboxView({
   const isSelectedClosed = selectedMessage ? closedConversations.has(selectedMessage.id) : false;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-165px)] min-h-[720px] font-sans text-slate-800 antialiased">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-140px)] min-h-[560px] max-h-[92vh] font-sans text-slate-800 antialiased">
       
       {/* ───────────────── TOP WINDOW BAR (Mac Style Dots & Live Sync Info) ───────────────── */}
       <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center justify-between gap-3 shrink-0">
@@ -542,7 +658,7 @@ export default function OmnichannelInboxView({
                         {/* Last message with reply indicator */}
                         <p className="text-xs text-slate-600 line-clamp-1 leading-relaxed flex items-center gap-1">
                           <span className="text-blue-500 font-bold">⤶</span>
-                          <span className="truncate">{msg.reply || msg.text}</span>
+                          <span className="truncate">{getCleanSnippet(msg)}</span>
                         </p>
 
                         {/* Badges footer */}
@@ -689,63 +805,124 @@ export default function OmnichannelInboxView({
                 </button>
               </div>
 
-              {/* Chat Message Stream */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+              {/* Chat Message Stream - محمي من القفز ويدعم التمرير المستقل */}
+              <div
+                ref={scrollContainerRef}
+                onScroll={handleChatScroll}
+                className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 custom-scrollbar overscroll-contain relative"
+              >
                 
                 {/* System notification pill in center */}
                 <div className="flex justify-center">
-                  <span className="bg-slate-200/80 text-slate-600 text-[11px] font-medium px-3.5 py-1 rounded-full shadow-xs border border-slate-300">
+                  <span className="bg-slate-200/80 text-slate-600 text-[11px] font-medium px-3.5 py-1 rounded-full shadow-2xs border border-slate-300">
                     أضاف تصنيف: {selectedMessage.leadInfo?.interestType || 'قطع غيار'} • {assignedAgent} • {selectedMessage.timestamp || 'اليوم'}
                   </span>
                 </div>
 
                 {/* Render Chat History */}
                 {selectedMessage.chatHistory && selectedMessage.chatHistory.length > 0 ? (
-                  selectedMessage.chatHistory.map((chat) => (
-                    <div
-                      key={chat.id}
-                      className={`flex items-start gap-3 ${chat.isPage ? 'flex-row-reverse' : 'flex-row'}`}
-                    >
-                      <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-200 shadow-xs">
-                        {chat.isPage ? (
-                          <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
-                            درة
-                          </div>
-                        ) : (
-                          <img src={selectedMessage.avatar} alt={chat.sender} className="w-full h-full object-cover" />
-                        )}
-                      </div>
+                  selectedMessage.chatHistory.map((chat) => {
+                    const notice = parseCommentNotice(chat.message);
 
-                      <div className={`max-w-[72%] rounded-2xl p-3.5 text-xs leading-relaxed ${
-                        chat.isPage
-                          ? 'bg-[#0084ff] text-white rounded-tr-none shadow-md'
-                          : 'bg-white text-slate-800 rounded-tl-none border border-slate-200/90 shadow-sm'
-                      }`}>
-                        <div className={`flex items-center justify-between gap-3 mb-1 text-[10px] ${
-                          chat.isPage ? 'text-blue-100' : 'text-slate-400 font-medium'
-                        }`}>
-                          <span className="font-bold">{chat.isPage ? 'درة السيارة لقطع الغيار' : selectedMessage.senderName}</span>
-                          <span className="flex items-center gap-1">
-                            {chat.time ? new Date(chat.time).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''}
-                            {chat.isPage && <CheckCheck className="w-3 h-3 text-blue-200" />}
-                          </span>
+                    // إذا كانت الرسالة إشعاراً تلقائياً من فيسبوك لرد على تعليق، نعرضها كشريط نظام أنيق بدلاً من فقاعة زرقاء مشوهة
+                    if (notice) {
+                      return (
+                        <div key={chat.id} className="flex justify-center my-1.5">
+                          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/90 hover:bg-blue-100/90 border border-blue-200/90 text-blue-800 text-[11px] font-medium transition-all shadow-2xs">
+                            <MessageSquare className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                            <span>رد تلقائي خاص على تعليق عميل في منشور فيسبوك</span>
+                            {notice.commentUrl && (
+                              <a
+                                href={notice.commentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900 font-bold underline mr-1"
+                              >
+                                <span>عرض التعليق الأصلي</span>
+                                <ExternalLink className="w-3 h-3 inline shrink-0" />
+                              </a>
+                            )}
+                          </div>
                         </div>
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed">{chat.message}</p>
+                      );
+                    }
+
+                    // الرسائل الحوارية العادية
+                    return (
+                      <div
+                        key={chat.id}
+                        className={`flex items-start gap-3 ${chat.isPage ? 'flex-row-reverse' : 'flex-row'}`}
+                      >
+                        <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-200 shadow-xs">
+                          {chat.isPage ? (
+                            <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
+                              درة
+                            </div>
+                          ) : (
+                            <img src={selectedMessage.avatar} alt={chat.sender} className="w-full h-full object-cover" />
+                          )}
+                        </div>
+
+                        <div className={`max-w-[75%] sm:max-w-[70%] rounded-2xl p-3.5 text-xs leading-relaxed ${
+                          chat.isPage
+                            ? 'bg-[#0084ff] text-white rounded-tr-none shadow-sm'
+                            : 'bg-white text-slate-800 rounded-tl-none border border-slate-200/90 shadow-2xs'
+                        }`}>
+                          <div className={`flex items-center justify-between gap-3 mb-1 text-[10px] ${
+                            chat.isPage ? 'text-blue-100' : 'text-slate-400 font-medium'
+                          }`}>
+                            <span className="font-bold">{chat.isPage ? 'درة السيارة لقطع الغيار' : selectedMessage.senderName}</span>
+                            <span className="flex items-center gap-1">
+                              {chat.time ? new Date(chat.time).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''}
+                              {chat.isPage && <CheckCheck className="w-3 h-3 text-blue-200" />}
+                            </span>
+                          </div>
+                          <div className="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed">
+                            {renderCleanMessageText(chat.message)}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   /* Fallback single message */
-                  <div className="flex items-start gap-3 flex-row">
-                    <img src={selectedMessage.avatar} alt={selectedMessage.senderName} className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-xs shrink-0" />
-                    <div className="max-w-[72%] rounded-2xl rounded-tl-none p-4 bg-white text-slate-800 text-sm leading-relaxed border border-slate-200/90 shadow-sm">
-                      <div className="flex items-center justify-between gap-3 mb-1 text-[10px] text-slate-400">
-                        <span className="font-bold text-slate-700">{selectedMessage.senderName}</span>
-                        <span>{selectedMessage.timestamp}</span>
+                  (() => {
+                    const notice = parseCommentNotice(selectedMessage.text);
+                    if (notice) {
+                      return (
+                        <div className="flex justify-center my-2">
+                          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-[11px] font-medium transition-all shadow-2xs">
+                            <MessageSquare className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                            <span>رد تلقائي على تعليق عميل في منشور فيسبوك</span>
+                            {notice.commentUrl && (
+                              <a
+                                href={notice.commentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900 font-bold underline mr-1"
+                              >
+                                <span>عرض التعليق الأصلي</span>
+                                <ExternalLink className="w-3 h-3 inline shrink-0" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="flex items-start gap-3 flex-row">
+                        <img src={selectedMessage.avatar} alt={selectedMessage.senderName} className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-xs shrink-0" />
+                        <div className="max-w-[75%] sm:max-w-[70%] rounded-2xl rounded-tl-none p-3.5 bg-white text-slate-800 text-xs sm:text-sm leading-relaxed border border-slate-200/90 shadow-2xs">
+                          <div className="flex items-center justify-between gap-3 mb-1 text-[10px] text-slate-400">
+                            <span className="font-bold text-slate-700">{selectedMessage.senderName}</span>
+                            <span>{selectedMessage.timestamp}</span>
+                          </div>
+                          <div className="whitespace-pre-wrap">{renderCleanMessageText(selectedMessage.text)}</div>
+                        </div>
                       </div>
-                      <p className="whitespace-pre-wrap">{selectedMessage.text}</p>
-                    </div>
-                  </div>
+                    );
+                  })()
                 )}
 
                 {/* Show saved reply if single */}
@@ -754,7 +931,7 @@ export default function OmnichannelInboxView({
                     <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs">
                       درة
                     </div>
-                    <div className="max-w-[72%] rounded-2xl rounded-tr-none p-4 bg-[#0084ff] text-white text-sm leading-relaxed shadow-md">
+                    <div className="max-w-[75%] sm:max-w-[70%] rounded-2xl rounded-tr-none p-3.5 bg-[#0084ff] text-white text-xs sm:text-sm leading-relaxed shadow-sm">
                       <div className="flex items-center justify-between gap-3 mb-1 text-[10px] text-blue-100">
                         <span className="font-bold">درة السيارة لقطع الغيار</span>
                         <span className="flex items-center gap-1">
@@ -762,7 +939,7 @@ export default function OmnichannelInboxView({
                           <CheckCheck className="w-3.5 h-3.5 text-blue-200" />
                         </span>
                       </div>
-                      <p className="whitespace-pre-wrap">{selectedMessage.reply}</p>
+                      <div className="whitespace-pre-wrap">{renderCleanMessageText(selectedMessage.reply)}</div>
                     </div>
                   </div>
                 )}
@@ -777,15 +954,19 @@ export default function OmnichannelInboxView({
                   </div>
                 )}
 
-                {/* Typing indicator pill */}
-                <div className="flex items-center gap-2 text-[11px] text-slate-400 italic">
-                  <div className="flex gap-1 bg-white border border-slate-200 px-2.5 py-1 rounded-full shadow-xs">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-bounce"></span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-bounce [animation-delay:0.2s]"></span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-bounce [animation-delay:0.4s]"></span>
-                    <span className="text-[10px] text-slate-500 mr-1.5 font-sans font-medium">سليم الحموي is typing...</span>
+                {/* زر طافي ذكي: الانتقال لأحدث رسالة (يظهر فقط عند التمرير لأعلى لقراءة القديم) */}
+                {showScrollBottom && (
+                  <div className="sticky bottom-2 flex justify-center z-20 pointer-events-none">
+                    <button
+                      type="button"
+                      onClick={scrollToBottom}
+                      className="pointer-events-auto flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white text-[11px] font-bold shadow-lg shadow-black/20 transition-all animate-bounce backdrop-blur-xs border border-slate-700"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5 text-blue-400" />
+                      <span>الانتقال لأحدث رسالة ↓</span>
+                    </button>
                   </div>
-                </div>
+                )}
 
               </div>
 
