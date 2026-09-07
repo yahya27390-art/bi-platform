@@ -123,10 +123,8 @@ export function loadMetaConfig() {
       messaging: {
         ...DEFAULT_META_CONFIG.messaging,
         ...(parsed.messaging || {}),
-        facebookPageToken: parsed.messaging?.facebookPageToken || DEFAULT_META_CONFIG.messaging.facebookPageToken,
-        messagingAccessToken: (parsed.messaging?.messagingAccessToken && !parsed.messaging.messagingAccessToken.startsWith('EAAeg0uiXakwBSXsk'))
-          ? parsed.messaging.messagingAccessToken
-          : DEFAULT_META_CONFIG.messaging.messagingAccessToken,
+        facebookPageToken: DEFAULT_META_CONFIG.messaging.facebookPageToken,
+        messagingAccessToken: DEFAULT_META_CONFIG.messaging.messagingAccessToken,
       },
       summary: {
         ...DEFAULT_META_CONFIG.summary,
@@ -134,6 +132,7 @@ export function loadMetaConfig() {
       },
       campaigns: parsed.campaigns || DEFAULT_META_CONFIG.campaigns,
     };
+    saveMetaConfig(merged);
     return merged;
   } catch {
     return DEFAULT_META_CONFIG;
