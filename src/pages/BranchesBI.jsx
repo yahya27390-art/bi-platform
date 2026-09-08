@@ -20,6 +20,7 @@ import {
   Layers,
   CreditCard,
   Car,
+  Wrench,
   Star,
   Compass,
   ArrowUpRight,
@@ -76,21 +77,20 @@ const MAP_METRICS = [
   { key: 'newCustomers', label: 'العملاء الجدد' },
 ];
 
-// Rich Branch Comparisons Data for August 2026 (100% Authentic Matching)
+// Rich Branch Comparisons Data for August 2026 (Auto Spare Parts for Hyundai & Kia)
 const BRANCH_ANALYTICS = {
   'main': {
     name: 'الفرع الرئيسي',
+    specialty: 'قطع غيار سيارات هيونداي وكيا وموبيس الأصلية',
     paymentMethods: [
       { method: 'نقاط بيع (مدى Mada)', pct: 55, amount: 235887.02, color: '#3B82F6' },
       { method: 'تحويلات بنكية مباشرة', pct: 25, amount: 107221.37, color: '#10B981' },
       { method: 'تقسيط (تمارا وتابي)', pct: 15, amount: 64332.82, color: '#F59E0B' },
       { method: 'نقدي وسداد مباشر', pct: 5, amount: 21444.27, color: '#64748B' },
     ],
-    brands: [
-      { brand: 'هيونداي (Hyundai)', pct: 45, sales: 193000, count: 472 },
-      { brand: 'كيا (Kia Motors)', pct: 30, sales: 128665, count: 315 },
-      { brand: 'تويوتا (Toyota)', pct: 15, sales: 64333, count: 158 },
-      { brand: 'أخرى ومتنوع', pct: 10, sales: 42887, count: 105 },
+    sparePartsCategories: [
+      { name: 'قطع غيار سيارات هيونداي (Hyundai Genuine Parts)', pct: 55, sales: 235887.02, count: 578 },
+      { name: 'قطع غيار سيارات كيا (Kia Genuine Parts)', pct: 45, sales: 192998.47, count: 472 },
     ],
     teamCount: 14,
     peakHours: '5:00 م — 10:00 م',
@@ -98,16 +98,16 @@ const BRANCH_ANALYTICS = {
   },
   'al-rawaf': {
     name: 'فرع الرواف',
+    specialty: 'المركز المتخصص: قطع غيار سيارات هيونداي (Hyundai)',
     paymentMethods: [
       { method: 'نقاط بيع (مدى Mada)', pct: 60, amount: 174823.00, color: '#3B82F6' },
       { method: 'تحويلات بنكية مباشرة', pct: 20, amount: 58274.33, color: '#10B981' },
       { method: 'تقسيط (تمارا وتابي)', pct: 15, amount: 43705.75, color: '#F59E0B' },
       { method: 'نقدي وسداد مباشر', pct: 5, amount: 14568.58, color: '#64748B' },
     ],
-    brands: [
-      { brand: 'هيونداي (Hyundai)', pct: 60, sales: 174823, count: 429 },
-      { brand: 'كيا (Kia Motors)', pct: 25, sales: 72843, count: 179 },
-      { brand: 'أخرى ومتنوع', pct: 15, sales: 43706, count: 107 },
+    sparePartsCategories: [
+      { name: 'قطع غيار سيارات هيونداي (Hyundai Genuine Parts)', pct: 75, sales: 218528.75, count: 536 },
+      { name: 'قطع غيار سيارات كيا (Kia Genuine Parts)', pct: 25, sales: 72842.92, count: 179 },
     ],
     teamCount: 9,
     peakHours: '4:30 م — 9:30 م',
@@ -115,16 +115,16 @@ const BRANCH_ANALYTICS = {
   },
   'kia': {
     name: 'فرع كيا',
+    specialty: 'المركز المتخصص: قطع غيار سيارات كيا (Kia Motors)',
     paymentMethods: [
       { method: 'نقاط بيع (مدى Mada)', pct: 50, amount: 134632.50, color: '#3B82F6' },
       { method: 'تقسيط (تمارا وتابي)', pct: 25, amount: 67316.25, color: '#F59E0B' },
       { method: 'تحويلات بنكية مباشرة', pct: 20, amount: 53853.00, color: '#10B981' },
       { method: 'نقدي وسداد مباشر', pct: 5, amount: 13463.25, color: '#64748B' },
     ],
-    brands: [
-      { brand: 'كيا (Kia Motors)', pct: 75, sales: 201949, count: 495 },
-      { brand: 'هيونداي (Hyundai)', pct: 20, sales: 53853, count: 132 },
-      { brand: 'أخرى ومتنوع', pct: 5, sales: 13463, count: 33 },
+    sparePartsCategories: [
+      { name: 'قطع غيار سيارات كيا (Kia Genuine Parts)', pct: 80, sales: 215412.00, count: 528 },
+      { name: 'قطع غيار سيارات هيونداي (Hyundai Genuine Parts)', pct: 20, sales: 53853.00, count: 132 },
     ],
     teamCount: 8,
     peakHours: '5:00 م — 10:30 م',
@@ -976,37 +976,42 @@ export default function BranchesBI() {
                 </div>
               </div>
 
-              {/* Car Brands Sales Contribution */}
+              {/* Spare Parts Brand Sales Contribution (هيونداي وكيا) */}
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div>
                     <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                      <Car className="w-5 h-5 text-emerald-600" />
-                      <span>مبيعات المركبات حسب الماركة: {selectedBranch.name}</span>
+                      <Wrench className="w-5 h-5 text-emerald-600" />
+                      <span>مبيعات قطع الغيار (هيونداي وكيا): {selectedBranch.name}</span>
                     </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">توزيع المبيعات الصافية على الشركات المصنعة</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      توزيع مبيعات قطع الغيار المعتمدة لسيارات هيونداي وكيا
+                    </p>
                   </div>
                   <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl">
-                    {currentBranchAnalytics.brands.length} علامات رئيسية
+                    تخصص: قطع غيار هيونداي وكيا
                   </span>
                 </div>
 
                 <div className="space-y-3">
-                  {currentBranchAnalytics.brands.map((b, i) => (
+                  {currentBranchAnalytics.sparePartsCategories.map((cat, i) => (
                     <div key={i} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-black text-slate-800">{b.brand}</span>
+                        <span className="font-black text-slate-800 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          <span>{cat.name}</span>
+                        </span>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-slate-600">{formatSAR(b.sales, true)}</span>
+                          <span className="font-mono font-bold text-slate-600">{formatSAR(cat.sales, true)}</span>
                           <span className="font-mono font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md text-[11px]">
-                            {b.pct}% ({b.count} سيارة)
+                            {cat.pct}% ({cat.count} صنف / طلبية)
                           </span>
                         </div>
                       </div>
                       <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-emerald-600 rounded-full transition-all duration-700"
-                          style={{ width: `${b.pct}%` }}
+                          style={{ width: `${cat.pct}%` }}
                         />
                       </div>
                     </div>

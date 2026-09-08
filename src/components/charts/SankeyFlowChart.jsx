@@ -38,7 +38,7 @@ const SANKEY_DATA = {
     { id: 'hub_central', name: 'إجمالي صافي المبيعات', value: 989522.16, pct: '100%', color: '#0F172A', type: 'hub', desc: 'إجمالي المبيعات الصافية المجمعة لكامل فروع الشركة' },
 
     // Level 2: Primary Capital Allocation
-    { id: 'cogs', name: 'تكلفة البضاعة (COGS)', value: 712159.10, pct: '71.97%', color: '#94A3B8', type: 'cost', desc: 'تكلفة شراء وتجهيز سيارات المخزون المسترد كأصل رأسمالي' },
+    { id: 'cogs', name: 'تكلفة البضاعة (COGS)', value: 712159.10, pct: '71.97%', color: '#94A3B8', type: 'cost', desc: 'تكلفة استيراد وشراء مخزون قطع غيار سيارات هيونداي وكيا وتجهيز المستودعات' },
     { id: 'gross_profit', name: 'مجمل أرباح الأعمال', value: 277363.06, pct: '28.03%', color: '#10B981', type: 'profit', desc: 'هامش الربح الإجمالي المحقق قبل خصم المصاريف التشغيلية' },
 
     // Level 3: Reinvestment & Utilization of Gross Profit
@@ -611,7 +611,7 @@ export default function SankeyFlowChart({ height = 520 }) {
                     {formatSAR(712159.10, true)}
                   </div>
                   <p className="text-[10px] text-slate-400 leading-snug mt-1">
-                    أصل رأسمالي متجدد لشراء وتجهيز أسطول السيارات
+                    أصل رأسمالي متجدد لتوريد وشراء مخزون قطع غيار هيونداي وكيا
                   </p>
                   <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
                     <div className="h-full bg-slate-400 rounded-full" style={{ width: '71.97%' }} />
@@ -989,7 +989,7 @@ export default function SankeyFlowChart({ height = 520 }) {
               <div className="text-lg font-black font-mono text-slate-200" dir="ltr">
                 {((simulatorSAR * 71.97) / 100).toFixed(2)} ر.س
               </div>
-              <span className="text-[9px] text-slate-400 block">شراء وتجهيز السيارات</span>
+              <span className="text-[9px] text-slate-400 block">توريد وشراء قطع الغيار</span>
             </div>
 
             <div className={`p-3.5 rounded-2xl border space-y-1 ${isDark ? 'bg-white/[0.04] border-white/10' : 'bg-white border-slate-200'}`}>
