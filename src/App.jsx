@@ -10,6 +10,7 @@ import Financials from './pages/Financials';
 import Targets from './pages/Targets';
 import DataImport from './pages/DataImport';
 import PrivateCampaignLab from './pages/PrivateCampaignLab';
+import OwnerExecutiveDashboard from './pages/OwnerExecutiveDashboard';
 import BILogin from './auth/BILogin';
 import BIProtectedRoute from './auth/BIProtectedRoute';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/financials" element={<Financials />} />
         <Route path="/targets" element={<Targets />} />
         <Route path="/import" element={<DataImport />} />
+        <Route path="/owner" element={<OwnerExecutiveDashboard />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

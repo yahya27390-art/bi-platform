@@ -3,12 +3,18 @@ import { cn } from '@/lib/utils';
 import { useBIAuth } from '@/auth/BIAuthContext';
 import {
   LayoutDashboard, TrendingUp, ShoppingCart, MapPin, Package,
-  DollarSign, Target, Upload, Building2, Sparkles, X
+  DollarSign, Target, Upload, Building2, Sparkles, X, Crown, Lock
 } from 'lucide-react';
 import doraLogo from '@/assets/dora_logo.png';
 
 const NAV_ITEMS = [
   { label: 'نظرة عامة', icon: LayoutDashboard, path: '/', exact: true },
+  { 
+    label: 'خزنة المالك التنفيذية (C-Suite)', 
+    icon: Crown, 
+    path: '/owner', 
+    isOwnerVault: true 
+  },
   { label: 'الحملات الإعلانية', icon: TrendingUp, path: '/media' },
   { 
     label: 'مختبر الحملات والذكاء الاصطناعي', 
@@ -72,7 +78,11 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
               className={cn(
                 'w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 group relative',
                 active
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/35 ring-2 ring-blue-400/30 font-bold'
+                  ? item.isOwnerVault
+                    ? 'bg-gradient-to-br from-amber-500 to-amber-700 text-slate-950 shadow-lg shadow-amber-500/35 ring-2 ring-amber-400/40 font-bold'
+                    : 'bg-blue-600 text-white shadow-lg shadow-blue-600/35 ring-2 ring-blue-400/30 font-bold'
+                  : item.isOwnerVault
+                  ? 'text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 shadow-xs'
                   : item.highlight
                   ? 'text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30'
                   : 'text-slate-400 hover:bg-white/10 hover:text-white'
@@ -80,19 +90,28 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
             >
               {/* Active right bar indicator */}
               {active && (
-                <span className="absolute -right-2 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-l-full" />
+                <span className={`absolute -right-2 top-1/2 -translate-y-1/2 w-1 h-5 rounded-l-full ${item.isOwnerVault ? 'bg-amber-400' : 'bg-blue-500'}`} />
               )}
 
               <item.icon
                 className={cn(
                   'w-5 h-5 transition-transform duration-200 group-hover:scale-110',
-                  active ? 'text-white' : item.highlight ? 'text-cyan-400' : 'text-slate-400 group-hover:text-white'
+                  active
+                    ? item.isOwnerVault ? 'text-slate-950' : 'text-white'
+                    : item.isOwnerVault
+                    ? 'text-amber-400'
+                    : item.highlight
+                    ? 'text-cyan-400'
+                    : 'text-slate-400 group-hover:text-white'
                 )}
               />
 
               {/* Floating Tooltip (منسدلة/تلميح عائم أنيق على اليمين) */}
               <div className="absolute right-full mr-3.5 px-3 py-1.5 bg-[#0F172A] text-white text-xs font-bold rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 shadow-2xl border border-slate-700/90 z-50">
                 {item.label}
+                {item.isOwnerVault && (
+                  <span className="text-[10px] text-amber-300 mr-1 font-mono">(PIN)</span>
+                )}
                 {item.highlight && (
                   <span className="text-[10px] text-purple-300 mr-1 font-normal">(AI)</span>
                 )}
