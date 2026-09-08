@@ -157,7 +157,7 @@ export default function MediaBuying() {
             ECharts Radar
           </span>
         </div>
-        <PlatformRadarChart height={340} />
+        <PlatformRadarChart height={440} showChannelPills={true} interactiveFilter={true} />
       </div>
 
       {/* Platform Tabs */}

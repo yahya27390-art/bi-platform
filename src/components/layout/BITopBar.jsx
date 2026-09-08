@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, ChevronDown, RefreshCw, Bell, User, LogOut, ShieldCheck } from 'lucide-react';
+import { Menu, ChevronDown, RefreshCw, Bell, User, LogOut, ShieldCheck, Upload } from 'lucide-react';
 import { useBIAuth } from '@/auth/BIAuthContext';
 import { usePeriods } from '../../hooks/useBIData';
 import { useCurrentPeriod } from '../../context/BIPeriodContext';
@@ -92,6 +92,16 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
         <RefreshCw className="w-3 h-3 text-emerald-600" />
         بيانات مدققة ومطابقة Z-Report
       </div>
+
+      {/* Quick Data Import Button for Owner & Management */}
+      <button
+        onClick={() => navigate('/import')}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 text-xs font-bold transition-all shadow-xs"
+        title="مركز استيراد وتدقيق البيانات (Data Import)"
+      >
+        <Upload className="w-3.5 h-3.5 text-blue-700" />
+        <span className="hidden md:inline">استيراد البيانات</span>
+      </button>
 
       {/* User & Role Switcher */}
       <div className="relative">
