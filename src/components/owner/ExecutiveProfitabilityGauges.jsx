@@ -78,27 +78,27 @@ export default function ExecutiveProfitabilityGauges() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <SemiGauge
           label="هامش مجمل الربح"
-          value="37.5"
+          value="37.1"
           color="#0F2744"
-          sublabel="Gross Margin"
+          sublabel="Gross Margin (367.4K)"
         />
         <SemiGauge
-          label="تغطية التشغيل"
-          value="75.2"
-          color="#0284C7"
-          sublabel="OPEX Coverage"
-        />
-        <SemiGauge
-          label="هامش قبل الفوائد"
+          label="هامش الأرباح التشغيلية"
           value="29.4"
+          color="#0284C7"
+          sublabel="Operating Margin (EBITDA)"
+        />
+        <SemiGauge
+          label="نسبة المصاريف (OPEX)"
+          value="9.1"
           color="#F97316"
-          sublabel="Operating Margin"
+          sublabel="OPEX to Sales (90K)"
         />
         <SemiGauge
           label="هامش صافي الربح"
           value="28.0"
           color="#10B981"
-          sublabel="Net Profit Margin"
+          sublabel="Net Margin (277.4K)"
         />
       </div>
     </div>

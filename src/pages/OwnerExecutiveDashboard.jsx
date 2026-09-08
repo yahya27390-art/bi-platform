@@ -36,7 +36,6 @@ import OwnerSecurityGate from '../components/owner/OwnerSecurityGate';
 import ExecutiveReportsModal from '../components/shared/ExecutiveReportsModal';
 import ExecutiveIncomeStatementTab from '../components/owner/ExecutiveIncomeStatementTab';
 import ExecutiveBalanceSheetTab from '../components/owner/ExecutiveBalanceSheetTab';
-import ExecutiveCashFlowTab from '../components/owner/ExecutiveCashFlowTab';
 import ExecutiveRatiosRadarTab from '../components/owner/ExecutiveRatiosRadarTab';
 import ExecutiveProfitabilityGauges from '../components/owner/ExecutiveProfitabilityGauges';
 
@@ -156,11 +155,10 @@ export default function OwnerExecutiveDashboard() {
   };
 
   const TABS = [
-    { id: 'summary', label: 'Executive Summary', arLabel: 'ملخص الأداء التنفيذي', icon: BarChart3 },
+    { id: 'summary', label: 'Executive Summary', arLabel: 'ملخص الأداء المالي المعتمد', icon: BarChart3 },
     { id: 'income', label: 'Income Statement', arLabel: 'قائمة الدخل ومخطط الشلال', icon: TrendingUp },
-    { id: 'balance', label: 'Balance Sheet', arLabel: 'المركز المالي وأصول المخزون', icon: PieChart },
-    { id: 'cash', label: 'Cash Flow', arLabel: 'التدفقات النقدية والسيولة', icon: Wallet },
-    { id: 'ratios', label: 'Financial Ratios', arLabel: 'النسب المالية ومصفوفة الكفاءة', icon: Compass },
+    { id: 'inventory', label: 'Warehouse Inventory', arLabel: 'تدقيق المستودع والمخزون الفعلي', icon: Boxes },
+    { id: 'radar', label: '5-Axis Efficiency Radar', arLabel: 'مصفوفة الكفاءة وعائد القنوات', icon: Compass },
   ];
 
   return (
@@ -309,20 +307,20 @@ export default function OwnerExecutiveDashboard() {
           {/* TAB 1: EXECUTIVE SUMMARY */}
           {activeTab === 'summary' && (
             <div className="space-y-6 animate-fadeIn">
-              {/* The 8 Key Executive Financial Metrics (Exact Grid from Image 3) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              {/* The 6 Authentic Key Executive Financial Metrics (Zero Assumed/Unverified Cards) */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                 
                 {/* 1. Total Revenue */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
                   <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    صافي المبيعات (Total Revenue)
+                    صافي المبيعات (Net Sales)
                   </div>
                   <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
                     {mask(formatSAR(NET_SALES))}
                   </div>
                   <div className="mt-2 text-[10px] text-emerald-700 font-bold flex items-center gap-1">
                     <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>+123.7% تجاوز التارجت</span>
+                    <span>3 فروع + سلة</span>
                   </div>
                 </div>
 
@@ -340,37 +338,50 @@ export default function OwnerExecutiveDashboard() {
                   </div>
                 </div>
 
-                {/* 3. Monthly Fixed OPEX */}
+                {/* 3. Cost of Goods Sold (COGS) */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
                   <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    التشغيل الثابت (Monthly OPEX)
+                    تكلفة البضاعة (COGS)
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-rose-800 font-mono mt-2">
+                    {mask(formatSAR(COGS_TOTAL))}
+                  </div>
+                  <div className="mt-2 text-[10px] text-slate-500 font-bold flex items-center gap-1">
+                    <span>62.88% من المبيعات</span>
+                  </div>
+                </div>
+
+                {/* 4. Monthly Fixed OPEX */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                  <div className="text-[11px] font-bold text-slate-500 mb-1">
+                    التشغيل الثابت (OPEX)
                   </div>
                   <div className="text-xl sm:text-2xl font-black text-amber-900 font-mono mt-2">
                     {mask(formatSAR(TOTAL_MONTHLY_OPEX))}
                   </div>
                   <div className="mt-2 text-[10px] text-slate-500 font-bold flex items-center gap-1">
-                    <span>تغطية الأرباح: {OPEX_COVERAGE_RATIO}%</span>
+                    <span>رواتب ومرافق وتشغيل</span>
                   </div>
                 </div>
 
-                {/* 4. Net Profit */}
+                {/* 5. Net Profit */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
                   <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    صافي الربح الحقيقي (Net Profit)
+                    صافي الربح (Net Profit)
                   </div>
                   <div className="text-xl sm:text-2xl font-black text-emerald-700 font-mono mt-2">
                     {mask(formatSAR(NET_PROFIT))}
                   </div>
                   <div className="mt-2 text-[10px] text-emerald-800 font-bold flex items-center gap-1">
                     <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>صافي 28.03% (محسوب بدقة)</span>
+                    <span>صافي 28.03% (معتمد)</span>
                   </div>
                 </div>
 
-                {/* 5. Inventory Items */}
+                {/* 6. Inventory Items */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
                   <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    أصناف المستودع (Total SKUs)
+                    أصناف المستودع (SKUs)
                   </div>
                   <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
                     8,693 <span className="text-xs font-sans text-slate-500 font-normal">صنف</span>
@@ -380,45 +391,6 @@ export default function OwnerExecutiveDashboard() {
                     <button onClick={() => openReport('stagnant')} className="text-blue-600 hover:underline">
                       فحص ↗
                     </button>
-                  </div>
-                </div>
-
-                {/* 6. Total Balance Pieces */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-                  <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    رصيد القطع (Warehouse Units)
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono mt-2">
-                    {formatNum(REAL_INVENTORY_STATS?.totalBalance || 28683)} <span className="text-xs font-sans text-slate-500 font-normal">قطعة</span>
-                  </div>
-                  <div className="mt-2 text-[10px] text-slate-500 font-bold">
-                    منصرف: {formatNum(REAL_INVENTORY_STATS?.totalIssued || 14210)} قطعة
-                  </div>
-                </div>
-
-                {/* 7. Working Capital */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-                  <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    حقوق الملكية التقديرية (Equity)
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono mt-2">
-                    {mask('1.54M ر.س')}
-                  </div>
-                  <div className="mt-2 text-[10px] text-emerald-700 font-bold">
-                    ▲ التزامات الموردين مغطاة
-                  </div>
-                </div>
-
-                {/* 8. Free Cash Balance */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-                  <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    السيولة الحرة (Cash Balance)
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
-                    {mask('450,000 ر.س')}
-                  </div>
-                  <div className="mt-2 text-[10px] text-emerald-700 font-bold">
-                    ▲ أمان نقدي لـ 5 أشهر
                   </div>
                 </div>
               </div>
@@ -531,25 +503,16 @@ export default function OwnerExecutiveDashboard() {
             />
           )}
 
-          {/* TAB 3: BALANCE SHEET */}
-          {activeTab === 'balance' && (
+          {/* TAB 3: REAL WAREHOUSE INVENTORY AUDIT */}
+          {activeTab === 'inventory' && (
             <ExecutiveBalanceSheetTab
               mask={mask}
               onOpenReportsModal={openReport}
             />
           )}
 
-          {/* TAB 4: CASH FLOW */}
-          {activeTab === 'cash' && (
-            <ExecutiveCashFlowTab
-              mask={mask}
-              netProfit={NET_PROFIT}
-              opexTotal={TOTAL_MONTHLY_OPEX}
-            />
-          )}
-
-          {/* TAB 5: FINANCIAL RATIOS & 5-AXIS RADAR */}
-          {activeTab === 'ratios' && (
+          {/* TAB 4: 5-AXIS EFFICIENCY RADAR & MARKETING PERFORMANCE */}
+          {activeTab === 'radar' && (
             <ExecutiveRatiosRadarTab />
           )}
 
