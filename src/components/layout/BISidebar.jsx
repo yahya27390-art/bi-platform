@@ -100,9 +100,9 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
                   : 'text-slate-400 hover:bg-white/10 hover:text-white'
               )}
             >
-              {/* Active right bar indicator */}
+              {/* Active inner edge bar indicator */}
               {active && (
-                <span className={`absolute -right-2 top-1/2 -translate-y-1/2 w-1 h-5 rounded-l-full ${item.isOwnerVault ? 'bg-amber-400' : 'bg-blue-500'}`} />
+                <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full ${item.isOwnerVault ? 'bg-amber-400 shadow-sm' : 'bg-blue-500 shadow-sm'}`} />
               )}
 
               <item.icon

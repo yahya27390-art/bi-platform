@@ -13,11 +13,11 @@ export default function ExecutiveRatiosRadarTab() {
       top: 0,
       textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
     },
-    grid: { left: '3%', right: '4%', bottom: '5%', top: '16%', containLabel: true },
+    grid: { left: '3%', right: '4%', bottom: 40, top: 40, containLabel: true },
     xAxis: {
       type: 'category',
       data: ['2023', '2024', '2025', '2026'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155' }
+      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', margin: 12 }
     },
     yAxis: {
       type: 'value',

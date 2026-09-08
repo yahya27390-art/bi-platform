@@ -1,47 +1,50 @@
 import React from 'react';
 
-function SemiGauge({ label, value, color = '#0284C7', target = '100%', sublabel }) {
+function SemiGauge({ label, value, color = '#0284C7', sublabel }) {
   const percentage = Math.min(Math.max(parseFloat(value) || 0, 0), 100);
-  // SVG arc calculation for semi-circle
-  const radius = 42;
-  const circumference = Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  // Exact SVG arc: radius 38, semi-circle length = Math.PI * 38 = 119.38
+  const arcLength = 119.4;
+  const strokeDashoffset = arcLength - (percentage / 100) * arcLength;
 
   return (
-    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-100 shadow-xs text-center">
-      <div className="relative w-28 h-16 flex items-end justify-center overflow-hidden">
-        <svg className="w-28 h-28 transform -rotate-180" viewBox="0 0 100 100">
-          {/* Background Track */}
-          <circle
-            cx="50"
-            cy="50"
-            r={radius}
+    <div className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs text-center transition-all hover:shadow-sm">
+      <div className="relative w-32 h-20 flex items-center justify-center">
+        <svg className="w-32 h-20 overflow-visible" viewBox="0 0 100 65">
+          {/* Background Track (Top semi-circle arch) */}
+          <path
+            d="M 12 55 A 38 38 0 0 1 88 55"
             fill="none"
-            stroke="#F1F5F9"
-            strokeWidth="10"
-            strokeDasharray={circumference}
-            strokeDashoffset="0"
+            stroke="#E2E8F0"
+            strokeWidth="9"
+            strokeLinecap="round"
           />
-          {/* Colored Progress Arc */}
-          <circle
-            cx="50"
-            cy="50"
-            r={radius}
+          {/* Active Colored Progress Arc */}
+          <path
+            d="M 12 55 A 38 38 0 0 1 88 55"
             fill="none"
             stroke={color}
-            strokeWidth="10"
+            strokeWidth="9"
             strokeLinecap="round"
-            strokeDasharray={circumference}
+            strokeDasharray={arcLength}
             strokeDashoffset={strokeDashoffset}
             className="transition-all duration-1000 ease-out"
           />
-        </svg>
-        <div className="absolute bottom-1 flex flex-col items-center">
-          <span className="text-base font-black font-mono text-[#0F2744]">
+          {/* Centered Value */}
+          <text
+            x="50"
+            y="50"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="monospace"
+            fontWeight="900"
+            fontSize="15"
+            fill="#0F2744"
+          >
             {value}%
-          </span>
-        </div>
+          </text>
+        </svg>
       </div>
+
       <div className="text-xs font-bold text-slate-800 mt-1">{label}</div>
       {sublabel && (
         <div className="text-[10px] text-slate-400 font-medium">{sublabel}</div>

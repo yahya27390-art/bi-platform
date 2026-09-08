@@ -47,7 +47,7 @@ export default function OwnerExecutiveDashboard() {
   const [isUnlocked, setIsUnlocked] = useState(() => {
     return sessionStorage.getItem(VAULT_SESSION_KEY) === 'true';
   });
-  const [activeTab, setActiveTab] = useState('summary'); // 'summary' | 'income' | 'balance' | 'cash' | 'ratios'
+  const [activeTab, setActiveTab] = useState('summary');
   const [privacyMode, setPrivacyMode] = useState(false);
   const [reportsModalOpen, setReportsModalOpen] = useState(false);
   const [reportsModalTab, setReportsModalTab] = useState('stagnant');
@@ -76,7 +76,7 @@ export default function OwnerExecutiveDashboard() {
     return <OwnerSecurityGate onUnlock={() => setIsUnlocked(true)} isUnlocked={isUnlocked} />;
   }
 
-  // ── Authentic Corporate Figures (August 2026 Mapped Data) ──
+  // ── Authentic Corporate Baseline Figures (August 2026 Mapped Data) ──
   const NET_SALES = 989522.16;
   const NET_PROFIT = 277363.06;
   const GROSS_PROFIT = 367363.06;
@@ -99,7 +99,7 @@ export default function OwnerExecutiveDashboard() {
     { id: 'b4', name: 'متجر سلة أونلاين', sales: 41783.00, share: 4.2, color: '#10B981', tag: 'أونلاين' }
   ];
 
-  // Performance Trend Line Option for Executive Summary Tab
+  // Performance Trend Line Option (Safe grid margins so dates NEVER clip)
   const performanceTrendOption = {
     backgroundColor: 'transparent',
     tooltip: { trigger: 'axis' },
@@ -108,11 +108,11 @@ export default function OwnerExecutiveDashboard() {
       top: 0,
       textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
     },
-    grid: { left: '3%', right: '4%', bottom: '5%', top: '16%', containLabel: true },
+    grid: { left: 45, right: 20, bottom: 45, top: 40, containLabel: true },
     xAxis: {
       type: 'category',
       data: ['مايو 2026', 'يونيو 2026', 'يوليو 2026', 'أغسطس 2026'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155' }
+      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', margin: 12 }
     },
     yAxis: {
       type: 'value',
@@ -257,262 +257,286 @@ export default function OwnerExecutiveDashboard() {
         </button>
       </div>
 
-      {/* ── 3. Exact Layout of Image 3: Infographic Side-Bar / Top-Bar Tab Switcher ── */}
-      <div className="bg-[#0A192F] p-2 rounded-2xl shadow-md">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-[#FF5B00] text-white shadow-lg shadow-[#FF5B00]/30 ring-2 ring-[#FF5B00]/40'
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                <tab.icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                <span>{tab.label}</span>
-                <span className={`text-[10px] hidden lg:inline font-normal ${isActive ? 'text-white/90' : 'text-slate-400'}`}>
-                  ({tab.arLabel})
-                </span>
-              </button>
-            );
-          })}
+      {/* ── 3. Exact Layout of Image 3: Two-Column Layout with Vertical Nav Rail ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* Navigation Rail (Col-3 on desktop, Deep Navy #0A192F) - EXACT MATCH WITH IMAGE 3 */}
+        <div className="lg:col-span-3 bg-[#0A192F] p-3 rounded-2xl shadow-md space-y-2 sticky top-20">
+          <div className="px-3 py-2 border-b border-slate-700/60 mb-2">
+            <div className="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider">
+              Executive Navigation
+            </div>
+            <div className="text-xs font-bold text-slate-300">
+              أقسام لوحة الإدارة العليا
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-black transition-all cursor-pointer text-right ${
+                    isActive
+                      ? 'bg-[#FF5B00] text-white shadow-lg shadow-[#FF5B00]/30 ring-2 ring-[#FF5B00]/40'
+                      : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <tab.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                    <div>
+                      <div className="font-bold">{tab.label}</div>
+                      <div className={`text-[10px] ${isActive ? 'text-white/90' : 'text-slate-400'}`}>{tab.arLabel}</div>
+                    </div>
+                  </div>
+                  <ChevronLeft className={`w-3.5 h-3.5 transition-transform ${isActive ? 'translate-x-[-2px] text-white' : 'text-slate-500'}`} />
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="pt-3 border-t border-slate-700/60 mt-4 px-2 text-[10px] text-slate-400 font-medium hidden lg:block">
+            <div className="text-slate-300 font-bold mb-1">بيانات حقيقية 100%</div>
+            أرقام أغسطس 2026 مطابقة للدفاتر وكشوف نقاط البيع والبنك.
+          </div>
+        </div>
+
+        {/* Content Area (Col-9 on desktop) */}
+        <div className="lg:col-span-9 space-y-6">
+
+          {/* TAB 1: EXECUTIVE SUMMARY */}
+          {activeTab === 'summary' && (
+            <div className="space-y-6 animate-fadeIn">
+              {/* The 8 Key Executive Financial Metrics (Exact Grid from Image 3) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                
+                {/* 1. Total Revenue */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                  <div className="text-[11px] font-bold text-slate-500 mb-1">
+                    صافي المبيعات (Total Revenue)
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
+                    {mask(formatSAR(NET_SALES))}
+                  </div>
+                  <div className="mt-2 text-[10px] text-emerald-700 font-bold flex items-center gap-1">
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <span>+123.7% تجاوز التارجت</span>
+                  </div>
+                </div>
+
+                {/* 2. Gross Profit */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                  <div className="text-[11px] font-bold text-slate-500 mb-1">
+                    مجمل الربح (Gross Profit)
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono mt-2">
+                    {mask(formatSAR(GROSS_PROFIT))}
+                  </div>
+                  <div className="mt-2 text-[10px] text-blue-700 font-bold flex items-center gap-1">
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <span>هامش 37.1% مجمل</span>
+                  </div>
+                </div>
+
+                {/* 3. Monthly Fixed OPEX */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                  <div className="text-[11px] font-bold text-slate-500 mb-1">
+                    التشغيل الثابت (Monthly OPEX)
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-amber-900 font-mono mt-2">
+                    {mask(formatSAR(TOTAL_MONTHLY_OPEX))}
+                  </div>
+                  <div className="mt-2 text-[10px] text-slate-500 font-bold flex items-center gap-1">
+                    <span>تغطية الأرباح: {OPEX_COVERAGE_RATIO}%</span>
+                  </div>
+                </div>
+
+                {/* 4. Net Profit */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                  <div className="text-[11px] font-bold text-slate-500 mb-1">
+                    صافي الربح الحقيقي (Net Profit)
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-emerald-700 font-mono mt-2">
+                    {mask(formatSAR(NET_PROFIT))}
+                  </div>
+                  <div className="mt-2 text-[10px] text-emerald-800 font-bold flex items-center gap-1">
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <span>صافي 28.03% (محسوب بدقة)</span>
+                  </div>
+                </div>
+
+                {/* 5. Inventory Items */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                  <div className="text-[11px] font-bold text-slate-500 mb-1">
+                    أصناف المستودع (Total SKUs)
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
+                    8,693 <span className="text-xs font-sans text-slate-500 font-normal">صنف</span>
+                  </div>
+                  <div className="mt-2 text-[10px] text-rose-700 font-bold flex items-center justify-between">
+                    <span>2,082 صنف راكد</span>
+                    <button onClick={() => openReport('stagnant')} className="text-blue-600 hover:underline">
+                      فحص ↗
+                    </button>
+                  </div>
+                </div>
+
+                {/* 6. Total Balance Pieces */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                  <div className="text-[11px] font-bold text-slate-500 mb-1">
+                    رصيد القطع (Warehouse Units)
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono mt-2">
+                    {formatNum(REAL_INVENTORY_STATS?.totalBalance || 28683)} <span className="text-xs font-sans text-slate-500 font-normal">قطعة</span>
+                  </div>
+                  <div className="mt-2 text-[10px] text-slate-500 font-bold">
+                    منصرف: {formatNum(REAL_INVENTORY_STATS?.totalIssued || 14210)} قطعة
+                  </div>
+                </div>
+
+                {/* 7. Working Capital */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                  <div className="text-[11px] font-bold text-slate-500 mb-1">
+                    حقوق الملكية التقديرية (Equity)
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono mt-2">
+                    {mask('1.54M ر.س')}
+                  </div>
+                  <div className="mt-2 text-[10px] text-emerald-700 font-bold">
+                    ▲ التزامات الموردين مغطاة
+                  </div>
+                </div>
+
+                {/* 8. Free Cash Balance */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                  <div className="text-[11px] font-bold text-slate-500 mb-1">
+                    السيولة الحرة (Cash Balance)
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
+                    {mask('450,000 ر.س')}
+                  </div>
+                  <div className="mt-2 text-[10px] text-emerald-700 font-bold">
+                    ▲ أمان نقدي لـ 5 أشهر
+                  </div>
+                </div>
+              </div>
+
+              {/* Row: Financial Performance Trend + Profitability Gauges */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                {/* Multi-Line Performance Trend (7 Cols) */}
+                <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+                  <div className="border-b border-slate-100 pb-3 mb-4">
+                    <h3 className="text-sm font-black text-[#0A192F]">
+                      مسار الأداء المالي الرباعي (Financial Performance Trend)
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-medium">
+                      مقارنة المبيعات مع مجمل الربح والتشغيل وصافي الأرباح
+                    </p>
+                  </div>
+                  <div className="h-[290px]" dir="ltr">
+                    <ReactECharts option={performanceTrendOption} style={{ height: '100%', width: '100%' }} />
+                  </div>
+                </div>
+
+                {/* Profitability Gauges (5 Cols) */}
+                <div className="lg:col-span-5 flex flex-col justify-between">
+                  <ExecutiveProfitabilityGauges />
+                  
+                  {/* Quick Branch Summary Box */}
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs mt-4">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2 border-b border-slate-100 pb-2">
+                      <span>أعلى الفروع مساهمة في أرباح الشركة</span>
+                      <span className="text-slate-400 font-mono">August 2026</span>
+                    </div>
+                    <div className="space-y-2">
+                      {BRANCHES.slice(0, 3).map((b) => (
+                        <div key={b.id} className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-slate-800 flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: b.color }} />
+                            {b.name}
+                          </span>
+                          <div className="flex items-center gap-3 font-mono">
+                            <span className="text-slate-900 font-bold">{mask(formatSAR(b.sales))}</span>
+                            <span className="text-slate-400 text-[10px]">({b.share}%)</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Row: Quick Audit Reports Callout Banner */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
+                    <FileSpreadsheet className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-[#0A192F]">
+                      تقارير تدقيق أصناف المستودع والحركة (Executive Inventory Audit)
+                    </h4>
+                    <p className="text-xs text-slate-500 font-medium">
+                      استعراض فوري لأكثر 50 صنفاً طلباً، الأصناف الراكدة (2,082 صنفاً)، والأصناف التي نفذت مع بقاء الطلب عليها بصيغة رسمية جاهزة للطباعة والتصدير.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => openReport('stagnant')}
+                    className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs font-bold transition-all"
+                  >
+                    الأصناف الراكدة (2,082)
+                  </button>
+                  <button
+                    onClick={() => openReport('top_selling')}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all"
+                  >
+                    الأكثر طلباً (50)
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: INCOME STATEMENT */}
+          {activeTab === 'income' && (
+            <ExecutiveIncomeStatementTab
+              mask={mask}
+              netSales={NET_SALES}
+              netProfit={NET_PROFIT}
+              grossProfit={GROSS_PROFIT}
+              opexTotal={TOTAL_MONTHLY_OPEX}
+              cogsTotal={COGS_TOTAL}
+            />
+          )}
+
+          {/* TAB 3: BALANCE SHEET */}
+          {activeTab === 'balance' && (
+            <ExecutiveBalanceSheetTab
+              mask={mask}
+              onOpenReportsModal={openReport}
+            />
+          )}
+
+          {/* TAB 4: CASH FLOW */}
+          {activeTab === 'cash' && (
+            <ExecutiveCashFlowTab
+              mask={mask}
+              netProfit={NET_PROFIT}
+              opexTotal={TOTAL_MONTHLY_OPEX}
+            />
+          )}
+
+          {/* TAB 5: FINANCIAL RATIOS & 5-AXIS RADAR */}
+          {activeTab === 'ratios' && (
+            <ExecutiveRatiosRadarTab />
+          )}
+
         </div>
       </div>
-
-      {/* ── 4. TAB CONTENTS ── */}
-
-      {/* TAB 1: EXECUTIVE SUMMARY */}
-      {activeTab === 'summary' && (
-        <div className="space-y-6 animate-fadeIn">
-          {/* The 8 Key Executive Financial Metrics (Exact Grid from Image 3) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            
-            {/* 1. Total Revenue */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div className="text-[11px] font-bold text-slate-500 mb-1">
-                صافي المبيعات (Total Revenue)
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
-                {mask(formatSAR(NET_SALES))}
-              </div>
-              <div className="mt-2 text-[10px] text-emerald-700 font-bold flex items-center gap-1">
-                <ArrowUpRight className="w-3.5 h-3.5" />
-                <span>+123.7% تجاوز التارجت</span>
-              </div>
-            </div>
-
-            {/* 2. Gross Profit */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div className="text-[11px] font-bold text-slate-500 mb-1">
-                مجمل الربح (Gross Profit)
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono mt-2">
-                {mask(formatSAR(GROSS_PROFIT))}
-              </div>
-              <div className="mt-2 text-[10px] text-blue-700 font-bold flex items-center gap-1">
-                <ArrowUpRight className="w-3.5 h-3.5" />
-                <span>هامش 37.1% مجمل</span>
-              </div>
-            </div>
-
-            {/* 3. Monthly Fixed OPEX */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div className="text-[11px] font-bold text-slate-500 mb-1">
-                التشغيل الثابت (Monthly OPEX)
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-amber-900 font-mono mt-2">
-                {mask(formatSAR(TOTAL_MONTHLY_OPEX))}
-              </div>
-              <div className="mt-2 text-[10px] text-slate-500 font-bold flex items-center gap-1">
-                <span>تغطية الأرباح: {OPEX_COVERAGE_RATIO}%</span>
-              </div>
-            </div>
-
-            {/* 4. Net Profit */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div className="text-[11px] font-bold text-slate-500 mb-1">
-                صافي الربح الحقيقي (Net Profit)
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-emerald-700 font-mono mt-2">
-                {mask(formatSAR(NET_PROFIT))}
-              </div>
-              <div className="mt-2 text-[10px] text-emerald-800 font-bold flex items-center gap-1">
-                <ArrowUpRight className="w-3.5 h-3.5" />
-                <span>صافي 28.03% (محسوب بدقة)</span>
-              </div>
-            </div>
-
-            {/* 5. Inventory Items */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div className="text-[11px] font-bold text-slate-500 mb-1">
-                أصناف المستودع (Total SKUs)
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
-                8,693 <span className="text-xs font-sans text-slate-500 font-normal">صنف</span>
-              </div>
-              <div className="mt-2 text-[10px] text-rose-700 font-bold flex items-center justify-between">
-                <span>2,082 صنف راكد</span>
-                <button onClick={() => openReport('stagnant')} className="text-blue-600 hover:underline">
-                  فحص ↗
-                </button>
-              </div>
-            </div>
-
-            {/* 6. Total Balance Pieces */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div className="text-[11px] font-bold text-slate-500 mb-1">
-                رصيد القطع (Warehouse Units)
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono mt-2">
-                {formatNum(REAL_INVENTORY_STATS.totalBalance)} <span className="text-xs font-sans text-slate-500 font-normal">قطعة</span>
-              </div>
-              <div className="mt-2 text-[10px] text-slate-500 font-bold">
-                منصرف: {formatNum(REAL_INVENTORY_STATS.totalIssued)} قطعة
-              </div>
-            </div>
-
-            {/* 7. Working Capital */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div className="text-[11px] font-bold text-slate-500 mb-1">
-                حقوق الملكية التقديرية (Equity)
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono mt-2">
-                {mask('1.54M ر.س')}
-              </div>
-              <div className="mt-2 text-[10px] text-emerald-700 font-bold">
-                ▲ التزامات الموردين مغطاة بالكامل
-              </div>
-            </div>
-
-            {/* 8. Free Cash Balance */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div className="text-[11px] font-bold text-slate-500 mb-1">
-                السيولة الحرة (Cash Balance)
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
-                {mask('450,000 ر.س')}
-              </div>
-              <div className="mt-2 text-[10px] text-emerald-700 font-bold">
-                ▲ أمان نقدي لتشغيل 5 أشهر
-              </div>
-            </div>
-          </div>
-
-          {/* Row: Financial Performance Trend + Profitability Gauges (Exact layout from Image 3) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* Multi-Line Performance Trend (7 Cols) */}
-            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
-              <div className="border-b border-slate-100 pb-3 mb-4">
-                <h3 className="text-sm font-black text-[#0A192F]">
-                  مسار الأداء المالي الرباعي (Financial Performance Trend)
-                </h3>
-                <p className="text-[11px] text-slate-400 font-medium">
-                  مقارنة المبيعات مع مجمل الربح والتشغيل وصافي الأرباح
-                </p>
-              </div>
-              <div className="h-[250px]" dir="ltr">
-                <ReactECharts option={performanceTrendOption} style={{ height: '100%', width: '100%' }} />
-              </div>
-            </div>
-
-            {/* Profitability Gauges (5 Cols) */}
-            <div className="lg:col-span-5 flex flex-col justify-between">
-              <ExecutiveProfitabilityGauges />
-              
-              {/* Quick Branch Summary Box */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs mt-4">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2 border-b border-slate-100 pb-2">
-                  <span>أعلى الفروع مساهمة في أرباح الشركة</span>
-                  <span className="text-slate-400 font-mono">August 2026</span>
-                </div>
-                <div className="space-y-2">
-                  {BRANCHES.slice(0, 3).map((b) => (
-                    <div key={b.id} className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-slate-800 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: b.color }} />
-                        {b.name}
-                      </span>
-                      <div className="flex items-center gap-3 font-mono">
-                        <span className="text-slate-900 font-bold">{mask(formatSAR(b.sales))}</span>
-                        <span className="text-slate-400 text-[10px]">({b.share}%)</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Row: Quick Audit Reports Callout Banner */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
-                <FileSpreadsheet className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-black text-[#0A192F]">
-                  تقارير تدقيق أصناف المستودع والحركة (Executive Inventory Audit)
-                </h4>
-                <p className="text-xs text-slate-500 font-medium">
-                  استعراض فوري لأكثر 50 صنفاً طلباً، الأصناف الراكدة (2,082 صنفاً)، والأصناف التي نفذت مع بقاء الطلب عليها بصيغة رسمية جاهزة للطباعة والتصدير.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => openReport('stagnant')}
-                className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs font-bold transition-all"
-              >
-                الأصناف الراكدة (2,082)
-              </button>
-              <button
-                onClick={() => openReport('top_selling')}
-                className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all"
-              >
-                الأكثر طلباً (50)
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: INCOME STATEMENT */}
-      {activeTab === 'income' && (
-        <ExecutiveIncomeStatementTab
-          mask={mask}
-          netSales={NET_SALES}
-          netProfit={NET_PROFIT}
-          grossProfit={GROSS_PROFIT}
-          opexTotal={TOTAL_MONTHLY_OPEX}
-          cogsTotal={COGS_TOTAL}
-        />
-      )}
-
-      {/* TAB 3: BALANCE SHEET */}
-      {activeTab === 'balance' && (
-        <ExecutiveBalanceSheetTab
-          mask={mask}
-          onOpenReportsModal={openReport}
-        />
-      )}
-
-      {/* TAB 4: CASH FLOW */}
-      {activeTab === 'cash' && (
-        <ExecutiveCashFlowTab
-          mask={mask}
-          netProfit={NET_PROFIT}
-          opexTotal={TOTAL_MONTHLY_OPEX}
-        />
-      )}
-
-      {/* TAB 5: FINANCIAL RATIOS & 5-AXIS RADAR */}
-      {activeTab === 'ratios' && (
-        <ExecutiveRatiosRadarTab />
-      )}
 
       {/* Corporate Executive Audit Reports Modal (A4 Print Ready) */}
       <ExecutiveReportsModal

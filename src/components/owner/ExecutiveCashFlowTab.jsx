@@ -4,7 +4,7 @@ import { formatSAR } from '@/lib/kpiEngine';
 import { ArrowUpRight, Wallet, TrendingUp, Building } from 'lucide-react';
 
 export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
-  // Cash Flow Waterfall Chart
+  // Cash Flow Waterfall Chart (Safe Formatter)
   const cashFlowWaterfallOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -12,10 +12,11 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
       axisPointer: { type: 'shadow' },
       formatter: function (params) {
         const tar = params[1] || params[0];
-        return `${tar.name}: <strong>${tar.value.toLocaleString()} ر.س</strong>`;
+        const rawVal = tar?.value != null ? (typeof tar.value === 'object' ? tar.value.value : tar.value) : 0;
+        return `${tar?.name || ''}: <strong>${Number(rawVal || 0).toLocaleString()} ر.س</strong>`;
       }
     },
-    grid: { left: '3%', right: '4%', bottom: '8%', top: '12%', containLabel: true },
+    grid: { left: '3%', right: '4%', bottom: 40, top: '12%', containLabel: true },
     xAxis: {
       type: 'category',
       data: ['رصيد البداية', 'التدفق التشغيلي', 'الاستثماري', 'التمويلي والالتزامات', 'رصيد الإغلاق'],
@@ -44,7 +45,10 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
           position: 'top',
           fontFamily: 'Cairo',
           fontWeight: 'bold',
-          formatter: (p) => `${(p.value / 1000).toFixed(0)}K`
+          formatter: (p) => {
+            const v = p?.value != null ? (typeof p.value === 'object' ? p.value.value : p.value) : 0;
+            return `${(Number(v) / 1000).toFixed(0)}K`;
+          }
         },
         data: [
           { value: 280000, itemStyle: { color: '#0F2744' } },       // Opening Balance - Navy
@@ -57,7 +61,7 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
     ]
   };
 
-  // Cash Flow Trend Multi-line
+  // Cash Flow Trend Multi-line (Safe margins and containment)
   const cashTrendOption = {
     backgroundColor: 'transparent',
     tooltip: { trigger: 'axis' },
@@ -66,11 +70,11 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
       top: 0,
       textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
     },
-    grid: { left: '3%', right: '4%', bottom: '5%', top: '16%', containLabel: true },
+    grid: { left: '3%', right: '4%', bottom: 45, top: 40, containLabel: true },
     xAxis: {
       type: 'category',
       data: ['مايو 2026', 'يونيو 2026', 'يوليو 2026', 'أغسطس 2026'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155' }
+      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', margin: 12 }
     },
     yAxis: {
       type: 'value',
@@ -146,7 +150,7 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
             </div>
             <span className="text-xs font-mono font-bold text-slate-500">SAR (بالريال السعودي)</span>
           </div>
-          <div className="h-[280px]" dir="ltr">
+          <div className="h-[290px]" dir="ltr">
             <ReactECharts option={cashFlowWaterfallOption} style={{ height: '100%', width: '100%' }} />
           </div>
         </div>
@@ -194,7 +198,7 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
             تطور التدفقات التشغيلية مقابل الاستثمارات في المخزون
           </p>
         </div>
-        <div className="h-[230px]" dir="ltr">
+        <div className="h-[250px]" dir="ltr">
           <ReactECharts option={cashTrendOption} style={{ height: '100%', width: '100%' }} />
         </div>
       </div>

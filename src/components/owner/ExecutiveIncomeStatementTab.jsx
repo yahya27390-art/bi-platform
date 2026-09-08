@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import { formatSAR } from '@/lib/kpiEngine';
 
 export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit, grossProfit, opexTotal, cogsTotal }) {
-  // P&L Waterfall Chart Option (Exact match with Image 3)
+  // P&L Waterfall Chart Option (Safe formatter)
   const waterfallOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -11,10 +11,11 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
       axisPointer: { type: 'shadow' },
       formatter: function (params) {
         const tar = params[1] || params[0];
-        return `${tar.name}<br/>القيمة: <strong>${formatSAR(tar.value)}</strong>`;
+        const rawVal = tar?.value != null ? (typeof tar.value === 'object' ? tar.value.value : tar.value) : 0;
+        return `${tar?.name || ''}<br/>القيمة: <strong>${formatSAR(Number(rawVal || 0))}</strong>`;
       }
     },
-    grid: { left: '3%', right: '4%', bottom: '8%', top: '12%', containLabel: true },
+    grid: { left: '3%', right: '4%', bottom: 40, top: '12%', containLabel: true },
     xAxis: {
       type: 'category',
       data: ['الإيراد الإجمالي', 'تكلفة البضاعة (COGS)', 'مجمل الربح', 'المصاريف التشغيلية (OPEX)', 'صافي الربح الفعلي'],
@@ -48,7 +49,10 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
           fontFamily: 'Cairo',
           fontWeight: 'bold',
           fontSize: 11,
-          formatter: (p) => `${(p.value / 1000).toFixed(1)}K`
+          formatter: (p) => {
+            const v = p?.value != null ? (typeof p.value === 'object' ? p.value.value : p.value) : 0;
+            return `${(Number(v) / 1000).toFixed(1)}K`;
+          }
         },
         data: [
           { value: netSales, itemStyle: { color: '#0F2744' } },          // Total Revenue - Deep Navy
@@ -97,15 +101,19 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
     ]
   };
 
-  // Operating Expenses Horizontal Bar Chart
+  // Operating Expenses Horizontal Bar Chart (Safe formatter)
   const opexOption = {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      formatter: '{b}: <strong>{c} ر.س</strong>'
+      formatter: function (params) {
+        const item = params[0];
+        const val = item?.value != null ? Number(item.value).toLocaleString() : '0';
+        return `${item?.name || ''}: <strong>${val} ر.س</strong>`;
+      }
     },
-    grid: { left: '3%', right: '5%', bottom: '5%', top: '8%', containLabel: true },
+    grid: { left: '3%', right: '5%', bottom: 25, top: '8%', containLabel: true },
     xAxis: {
       type: 'value',
       axisLabel: { formatter: (v) => `${v / 1000}K`, fontFamily: 'Cairo', color: '#64748B' },
@@ -130,13 +138,16 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
           position: 'right',
           fontFamily: 'Cairo',
           fontWeight: 'bold',
-          formatter: (p) => `${p.value.toLocaleString()} ر.س`
+          formatter: (p) => {
+            const v = p?.value != null ? Number(p.value).toLocaleString() : '0';
+            return `${v} ر.س`;
+          }
         }
       }
     ]
   };
 
-  // Margin Trend Multi-line chart
+  // Margin Trend Multi-line chart (Generous bottom padding so dates never clip)
   const marginTrendOption = {
     backgroundColor: 'transparent',
     tooltip: { trigger: 'axis' },
@@ -145,11 +156,11 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
       top: 0,
       textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
     },
-    grid: { left: '3%', right: '4%', bottom: '5%', top: '16%', containLabel: true },
+    grid: { left: '3%', right: '4%', bottom: 45, top: 40, containLabel: true },
     xAxis: {
       type: 'category',
       data: ['مايو 2026', 'يونيو 2026', 'يوليو 2026', 'أغسطس 2026'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155' }
+      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', margin: 12 }
     },
     yAxis: {
       type: 'value',
@@ -221,7 +232,7 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
             </div>
             <span className="text-xs font-mono font-bold text-slate-500">SAR (بالريال السعودي)</span>
           </div>
-          <div className="h-[280px]" dir="ltr">
+          <div className="h-[290px]" dir="ltr">
             <ReactECharts option={waterfallOption} style={{ height: '100%', width: '100%' }} />
           </div>
         </div>
@@ -236,7 +247,7 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
               حصة كل منفذ بيع من إجمالي المبيعات
             </p>
           </div>
-          <div className="h-[240px]" dir="ltr">
+          <div className="h-[250px]" dir="ltr">
             <ReactECharts option={donutOption} style={{ height: '100%', width: '100%' }} />
           </div>
           <div className="text-[11px] text-slate-500 text-center border-t border-slate-100 pt-2 font-bold">
@@ -257,7 +268,7 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
               الرواتب 60 ألف + الإيجارات والمرافق 20 ألف + الاحتياطي 10 آلاف
             </p>
           </div>
-          <div className="h-[220px]" dir="ltr">
+          <div className="h-[240px]" dir="ltr">
             <ReactECharts option={opexOption} style={{ height: '100%', width: '100%' }} />
           </div>
         </div>
@@ -272,7 +283,7 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
               ثبات ونمو هامش الربح الصافي فوق 28%
             </p>
           </div>
-          <div className="h-[220px]" dir="ltr">
+          <div className="h-[240px]" dir="ltr">
             <ReactECharts option={marginTrendOption} style={{ height: '100%', width: '100%' }} />
           </div>
         </div>

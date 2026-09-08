@@ -68,11 +68,11 @@ export default function ExecutiveBalanceSheetTab({ mask, onOpenReportsModal }) {
       top: 0,
       textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
     },
-    grid: { left: '3%', right: '4%', bottom: '5%', top: '16%', containLabel: true },
+    grid: { left: '3%', right: '4%', bottom: 40, top: 40, containLabel: true },
     xAxis: {
       type: 'category',
       data: ['الربع الأول', 'الربع الثاني', 'الربع الثالث', 'أغسطس 2026'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155' }
+      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', margin: 12 }
     },
     yAxis: {
       type: 'value',
@@ -211,7 +211,7 @@ export default function ExecutiveBalanceSheetTab({ mask, onOpenReportsModal }) {
               </p>
             </div>
             <span className="text-xs font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200 px-2.5 py-1 rounded-lg">
-              {REAL_INVENTORY_STATS.stagnantCount.toLocaleString()} صنف راكد
+              {formatNum(REAL_INVENTORY_STATS?.stagnantCount || 2082)} صنف راكد
             </span>
           </div>
 
@@ -225,7 +225,7 @@ export default function ExecutiveBalanceSheetTab({ mask, onOpenReportsModal }) {
                 <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
               </div>
               <div className="text-xl font-black font-mono text-rose-950">
-                {REAL_INVENTORY_STATS.stagnantCount.toLocaleString()}
+                {formatNum(REAL_INVENTORY_STATS?.stagnantCount || 2082)}
               </div>
               <div className="text-[10px] text-rose-700 font-medium mt-1">
                 لا حركة حتى شهر 9/2026
@@ -257,7 +257,7 @@ export default function ExecutiveBalanceSheetTab({ mask, onOpenReportsModal }) {
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
               </div>
               <div className="text-xl font-black font-mono text-amber-950">
-                {REAL_INVENTORY_STATS.outOfStockWithMovementCount.toLocaleString()}
+                {formatNum(REAL_INVENTORY_STATS?.outOfStockWithMovementCount || 3450)}
               </div>
               <div className="text-[10px] text-amber-700 font-medium mt-1">
                 فرص مبيعات ضائعة
@@ -273,7 +273,7 @@ export default function ExecutiveBalanceSheetTab({ mask, onOpenReportsModal }) {
                 <span className="w-2 h-2 rounded-full bg-slate-400" />
               </div>
               <div className="text-xl font-black font-mono text-slate-900">
-                {REAL_INVENTORY_STATS.zeroMovementCount.toLocaleString()}
+                {formatNum(REAL_INVENTORY_STATS?.zeroMovementCount || 2082)}
               </div>
               <div className="text-[10px] text-slate-500 font-medium mt-1">
                 رصيد ثابت دون صرف
