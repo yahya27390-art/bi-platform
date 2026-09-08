@@ -128,7 +128,11 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
               <div className="text-[11px] text-blue-800 font-bold">الرصيد النقدي الحر (Cash Balance)</div>
               <div className="text-base font-black font-mono text-[#0F2744]">{mask('450,000 ر.س')}</div>
             </div>
-            <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg mr-1 flex items-center">
+            <span 
+              dir="ltr" 
+              style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
+              className="text-xs font-mono font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg mr-1 flex items-center gap-1"
+            >
               <ArrowUpRight className="w-3.5 h-3.5" /> +22.1%
             </span>
           </div>

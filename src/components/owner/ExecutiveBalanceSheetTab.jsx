@@ -5,22 +5,24 @@ import { REAL_INVENTORY_STATS } from '@/data/realInventoryData';
 import { FileSpreadsheet, AlertTriangle, CheckCircle2, ChevronLeft } from 'lucide-react';
 
 export default function ExecutiveBalanceSheetTab({ mask, onOpenReportsModal }) {
-  // Assets Composition Donut
+  // Assets Composition Donut (Clean centered layout - ZERO OVERLAP)
   const assetsDonutOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'item', formatter: '{b}: <strong>{d}%</strong> ({c} ر.س)' },
+    tooltip: { trigger: 'item', confine: true, formatter: '{b}: <strong>{d}%</strong> ({c} ر.س)' },
     legend: {
-      orient: 'vertical',
-      right: 0,
-      top: 'center',
-      textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
+      orient: 'horizontal',
+      bottom: 0,
+      left: 'center',
+      itemGap: 10,
+      icon: 'circle',
+      textStyle: { fontFamily: 'Cairo', fontSize: 10, color: '#334155', fontWeight: 'bold' }
     },
     series: [
       {
         type: 'pie',
-        radius: ['52%', '75%'],
-        center: ['35%', '50%'],
-        avoidLabelOverlap: false,
+        radius: ['44%', '64%'],
+        center: ['50%', '40%'],
+        avoidLabelOverlap: true,
         itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
         label: { show: false },
         data: [
@@ -32,22 +34,24 @@ export default function ExecutiveBalanceSheetTab({ mask, onOpenReportsModal }) {
     ]
   };
 
-  // Liabilities Composition Donut
+  // Liabilities Composition Donut (Clean centered layout - ZERO OVERLAP)
   const liabilitiesDonutOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'item', formatter: '{b}: <strong>{d}%</strong> ({c} ر.س)' },
+    tooltip: { trigger: 'item', confine: true, formatter: '{b}: <strong>{d}%</strong> ({c} ر.س)' },
     legend: {
-      orient: 'vertical',
-      right: 0,
-      top: 'center',
-      textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
+      orient: 'horizontal',
+      bottom: 0,
+      left: 'center',
+      itemGap: 10,
+      icon: 'circle',
+      textStyle: { fontFamily: 'Cairo', fontSize: 10, color: '#334155', fontWeight: 'bold' }
     },
     series: [
       {
         type: 'pie',
-        radius: ['52%', '75%'],
-        center: ['35%', '50%'],
-        avoidLabelOverlap: false,
+        radius: ['44%', '64%'],
+        center: ['50%', '40%'],
+        avoidLabelOverlap: true,
         itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
         label: { show: false },
         data: [
@@ -132,7 +136,7 @@ export default function ExecutiveBalanceSheetTab({ mask, onOpenReportsModal }) {
               حصة بضاعة المستودع والسيولة النقدية
             </p>
           </div>
-          <div className="h-[230px]" dir="ltr">
+          <div className="h-[250px]" dir="ltr">
             <ReactECharts option={assetsDonutOption} style={{ height: '100%', width: '100%' }} />
           </div>
           <div className="text-[11px] text-slate-500 text-center border-t border-slate-100 pt-2 font-bold">
@@ -150,7 +154,7 @@ export default function ExecutiveBalanceSheetTab({ mask, onOpenReportsModal }) {
               مستحقات الموردين ومصاريف التشغيل
             </p>
           </div>
-          <div className="h-[230px]" dir="ltr">
+          <div className="h-[250px]" dir="ltr">
             <ReactECharts option={liabilitiesDonutOption} style={{ height: '100%', width: '100%' }} />
           </div>
           <div className="text-[11px] text-slate-500 text-center border-t border-slate-100 pt-2 font-bold">

@@ -3,19 +3,20 @@ import ReactECharts from 'echarts-for-react';
 import { formatSAR } from '@/lib/kpiEngine';
 
 export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit, grossProfit, opexTotal, cogsTotal }) {
-  // P&L Waterfall Chart Option (Safe formatter)
+  // P&L Waterfall Chart Option (Safe formatter & confined tooltip)
   const waterfallOption = {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
+      confine: true,
       formatter: function (params) {
         const tar = params[1] || params[0];
         const rawVal = tar?.value != null ? (typeof tar.value === 'object' ? tar.value.value : tar.value) : 0;
         return `${tar?.name || ''}<br/>القيمة: <strong>${formatSAR(Number(rawVal || 0))}</strong>`;
       }
     },
-    grid: { left: '3%', right: '4%', bottom: 40, top: '12%', containLabel: true },
+    grid: { left: 55, right: 25, bottom: 40, top: 40, containLabel: true },
     xAxis: {
       type: 'category',
       data: ['الإيراد الإجمالي', 'تكلفة البضاعة (COGS)', 'مجمل الربح', 'المصاريف التشغيلية (OPEX)', 'صافي الربح الفعلي'],
@@ -65,32 +66,37 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
     ]
   };
 
-  // Revenue Breakdown Donut Chart
+  // Revenue Breakdown Donut Chart (Flawless layout - ZERO OVERLAP)
   const donutOption = {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'item',
+      confine: true,
       formatter: '{b}: <strong>{c} ر.س</strong> ({d}%)'
     },
     legend: {
-      orient: 'vertical',
-      right: '2%',
-      top: 'center',
+      orient: 'horizontal',
+      bottom: 0,
+      left: 'center',
+      itemGap: 14,
+      icon: 'circle',
       textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
     },
     series: [
       {
         name: 'قنوات الإيرادات',
         type: 'pie',
-        radius: ['52%', '75%'],
-        center: ['36%', '50%'],
-        avoidLabelOverlap: false,
+        radius: ['44%', '66%'],
+        center: ['50%', '42%'],
+        avoidLabelOverlap: true,
         itemStyle: {
           borderRadius: 6,
           borderColor: '#ffffff',
           borderWidth: 2
         },
-        label: { show: false },
+        label: {
+          show: false
+        },
         data: [
           { value: 428881.08, name: 'الفرع الرئيسي', itemStyle: { color: '#0F2744' } },
           { value: 291365.50, name: 'فرع الرواف هيونداي', itemStyle: { color: '#0284C7' } },
@@ -107,13 +113,14 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
+      confine: true,
       formatter: function (params) {
         const item = params[0];
         const val = item?.value != null ? Number(item.value).toLocaleString() : '0';
         return `${item?.name || ''}: <strong>${val} ر.س</strong>`;
       }
     },
-    grid: { left: '3%', right: '5%', bottom: 25, top: '8%', containLabel: true },
+    grid: { left: 55, right: 30, bottom: 25, top: 15, containLabel: true },
     xAxis: {
       type: 'value',
       axisLabel: { formatter: (v) => `${v / 1000}K`, fontFamily: 'Cairo', color: '#64748B' },
@@ -147,16 +154,18 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
     ]
   };
 
-  // Margin Trend Multi-line chart (Generous bottom padding so dates never clip)
+  // Margin Trend Multi-line chart (Generous padding & confined tooltip)
   const marginTrendOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', confine: true },
     legend: {
       data: ['هامش مجمل الربح', 'هامش الأرباح التشغيلية', 'هامش صافي الربح'],
       top: 0,
+      left: 'center',
+      itemGap: 16,
       textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
     },
-    grid: { left: '3%', right: '4%', bottom: 45, top: 40, containLabel: true },
+    grid: { left: 55, right: 25, bottom: 45, top: 45, containLabel: true },
     xAxis: {
       type: 'category',
       data: ['مايو 2026', 'يونيو 2026', 'يوليو 2026', 'أغسطس 2026'],
@@ -219,8 +228,8 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
 
       {/* Row 1: Waterfall + Revenue Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Waterfall Chart (8 Cols) */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+        {/* Waterfall Chart (7 Cols) */}
+        <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
             <div>
               <h3 className="text-sm font-black text-[#0F2744]">
@@ -237,20 +246,20 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
           </div>
         </div>
 
-        {/* Revenue Breakdown Donut (4 Cols) */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+        {/* Revenue Breakdown Donut (5 Cols) */}
+        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-black text-[#0F2744] border-b border-slate-100 pb-3 mb-2">
+            <h3 className="text-sm font-black text-[#0F2744] border-b border-slate-100 pb-2 mb-1">
               توزيع الإيرادات حسب الفروع
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium">
+            <p className="text-[11px] text-slate-400 font-medium mb-2">
               حصة كل منفذ بيع من إجمالي المبيعات
             </p>
           </div>
-          <div className="h-[250px]" dir="ltr">
+          <div className="h-[230px]" dir="ltr">
             <ReactECharts option={donutOption} style={{ height: '100%', width: '100%' }} />
           </div>
-          <div className="text-[11px] text-slate-500 text-center border-t border-slate-100 pt-2 font-bold">
+          <div className="text-[11px] text-slate-600 text-center border-t border-slate-100 pt-2.5 font-bold">
             الفرع الرئيسي يتصدر بنسبة 43.3% من المبيعات
           </div>
         </div>

@@ -99,16 +99,18 @@ export default function OwnerExecutiveDashboard() {
     { id: 'b4', name: 'متجر سلة أونلاين', sales: 41783.00, share: 4.2, color: '#10B981', tag: 'أونلاين' }
   ];
 
-  // Performance Trend Line Option (Safe grid margins so dates NEVER clip)
+  // Performance Trend Line Option (Clean single-line legend & safe margins)
   const performanceTrendOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', confine: true },
     legend: {
-      data: ['صافي المبيعات (Revenue)', 'مجمل الربح (Gross Profit)', 'الأرباح التشغيلية (EBITDA)', 'صافي الربح (Net Profit)'],
+      data: ['صافي المبيعات', 'مجمل الربح', 'الأرباح التشغيلية', 'صافي الربح'],
       top: 0,
+      left: 'center',
+      itemGap: 18,
       textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
     },
-    grid: { left: 45, right: 20, bottom: 45, top: 40, containLabel: true },
+    grid: { left: 55, right: 25, bottom: 45, top: 45, containLabel: true },
     xAxis: {
       type: 'category',
       data: ['مايو 2026', 'يونيو 2026', 'يوليو 2026', 'أغسطس 2026'],
@@ -121,7 +123,7 @@ export default function OwnerExecutiveDashboard() {
     },
     series: [
       {
-        name: 'صافي المبيعات (Revenue)',
+        name: 'صافي المبيعات',
         type: 'line',
         smooth: true,
         data: [720000, 810000, 890000, 989522],
@@ -129,7 +131,7 @@ export default function OwnerExecutiveDashboard() {
         lineStyle: { width: 3.5 }
       },
       {
-        name: 'مجمل الربح (Gross Profit)',
+        name: 'مجمل الربح',
         type: 'line',
         smooth: true,
         data: [265000, 298000, 328000, 367363],
@@ -137,7 +139,7 @@ export default function OwnerExecutiveDashboard() {
         lineStyle: { width: 3 }
       },
       {
-        name: 'الأرباح التشغيلية (EBITDA)',
+        name: 'الأرباح التشغيلية',
         type: 'line',
         smooth: true,
         data: [195000, 222000, 245000, 277363],
@@ -145,7 +147,7 @@ export default function OwnerExecutiveDashboard() {
         lineStyle: { width: 2.5 }
       },
       {
-        name: 'صافي الربح (Net Profit)',
+        name: 'صافي الربح',
         type: 'line',
         smooth: true,
         data: [178000, 205000, 235000, 277363],
@@ -423,10 +425,13 @@ export default function OwnerExecutiveDashboard() {
                 </div>
               </div>
 
-              {/* Row: Financial Performance Trend + Profitability Gauges */}
+              {/* Row 2: Full-Width Profitability Gauges (Spacious & Clean) */}
+              <ExecutiveProfitabilityGauges />
+
+              {/* Row 3: Financial Performance Trend (8 Cols) + Top Branches (4 Cols) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                {/* Multi-Line Performance Trend (7 Cols) */}
-                <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+                {/* Multi-Line Performance Trend (8 Cols) */}
+                <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
                   <div className="border-b border-slate-100 pb-3 mb-4">
                     <h3 className="text-sm font-black text-[#0A192F]">
                       مسار الأداء المالي الرباعي (Financial Performance Trend)
@@ -440,30 +445,45 @@ export default function OwnerExecutiveDashboard() {
                   </div>
                 </div>
 
-                {/* Profitability Gauges (5 Cols) */}
-                <div className="lg:col-span-5 flex flex-col justify-between">
-                  <ExecutiveProfitabilityGauges />
-                  
-                  {/* Quick Branch Summary Box */}
-                  <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs mt-4">
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2 border-b border-slate-100 pb-2">
-                      <span>أعلى الفروع مساهمة في أرباح الشركة</span>
-                      <span className="text-slate-400 font-mono">August 2026</span>
+                {/* Top Branch Summary Box (4 Cols) */}
+                <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2 border-b border-slate-100 pb-3">
+                      <h3 className="text-sm font-black text-[#0A192F]">مساهمة الفروع بالأرباح</h3>
+                      <span className="text-slate-400 font-mono text-[10px]">August 2026</span>
                     </div>
-                    <div className="space-y-2">
-                      {BRANCHES.slice(0, 3).map((b) => (
-                        <div key={b.id} className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-800 flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: b.color }} />
-                            {b.name}
-                          </span>
-                          <div className="flex items-center gap-3 font-mono">
-                            <span className="text-slate-900 font-bold">{mask(formatSAR(b.sales))}</span>
-                            <span className="text-slate-400 text-[10px]">({b.share}%)</span>
+                    <p className="text-[11px] text-slate-400 font-medium mb-3">
+                      أداء الفروع المعتمدة ونقاط البيع
+                    </p>
+
+                    <div className="space-y-3">
+                      {BRANCHES.map((b) => (
+                        <div key={b.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: b.color }} />
+                              {b.name}
+                            </span>
+                            <span className="font-mono font-bold text-slate-900">{mask(formatSAR(b.sales))}</span>
+                          </div>
+                          {/* Progress bar */}
+                          <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${b.share}%`, backgroundColor: b.color }}
+                            />
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-1 flex justify-between font-mono">
+                            <span>الحصة: {b.share}%</span>
+                            <span className="text-slate-500 font-bold">{b.tag}</span>
                           </div>
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="text-[11px] text-slate-500 text-center border-t border-slate-100 pt-3 font-bold mt-2">
+                    الفرع الرئيسي والرواف يحققان 72.7% من إجمالي الدخل
                   </div>
                 </div>
               </div>
