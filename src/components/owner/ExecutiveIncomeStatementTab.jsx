@@ -154,52 +154,52 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
     ]
   };
 
-  // Margin Trend Multi-line chart (Generous padding & confined tooltip)
+  // Profitability Margins Breakdown for August 2026
   const marginTrendOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis', confine: true },
-    legend: {
-      data: ['هامش مجمل الربح', 'هامش الأرباح التشغيلية', 'هامش صافي الربح'],
-      top: 0,
-      left: 'center',
-      itemGap: 16,
-      textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      confine: true,
+      formatter: (params) => {
+        const item = params[0];
+        return `<div style="font-family: Cairo; padding: 4px;">
+          <div style="font-weight: bold; color: #0F2744; margin-bottom: 4px;">${item.name}</div>
+          <div style="color: #334155;">النسبة الفعلية: <b>${item.value}%</b></div>
+        </div>`;
+      }
     },
-    grid: { left: 55, right: 25, bottom: 45, top: 45, containLabel: true },
+    grid: { left: 45, right: 30, bottom: 35, top: 35, containLabel: true },
     xAxis: {
       type: 'category',
-      data: ['مايو 2026', 'يونيو 2026', 'يوليو 2026', 'أغسطس 2026'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', margin: 12 }
+      data: ['هامش مجمل الربح', 'هامش الأرباح التشغيلية', 'هامش صافي الربح'],
+      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#1E293B', fontWeight: 'bold' }
     },
     yAxis: {
       type: 'value',
       axisLabel: { formatter: '{value}%', fontFamily: 'Cairo', color: '#64748B' },
-      splitLine: { lineStyle: { color: '#F1F5F9' } }
+      splitLine: { lineStyle: { color: '#F1F5F9' } },
+      max: 50
     },
     series: [
       {
-        name: 'هامش مجمل الربح',
-        type: 'line',
-        smooth: true,
-        data: [35.2, 36.8, 36.1, 37.1],
-        itemStyle: { color: '#0F2744' },
-        lineStyle: { width: 3 }
-      },
-      {
-        name: 'هامش الأرباح التشغيلية',
-        type: 'line',
-        smooth: true,
-        data: [26.0, 27.2, 28.5, 29.4],
-        itemStyle: { color: '#0284C7' },
-        lineStyle: { width: 3 }
-      },
-      {
-        name: 'هامش صافي الربح',
-        type: 'line',
-        smooth: true,
-        data: [25.4, 26.5, 27.1, 28.03],
-        itemStyle: { color: '#F97316' },
-        lineStyle: { width: 3 }
+        name: 'أغسطس 2026 (الفعلي)',
+        type: 'bar',
+        barWidth: 46,
+        data: [
+          { value: 37.12, itemStyle: { color: '#0F2744', borderRadius: [6, 6, 0, 0] } },
+          { value: 29.42, itemStyle: { color: '#0284C7', borderRadius: [6, 6, 0, 0] } },
+          { value: 28.03, itemStyle: { color: '#10B981', borderRadius: [6, 6, 0, 0] } }
+        ],
+        label: {
+          show: true,
+          position: 'top',
+          fontFamily: 'Cairo',
+          fontSize: 11,
+          fontWeight: 'bold',
+          formatter: '{c}%',
+          color: '#1E293B'
+        }
       }
     ]
   };
@@ -286,10 +286,10 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
         <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
           <div className="border-b border-slate-100 pb-3 mb-4">
             <h3 className="text-sm font-black text-[#0F2744]">
-              مسار هوامش الربحية (Margin Trend Over Time)
+              تحليل هوامش الربحية - أغسطس 2026 المعتمد (Profitability Margins)
             </h3>
             <p className="text-[11px] text-slate-400 font-medium">
-              ثبات ونمو هامش الربح الصافي فوق 28%
+              مقارنة نسب الأرباح الفعلية المحققة من إجمالي المبيعات
             </p>
           </div>
           <div className="h-[240px]" dir="ltr">

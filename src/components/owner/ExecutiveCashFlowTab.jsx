@@ -62,19 +62,27 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
   };
 
   // Cash Flow Trend Multi-line (Safe margins and containment)
+  // August 2026 Cash Flow Breakdown Option
   const cashTrendOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis' },
-    legend: {
-      data: ['التدفق التشغيلي', 'التدفق الاستثماري', 'صافي التدفق النقدي'],
-      top: 0,
-      textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      confine: true,
+      formatter: (params) => {
+        const item = params[0];
+        const val = Number(item.value);
+        return `<div style="font-family: Cairo; padding: 4px;">
+          <div style="font-weight: bold; color: #0F2744; margin-bottom: 4px;">${item.name}</div>
+          <div style="color: #334155;">القيمة الفعلية: <b>${mask((val >= 0 ? '+' : '') + val.toLocaleString())} ر.س</b></div>
+        </div>`;
+      }
     },
-    grid: { left: '3%', right: '4%', bottom: 45, top: 40, containLabel: true },
+    grid: { left: 45, right: 30, bottom: 35, top: 35, containLabel: true },
     xAxis: {
       type: 'category',
-      data: ['مايو 2026', 'يونيو 2026', 'يوليو 2026', 'أغسطس 2026'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', margin: 12 }
+      data: ['التدفق التشغيلي', 'التدفق الاستثماري', 'التدفق التمويلي', 'صافي الزيادة النقدية'],
+      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#1E293B', fontWeight: 'bold' }
     },
     yAxis: {
       type: 'value',
@@ -83,28 +91,27 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
     },
     series: [
       {
-        name: 'التدفق التشغيلي',
-        type: 'line',
-        smooth: true,
-        data: [195000, 220000, 248000, 277363],
-        itemStyle: { color: '#00A3A6' },
-        lineStyle: { width: 3 }
-      },
-      {
-        name: 'التدفق الاستثماري',
-        type: 'line',
-        smooth: true,
-        data: [-45000, -50000, -62000, -77363],
-        itemStyle: { color: '#F97316' },
-        lineStyle: { width: 3 }
-      },
-      {
-        name: 'صافي التدفق النقدي',
-        type: 'line',
-        smooth: true,
-        data: [150000, 170000, 186000, 200000],
-        itemStyle: { color: '#0F2744' },
-        lineStyle: { width: 3 }
+        name: 'أغسطس 2026 (الفعلي)',
+        type: 'bar',
+        barWidth: 46,
+        data: [
+          { value: 277363, itemStyle: { color: '#00A3A6', borderRadius: [6, 6, 0, 0] } },
+          { value: -77363, itemStyle: { color: '#F97316', borderRadius: [0, 0, 6, 6] } },
+          { value: -30000, itemStyle: { color: '#EF4444', borderRadius: [0, 0, 6, 6] } },
+          { value: 170000, itemStyle: { color: '#0F2744', borderRadius: [6, 6, 0, 0] } }
+        ],
+        label: {
+          show: true,
+          position: 'top',
+          fontFamily: 'Cairo',
+          fontSize: 11,
+          fontWeight: 'bold',
+          formatter: (p) => {
+            const v = p.value;
+            return `${mask((v >= 0 ? '+' : '') + (v / 1000).toFixed(1))}K ر.س`;
+          },
+          color: '#1E293B'
+        }
       }
     ]
   };
@@ -196,10 +203,10 @@ export default function ExecutiveCashFlowTab({ mask, netProfit, opexTotal }) {
       <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
         <div className="border-b border-slate-100 pb-3 mb-4">
           <h3 className="text-sm font-black text-[#0F2744]">
-            مسار نمو النقدية التشغيلية (Cash Flow Trend)
+            تفصيل التدفقات النقدية - أغسطس 2026 المعتمد (Cash Flow Components)
           </h3>
           <p className="text-[11px] text-slate-400 font-medium">
-            تطور التدفقات التشغيلية مقابل الاستثمارات في المخزون
+            حركة السيولة التشغيلية وإعادة استثمار الأرباح في المخزون وسداد الالتزامات
           </p>
         </div>
         <div className="h-[250px]" dir="ltr">

@@ -99,22 +99,32 @@ export default function OwnerExecutiveDashboard() {
     { id: 'b4', name: 'متجر سلة أونلاين', sales: 41783.00, share: 4.2, color: '#10B981', tag: 'أونلاين' }
   ];
 
-  // Performance Trend Line Option (Clean single-line legend & safe margins)
+  // August 2026 Financial Pillars Option (Authentic Single-Month Closure)
   const performanceTrendOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis', confine: true },
-    legend: {
-      data: ['صافي المبيعات', 'مجمل الربح', 'الأرباح التشغيلية', 'صافي الربح'],
-      top: 0,
-      left: 'center',
-      itemGap: 18,
-      textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      confine: true,
+      formatter: (params) => {
+        const item = params[0];
+        return `<div style="font-family: Cairo; padding: 4px;">
+          <div style="font-weight: bold; color: #0F2744; margin-bottom: 4px;">${item.name}</div>
+          <div style="color: #334155;">القيمة الفعلية: <b>${mask(Number(item.value).toLocaleString())} ر.س</b></div>
+        </div>`;
+      }
     },
-    grid: { left: 55, right: 25, bottom: 45, top: 45, containLabel: true },
+    grid: { left: 45, right: 30, bottom: 35, top: 35, containLabel: true },
     xAxis: {
       type: 'category',
-      data: ['مايو 2026', 'يونيو 2026', 'يوليو 2026', 'أغسطس 2026'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', margin: 12 }
+      data: ['صافي المبيعات', 'مجمل الربح', 'الأرباح التشغيلية', 'صافي الربح'],
+      axisLabel: {
+        fontFamily: 'Cairo',
+        fontSize: 11,
+        color: '#1E293B',
+        fontWeight: 'bold',
+        interval: 0
+      }
     },
     yAxis: {
       type: 'value',
@@ -123,36 +133,24 @@ export default function OwnerExecutiveDashboard() {
     },
     series: [
       {
-        name: 'صافي المبيعات',
-        type: 'line',
-        smooth: true,
-        data: [720000, 810000, 890000, 989522],
-        itemStyle: { color: '#0F2744' },
-        lineStyle: { width: 3.5 }
-      },
-      {
-        name: 'مجمل الربح',
-        type: 'line',
-        smooth: true,
-        data: [265000, 298000, 328000, 367363],
-        itemStyle: { color: '#0284C7' },
-        lineStyle: { width: 3 }
-      },
-      {
-        name: 'الأرباح التشغيلية',
-        type: 'line',
-        smooth: true,
-        data: [195000, 222000, 245000, 277363],
-        itemStyle: { color: '#F97316' },
-        lineStyle: { width: 2.5 }
-      },
-      {
-        name: 'صافي الربح',
-        type: 'line',
-        smooth: true,
-        data: [178000, 205000, 235000, 277363],
-        itemStyle: { color: '#10B981' },
-        lineStyle: { width: 3 }
+        name: 'أغسطس 2026 (الفعلي)',
+        type: 'bar',
+        barWidth: 50,
+        data: [
+          { value: 989522, itemStyle: { color: '#0F2744', borderRadius: [6, 6, 0, 0] } },
+          { value: 367363, itemStyle: { color: '#0284C7', borderRadius: [6, 6, 0, 0] } },
+          { value: 277363, itemStyle: { color: '#F97316', borderRadius: [6, 6, 0, 0] } },
+          { value: 277363, itemStyle: { color: '#10B981', borderRadius: [6, 6, 0, 0] } }
+        ],
+        label: {
+          show: true,
+          position: 'top',
+          fontFamily: 'Cairo',
+          fontSize: 11,
+          fontWeight: 'bold',
+          formatter: (p) => `${mask((p.value / 1000).toFixed(1))}K ر.س`,
+          color: '#1E293B'
+        }
       }
     ]
   };
@@ -434,10 +432,10 @@ export default function OwnerExecutiveDashboard() {
                 <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
                   <div className="border-b border-slate-100 pb-3 mb-4">
                     <h3 className="text-sm font-black text-[#0A192F]">
-                      مسار الأداء المالي الرباعي (Financial Performance Trend)
+                      الأعمدة المالية الأربعة - أغسطس 2026 المعتمد (Financial Pillars)
                     </h3>
                     <p className="text-[11px] text-slate-400 font-medium">
-                      مقارنة المبيعات مع مجمل الربح والتشغيل وصافي الأرباح
+                      مقارنة صافي المبيعات ومجمل الربح والأرباح التشغيلية وصافي الأرباح الفعلية
                     </p>
                   </div>
                   <div className="h-[290px]" dir="ltr">
