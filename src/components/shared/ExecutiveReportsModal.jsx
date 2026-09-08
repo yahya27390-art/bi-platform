@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Download,
@@ -93,6 +94,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
   const [activeTab, setActiveTab] = useState(initialTab);
   const [searchTerm, setSearchTerm] = useState('');
   const [brandFilter, setBrandFilter] = useState('all');
+  const [swapSku, setSwapSku] = useState(true); // Default to swapped sides as requested by user
 
   // Sync initial tab when changed from props
   React.useEffect(() => {
@@ -100,6 +102,18 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
       setActiveTab(initialTab);
     }
   }, [initialTab]);
+
+  // Add body class for print styling isolation
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [isOpen]);
 
   // Handle ESC key to close
   React.useEffect(() => {
@@ -109,6 +123,27 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  // ── SKU Swap Formatter (Transposes left/right around hyphen and isolates LTR) ──
+  const formatSkuValue = (sku, swap = swapSku) => {
+    if (!sku) return '';
+    if (!swap) return sku;
+    const dashIndex = sku.indexOf('-');
+    if (dashIndex === -1) return sku;
+    const prefix = sku.slice(0, dashIndex);
+    const suffix = sku.slice(dashIndex + 1);
+    return `${suffix}-${prefix}`;
+  };
+
+  const renderSkuBadge = (sku) => (
+    <span
+      dir="ltr"
+      style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
+      className="font-mono font-bold tracking-wider inline-block text-left"
+    >
+      {formatSkuValue(sku, swapSku)}
+    </span>
+  );
 
   // ── Compute 6 Executive Datasets (Always authentic & real) ──
   const computedData = useMemo(() => {
@@ -265,7 +300,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
       items.forEach((p, idx) => {
         const brandArabic =
           p.brand === 'hyundai' ? 'هيونداي' : p.brand === 'kia' ? 'كيا' : p.brand === 'mobis' ? 'موبيس أصلي' : 'عام';
-        csvContent += `"${idx + 1}","${p.sku}","${p.name}","${brandArabic}","${p.category}","${p.unit}","${p.opening}","${p.received}","${p.issued}","${p.balance}","${p.status}"\n`;
+        csvContent += `"${idx + 1}","${formatSkuValue(p.sku, swapSku)}","${p.name}","${brandArabic}","${p.category}","${p.unit}","${p.opening}","${p.received}","${p.issued}","${p.balance}","${p.status}"\n`;
       });
     }
 
@@ -292,7 +327,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
   const currentTabMeta = REPORT_TABS.find((t) => t.id === activeTab) || REPORT_TABS[0];
   const TabIcon = currentTabMeta.icon;
 
-  return (
+  return createPortal(
     <div
       id="executive-modal-container"
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto print:static print:inset-auto print:z-auto print:p-0 print:m-0 print:bg-transparent print:backdrop-blur-none print:overflow-visible print:block print:w-full"
@@ -797,9 +832,11 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                             </td>
                             <td className="py-3.5 px-4 text-slate-300 print:text-slate-900 print:py-1 print:px-2 print:text-[10px] print:border print:border-slate-200">
                               {cat.topItem ? (
-                                <div className="max-w-[170px] truncate" title={`${cat.topItem.name} (${cat.topItem.sku})`}>
+                                <div className="max-w-[170px] truncate" title={`${cat.topItem.name} (${formatSkuValue(cat.topItem.sku, swapSku)})`}>
                                   <span className="font-bold text-slate-200 print:text-slate-950">{cat.topItem.name}</span>
-                                  <div className="text-[10px] font-mono text-slate-500 print:text-slate-600">{cat.topItem.sku}</div>
+                                  <div className="text-[10px] text-slate-500 print:text-slate-600">
+                                    {renderSkuBadge(cat.topItem.sku)}
+                                  </div>
                                 </div>
                               ) : (
                                 '-'
@@ -836,7 +873,23 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                   <thead>
                     <tr className="border-b border-slate-800 bg-slate-950/80 text-slate-300 font-black print:bg-slate-100 print:text-slate-950 print:border-b-2 print:border-slate-400">
                       <th className="py-3.5 px-4 w-12 text-center print:py-2 print:px-1.5 print:w-9 print:text-[10px] print:border print:border-slate-300">#</th>
-                      <th className="py-3.5 px-4 print:py-2 print:px-2 print:text-[10px] print:border print:border-slate-300">كود الصنف (OEM Part No.)</th>
+                      <th className="py-3.5 px-4 print:py-2 print:px-2 print:text-[10px] print:border print:border-slate-300">
+                        <div className="flex items-center justify-between gap-2">
+                          <span>كود الصنف (OEM Part No.)</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSwapSku(!swapSku);
+                            }}
+                            className="no-print inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-blue-300 hover:text-white border border-slate-700 cursor-pointer transition-all active:scale-95"
+                            title="تبديل طرفي الكود: نقل ما قبل أو بعد الشرطة (-) يمين / يسار"
+                          >
+                            <span>⇄</span>
+                            <span>{swapSku ? 'نمط معكوس' : 'نمط أصلي'}</span>
+                          </button>
+                        </div>
+                      </th>
                       <th className="py-3.5 px-4 min-w-[200px] print:min-w-0 print:py-2 print:px-2 print:text-[10px] print:border print:border-slate-300">اسم قطعة الغيار</th>
                       <th className="py-3.5 px-4 print:py-2 print:px-1.5 print:text-[10px] print:border print:border-slate-300">الماركة</th>
                       <th className="py-3.5 px-4 print:py-2 print:px-2 print:text-[10px] print:border print:border-slate-300">الفئة</th>
@@ -885,8 +938,8 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                             </td>
 
                             {/* SKU */}
-                            <td className="py-3 px-4 font-mono font-bold text-white print:text-slate-950 tracking-wide print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-200">
-                              {part.sku}
+                            <td className="py-3 px-4 text-white print:text-slate-950 print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-200">
+                              {renderSkuBadge(part.sku)}
                             </td>
 
                             {/* Name */}
@@ -1021,6 +1074,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

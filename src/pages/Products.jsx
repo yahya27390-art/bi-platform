@@ -72,6 +72,17 @@ export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
   const [reportsModalInitialTab, setReportsModalInitialTab] = useState('stagnant');
+  const [swapSku, setSwapSku] = useState(true); // Default to swapped sides as requested by user
+
+  const formatSku = (sku) => {
+    if (!sku) return '';
+    if (!swapSku) return sku;
+    const dashIndex = sku.indexOf('-');
+    if (dashIndex === -1) return sku;
+    const prefix = sku.slice(0, dashIndex);
+    const suffix = sku.slice(dashIndex + 1);
+    return `${suffix}-${prefix}`;
+  };
 
   const openReport = (tabId) => {
     setReportsModalInitialTab(tabId);
@@ -553,7 +564,20 @@ export default function Products() {
           <table className="w-full text-xs text-right">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-black">
-                <th className="py-3.5 px-4">رقم الصنف (OEM Part No)</th>
+                <th className="py-3.5 px-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <span>رقم الصنف (OEM Part No)</span>
+                    <button
+                      type="button"
+                      onClick={() => setSwapSku(!swapSku)}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer transition-all active:scale-95"
+                      title="تبديل طرفي الكود: نقل ما قبل أو بعد الشرطة (-) يمين / يسار"
+                    >
+                      <span>⇄</span>
+                      <span>{swapSku ? 'نمط معكوس' : 'نمط أصلي'}</span>
+                    </button>
+                  </div>
+                </th>
                 <th className="py-3.5 px-4 min-w-[220px]">اسم قطعة الغيار</th>
                 <th className="py-3.5 px-4">الفئة</th>
                 <th className="py-3.5 px-4">الوحدة</th>
@@ -620,8 +644,14 @@ export default function Products() {
                   return (
                     <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
                       {/* SKU */}
-                      <td className="py-3 px-4 font-mono font-black text-slate-900">
-                        {p.sku}
+                      <td className="py-3 px-4">
+                        <span
+                          dir="ltr"
+                          style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
+                          className="font-mono font-black text-slate-900 tracking-wider inline-block text-left"
+                        >
+                          {formatSku(p.sku)}
+                        </span>
                       </td>
 
                       {/* Name + Brand Badge */}

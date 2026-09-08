@@ -94,7 +94,12 @@
     print-color-adjust: exact !important;
   }
 
-  /* Clean print body & hide everything outside modal */
+  /* Hide the web app only when the corporate executive modal is open on body */
+  body.modal-open #root,
+  body:has(#executive-modal-container) #root {
+    display: none !important;
+  }
+
   html, body {
     background: #ffffff !important;
     color: #0f172a !important;
@@ -107,51 +112,19 @@
     direction: rtl !important;
   }
 
-  /* Reset layout wrappers to prevent clipping and empty pages */
-  #root, .min-h-screen, .bi-main-content, main {
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #ffffff !important;
-    position: static !important;
-    width: 100% !important;
-  }
-
-  /* Hide app navigation, headers, sidebars, drawer backdrops */
-  aside,
-  header:not(.print-header),
-  nav,
-  .bi-main-content > header,
-  .no-print,
-  .no-print * {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-  }
-
-  /* Hide background page content when modal is open */
-  .bi-main-content > main > *:not(#executive-modal-container) {
-    display: none !important;
-  }
-
-  /* Modal container expands naturally for multi-page print */
+  /* Modal container expands naturally as direct child of body */
   #executive-modal-container {
     position: static !important;
     inset: auto !important;
     z-index: auto !important;
-    background: transparent !important;
+    background: #ffffff !important;
     padding: 0 !important;
     margin: 0 !important;
     overflow: visible !important;
     display: block !important;
     width: 100% !important;
     height: auto !important;
+    min-height: 0 !important;
     max-height: none !important;
     backdrop-filter: none !important;
   }
@@ -184,6 +157,17 @@
     display: block !important;
   }
 
+  /* Hide non-printable interactive elements */
+  .no-print,
+  .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
   /* Table rules for A4 multi-page pagination */
   .print-table {
     width: 100% !important;
@@ -212,9 +196,9 @@
   }
 
   .print-table td {
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #cbd5e1 !important;
     padding: 4px 5px !important;
-    color: #1e293b !important;
+    color: #0f172a !important;
     font-size: 10px !important;
   }
 
