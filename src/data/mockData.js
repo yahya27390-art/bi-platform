@@ -8,15 +8,15 @@
 
 // ── PERIODS ───────────────────────────────────────────────────
 export const MOCK_PERIODS = [
-  { id: 'p-2026-09', periodKey: '2026-09', year: 2026, month: 9, quarter: 3,
-    label: 'سبتمبر 2026', labelEn: 'Sep 2026',
-    startDate: '2026-09-01', endDate: '2026-09-30', isCurrent: true, isClosed: false },
   { id: 'p-2026-08', periodKey: '2026-08', year: 2026, month: 8, quarter: 3,
-    label: 'أغسطس 2026', labelEn: 'Aug 2026',
-    startDate: '2026-08-01', endDate: '2026-08-31', isCurrent: false, isClosed: true },
+    label: 'أغسطس 2026 (المعتمد بالفواتير)', labelEn: 'Aug 2026 (Audited)',
+    startDate: '2026-08-01', endDate: '2026-08-31', isCurrent: false, isClosed: true, isAudited: true },
+  { id: 'p-2026-09', periodKey: '2026-09', year: 2026, month: 9, quarter: 3,
+    label: 'سبتمبر 2026 (قيد التشغيل)', labelEn: 'Sep 2026 (In Progress)',
+    startDate: '2026-09-01', endDate: '2026-09-30', isCurrent: true, isClosed: false, isAudited: false },
   { id: 'p-2026-07', periodKey: '2026-07', year: 2026, month: 7, quarter: 3,
-    label: 'يوليو 2026', labelEn: 'Jul 2026',
-    startDate: '2026-07-01', endDate: '2026-07-31', isCurrent: false, isClosed: true },
+    label: 'يوليو 2026 (مقفل)', labelEn: 'Jul 2026 (Closed)',
+    startDate: '2026-07-01', endDate: '2026-07-31', isCurrent: false, isClosed: true, isAudited: true },
 ];
 
 // ── PLATFORMS (seed) ──────────────────────────────────────────

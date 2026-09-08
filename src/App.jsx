@@ -10,7 +10,6 @@ import Financials from './pages/Financials';
 import Targets from './pages/Targets';
 import DataImport from './pages/DataImport';
 import PrivateCampaignLab from './pages/PrivateCampaignLab';
-import SocialResponderLab from './pages/SocialResponderLab';
 import BILogin from './auth/BILogin';
 import BIProtectedRoute from './auth/BIProtectedRoute';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -41,14 +40,6 @@ export default function App() {
           element={
             <BIProtectedRoute requiredPermission="canViewPrivateCampaignLab" fallback={<Navigate to="/" replace />}>
               <PrivateCampaignLab />
-            </BIProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/social-responder" 
-          element={
-            <BIProtectedRoute requiredPermission="canViewPrivateCampaignLab" fallback={<Navigate to="/" replace />}>
-              <SocialResponderLab />
             </BIProtectedRoute>
           } 
         />

@@ -1166,1470 +1166,513 @@ export default function PrivateCampaignLab() {
 
   return (
     <div className="space-y-8 pb-16 font-sans text-slate-200" dir="rtl">
-      {/* Top Banner: Confidential Workspace */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0b1325] via-[#0f172a] to-[#0a0f1d] border border-slate-800 p-6 md:p-8 shadow-xl">
+      {/* 1. Executive Top Bar */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0b1325] via-[#0f172a] to-[#0a0f1d] border border-slate-800 p-6 md:p-7 shadow-xl">
         <div className="absolute top-0 left-0 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/25">
-                <Lock className="w-3.5 h-3.5 text-indigo-400" />
-                مساحة سرية خاصة بك (محجوبة تماماً عن حساب المدير)
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                مختبر الحملات والإيجنت الذكي
               </span>
               
               {agentConfig.enabled && agentConfig.apiKey ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
                   <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                  <span>إيجنت {agentConfig.provider === 'gemini' ? 'Google Gemini' : 'OpenAI'} متصل حياً</span>
+                  <span>{agentConfig.provider === 'gemini' ? 'Gemini 2.5 Flash' : 'OpenAI'} متصل حياً</span>
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-teal-500/10 text-teal-300 border border-teal-500/25">
-                  <Sparkles className="w-3.5 h-3.5 text-teal-400 animate-spin" />
-                  <span>المساعد المدمج نشط (جاهز للربط الحي)</span>
+                  <Bot className="w-3.5 h-3.5 text-teal-400" />
+                  <span>المساعد التسويقي نشط (Smart Engine)</span>
                 </span>
               )}
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-wide">
-              مختبر الحملات والمساعد الذكي (Campaign Lab & AI Copilot)
+            <h1 className="text-2xl md:text-3xl font-black text-white tracking-wide">
+              مركز إدارة وتطوير الحملات الإعلانية
             </h1>
-            <p className="text-xs md:text-sm text-slate-400 max-w-3xl leading-relaxed">
-              مساحتك المستقلة لتنظيم، جدولة، وتطوير الحملات الإعلانية واختبار الاستراتيجيات بحرية تامة. مربوط ببيانات Google Analytics 4 و Search Console ومبيعات الفروع المباشرة.
+            <p className="text-xs text-slate-400">
+              تحليل فوري للحملات، استهداف المدن، محاكاة الميزانيات، وصناعة الاستراتيجيات التسويقية المباشرة لشركة درة السيارة.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-start lg:self-center flex-wrap">
+          {/* Quick Integration Pills & Actions */}
+          <div className="flex items-center gap-2.5 flex-wrap">
             <button
               onClick={() => setShowSallaModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-purple-900/40 hover:bg-purple-900/60 border border-purple-500/40 text-purple-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
-              title="ربط ومزامنة متجر سلة (doracars.com)"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-900/30 hover:bg-purple-900/50 border border-purple-500/30 text-purple-200 text-xs font-bold transition-all shadow-sm"
+              title="متجر سلة doracars.com"
             >
-              <ShoppingCart className="w-4 h-4 text-purple-400" />
-              <span>{sallaConfig.isConnected ? 'متجر سلة: متصل حياً' : 'ربط متجر سلة (Salla)'}</span>
+              <ShoppingCart className="w-3.5 h-3.5 text-purple-400" />
+              <span>سلة</span>
               <span className={`w-2 h-2 rounded-full ${sallaConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
             </button>
 
             <button
               onClick={() => setShowTikTokModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#ff0050]/20 hover:bg-[#ff0050]/35 border border-[#ff0050]/40 text-rose-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
-              title="ربط ومزامنة إعلانات تيك توك (TikTok Ads)"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#ff0050]/15 hover:bg-[#ff0050]/30 border border-[#ff0050]/30 text-rose-200 text-xs font-bold transition-all shadow-sm"
+              title="إعلانات تيك توك"
             >
-              <Video className="w-4 h-4 text-[#00f2fe]" />
-              <span>{tiktokConfig.isConnected ? 'تيك توك: متصل حياً' : 'ربط تيك توك (TikTok Ads)'}</span>
+              <Video className="w-3.5 h-3.5 text-[#00f2fe]" />
+              <span>تيك توك</span>
               <span className={`w-2 h-2 rounded-full ${tiktokConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-[#ff0050]'}`} />
             </button>
 
             <button
               onClick={() => setShowMetaModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600/20 hover:bg-blue-600/35 border border-blue-500/40 text-blue-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
-              title="ربط ومزامنة إعلانات ميتا وواتساب وبكسل سلة (Meta Ads & CAPI)"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-600/15 hover:bg-blue-600/30 border border-blue-500/30 text-blue-200 text-xs font-bold transition-all shadow-sm"
+              title="إعلانات ميتا وواتساب"
             >
-              <Facebook className="w-4 h-4 text-[#1877f2]" />
-              <span>{metaConfig.isConnected ? 'ميتا: متصل حياً' : 'ربط ميتا (Meta Ads)'}</span>
+              <Facebook className="w-3.5 h-3.5 text-[#1877f2]" />
+              <span>ميتا</span>
               <span className={`w-2 h-2 rounded-full ${metaConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-[#1877f2]'}`} />
             </button>
 
             <button
               onClick={() => setShowGoogleModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 text-amber-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
-              title="ربط ومزامنة إعلانات جوجل والبحث والخرائط (Google Ads)"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/30 text-amber-200 text-xs font-bold transition-all shadow-sm"
+              title="إعلانات جوجل و Search Console"
             >
-              <Search className="w-4 h-4 text-amber-400" />
-              <span>{googleConfig.isConnected ? 'جوجل: متصل حياً' : 'ربط جوجل (Google Ads)'}</span>
+              <Search className="w-3.5 h-3.5 text-amber-400" />
+              <span>جوجل</span>
               <span className={`w-2 h-2 rounded-full ${googleConfig.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
             </button>
 
             <button
               onClick={() => setShowSettingsModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-200 hover:text-white font-medium text-xs md:text-sm transition-all shadow-sm"
-              title="إعدادات ربط الإيجنت (Gemini / OpenAI)"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-all shadow-sm"
+              title="إعدادات الـ API"
             >
-              <Settings className="w-4 h-4 text-teal-400" />
-              <span>إعدادات الإيجنت (API)</span>
-              {agentConfig.enabled && <span className="w-2 h-2 rounded-full bg-emerald-400" />}
+              <Settings className="w-3.5 h-3.5 text-teal-400" />
+              <span>إعدادات الإيجنت</span>
             </button>
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs md:text-sm shadow-lg shadow-teal-500/20 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-teal-500/20 transition-all"
             >
               <Plus className="w-4 h-4" />
-              <span>إضافة حملة جديدة</span>
+              <span>إضافة حملة</span>
             </button>
           </div>
         </div>
 
-        {/* Quick Metrics Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-slate-800">
-          <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
-            <div className="text-xs text-slate-400 font-medium">الحملات النشطة</div>
-            <div className="text-xl font-bold text-emerald-400 font-mono mt-1">
-              {activeCampaignsCount} <span className="text-xs text-slate-500 font-normal">حملات</span>
-            </div>
-          </div>
-          <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
-            <div className="text-xs text-slate-400 font-medium">إجمالي الميزانيات المجدولة</div>
-            <div className="text-xl font-bold text-slate-100 font-mono mt-1" dir="ltr">
+        {/* 2. Sleek KPI Metrics Strip (Zero Bloat) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-slate-800/80">
+          <div className="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all">
+            <div className="text-[11px] text-slate-400 font-medium">إجمالي الميزانية المدارة</div>
+            <div className="text-xl font-bold text-white font-mono mt-1" dir="ltr">
               {formatSAR(totalBudget, true)}
             </div>
+            <div className="text-[10px] text-slate-500 mt-0.5">3 قنوات نشطة</div>
           </div>
-          <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
-            <div className="text-xs text-slate-400 font-medium">حالة الإيجنت</div>
-            <div className="text-sm font-bold text-teal-300 font-mono mt-1.5 flex items-center gap-1.5">
-              <Cpu className="w-4 h-4 text-teal-400" />
-              <span>{agentConfig.enabled ? agentConfig.model : 'Smart Built-in'}</span>
+
+          <div className="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all">
+            <div className="text-[11px] text-slate-400 font-medium">العائد المتوقع (ROAS)</div>
+            <div className="text-xl font-bold text-emerald-400 font-mono mt-1">
+              4.8x <span className="text-[11px] text-emerald-500 font-normal">مستهدف</span>
             </div>
+            <div className="text-[10px] text-slate-500 mt-0.5">مبيعات قطع غيار</div>
           </div>
-          <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
-            <div className="text-xs text-slate-400 font-medium">الكلمات المتصدرة المكتشفة</div>
-            <div className="text-xl font-bold text-indigo-300 font-mono mt-1">
-              4 كلمات <span className="text-xs text-slate-500 font-normal">(Rank 1.0)</span>
+
+          <div className="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all">
+            <div className="text-[11px] text-slate-400 font-medium">محادثات العملاء والليدات</div>
+            <div className="text-xl font-bold text-cyan-400 font-mono mt-1">
+              1,617 <span className="text-[11px] text-slate-400 font-normal">محادثة</span>
             </div>
+            <div className="text-[10px] text-slate-500 mt-0.5">واتساب وإنستغرام وتيك توك</div>
+          </div>
+
+          <div className="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all">
+            <div className="text-[11px] text-slate-400 font-medium">سلات المتجر المتروكة</div>
+            <div className="text-xl font-bold text-purple-400 font-mono mt-1">
+              18.5 ألف <span className="text-[11px] text-slate-400 font-normal">جلسة</span>
+            </div>
+            <div className="text-[10px] text-slate-500 mt-0.5">فرصة استعادة سريعة</div>
           </div>
         </div>
       </div>
 
-      {/* Sub-Tab Navigation Bar */}
-      <div className="flex items-center gap-2 p-1.5 bg-[#0d1527] rounded-2xl border border-slate-800/90 shadow-lg overflow-x-auto">
-        <button
-          onClick={() => setActiveSubTab('chat_lab')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs md:text-sm transition-all whitespace-nowrap ${
-            activeSubTab === 'chat_lab'
-              ? 'bg-teal-500 text-slate-950 font-bold shadow-md shadow-teal-500/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-          }`}
+      {/* 3. Executive Dual Workspace: AI Copilot (Right) + Live Campaigns Hub (Left) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* Right Column: AI Marketing Copilot Chat */}
+        <div
+          className={`${
+            isChatExpanded ? 'lg:col-span-12 h-[820px]' : 'lg:col-span-7 h-[740px]'
+          } rounded-3xl border border-slate-800/90 bg-[#0d1527] p-5 shadow-2xl flex flex-col transition-all duration-300 relative`}
         >
-          <Bot className="w-4 h-4" />
-          <span>المساعد الذكي والمحاكي</span>
-        </button>
+          {/* Chat Header */}
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center text-teal-400">
+                <Bot className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <span>المساعد التسويقي الذكي</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-300 border border-teal-500/30">
+                    {agentConfig.enabled ? (agentConfig.provider === 'gemini' ? 'Gemini 2.5' : 'OpenAI') : 'Smart Engine'}
+                  </span>
+                </h3>
+              </div>
+            </div>
 
-        <button
-          onClick={() => setActiveSubTab('tasks_board')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs md:text-sm transition-all whitespace-nowrap ${
-            activeSubTab === 'tasks_board'
-              ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-          }`}
-        >
-          <ListTodo className="w-4 h-4 text-indigo-400" />
-          <span>بورد مهام الإيجنت (Task Board)</span>
-          <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-              activeSubTab === 'tasks_board' ? 'bg-white/20 text-white' : 'bg-slate-800 text-indigo-300'
-            }`}
-          >
-            {tasks.filter((t) => t.status !== 'completed').length}
-          </span>
-        </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleClearChat}
+                className="p-1.5 px-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-xs flex items-center gap-1 transition-all"
+                title="بدء جلسة جديدة"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+                <span className="hidden sm:inline">مسح</span>
+              </button>
 
-        <button
-          onClick={() => setActiveSubTab('memory_bank')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs md:text-sm transition-all whitespace-nowrap ${
-            activeSubTab === 'memory_bank'
-              ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-          }`}
-        >
-          <BrainCircuit className="w-4 h-4 text-purple-400" />
-          <span>ذاكرة الإيجنت الدائمة (Memory Bank)</span>
-          <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-              activeSubTab === 'memory_bank' ? 'bg-white/20 text-white' : 'bg-slate-800 text-purple-300'
-            }`}
-          >
-            {memories.length}
-          </span>
-        </button>
+              <button
+                onClick={() => setIsChatExpanded(!isChatExpanded)}
+                className="p-1.5 px-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-xs flex items-center gap-1 transition-all"
+                title={isChatExpanded ? 'تصغير' : 'توسيع'}
+              >
+                {isChatExpanded ? (
+                  <>
+                    <Minimize2 className="w-3.5 h-3.5 text-teal-400" />
+                    <span className="hidden sm:inline">تصغير</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="w-3.5 h-3.5 text-teal-400" />
+                    <span className="hidden sm:inline">توسيع</span>
+                  </>
+                )}
+              </button>
 
-        <button
-          onClick={() => setActiveSubTab('campaigns')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs md:text-sm transition-all whitespace-nowrap ${
-            activeSubTab === 'campaigns'
-              ? 'bg-slate-700 text-white font-bold shadow-md'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-          }`}
-        >
-          <Target className="w-4 h-4 text-teal-400" />
-          <span>جدولة الحملات</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-800 text-slate-300">
-            {campaigns.length}
-          </span>
-        </button>
-      </div>
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="p-1.5 px-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-xs flex items-center gap-1 transition-all"
+                title="إعدادات الـ API"
+              >
+                <Settings className="w-3.5 h-3.5 text-teal-400" />
+              </button>
+            </div>
+          </div>
 
-      {/* VIEW 1: CHAT LAB & SIMULATOR */}
-      {activeSubTab === 'chat_lab' && (
-        <div className="space-y-8">
-          {/* Tactical AI Recommendations */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
-                  <Bot className="w-4 h-4" />
+          {/* Quick 1-Click Action Chips (Direct & Punchy - No Bloat) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto py-2 text-xs">
+            <button
+              onClick={() => handleSendQuery('اقترح خطة تسويقية متكاملة لعروض اليوم الوطني في درة السيارة لقطع الغيار')}
+              className="px-2.5 py-1 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 whitespace-nowrap text-xs font-bold transition-all"
+            >
+              🇸🇦 اليوم الوطني 96
+            </button>
+            <button
+              onClick={() => handleSendQuery('حلل لي أداء حملات تيك توك وتكلفة النقرة الحالية وكيف نرفع مبيعات المتجر')}
+              className="px-2.5 py-1 rounded-xl bg-[#ff0050]/15 hover:bg-[#ff0050]/25 text-rose-300 border border-[#ff0050]/30 whitespace-nowrap text-xs font-bold transition-all"
+            >
+              🎵 خطة تيك توك
+            </button>
+            <button
+              onClick={() => handleSendQuery('حلل لي نتائج إعلانات ميتا ومحادثات الواتساب الـ 1,617 وكيف نحسن معدل التحويل')}
+              className="px-2.5 py-1 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 whitespace-nowrap text-xs font-bold transition-all"
+            >
+              💬 واتساب وميتا
+            </button>
+            <button
+              onClick={() => handleSendQuery('ما هي استراتيجية إعادة استهداف الـ 18.5 ألف سلة متروكة في متجر سلة؟')}
+              className="px-2.5 py-1 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 whitespace-nowrap text-xs font-bold transition-all"
+            >
+              🛒 استعادة السلات
+            </button>
+            <button
+              onClick={() => handleSendQuery('كيف نركز استهداف إعلانات الفيديو على عملاء الرياض وجدة لشحن قطع الغيار؟')}
+              className="px-2.5 py-1 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 whitespace-nowrap text-xs font-bold transition-all"
+            >
+              📍 الرياض وجدة
+            </button>
+            <button
+              onClick={() => handleSendQuery(`ما هو التوزيع الأمثل لميزانية ${formatSAR(budgetSlider)} شهرياً بين القنوات؟`)}
+              className="px-2.5 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 whitespace-nowrap text-xs font-bold transition-all"
+            >
+              💰 توزيع الميزانية
+            </button>
+          </div>
+
+          {/* Chat Messages Area */}
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1 pl-1">
+            {chatMessages.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex gap-2.5 ${msg.sender === 'user' ? 'justify-start flex-row-reverse' : 'justify-start'}`}
+              >
+                <div
+                  className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs shrink-0 ${
+                    msg.sender === 'user'
+                      ? 'bg-slate-700 text-slate-100 font-bold'
+                      : 'bg-teal-500/15 border border-teal-500/30 text-teal-300'
+                  }`}
+                >
+                  {msg.sender === 'user' ? 'أنت' : <Bot className="w-3.5 h-3.5" />}
                 </div>
-                <div>
-                  <h2 className="text-lg font-bold text-white">ترشيحات الذكاء الاصطناعي التكتيكية (AI Tactical Insights)</h2>
-                  <p className="text-xs text-slate-400">فرص تسويقية فورية مستخرجة آلياً من بيانات الربط الحي لرفع المبيعات وخفض تكلفة الشراء</p>
+                <div
+                  className={`relative group rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed ${
+                    msg.sender === 'user'
+                      ? 'bg-slate-800 border border-slate-700 text-slate-100 max-w-[85%] whitespace-pre-wrap'
+                      : 'bg-[#0a1224]/95 border border-slate-800/90 text-slate-200 max-w-[96%] w-full shadow-md'
+                  }`}
+                >
+                  {msg.sender === 'user' ? (
+                    <div className="whitespace-pre-wrap">{msg.text}</div>
+                  ) : (
+                    <ChatMessageRenderer text={msg.text} />
+                  )}
+
+                  {/* Copy Button */}
+                  {msg.sender === 'ai' && (
+                    <button
+                      onClick={() => handleCopyMessage(msg.text, i)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 left-2 p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] border border-slate-700 flex items-center gap-1"
+                      title="نسخ الرد"
+                    >
+                      {copiedMsgIndex === i ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    </button>
+                  )}
                 </div>
               </div>
-              <span className="text-xs text-slate-300 font-mono font-medium bg-slate-800 px-3 py-1 rounded-xl border border-slate-700">
-                تحديث لحظي
+            ))}
+
+            {isAiTyping && (
+              <div className="flex items-center gap-2 text-xs text-teal-400 bg-teal-500/10 border border-teal-500/20 px-3 py-2 rounded-xl w-fit animate-pulse">
+                <Bot className="w-4 h-4" />
+                <span>الإيجنت يحلل البيانات ويجهز الخطة...</span>
+              </div>
+            )}
+            <div ref={chatBottomRef} />
+          </div>
+
+          {/* Attachment Previews Bar */}
+          {attachedFiles.length > 0 && (
+            <div className="flex items-center gap-2 pb-1 overflow-x-auto">
+              {attachedFiles.map((file) => (
+                <div
+                  key={file.id}
+                  className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-800 border border-teal-500/40 text-xs text-slate-200 shrink-0"
+                >
+                  <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="max-w-[110px] truncate text-[11px]">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveAttachedFile(file.id)}
+                    className="text-slate-400 hover:text-rose-400"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Input Bar */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendQuery();
+            }}
+            className="flex items-center gap-2 pt-2 border-t border-slate-800"
+          >
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.csv,.xlsx,.txt"
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center justify-center shrink-0"
+              title="إرفاق ملف أو صورة"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+
+            <input
+              type="text"
+              value={inputQuery}
+              onChange={(e) => setInputQuery(e.target.value)}
+              placeholder="اطلب خطة تسويقية، تحليل منصة، أو أمر مباشر للإيجنت..."
+              className="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-100 text-xs sm:text-sm focus:outline-none focus:border-teal-500 transition-all placeholder:text-slate-500"
+            />
+
+            <button
+              type="submit"
+              disabled={isAiTyping || (!inputQuery.trim() && attachedFiles.length === 0)}
+              className="px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-slate-950 font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 shadow-md shadow-teal-500/15 shrink-0"
+            >
+              <span>إرسال</span>
+              <Send className="w-3.5 h-3.5 rotate-180" />
+            </button>
+          </form>
+        </div>
+
+        {/* Left Column: Live Campaigns & Decision Hub (Actionable & Crisp) */}
+        <div className={`${isChatExpanded ? 'hidden' : 'lg:col-span-5 space-y-5'}`}>
+          
+          {/* Active Campaigns Card */}
+          <div className="rounded-3xl border border-slate-800/90 bg-[#0d1527] p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-sm font-bold text-white">الحملات الإعلانية النشطة</h3>
+              </div>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                حسابات حقيقية
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Card 1 */}
-              <div className="rounded-3xl border border-slate-800/90 hover:border-slate-700 bg-[#0f172a] p-5 space-y-3.5 relative group transition-all shadow-sm">
+            <div className="space-y-3">
+              {/* Campaign 1: Meta WhatsApp */}
+              <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 transition-all space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-sky-500/10 text-sky-300 border border-sky-500/20">
-                    فرصة Google Search
+                  <span className="text-xs font-bold text-white">حملة تفاعل واتساب</span>
+                  <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+                    نشطة (ميتا)
                   </span>
-                  <span className="text-xs font-mono font-bold text-sky-400">عائد متوقع 4.5x</span>
                 </div>
-                <h3 className="text-sm font-bold text-slate-100 leading-snug">
-                  اقتناص كلمات البحث المتصدرة بـ Search Console
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  كلمة "درة السيارة لقطع الغيار" تتصدر الترتيب 1.0 بنسبة CTR 49.8%. أنشئ حملة بحثية مخصصة موجهة لصفحة الفرامل والفلاتر لحصد مبيعات فورية.
-                </p>
+                <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-400 font-mono">
+                  <div>الصرف: <span className="text-white font-bold">2,930 ر.س</span></div>
+                  <div>المحادثات: <span className="text-cyan-400 font-bold">1,614</span></div>
+                  <div>التكلفة: <span className="text-emerald-400 font-bold">1.82 ر.س</span></div>
+                </div>
                 <button
-                  onClick={() => handleSendQuery('اقترح خطة لحملة Google Search تستهدف الكلمات المتصدرة في Search Console')}
-                  className="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs border border-slate-700/60 transition-all flex items-center justify-center gap-1.5"
+                  onClick={() => handleSendQuery('كيف نطور حملة تفاعل واتساب لزيادة طلبات قطع غيار كيا وهيونداي وتقليل تكلفة المحادثة؟')}
+                  className="w-full py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 hover:text-white border border-blue-500/30 text-[11px] font-bold transition-all flex items-center justify-center gap-1"
                 >
-                  <span>توليد خطة الحملة بالإيجنت</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+                  <span>استشارة الإيجنت لتحسين الحملة</span>
+                  <ArrowUpRight className="w-3 h-3" />
                 </button>
               </div>
 
-              {/* Card 2 */}
-              <div className="rounded-3xl border border-slate-800/90 hover:border-slate-700 bg-[#0f172a] p-5 space-y-3.5 relative group transition-all shadow-sm">
+              {/* Campaign 2: Meta Awareness */}
+              <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition-all space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                    تركيز جغرافي (Geo-Push)
+                  <span className="text-xs font-bold text-white">حملة وعي محلي (بريدة)</span>
+                  <span className="text-[10px] font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">
+                    نشطة (ميتا)
                   </span>
-                  <span className="text-xs font-mono font-bold text-indigo-400">54% من مبيعات سلة</span>
                 </div>
-                <h3 className="text-sm font-bold text-slate-100 leading-snug">
-                  توجيه 60% من ميزانية Meta إلى جدة والرياض
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  سجلت جدة والرياض 36 عملية شراء مؤكدة في GA4 بقيمة 22.5 ألف ر.س. احصر إعلانات الفيديو على هاتين المدينتين مع ميزة شحن سريع.
-                </p>
+                <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-400 font-mono">
+                  <div>الصرف: <span className="text-white font-bold">291 ر.س</span></div>
+                  <div>الوصول: <span className="text-indigo-300 font-bold">95.1K</span></div>
+                  <div>الظهور: <span className="text-slate-300 font-bold">298K</span></div>
+                </div>
                 <button
-                  onClick={() => handleSendQuery('كيف استهدف عملاء جدة والرياض في إعلانات انستقرام وسناب شات؟')}
-                  className="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs border border-slate-700/60 transition-all flex items-center justify-center gap-1.5"
+                  onClick={() => handleSendQuery('هل نزيد ميزانية حملة الوعي لفرع بريدة أم نحول الميزانية لحملة مبيعات مباشرة؟')}
+                  className="w-full py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-indigo-500/30 text-[11px] font-bold transition-all flex items-center justify-center gap-1"
                 >
-                  <span>طلب استراتيجية الاستهداف</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+                  <span>تقييم جدوى الحملة</span>
+                  <ArrowUpRight className="w-3 h-3" />
                 </button>
               </div>
 
-              {/* Card 3 */}
-              <div className="rounded-3xl border border-slate-800/90 hover:border-slate-700 bg-[#0f172a] p-5 space-y-3.5 relative group transition-all shadow-sm">
+              {/* Campaign 3: TikTok Traffic */}
+              <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-rose-500/40 transition-all space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                    دعم الفروع الميدانية
+                  <span className="text-xs font-bold text-white">إعلانات تيك توك (DoraCars Pixel)</span>
+                  <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded">
+                    بيكسل نشط
                   </span>
-                  <span className="text-xs font-mono font-bold text-emerald-400">989 ألف فروع</span>
                 </div>
-                <h3 className="text-sm font-bold text-slate-100 leading-snug">
-                  إعلانات محلية (Local Maps) لبريدة والقصيم
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  الفروع الميدانية هي القوة الكبرى للشركة. تفعيل إعلانات الخرائط المحيطة بالفرع الرئيسي وفرع كيا والرواف سيجذب عملاء الصيانة العاجلة.
-                </p>
+                <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-400 font-mono">
+                  <div>الأحداث: <span className="text-white font-bold">13.7K</span></div>
+                  <div>النقرة (CPC): <span className="text-cyan-400 font-bold">0.065 ر.س</span></div>
+                  <div>النقر (CTR): <span className="text-emerald-400 font-bold">1.22%</span></div>
+                </div>
                 <button
-                  onClick={() => handleSendQuery('كيف أصمم حملة Google Maps محلية لزيارات فروع بريدة؟')}
-                  className="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs border border-slate-700/60 transition-all flex items-center justify-center gap-1.5"
+                  onClick={() => handleSendQuery('صمم لي إعلان تيك توك فيديو قصير جذاب لقطع غيار كيا سبورتاج وهيونداي مع رابط المتجر')}
+                  className="w-full py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 hover:text-white border border-rose-500/30 text-[11px] font-bold transition-all flex items-center justify-center gap-1"
                 >
-                  <span>تفاصيل حملة الفروع</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+                  <span>اقتراح نص وسيناريو إعلان تيك توك</span>
+                  <ArrowUpRight className="w-3 h-3" />
                 </button>
               </div>
+            </div>
+          </div>
 
-              {/* Card 4 */}
-              <div className="rounded-3xl border border-slate-800/90 hover:border-slate-700 bg-[#0f172a] p-5 space-y-3.5 relative group transition-all shadow-sm">
+          {/* Budget Simulator Card */}
+          <div className="rounded-3xl border border-slate-800/90 bg-[#0d1527] p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-sm font-bold text-white">حاسبة توزيع الميزانية الذكي</h3>
+              </div>
+              <span className="text-xs font-mono font-bold text-emerald-400">{formatSAR(budgetSlider)}</span>
+            </div>
+
+            <div className="space-y-3">
+              <input
+                type="range"
+                min={5000}
+                max={100000}
+                step={500}
+                value={budgetSlider}
+                onChange={(e) => setBudgetSlider(Number(e.target.value))}
+                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-400"
+              />
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                <span>5,000 ر.س</span>
+                <span>50,000 ر.س</span>
+                <span>100,000 ر.س</span>
+              </div>
+
+              {/* Channel Allocations */}
+              <div className="space-y-2 pt-1 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                    السلات المتروكة
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-400" />
+                    <span>ميتا وواتساب (45%)</span>
                   </span>
-                  <span className="text-xs font-mono font-bold text-amber-400">18.5 ألف جلسة</span>
+                  <span className="font-mono font-bold text-white">{formatSAR(budgetSlider * 0.45)}</span>
                 </div>
-                <h3 className="text-sm font-bold text-slate-100 leading-snug">
-                  إعادة استهداف زوار المتجر غير المكتملين
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  هناك آلاف الزوار الذين دخلوا المتجر ولم يشتروا. إطلاق إعلان تذكيري بسيط مع كود خصم 5% سيستعيد ما بين 15 إلى 30 طلب معلق.
-                </p>
-                <button
-                  onClick={() => handleSendQuery('ما هي أفضل طريقة لإعادة استهداف زوار المتجر الذين لم يشتروا؟')}
-                  className="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs border border-slate-700/60 transition-all flex items-center justify-center gap-1.5"
-                >
-                  <span>خطة السلات المتروكة</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive AI Strategy Chat & Budget Allocator */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Col: AI Copilot Chat */}
-            <div
-              className={`${
-                isChatExpanded ? 'lg:col-span-12 h-[780px]' : 'lg:col-span-8 h-[700px]'
-              } rounded-3xl border border-slate-800/90 bg-[#0d1527] p-6 space-y-4 shadow-xl flex flex-col transition-all duration-300 relative`}
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3.5">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-2xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center text-teal-400">
-                    <Bot className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm md:text-base font-bold text-white flex items-center gap-2">
-                      <span>إيجنت الحملات الذكي (AI Campaign Agent)</span>
-                      {agentConfig.enabled ? (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium">
-                          LIVE {agentConfig.provider.toUpperCase()}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-300 border border-teal-500/30 font-medium">
-                          SMART BUILT-IN
-                        </span>
-                      )}
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      محادثة ذكية متصلة ببيانات الشركة وذاكرتها الدائمة وبورد المهام
-                    </p>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-400" />
+                    <span>تيك توك وترافيك المتجر (30%)</span>
+                  </span>
+                  <span className="font-mono font-bold text-white">{formatSAR(budgetSlider * 0.30)}</span>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  {/* Reset / Clear Chat */}
-                  <button
-                    onClick={handleClearChat}
-                    className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all text-xs flex items-center gap-1.5"
-                    title="بدء محادثة جديدة ومسح السجل"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="hidden sm:inline">جلسة جديدة</span>
-                  </button>
-
-                  {/* Expand / Maximize Toggle */}
-                  <button
-                    onClick={() => setIsChatExpanded(!isChatExpanded)}
-                    className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all text-xs flex items-center gap-1.5"
-                    title={isChatExpanded ? 'تصغير مساحة الشات' : 'تكبير مساحة الشات'}
-                  >
-                    {isChatExpanded ? (
-                      <>
-                        <Minimize2 className="w-3.5 h-3.5 text-teal-400" />
-                        <span className="hidden sm:inline">تصغير</span>
-                      </>
-                    ) : (
-                      <>
-                        <Maximize2 className="w-3.5 h-3.5 text-teal-400" />
-                        <span className="hidden sm:inline">مساحة أوسع</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* Settings button */}
-                  <button
-                    onClick={() => setShowSettingsModal(true)}
-                    className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all text-xs flex items-center gap-1.5"
-                    title="تعديل مفتاح الـ API ومزود الذكاء الاصطناعي"
-                  >
-                    <Settings className="w-3.5 h-3.5 text-teal-400" />
-                    <span className="hidden sm:inline">ربط الإيجنت</span>
-                  </button>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span>جوجل بحث وخرائط (15%)</span>
+                  </span>
+                  <span className="font-mono font-bold text-white">{formatSAR(budgetSlider * 0.15)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-400" />
+                    <span>إعادة استهداف سلات سلة (10%)</span>
+                  </span>
+                  <span className="font-mono font-bold text-white">{formatSAR(budgetSlider * 0.10)}</span>
                 </div>
               </div>
 
-              {/* Quick Prompt Chips */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-                <button
-                  onClick={() => handleSendQuery('عايزك ترد عليا الاول انت موجود ؟')}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition-all whitespace-nowrap text-xs font-medium"
-                >
-                  👋 انت موجود؟
-                </button>
-                <button
-                  onClick={() => handleSendQuery('ما هي مبيعات متجر سلة الحالية وكم عدد السلات المتروكة وكيف نستعيدها؟')}
-                  className="px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/35 text-purple-200 border border-purple-500/40 transition-all whitespace-nowrap text-xs font-medium flex items-center gap-1"
-                >
-                  <ShoppingCart className="w-3 h-3 text-purple-400" />
-                  <span>🛒 متجر سلة والسلات المتروكة</span>
-                </button>
-                <button
-                  onClick={() => handleSendQuery('حلل لي حملات تيك توك وكيف نستفيد من تكلفة النقرة المنخفضة (0.065 ر.س) لزيادة مبيعات المتجر؟')}
-                  className="px-3 py-1.5 rounded-xl bg-[#ff0050]/20 hover:bg-[#ff0050]/35 text-rose-200 border border-[#ff0050]/40 transition-all whitespace-nowrap text-xs font-medium flex items-center gap-1"
-                >
-                  <Video className="w-3 h-3 text-[#00f2fe]" />
-                  <span>📱 حملات تيك توك وتكلفة النقرة</span>
-                </button>
-                <button
-                  onClick={() => handleSendQuery('حلل لي حملات ميتا ومحادثات الواتساب الـ 1,617 وكيف نستغلها في مبيعات قطع الغيار وعروض اليوم الوطني؟')}
-                  className="px-3 py-1.5 rounded-xl bg-blue-500/20 hover:bg-blue-500/35 text-blue-200 border border-blue-500/40 transition-all whitespace-nowrap text-xs font-medium flex items-center gap-1"
-                >
-                  <Facebook className="w-3 h-3 text-[#1877f2]" />
-                  <span>💬 محادثات واتساب وإعلانات ميتا</span>
-                </button>
-                <button
-                  onClick={() => handleSendQuery('حلل لي حملات إعلانات جوجل والبحث والخرائط لدرة وكيف نستفيد منها في مبيعات اليوم الوطني؟')}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-500/40 transition-all whitespace-nowrap text-xs font-medium flex items-center gap-1"
-                >
-                  <Search className="w-3 h-3 text-amber-400" />
-                  <span>🎯 حملات بحث وخرائط جوجل</span>
-                </button>
-                <button
-                  onClick={() => handleSendQuery('نظم نفسك وبورد المهام الموكلة إليك واقترح أولويات العمل')}
-                  className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 transition-all whitespace-nowrap text-xs font-medium"
-                >
-                  📋 نظم نفسك وبورد المهام
-                </button>
-                <button
-                  onClick={() => handleSendQuery('ما هي القواعد والمعلومات المحفوظة في ذاكرتك الدائمة؟')}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all whitespace-nowrap text-xs"
-                >
-                  🧠 ما الذي تتذكره؟
-                </button>
-                <button
-                  onClick={() => handleSendQuery(`أفضل توزيع لميزانية ${formatSAR(budgetSlider)} شهرياً`)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all whitespace-nowrap text-xs"
-                >
-                  📊 توزيع الميزانية
-                </button>
-                <button
-                  onClick={() => handleSendQuery('كيف استهدف عملاء جدة والرياض في إعلانات انستقرام وسناب شات؟')}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all whitespace-nowrap text-xs"
-                >
-                  🎯 استهداف المدن
-                </button>
-                <button
-                  onClick={() => handleSendQuery('اقترح استراتيجية تسويقية متكاملة لعروض اليوم الوطني في درة السيارة')}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all whitespace-nowrap text-xs"
-                >
-                  🇸🇦 عروض اليوم الوطني
-                </button>
-              </div>
-
-              {/* Chat Messages Area */}
-              <div className="flex-1 overflow-y-auto space-y-4 pr-1 pl-2">
-                {chatMessages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`flex gap-3 ${msg.sender === 'user' ? 'justify-start flex-row-reverse' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs shrink-0 ${
-                        msg.sender === 'user'
-                          ? 'bg-slate-700 text-slate-100 font-bold'
-                          : 'bg-teal-500/15 border border-teal-500/30 text-teal-300'
-                      }`}
-                    >
-                      {msg.sender === 'user' ? 'أنت' : <Bot className="w-4 h-4" />}
-                    </div>
-                    <div
-                      className={`relative group rounded-2xl p-4 text-sm leading-relaxed ${
-                        msg.sender === 'user'
-                          ? 'bg-slate-800/90 border border-slate-700/70 text-slate-100 font-normal max-w-[85%] whitespace-pre-wrap'
-                          : 'bg-[#0a1224]/95 border border-slate-800/90 text-slate-200 max-w-[96%] w-full shadow-lg'
-                      }`}
-                    >
-                      {msg.sender === 'user' ? (
-                        <div className="whitespace-pre-wrap">{msg.text}</div>
-                      ) : (
-                        <ChatMessageRenderer text={msg.text} />
-                      )}
-
-                      {/* Attached Files & Images Preview in Chat Message */}
-                      {msg.attachments && msg.attachments.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-slate-700/60 space-y-2">
-                          <div className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-                            <Paperclip className="w-3.5 h-3.5 text-teal-400" />
-                            <span>المرفقات ({msg.attachments.length}):</span>
-                          </div>
-                          <div className="flex flex-wrap gap-2.5">
-                            {msg.attachments.map((att, attIdx) => (
-                              <div key={attIdx} className="group/att relative">
-                                {att.isImage ? (
-                                  <div
-                                    onClick={() => setPreviewModalImage(att.dataUrl)}
-                                    className="cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-teal-400 transition-all shadow-md bg-slate-900 flex flex-col"
-                                    title="انقر لتكبير وعرض الصورة"
-                                  >
-                                    <img
-                                      src={att.dataUrl}
-                                      alt={att.name}
-                                      className="w-28 h-24 object-cover group-hover/att:scale-105 transition-transform"
-                                    />
-                                    <div className="px-2 py-1 text-[10px] text-slate-300 font-mono truncate max-w-[112px] bg-slate-950/90 flex items-center justify-between">
-                                      <span className="truncate">{att.name}</span>
-                                      <Eye className="w-3 h-3 text-teal-400 shrink-0 mr-1" />
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-slate-200 shadow-sm">
-                                    <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
-                                    <div className="max-w-[160px]">
-                                      <div className="font-medium truncate text-[11px] text-slate-200">{att.name}</div>
-                                      <div className="text-[10px] text-slate-400 font-mono">{(att.size / 1024).toFixed(1)} KB</div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                        {msg.sender === 'ai' && (
-                          <button
-                            onClick={() => handleCopyMessage(msg.text, i)}
-                            className="px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] flex items-center gap-1 border border-slate-700/60"
-                            title="نسخ الرد"
-                          >
-                            {copiedMsgIndex === i ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-400" />
-                                <span>تم</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3" />
-                                <span>نسخ</span>
-                              </>
-                            )}
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => handleSaveMessageToMemory(msg.text, msg.sender)}
-                          className="px-2 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/35 text-purple-300 hover:text-purple-100 text-[10px] flex items-center gap-1 border border-purple-500/40"
-                          title="حفظ هذه المعلومة دائماً في ذاكرة الإيجنت"
-                        >
-                          <BrainCircuit className="w-3 h-3 text-purple-400" />
-                          <span>حفظ بالذاكرة</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {isAiTyping && (
-                  <div className="flex items-center gap-2 text-xs text-teal-400 bg-teal-500/10 border border-teal-500/20 px-3 py-2 rounded-xl w-fit animate-pulse">
-                    <Bot className="w-4 h-4" />
-                    <span>الإيجنت يحلل السؤال ويبحث في الذاكرة وبورد المهام...</span>
-                  </div>
-                )}
-                <div ref={chatBottomRef} />
-              </div>
-
-              {/* Attachment Previews Bar (Before Sending) */}
-              {attachedFiles.length > 0 && (
-                <div className="flex items-center gap-2 pb-1 overflow-x-auto">
-                  {attachedFiles.map((file) => (
-                    <div
-                      key={file.id}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/95 border border-teal-500/40 text-xs text-slate-200 shadow-sm shrink-0"
-                    >
-                      {file.isImage ? (
-                        <img src={file.dataUrl} alt="" className="w-5 h-5 rounded object-cover border border-slate-600" />
-                      ) : (
-                        <FileText className="w-4 h-4 text-indigo-400" />
-                      )}
-                      <span className="max-w-[130px] truncate text-[11px] text-slate-100 font-medium">{file.name}</span>
-                      <span className="text-[10px] text-teal-400 font-mono">({(file.size / 1024).toFixed(0)}KB)</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveAttachedFile(file.id)}
-                        className="w-4 h-4 rounded-full bg-slate-700 hover:bg-rose-500 hover:text-white flex items-center justify-center text-slate-300 transition-colors ml-0.5"
-                        title="إزالة المرفق"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Chat Input Bar */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendQuery();
-                }}
-                className="flex items-center gap-2 pt-3 border-t border-slate-800/80"
+              <button
+                onClick={() => handleSendQuery(`اعتمد توزيع ميزانية ${formatSAR(budgetSlider)} واشرح لي خطة الصرف اليومية والتوقعات لكل قناة`)}
+                className="w-full mt-2 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-teal-500/20 flex items-center justify-center gap-1.5"
               >
-                {/* Hidden File Input */}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  multiple
-                  accept="image/*,.pdf,.doc,.docx,.csv,.xlsx,.txt,.json"
-                  className="hidden"
-                />
-
-                {/* Attach File / Image Button */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-teal-300 border border-slate-700/70 transition-all flex items-center justify-center shrink-0 shadow-sm"
-                  title="إرفاق صور، مستندات، تقارير أو ملفات PDF/CSV"
-                >
-                  <Paperclip className="w-4 h-4" />
-                </button>
-
-                <input
-                  type="text"
-                  value={inputQuery}
-                  onChange={(e) => setInputQuery(e.target.value)}
-                  placeholder={
-                    attachedFiles.length > 0
-                      ? 'اكتب تعليقك أو سؤالك حول المرفقات (أو اضغط إرسال للتحليل الفوري)...'
-                      : 'اكتب سؤالك أو أمرك للإيجنت (مثال: تذكر أن نزيد ميزانية جدة، أو ما هي مهامك اليوم؟)'
-                  }
-                  className="flex-1 px-4 py-3 bg-slate-900/95 border border-slate-700/70 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-teal-500 transition-all placeholder:text-slate-500"
-                />
-                <button
-                  type="submit"
-                  disabled={isAiTyping || (!inputQuery.trim() && attachedFiles.length === 0)}
-                  className="px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-slate-950 font-bold text-sm transition-all flex items-center gap-2 shadow-md shadow-teal-500/15 shrink-0"
-                >
-                  <span>إرسال</span>
-                  <Send className="w-3.5 h-3.5 rotate-180" />
-                </button>
-              </form>
-            </div>
-
-            {/* Right Col: AI Budget Simulator & Scratchpad */}
-            <div
-              className={`${
-                isChatExpanded ? 'lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-6' : 'lg:col-span-4 space-y-6'
-              }`}
-            >
-              {/* Smart Budget Allocator */}
-              <div className="rounded-3xl border border-slate-800/90 bg-[#0d1527] p-6 space-y-4 shadow-xl sticky top-4 z-10">
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3.5">
-                  <div className="flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-emerald-400" />
-                    <h3 className="text-sm font-bold text-white">محاكي توزيع الميزانية الذكي (AI Allocator)</h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {isBudgetPinned ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-md">
-                        <Pin className="w-2.5 h-2.5 rotate-45" />
-                        <span>مثبتة ومعتمدة</span>
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-mono font-medium text-slate-400 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700">
-                        خطوة 500 ر.س
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Stepper Display & Buttons */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-slate-400">الميزانية الشهرية المقترحة:</span>
-                    <span className="font-mono text-emerald-400 font-bold text-lg">{formatSAR(budgetSlider)}</span>
-                  </div>
-
-                  {/* Exact 500 SAR Stepper Controls */}
-                  <div className="flex items-center justify-between gap-2 bg-slate-900/90 p-2 rounded-2xl border border-slate-800">
-                    <button
-                      type="button"
-                      onClick={() => handleBudgetStep(-500)}
-                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
-                      title="إنقاص 500 ريال"
-                    >
-                      <Minus className="w-3.5 h-3.5 text-rose-400" />
-                      <span>500- ر.س</span>
-                    </button>
-
-                    <div className="flex items-center justify-center gap-1">
-                      <input
-                        type="number"
-                        step={500}
-                        min={500}
-                        max={200000}
-                        value={budgetSlider}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          if (!isNaN(val)) setBudgetSlider(val);
-                        }}
-                        className="w-20 text-center bg-slate-800/80 border border-slate-700 rounded-lg py-1 text-xs font-mono font-bold text-white focus:outline-none focus:border-teal-500"
-                      />
-                      <span className="text-[11px] text-slate-400">ر.س</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleBudgetStep(500)}
-                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
-                      title="زيادة 500 ريال"
-                    >
-                      <Plus className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>500+ ر.س</span>
-                    </button>
-                  </div>
-
-                  {/* Slider Input with Step=500 */}
-                  <input
-                    type="range"
-                    min={1000}
-                    max={100000}
-                    step={500}
-                    value={budgetSlider}
-                    onChange={(e) => setBudgetSlider(Number(e.target.value))}
-                    className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-400"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                    <span>1,000 ر.س</span>
-                    <span>50,000 ر.س</span>
-                    <span>100,000 ر.س</span>
-                  </div>
-
-                  {/* Quick Presets Chips */}
-                  <div className="pt-1">
-                    <div className="text-[11px] text-slate-400 mb-1.5">ميزانيات جاهزة سريعة:</div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {[5000, 10000, 15000, 20000, 25000, 30000, 50000].map((preset) => (
-                        <button
-                          key={preset}
-                          type="button"
-                          onClick={() => setBudgetSlider(preset)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all border ${
-                            budgetSlider === preset
-                              ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-bold'
-                              : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800'
-                          }`}
-                        >
-                          {preset / 1000}k
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* AI Channel Breakdown */}
-                <div className="space-y-2 pt-3 border-t border-slate-800 text-xs">
-                  <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-slate-200 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-sky-400" />
-                        Google Search Ads (45%)
-                      </div>
-                      <div className="text-[10px] text-slate-400">نية شراء عالية + كلمات Rank 1.0</div>
-                    </div>
-                    <span className="font-mono font-bold text-sky-400" dir="ltr">
-                      {formatSAR(budgetSlider * 0.45, true)}
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-slate-200 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                        Meta Ads (Instagram Reels) (30%)
-                      </div>
-                      <div className="text-[10px] text-slate-400">استهداف جدة والرياض وإعادة استهداف GA4</div>
-                    </div>
-                    <span className="font-mono font-bold text-indigo-400" dir="ltr">
-                      {formatSAR(budgetSlider * 0.30, true)}
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-slate-200 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-teal-400" />
-                        TikTok Ads (15%)
-                      </div>
-                      <div className="text-[10px] text-slate-400">زيارات متجر سريعة ونقرات منخفضة التكلفة</div>
-                    </div>
-                    <span className="font-mono font-bold text-teal-400" dir="ltr">
-                      {formatSAR(budgetSlider * 0.15, true)}
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-slate-200 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                        Google Local Maps (بريدة) (10%)
-                      </div>
-                      <div className="text-[10px] text-slate-400">زيارات الفروع الميدانية الثلاثة</div>
-                    </div>
-                    <span className="font-mono font-bold text-emerald-400" dir="ltr">
-                      {formatSAR(budgetSlider * 0.10, true)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Allocator Actions: Pin Budget & Ask Agent */}
-                <div className="pt-3 border-t border-slate-800 space-y-2.5">
-                  <button
-                    type="button"
-                    onClick={isBudgetPinned ? handleUnpinBudget : handlePinBudget}
-                    className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${
-                      isBudgetPinned
-                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35 hover:bg-emerald-500/25'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700'
-                    }`}
-                    title={isBudgetPinned ? 'الميزانية مثبتة ومعتمدة - انقر للتعديل أو إلغاء التثبيت' : 'حفظ وتثبيت هذه الميزانية في ذاكرة الإيجنت الدائمة'}
-                  >
-                    <Pin className={`w-3.5 h-3.5 ${isBudgetPinned ? 'rotate-45 text-emerald-400' : 'text-slate-400'}`} />
-                    <span>{isBudgetPinned ? '✓ الميزانية مثبتة ومعتمدة في ذاكرة الإيجنت (انقر للإلغاء)' : '📌 تثبيت واعتماد الميزانية للإيجنت'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleConsultAgentOnBudget}
-                    className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-teal-500/15 via-emerald-500/15 to-indigo-500/15 hover:from-teal-500/25 hover:to-indigo-500/25 text-teal-200 hover:text-white border border-teal-500/35 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
-                  >
-                    <Bot className="w-4 h-4 text-teal-400" />
-                    <span>استشر الإيجنت حول أرقام هذه الميزانية ({formatSAR(budgetSlider)})</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Private Marketer Scratchpad */}
-              <div className="rounded-3xl border border-slate-800/90 bg-[#0d1527] p-6 space-y-3 shadow-xl">
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white">مفكرتي الاستراتيجية السرية (Private Notes)</h3>
-                  </div>
-                  <button
-                    onClick={handleSaveNotes}
-                    className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1"
-                  >
-                    {noteSavedToast ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Save className="w-3.5 h-3.5" />}
-                    <span>{noteSavedToast ? 'تم الحفظ!' : 'حفظ'}</span>
-                  </button>
-                </div>
-
-                <textarea
-                  value={scratchpad}
-                  onChange={(e) => setScratchpad(e.target.value)}
-                  rows={4}
-                  placeholder="اكتب أفكارك وملاحظاتك واختبارات A/B هنا. لا يمكن لأي مستخدم آخر أو للمدير رؤيتها."
-                  className="w-full p-3 bg-slate-900/90 border border-slate-700/70 rounded-2xl text-xs text-slate-200 leading-relaxed focus:outline-none focus:border-indigo-500 transition-all resize-none font-mono"
-                />
-                <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <Lock className="w-3 h-3 text-indigo-400" />
-                  <span>يتم الحفظ تلقائياً في ذاكرة جهازك فقط وبشكل مشفر.</span>
-                </div>
-              </div>
+                <span>طلب خطة الصرف اليومية بالإيجنت</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
+
         </div>
-      )}
 
-      {/* VIEW 2: AGENT TASKS BOARD (KANBAN) */}
-      {activeSubTab === 'tasks_board' && (
-        <div className="space-y-6 animate-fadeIn">
-          {/* Top Control Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0d1527] p-6 rounded-3xl border border-slate-800/90 shadow-xl">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                  <ListTodo className="w-5 h-5" />
-                </div>
-                <div>
-                  <h2 className="text-lg md:text-xl font-bold text-white">
-                    بورد المهام الموكلة للإيجنت (Interactive AI Task Board)
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    لوحة مهام تفاعلية يتطلع عليها الإيجنت باستمرار لتنظيم أولوياته وتنفيذ استراتيجيات التسويق بنقرة واحدة
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <button
-                onClick={handleAgentOrganizeTasks}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs md:text-sm transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
-                title="اطلب من الإيجنت مراجعة البورد وترتيب أولوياته فوراً"
-              >
-                <Bot className="w-4 h-4" />
-                <span>🤖 اطلب من الإيجنت تنظيم وترتيب البورد</span>
-              </button>
-
-              <button
-                onClick={() => setShowAddTaskModal(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs md:text-sm transition-all shadow-lg shadow-teal-500/20 active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>إضافة مهمة جديدة</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Kanban Columns */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Column 1: To Do (قيد الانتظار) */}
-            <div className="bg-[#0b1325] border border-slate-800 rounded-3xl p-5 space-y-4 flex flex-col">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-amber-400" />
-                  <h3 className="font-bold text-white text-sm">قيد الانتظار (To Do)</h3>
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                  {tasks.filter((t) => t.status === 'todo').length}
-                </span>
-              </div>
-
-              <div className="space-y-3 flex-1 overflow-y-auto max-h-[750px] pr-1">
-                {tasks.filter((t) => t.status === 'todo').length === 0 ? (
-                  <div className="text-center py-12 text-slate-500 text-xs border border-dashed border-slate-800 rounded-2xl p-4">
-                    لا توجد مهام قيد الانتظار حالياً.
-                  </div>
-                ) : (
-                  tasks
-                    .filter((t) => t.status === 'todo')
-                    .map((task) => (
-                      <div
-                        key={task.id}
-                        className="bg-[#0f172a] border border-slate-800/90 hover:border-slate-700 rounded-2xl p-4 space-y-3 transition-all shadow-sm group relative"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
-                            {task.platform}
-                          </span>
-                          <span
-                            className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
-                              task.priority === 'عالية'
-                                ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-                                : task.priority === 'متوسطة'
-                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                                : 'bg-slate-500/15 text-slate-300 border-slate-500/30'
-                            }`}
-                          >
-                            أولوية {task.priority}
-                          </span>
-                        </div>
-
-                        <h4 className="font-bold text-slate-100 text-sm leading-snug group-hover:text-teal-300 transition-colors">
-                          {task.title}
-                        </h4>
-
-                        <p className="text-xs text-slate-400 leading-relaxed">{task.description}</p>
-
-                        {task.agentNotes && (
-                          <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] text-teal-300 flex items-start gap-2">
-                            <Bot className="w-3.5 h-3.5 text-teal-400 shrink-0 mt-0.5" />
-                            <span>{task.agentNotes}</span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-slate-500" />
-                            <span>مستهدف: {task.dueDate}</span>
-                          </span>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                          <button
-                            onClick={() => handleExecuteTaskWithAgent(task)}
-                            className="flex-1 py-1.5 px-2.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white font-medium text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                            title="اطلب من الإيجنت تولي هذه المهمة وإعطائك خطة تنفيذية كاملة"
-                          >
-                            <Zap className="w-3.5 h-3.5 text-amber-300" />
-                            <span>⚡ اطلب من الإيجنت تنفيذها</span>
-                          </button>
-
-                          <button
-                            onClick={() => handleMoveTaskStatus(task.id, 'in_progress')}
-                            className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 text-xs font-medium"
-                            title="نقل إلى قيد التنفيذ"
-                          >
-                            بدء ▶
-                          </button>
-
-                          <button
-                            onClick={() => handleDeleteTask(task.id)}
-                            className="p-1.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                            title="حذف المهمة"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                )}
-              </div>
-            </div>
-
-            {/* Column 2: In Progress (قيد التنفيذ) */}
-            <div className="bg-[#0b1325] border border-slate-800 rounded-3xl p-5 space-y-4 flex flex-col">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-teal-400 animate-pulse" />
-                  <h3 className="font-bold text-white text-sm">قيد التنفيذ (In Progress)</h3>
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30">
-                  {tasks.filter((t) => t.status === 'in_progress').length}
-                </span>
-              </div>
-
-              <div className="space-y-3 flex-1 overflow-y-auto max-h-[750px] pr-1">
-                {tasks.filter((t) => t.status === 'in_progress').length === 0 ? (
-                  <div className="text-center py-12 text-slate-500 text-xs border border-dashed border-slate-800 rounded-2xl p-4">
-                    لا توجد مهام قيد التنفيذ حالياً.
-                  </div>
-                ) : (
-                  tasks
-                    .filter((t) => t.status === 'in_progress')
-                    .map((task) => (
-                      <div
-                        key={task.id}
-                        className="bg-[#0f172a] border border-teal-500/40 rounded-2xl p-4 space-y-3 transition-all shadow-md group relative"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
-                            {task.platform}
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-300 border border-teal-500/30 animate-pulse">
-                            <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
-                            جاري العمل
-                          </span>
-                        </div>
-
-                        <h4 className="font-bold text-white text-sm leading-snug">{task.title}</h4>
-
-                        <p className="text-xs text-slate-300 leading-relaxed">{task.description}</p>
-
-                        {task.agentNotes && (
-                          <div className="p-2.5 rounded-xl bg-teal-950/20 border border-teal-500/25 text-[11px] text-teal-300 flex items-start gap-2">
-                            <Bot className="w-3.5 h-3.5 text-teal-400 shrink-0 mt-0.5" />
-                            <span>{task.agentNotes}</span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-slate-500" />
-                            <span>مستهدف: {task.dueDate}</span>
-                          </span>
-                          <span className="text-[10px] text-teal-400 font-mono">أولوية {task.priority}</span>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                          <button
-                            onClick={() => handleExecuteTaskWithAgent(task)}
-                            className="flex-1 py-1.5 px-2.5 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 text-teal-200 font-medium text-xs transition-all flex items-center justify-center gap-1 border border-teal-500/30"
-                            title="طلب تقرير أو متابعة من الإيجنت"
-                          >
-                            <Bot className="w-3.5 h-3.5 text-teal-400" />
-                            <span>استشارة الإيجنت</span>
-                          </button>
-
-                          <button
-                            onClick={() => handleMoveTaskStatus(task.id, 'todo')}
-                            className="px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px]"
-                            title="إعادة للانتظار"
-                          >
-                            انتظار ⏸
-                          </button>
-
-                          <button
-                            onClick={() => handleMoveTaskStatus(task.id, 'completed')}
-                            className="px-2.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold"
-                            title="تمييز كمكتملة"
-                          >
-                            إنجاز ✓
-                          </button>
-
-                          <button
-                            onClick={() => handleDeleteTask(task.id)}
-                            className="p-1.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                            title="حذف المهمة"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                )}
-              </div>
-            </div>
-
-            {/* Column 3: Completed (مكتملة بنجاح) */}
-            <div className="bg-[#0b1325] border border-slate-800 rounded-3xl p-5 space-y-4 flex flex-col">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <h3 className="font-bold text-white text-sm">مكتملة بنجاح (Completed)</h3>
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  {tasks.filter((t) => t.status === 'completed').length}
-                </span>
-              </div>
-
-              <div className="space-y-3 flex-1 overflow-y-auto max-h-[750px] pr-1">
-                {tasks.filter((t) => t.status === 'completed').length === 0 ? (
-                  <div className="text-center py-12 text-slate-500 text-xs border border-dashed border-slate-800 rounded-2xl p-4">
-                    لا توجد مهام مكتملة بعد.
-                  </div>
-                ) : (
-                  tasks
-                    .filter((t) => t.status === 'completed')
-                    .map((task) => (
-                      <div
-                        key={task.id}
-                        className="bg-[#0f172a]/60 border border-slate-800 rounded-2xl p-4 space-y-2.5 transition-all opacity-85 hover:opacity-100"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700">
-                            {task.platform}
-                          </span>
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                            ✓ مكتملة
-                          </span>
-                        </div>
-
-                        <h4 className="font-bold text-slate-300 text-sm line-through decoration-slate-500">
-                          {task.title}
-                        </h4>
-
-                        <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{task.description}</p>
-
-                        <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                          <button
-                            onClick={() => handleMoveTaskStatus(task.id, 'todo')}
-                            className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1"
-                          >
-                            <RotateCcw className="w-3 h-3" />
-                            <span>إعادة فتح</span>
-                          </button>
-
-                          <button
-                            onClick={() => handleDeleteTask(task.id)}
-                            className="p-1.5 rounded-xl text-slate-500 hover:text-rose-400"
-                            title="حذف"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 3: AGENT LONG-TERM MEMORY BANK */}
-      {activeSubTab === 'memory_bank' && (
-        <div className="space-y-6 animate-fadeIn">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0d1527] p-6 rounded-3xl border border-slate-800/90 shadow-xl">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                  <BrainCircuit className="w-5 h-5" />
-                </div>
-                <div>
-                  <h2 className="text-lg md:text-xl font-bold text-white">
-                    ذاكرة الإيجنت الدائمة والتعلم التلقائي (Agent Long-Term Memory)
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    قاعدة بيانات معرفية محلية لا ينساها الإيجنت عبر الجلسات، تُحقن في عقله عند كل محادثة، ويتعلم منها ذاتياً من محادثاتك معه
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <button
-                onClick={handleResetDefaultMemories}
-                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-medium transition-all"
-                title="استعادة قواعد درة السيارة الافتراضية"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-                <span>استعادة القواعد المعتمدة</span>
-              </button>
-
-              <button
-                onClick={() => setShowAddMemoryModal(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs md:text-sm transition-all shadow-lg shadow-purple-600/20 active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>إضافة معلومة للذاكرة</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Memory Stats Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-[#0b1325] p-4 rounded-2xl border border-slate-800">
-              <div className="text-xs text-slate-400 font-medium">إجمالي المعلومات بالذاكرة</div>
-              <div className="text-2xl font-bold text-purple-300 font-mono mt-1">{memories.length}</div>
-            </div>
-            <div className="bg-[#0b1325] p-4 rounded-2xl border border-slate-800">
-              <div className="text-xs text-slate-400 font-medium">قواعد تم تعلمها ذاتياً</div>
-              <div className="text-2xl font-bold text-teal-400 font-mono mt-1">
-                {memories.filter((m) => m.autoLearned).length}
-              </div>
-            </div>
-            <div className="bg-[#0b1325] p-4 rounded-2xl border border-slate-800">
-              <div className="text-xs text-slate-400 font-medium">توجيهات واستراتيجيات</div>
-              <div className="text-2xl font-bold text-indigo-300 font-mono mt-1">
-                {memories.filter((m) => m.category.includes('توجيه') || m.category.includes('استراتيج')).length}
-              </div>
-            </div>
-            <div className="bg-[#0b1325] p-4 rounded-2xl border border-slate-800">
-              <div className="text-xs text-slate-400 font-medium">حالة الحقن بالنموذج</div>
-              <div className="text-sm font-bold text-emerald-400 mt-2 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>محقونة حياً بالـ Prompt</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-            <button
-              onClick={() => setMemoryFilter('all')}
-              className={`px-3.5 py-1.5 rounded-xl font-medium transition-all ${
-                memoryFilter === 'all'
-                  ? 'bg-purple-600 text-white font-bold'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
-              }`}
-            >
-              الكل ({memories.length})
-            </button>
-            {['توجيهات واستراتيجيات', 'بيانات الشركة وأرقامها', 'ميزانيات واستهداف', 'قواعد وقرارات'].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setMemoryFilter(cat)}
-                className={`px-3.5 py-1.5 rounded-xl font-medium transition-all whitespace-nowrap ${
-                  memoryFilter === cat
-                    ? 'bg-purple-600 text-white font-bold'
-                    : 'bg-slate-800 text-slate-400 hover:text-white'
-                }`}
-              >
-                {cat} ({memories.filter((m) => m.category === cat).length})
-              </button>
-            ))}
-            <button
-              onClick={() => setMemoryFilter('auto')}
-              className={`px-3.5 py-1.5 rounded-xl font-medium transition-all whitespace-nowrap ${
-                memoryFilter === 'auto'
-                  ? 'bg-purple-600 text-white font-bold'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
-              }`}
-            >
-              🤖 تعلم ذاتي من الشات ({memories.filter((m) => m.autoLearned).length})
-            </button>
-          </div>
-
-          {/* Memory Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {memories
-              .filter((m) => {
-                if (memoryFilter === 'all') return true;
-                if (memoryFilter === 'auto') return m.autoLearned;
-                return m.category === memoryFilter;
-              })
-              .map((mem) => (
-                <div
-                  key={mem.id}
-                  className="bg-[#0f172a] border border-slate-800/90 hover:border-purple-500/40 rounded-2xl p-5 space-y-3 transition-all flex flex-col justify-between shadow-sm relative group"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/25">
-                        {mem.category}
-                      </span>
-                      {mem.autoLearned && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-300 border border-teal-500/30">
-                          🤖 تعلم ذاتي
-                        </span>
-                      )}
-                    </div>
-
-                    {mem.title && <h4 className="font-bold text-slate-100 text-sm">{mem.title}</h4>}
-
-                    <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{mem.content}</p>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-                    <span className="truncate max-w-[200px]">{mem.source || 'محفوظ'}</span>
-                    <button
-                      onClick={() => handleDeleteMemory(mem.id)}
-                      className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                      title="حذف من الذاكرة"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-          </div>
-
-          {/* Educational Callout */}
-          <div className="p-5 rounded-3xl bg-gradient-to-r from-purple-950/20 via-[#0d1527] to-[#0b1325] border border-purple-500/25 text-xs text-slate-300 leading-relaxed flex items-start gap-3.5 shadow-md">
-            <div className="w-8 h-8 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-300 shrink-0 mt-0.5">
-              <BrainCircuit className="w-4 h-4" />
-            </div>
-            <div className="space-y-1">
-              <div className="font-bold text-white text-sm">💡 كيف تعمل الذاكرة والتعلم الذاتي مع الإيجنت؟</div>
-              <p className="text-slate-400">
-                جميع هذه القواعد تُرسل تلقائياً مع كل رسالة للإيجنت كـ <span className="text-purple-300 font-mono font-medium">System Grounding</span>.
-                وعندما تتحدث معه في الشات وتقول له مثلاً: "تذكر أن نزيد ميزانية جدة" أو "احفظ عندك أن النسبة 60%"، يقوم المحرك الذكي باكتشافها فوراً وحفظها في الذاكرة الدائمة ولن ينساها إطلاقاً حتى بعد إعادة تشغيل المتصفح!
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 4: CAMPAIGN ORGANIZER & TRACKER */}
-      {activeSubTab === 'campaigns' && (
-        <div className="rounded-3xl border border-slate-800/90 bg-[#0d1527] p-6 space-y-6 shadow-xl animate-fadeIn">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
-            <div>
-              <h2 className="text-lg font-bold text-white">لوحة تنظيم وجدولة الحملات (Campaign Organizer)</h2>
-              <p className="text-xs text-slate-400">
-                إدارة وتنظيم كافة حملاتك عبر المنصات المختلفة ومتابعة حالتها وميزانياتها
-              </p>
-            </div>
-
-            {/* Filters */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <select
-                value={platformFilter}
-                onChange={(e) => setPlatformFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-teal-500"
-              >
-                <option value="all">جميع المنصات</option>
-                <option value="Google Search">Google Search</option>
-                <option value="Meta Ads">Meta Ads (إنستقرام/فيسبوك)</option>
-                <option value="TikTok Ads">TikTok Ads</option>
-                <option value="Snapchat">Snapchat</option>
-              </select>
-
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-teal-500"
-              >
-                <option value="all">جميع الحالات</option>
-                <option value="active">نشطة (Active)</option>
-                <option value="draft">قيد التجهيز (Draft)</option>
-                <option value="needs_optim">تحتاج تحسين (Needs Optim)</option>
-                <option value="paused">متوقفة (Paused)</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Campaign Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCampaigns.map((camp) => {
-              const statusConfig = {
-                active: { text: 'نشطة', color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
-                draft: { text: 'مسودة', color: 'bg-slate-500/15 text-slate-300 border-slate-500/30' },
-                needs_optim: { text: 'تحتاج تحسين', color: 'bg-amber-500/15 text-amber-300 border-amber-500/30' },
-                paused: { text: 'متوقفة', color: 'bg-rose-500/15 text-rose-300 border-rose-500/30' },
-              }[camp.status] || { text: camp.status, color: 'bg-slate-500/15 text-slate-300 border-slate-500/30' };
-
-              return (
-                <div
-                  key={camp.id}
-                  className="rounded-2xl border border-slate-800/80 bg-slate-900/50 hover:bg-slate-900/80 p-5 space-y-3.5 transition-all group relative flex flex-col justify-between"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">
-                        {camp.platform}
-                      </span>
-                      <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${statusConfig.color}`}>
-                        {statusConfig.text}
-                      </span>
-                    </div>
-
-                    <h4 className="text-sm font-bold text-white group-hover:text-teal-300 transition-colors leading-snug">
-                      {camp.name}
-                    </h4>
-                    <div className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
-                      <Target className="w-3.5 h-3.5 text-teal-400" />
-                      <span>{camp.objective}</span>
-                    </div>
-                  </div>
-
-                  {/* Cities & Budget */}
-                  <div className="space-y-2 pt-2 border-t border-slate-800 text-xs">
-                    <div className="flex items-center justify-between text-slate-300">
-                      <span className="text-[11px] text-slate-500">المدن:</span>
-                      <span className="text-[11px] font-medium text-slate-300 truncate max-w-[180px]">
-                        {camp.targetCities.join('، ')}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500">الميزانية:</span>
-                      <span className="font-mono font-bold text-white text-xs" dir="ltr">
-                        {formatSAR(camp.budget, true)}{' '}
-                        <span className="text-[10px] text-slate-500">({camp.dailyBudget} يومي)</span>
-                      </span>
-                    </div>
-
-                    {/* AI Tip box */}
-                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-300 leading-relaxed flex items-start gap-2">
-                      <Sparkles className="w-3.5 h-3.5 text-teal-400 shrink-0 mt-0.5" />
-                      <span>{camp.aiTip}</span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
-                    <div className="flex items-center gap-1">
-                      {camp.status !== 'active' && (
-                        <button
-                          onClick={() => handleToggleStatus(camp.id, 'active')}
-                          className="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[11px] font-medium transition-colors"
-                        >
-                          تنشيط
-                        </button>
-                      )}
-                      {camp.status === 'active' && (
-                        <button
-                          onClick={() => handleToggleStatus(camp.id, 'paused')}
-                          className="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[11px] font-medium transition-colors"
-                        >
-                          إيقاف مؤقت
-                        </button>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => handleDeleteCampaign(camp.id)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                      title="حذف الحملة"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Modal: AI Agent Settings (Google Gemini / OpenAI) */}
       {showSettingsModal && (
