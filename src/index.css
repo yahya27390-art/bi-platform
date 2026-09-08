@@ -39,3 +39,43 @@
   border-radius: 12px !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
 }
+
+/* Kinetic Financial Stream Animations */
+@keyframes flowPulse {
+  0% { stroke-dashoffset: 48; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes flowPulseReverse {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 48; }
+}
+
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes glowBreathe {
+  0%, 100% { opacity: 0.35; transform: scale(0.98); }
+  50% { opacity: 0.85; transform: scale(1.03); }
+}
+
+.animate-flow-dash {
+  stroke-dasharray: 6 6;
+  animation: flowPulse 1.4s linear infinite;
+}
+
+.animate-flow-dash-fast {
+  stroke-dasharray: 8 8;
+  animation: flowPulse 0.9s linear infinite;
+}
+
+.animate-radar-spin {
+  animation: radarSpin 16s linear infinite;
+}
+
+.animate-glow-breathe {
+  animation: glowBreathe 3.5s ease-in-out infinite;
+}
+
