@@ -147,7 +147,14 @@ export default function Financials() {
               <SectionHeader title="تفاصيل مصاريف التشغيل (OPEX Breakdown)" className="mb-5" />
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 {Object.entries(fin.operatingExpenses || {}).map(([key, val]) => {
-                  const OPEX_LABELS = { salaries: 'الرواتب والأجور', rent: 'الإيجارات', utilities: 'المرافق والخدمات', marketing: 'التسويق والإعلانات', logistics: 'الشحن والتوصيل', other: 'مصاريف أخرى' };
+                  const OPEX_LABELS = { 
+                    salaries: 'الرواتب والأجور (فروع)', 
+                    rent: 'الإيجارات (كامل الفروع)', 
+                    utilities: 'الكهرباء والمرافق', 
+                    marketing: 'التسويق والإعلانات', 
+                    logistics: 'الشحن والتوصيل', 
+                    other: 'احتياطي نثريات وتقلبات' 
+                  };
                   const OPEX_COLORS = { salaries: '#2563EB', rent: '#475569', utilities: '#D97706', marketing: '#059669', logistics: '#EA580C', other: '#64748B' };
                   return (
                     <div key={key} className="rounded-xl bg-slate-50 border border-slate-100 p-3 text-center">
@@ -169,7 +176,7 @@ export default function Financials() {
                   series={[
                     { key: 'revenue',     color: '#059669', label: 'الإيرادات' },
                     { key: 'grossProfit', color: '#2563EB', label: 'الربح الإجمالي' },
-                    { key: 'netProfit',   color: '#0F172A', label: 'صافي الربح (28.02%)' },
+                    { key: 'netProfit',   color: '#0F172A', label: 'صافي الربح الفعلي' },
                   ]}
                   height={240}
                   formatValue={v => formatSAR(v, true)}

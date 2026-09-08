@@ -39,15 +39,16 @@ const SANKEY_DATA = {
 
     // Level 3: Reinvestment & Utilization of Gross Profit
     { name: 'الإنفاق الإعلاني والتسويق', value: 9403.00, pct: '0.95%', itemStyle: { color: '#D97706' } },
-    { name: 'المصاريف التشغيلية للفروع', value: 208093.97, pct: '21.03%', itemStyle: { color: '#475569' } },
-    { name: 'صافي الفائض النقدي', value: 59866.09, pct: '6.05%', itemStyle: { color: '#10B981' } },
+    { name: 'المصاريف التشغيلية للفروع', value: 90000.00, pct: '9.10%', itemStyle: { color: '#475569' } },
+    { name: 'صافي الفائض والربح النقدي', value: 177960.06, pct: '17.98%', itemStyle: { color: '#10B981' } },
 
     // Level 4: Granular Channels
     { name: 'إعلانات Google Ads', value: 4660.27, pct: '49.6%', itemStyle: { color: '#3B82F6' } },
     { name: 'إعلانات Meta Ads', value: 3221.60, pct: '34.3%', itemStyle: { color: '#0668E1' } },
     { name: 'إعلانات TikTok Ads', value: 1521.13, pct: '16.1%', itemStyle: { color: '#FE2C55' } },
-    { name: 'رواتب وأجور الفروع', value: 112000.00, pct: '11.3%', itemStyle: { color: '#64748B' } },
-    { name: 'إيجارات ومرافق الفروع', value: 96093.97, pct: '9.7%', itemStyle: { color: '#475569' } },
+    { name: 'رواتب وكوادر الفروع (60K)', value: 60000.00, pct: '6.06%', itemStyle: { color: '#64748B' } },
+    { name: 'إيجار وشحن وكهرباء (20K)', value: 20000.00, pct: '2.02%', itemStyle: { color: '#475569' } },
+    { name: 'احتياطي تذبذب ونثريات (10K)', value: 10000.00, pct: '1.01%', itemStyle: { color: '#94A3B8' } },
   ],
   links: [
     // Inflows into Central Hub
@@ -61,17 +62,18 @@ const SANKEY_DATA = {
 
     // Gross Profit Allocation
     { source: 'مجمل أرباح الأعمال', target: 'الإنفاق الإعلاني والتسويق', value: 9403.00 },
-    { source: 'مجمل أرباح الأعمال', target: 'المصاريف التشغيلية للفروع', value: 208093.97 },
-    { source: 'مجمل أرباح الأعمال', target: 'صافي الفائض النقدي', value: 59866.09 },
+    { source: 'مجمل أرباح الأعمال', target: 'المصاريف التشغيلية للفروع', value: 90000.00 },
+    { source: 'مجمل أرباح الأعمال', target: 'صافي الفائض والربح النقدي', value: 177960.06 },
 
     // Ad Spend Breakdown
     { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Google Ads', value: 4660.27 },
     { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Meta Ads', value: 3221.60 },
     { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات TikTok Ads', value: 1521.13 },
 
-    // OPEX Breakdown
-    { source: 'المصاريف التشغيلية للفروع', target: 'رواتب وأجور الفروع', value: 112000.00 },
-    { source: 'المصاريف التشغيلية للفروع', target: 'إيجارات ومرافق الفروع', value: 96093.97 },
+    // OPEX Breakdown (60K Salaries + 20K Rent/Utilities/Shipping + 10K Buffer = 90K)
+    { source: 'المصاريف التشغيلية للفروع', target: 'رواتب وكوادر الفروع (60K)', value: 60000.00 },
+    { source: 'المصاريف التشغيلية للفروع', target: 'إيجار وشحن وكهرباء (20K)', value: 20000.00 },
+    { source: 'المصاريف التشغيلية للفروع', target: 'احتياطي تذبذب ونثريات (10K)', value: 10000.00 },
   ],
 };
 
@@ -425,13 +427,13 @@ export default function SankeyFlowChart({ height = 480 }) {
               <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50 space-y-1.5 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-black text-slate-800">التشغيل والرواتب (OPEX)</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-200 text-slate-700">75% من الربح</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-200 text-slate-700">32.4% من الربح</span>
                 </div>
                 <div className="text-base font-black text-slate-800 font-mono" dir="ltr">
-                  {formatSAR(208093.97, true)}
+                  {formatSAR(90000.00, true)}
                 </div>
-                <div className="text-[10px] text-slate-500">
-                  رواتب الفروع (112K) + إيجارات ومرافق (96.1K)
+                <div className="text-[10px] text-slate-500 space-y-0.5">
+                  <div>رواتب: 60K | إيجار وكهرباء وشحن: 20K | احتياطي: 10K</div>
                 </div>
               </div>
 
@@ -440,15 +442,15 @@ export default function SankeyFlowChart({ height = 480 }) {
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-black text-emerald-950 flex items-center gap-1">
                     <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>صافي الفائض النقدي المتبقي</span>
+                    <span>صافي الفائض والربح النقدي</span>
                   </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-200 text-emerald-900">21.6% من الربح</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-200 text-emerald-900">17.98% صافي</span>
                 </div>
                 <div className="text-base font-black text-emerald-800 font-mono" dir="ltr">
-                  {formatSAR(59866.09, true)}
+                  {formatSAR(177960.06, true)}
                 </div>
                 <div className="text-[10px] text-emerald-700 font-bold">
-                  سيولة نقدية فائضة قابلة لإعادة التدوير والاستثمار
+                  سيولة نقدية فائضة وأرباح بالخزينة (64.2% من مجمل الربح)
                 </div>
               </div>
             </div>
@@ -488,7 +490,7 @@ export default function SankeyFlowChart({ height = 480 }) {
               <span>محاكي رحلة الإيراد: أين يذهب كل 100 ريال من مبيعات درة للسيارات؟</span>
             </h4>
             <p className="text-xs text-slate-600 mt-1 font-medium">
-              تفكيك هيكلي تنفيذي مباشر يوضح توزيع السيولة المالية الداخلة على البضاعة والمصاريف والربح الصافي
+              تفكيك هيكلي واقعي معتمد: رواتب (60K) + تشغيل وشحن وكهرباء وإيجار (20K) + احتياطي تحوط (10K)
             </p>
           </div>
 
@@ -519,49 +521,60 @@ export default function SankeyFlowChart({ height = 480 }) {
           </div>
 
           {/* Simulated Distribution Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1">
-              <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-                <span>1. تكلفة البضاعة (COGS)</span>
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            <div className="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold">
+                <span>1. تكلفة البضاعة</span>
                 <span className="text-slate-700">71.97%</span>
               </div>
-              <div className="text-xl font-black text-slate-800 font-mono" dir="ltr">
+              <div className="text-lg font-black text-slate-800 font-mono" dir="ltr">
                 {((simulatorSAR * 71.97) / 100).toFixed(2)} ر.س
               </div>
-              <span className="text-[10px] text-slate-500 block">تذهب لشراء السيارات من الموردين</span>
+              <span className="text-[9px] text-slate-500 block">شراء وتجهيز السيارات</span>
             </div>
 
-            <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1">
-              <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-                <span>2. تشغيل الفروع والرواتب</span>
-                <span className="text-slate-700">21.03%</span>
+            <div className="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold">
+                <span>2. الرواتب الشهرية</span>
+                <span className="text-slate-700">6.06%</span>
               </div>
-              <div className="text-xl font-black text-slate-800 font-mono" dir="ltr">
-                {((simulatorSAR * 21.03) / 100).toFixed(2)} ر.س
+              <div className="text-lg font-black text-slate-800 font-mono" dir="ltr">
+                {((simulatorSAR * 6.06) / 100).toFixed(2)} ر.س
               </div>
-              <span className="text-[10px] text-slate-500 block">إيجارات الفروع، رواتب، وصيانة</span>
+              <span className="text-[9px] text-slate-500 block">60,000 ر.س لكامل الفروع</span>
             </div>
 
-            <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/50 shadow-2xs space-y-1">
-              <div className="flex items-center justify-between text-xs text-amber-800 font-bold">
-                <span>3. التسويق والإعلانات</span>
-                <span className="text-amber-700">0.95%</span>
+            <div className="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold">
+                <span>3. كهرباء وشحن وإيجار</span>
+                <span className="text-slate-700">2.02%</span>
               </div>
-              <div className="text-xl font-black text-amber-800 font-mono" dir="ltr">
-                {((simulatorSAR * 0.95) / 100).toFixed(2)} ر.س
+              <div className="text-lg font-black text-slate-800 font-mono" dir="ltr">
+                {((simulatorSAR * 2.02) / 100).toFixed(2)} ر.س
               </div>
-              <span className="text-[10px] text-amber-700 block">إعلانات جوجل وميتا وتيك توك (105× MER)</span>
+              <span className="text-[9px] text-slate-500 block">20,000 ر.س تشغيل وإيجارات</span>
             </div>
 
-            <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 shadow-2xs space-y-1">
-              <div className="flex items-center justify-between text-xs text-emerald-800 font-bold">
-                <span>4. صافي الفائض النقدي</span>
-                <span className="text-emerald-700 font-black">6.05%</span>
+            <div className="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold">
+                <span>4. احتياطي تحوط</span>
+                <span className="text-slate-700">1.01%</span>
               </div>
-              <div className="text-xl font-black text-emerald-800 font-mono" dir="ltr">
-                {((simulatorSAR * 6.05) / 100).toFixed(2)} ر.س
+              <div className="text-lg font-black text-slate-800 font-mono" dir="ltr">
+                {((simulatorSAR * 1.01) / 100).toFixed(2)} ر.س
               </div>
-              <span className="text-[10px] text-emerald-700 block">أرباح نقدية صافية بعد كافة المصاريف</span>
+              <span className="text-[9px] text-slate-500 block">10,000 ر.س نثريات وتذبذب</span>
+            </div>
+
+            <div className="p-3.5 rounded-2xl border border-emerald-300 bg-emerald-50/70 shadow-2xs space-y-1">
+              <div className="flex items-center justify-between text-[11px] text-emerald-800 font-bold">
+                <span>5. صافي الربح الخالص</span>
+                <span className="text-emerald-700 font-black">17.99%</span>
+              </div>
+              <div className="text-lg font-black text-emerald-800 font-mono" dir="ltr">
+                {((simulatorSAR * 17.99) / 100).toFixed(2)} ر.س
+              </div>
+              <span className="text-[9px] text-emerald-700 block font-bold">أرباح بالخزينة (177.9K فائض)</span>
             </div>
           </div>
         </div>
