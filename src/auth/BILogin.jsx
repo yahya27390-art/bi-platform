@@ -33,8 +33,11 @@ export default function BILogin() {
     setLoading(true);
 
     try {
-      await loginWithCredentials(identifier, password);
-      const destination = location.state?.from?.pathname || '/';
+      const loggedUser = await loginWithCredentials(identifier, password);
+      let destination = location.state?.from?.pathname;
+      if (!destination || destination === '/') {
+        destination = loggedUser?.role === 'OWNER' ? '/owner' : '/';
+      }
       navigate(destination, { replace: true });
     } catch (err) {
       setError(err.message || 'بيانات الدخول غير صحيحة. يرجى المحاولة مرة أخرى.');

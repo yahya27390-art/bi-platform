@@ -29,6 +29,7 @@ export const BI_PERMISSIONS = {
     canConfigureDataSources:       true,
     canExportData:                 true,
     canViewPrivateCampaignLab:     false, // Strictly private for marketer/admin, hidden from Owner
+    canAccessOwnerCockpit:         true,  // Dedicated Owner Executive Cockpit
   },
   ADMIN: {
     canViewDashboard:              true,
@@ -46,7 +47,8 @@ export const BI_PERMISSIONS = {
     canDeleteImports:              false,
     canConfigureDataSources:       true,
     canExportData:                 true,
-    canViewPrivateCampaignLab:     true,  // Private Campaign Lab & AI Copilot
+    canViewPrivateCampaignLab:     true,  // Private Campaign Lab & AI Copilot (Exclusive to Admin)
+    canAccessOwnerCockpit:         true,
   },
   ANALYST: {
     canViewDashboard:              true,
@@ -65,6 +67,7 @@ export const BI_PERMISSIONS = {
     canConfigureDataSources:       false,
     canExportData:                 true,
     canViewPrivateCampaignLab:     false,
+    canAccessOwnerCockpit:         false,
   },
   MEDIA_BUYER: {
     canViewDashboard:              true,
@@ -82,7 +85,8 @@ export const BI_PERMISSIONS = {
     canDeleteImports:              false,
     canConfigureDataSources:       false,
     canExportData:                 true,
-    canViewPrivateCampaignLab:     true,  // Private Campaign Lab & AI Copilot
+    canViewPrivateCampaignLab:     false, // Strictly private for Admin (يحيي محمد باشا)
+    canAccessOwnerCockpit:         false,
   },
   VIEWER: {
     canViewDashboard:              true,

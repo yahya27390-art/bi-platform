@@ -16,8 +16,12 @@ import BIProtectedRoute from './auth/BIProtectedRoute';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletion from './pages/DataDeletion';
+import { useBIAuth } from './auth/BIAuthContext';
 
 export default function App() {
+  const { user } = useBIAuth();
+  const isOwner = user?.role === 'OWNER';
+
   return (
     <Routes>
       <Route path="/login" element={<BILogin />} />
@@ -32,14 +36,14 @@ export default function App() {
           </BIProtectedRoute>
         }
       >
-        <Route path="/" element={<BIOverview />} />
+        <Route path="/" element={isOwner ? <Navigate to="/owner" replace /> : <BIOverview />} />
         <Route path="/media" element={<MediaBuying />} />
         <Route path="/media/:platform" element={<MediaBuying />} />
         <Route path="/campaigns" element={<Navigate to="/media" replace />} />
         <Route 
           path="/campaign-lab" 
           element={
-            <BIProtectedRoute requiredPermission="canViewPrivateCampaignLab" fallback={<Navigate to="/" replace />}>
+            <BIProtectedRoute requiredPermission="canViewPrivateCampaignLab" fallback={<Navigate to="/owner" replace />}>
               <PrivateCampaignLab />
             </BIProtectedRoute>
           } 

@@ -36,13 +36,25 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
   const { permissions, user } = useBIAuth();
 
   const isItemVisible = (item) => {
-    if (item.privateOnly) {
-      return !!permissions?.canViewPrivateCampaignLab && user?.role !== 'OWNER';
+    // 1. The AI Agent (/campaign-lab): EXCLUSIVE TO ADMIN (يحيي محمد باشا), strictly hidden from OWNER
+    if (item.path === '/campaign-lab' || item.privateOnly) {
+      return user?.role === 'ADMIN' && !!permissions?.canViewPrivateCampaignLab;
+    }
+    // 2. Owner Executive Vault: Visible to OWNER and ADMIN only
+    if (item.isOwnerVault) {
+      return user?.role === 'OWNER' || user?.role === 'ADMIN';
     }
     return true;
   };
 
-  const visibleNavItems = NAV_ITEMS.filter(isItemVisible);
+  // For OWNER, prioritize their dedicated executive interface at the top
+  const visibleNavItems = NAV_ITEMS.filter(isItemVisible).sort((a, b) => {
+    if (user?.role === 'OWNER') {
+      if (a.isOwnerVault) return -1;
+      if (b.isOwnerVault) return 1;
+    }
+    return 0;
+  });
 
   const isActive = (item) => {
     if (item.exact) return location.pathname === item.path;
