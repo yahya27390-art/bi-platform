@@ -19,7 +19,7 @@ import VentrilocScrollNav from '../components/shared/VentrilocScrollNav';
 import { DORA_DOCUMENTS } from '../data/doraSchema';
 import {
   GrowthChip, AttributionNote, CardSkeleton, SectionHeader, TargetProgress,
-  PlatformBadge, DataHealthBar, ReconciliationBanner
+  PlatformBadge, DataHealthBar
 } from '../components/shared/SharedComponents';
 import {
   TrendingUp, DollarSign, ShoppingBag, Users,
@@ -351,14 +351,6 @@ export default function BIOverview() {
               periodId={periodId}
               onInspectDocument={(docId) => setActiveDocId(docId)}
             />
-            {displayedKpis && (
-              <ReconciliationBanner
-                actualRevenue={formatSAR(displayedKpis.totalRevenue, false)}
-                attributedRevenue={formatSAR(displayedKpis.attributedRevenue, false)}
-                adSpend={formatSAR(displayedKpis.totalAdSpend, false)}
-                netProfit={canViewNetProfit ? formatSAR(displayedKpis.netProfit, false) : '🔒 محمي للمالك'}
-              />
-            )}
           </div>
         </VentrilocStackCard>
 
