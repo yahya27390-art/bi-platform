@@ -4,20 +4,17 @@ import BISidebar from './BISidebar';
 import BITopBar from './BITopBar';
 
 export default function BILayout() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans overflow-x-hidden w-full relative" dir="rtl">
-      {/* Desktop Sidebar */}
+      {/* Permanent Icons-Only Sidebar */}
       <BISidebar
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(c => !c)}
         mobileOpen={mobileSidebarOpen}
         onCloseMobile={() => setMobileSidebarOpen(false)}
       />
 
-      {/* Main Content Area - Strictly 0 margin on mobile & tablet, responsive desktop margin */}
+      {/* Main Content Area - 72px margin on desktop (Icons-Only Rail), strictly 0 on mobile */}
       <div className="bi-main-content transition-all duration-300 w-full min-w-0">
         <style>{`
           .bi-main-content {
@@ -26,8 +23,8 @@ export default function BILayout() {
           }
           @media (min-width: 1024px) {
             .bi-main-content {
-              margin-right: ${sidebarCollapsed ? '72px' : '260px'} !important;
-              width: calc(100% - ${sidebarCollapsed ? '72px' : '260px'}) !important;
+              margin-right: 72px !important;
+              width: calc(100% - 72px) !important;
             }
           }
         `}</style>

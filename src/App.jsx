@@ -34,7 +34,7 @@ export default function App() {
         <Route path="/" element={<BIOverview />} />
         <Route path="/media" element={<MediaBuying />} />
         <Route path="/media/:platform" element={<MediaBuying />} />
-        <Route path="/campaigns" element={<MediaBuying />} />
+        <Route path="/campaigns" element={<Navigate to="/media" replace />} />
         <Route 
           path="/campaign-lab" 
           element={
