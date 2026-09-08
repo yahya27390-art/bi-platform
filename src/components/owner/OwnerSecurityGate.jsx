@@ -1,29 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  ShieldCheck,
   Lock,
   Unlock,
-  KeyRound,
   Eye,
   EyeOff,
-  Sparkles,
   AlertCircle,
-  Fingerprint,
-  RotateCcw,
-  Building2,
-  Crown
+  ShieldCheck
 } from 'lucide-react';
-import doraLogo from '@/assets/dora_logo.png';
 
 const VAULT_SESSION_KEY = 'dora_owner_vault_unlocked';
 const DEFAULT_PIN = '7799';
 const MASTER_PASSWORDS = ['dora#owner2026', 'dora2026', '7799'];
 
-export default function OwnerSecurityGate({ onUnlock, isUnlocked }) {
+export default function OwnerSecurityGate({ onUnlock }) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [showPin, setShowPin] = useState(false);
-  const [attempts, setAttempts] = useState(0);
 
   const handleDigitClick = (digit) => {
     if (pin.length < 6) {
@@ -57,71 +49,79 @@ export default function OwnerSecurityGate({ onUnlock, isUnlocked }) {
     if (MASTER_PASSWORDS.includes(pin.trim())) {
       authenticateSuccess();
     } else {
-      setError('رمز الدخول غير صحيح، حاول مرة أخرى');
-      setAttempts((prev) => prev + 1);
+      setError('الرمز غير صحيح، أعد المحاولة');
       setPin('');
     }
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center p-4" dir="rtl">
-      <div className="relative w-full max-w-md bg-[#0A0F1D] border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-center overflow-hidden">
-        {/* Subtle executive glow */}
-        <div className="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-[80vh] flex items-center justify-center p-4 bg-[#F8FAFC]" dir="rtl">
+      {/* Hand-drawn / Sketchy Architectural Blueprint Card with SHARP CORNERS */}
+      <div className="relative w-full max-w-md bg-white border-2 border-slate-900 p-6 sm:p-8 shadow-[6px_6px_0px_0px_#0F172A] rounded-none text-center">
+        
+        {/* Hand-drawn Sketchy SVG Lock Doodle */}
+        <div className="flex justify-center mb-4">
+          <svg className="w-16 h-16" viewBox="0 0 64 64" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            {/* Shackle: sketchy curved arc */}
+            <path d="M22 28V18C22 12.5 26.5 8 32 8C37.5 8 42 12.5 42 18V28" strokeDasharray="1 0" />
+            {/* Body: sharp rectangle with sketch lines */}
+            <rect x="14" y="28" width="36" height="28" fill="#F1F5F9" />
+            {/* Keyhole */}
+            <circle cx="32" cy="40" r="3" fill="#0F172A" />
+            <path d="M32 43V48" strokeWidth="3" />
+            {/* Sketch Accent Marks */}
+            <path d="M18 34L26 34" stroke="#94A3B8" strokeWidth="1.5" />
+            <path d="M18 38L24 38" stroke="#94A3B8" strokeWidth="1.5" />
+            <path d="M48 20L54 16" stroke="#EAB308" strokeWidth="2" />
+            <path d="M51 25L57 23" stroke="#EAB308" strokeWidth="2" />
+          </svg>
+        </div>
 
-        {/* Brand & Crown Badge */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="relative mb-3">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500/20 via-slate-900 to-amber-600/20 border border-amber-500/40 flex items-center justify-center shadow-lg shadow-amber-500/10">
-              <Crown className="w-8 h-8 text-amber-400" />
-            </div>
-            <div className="absolute -bottom-1 -right-1 p-1 bg-slate-950 rounded-full border border-amber-500/50">
-              <Lock className="w-3.5 h-3.5 text-amber-300" />
-            </div>
-          </div>
-
-          <h1 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-            <span>الخزنة التنفيذية لمالك الشركة</span>
+        {/* Title & Handwritten subheader */}
+        <div className="border-b-2 border-dashed border-slate-300 pb-3 mb-5">
+          <h1 className="text-xl font-black text-slate-900 tracking-tight">
+            بوابة الخزنة — صاحب الشركة
           </h1>
-          <p className="text-xs text-amber-200/70 mt-1 font-medium">
-            نظام حماية مقيد · درة السيارة لقطع غيار هيونداي وكيا
+          <p className="text-xs text-slate-600 mt-1 font-mono font-bold">
+            [ وصول مقيد ومحمي برموز أمان خاصة ]
           </p>
         </div>
 
-        {/* PIN Dots Indicator */}
-        <div className="my-6">
-          <div className="flex justify-center items-center gap-3">
+        {/* PIN Boxes - Sharp Rectangles */}
+        <div className="mb-6">
+          <div className="flex justify-center items-center gap-2 mb-4">
             {[0, 1, 2, 3].map((idx) => {
               const isFilled = pin.length > idx;
               return (
                 <div
                   key={idx}
-                  className={`w-4 h-4 rounded-full transition-all duration-200 ${
+                  className={`w-10 h-12 border-2 border-slate-900 rounded-none flex items-center justify-center font-mono text-xl font-black transition-all ${
                     isFilled
-                      ? 'bg-gradient-to-r from-amber-400 to-amber-500 shadow-md shadow-amber-500/50 scale-110'
-                      : 'border-2 border-slate-700 bg-slate-900'
+                      ? 'bg-amber-100 text-slate-950 shadow-[2px_2px_0px_0px_#0F172A]'
+                      : 'bg-slate-50 text-transparent'
                   }`}
-                />
+                >
+                  {isFilled ? (showPin ? pin[idx] : '●') : ''}
+                </div>
               );
             })}
           </div>
 
-          {/* Form / Direct Text input fallback */}
-          <form onSubmit={handleSubmit} className="mt-4">
-            <div className="relative max-w-[200px] mx-auto">
+          {/* Fallback Direct Input */}
+          <form onSubmit={handleSubmit} className="flex items-center justify-center gap-2">
+            <div className="relative w-44">
               <input
                 type={showPin ? 'text' : 'password'}
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                placeholder="أدخل الرمز السري..."
-                maxLength={16}
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5 text-center font-mono text-sm tracking-widest text-amber-300 outline-none focus:border-amber-500/60"
+                placeholder="أدخل الرمز (7799)"
+                maxLength={10}
+                className="w-full bg-slate-50 border-2 border-slate-800 rounded-none px-3 py-1.5 text-center font-mono text-xs font-bold text-slate-900 outline-none focus:bg-white"
               />
               <button
                 type="button"
                 onClick={() => setShowPin(!showPin)}
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
               >
                 {showPin ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
@@ -129,21 +129,21 @@ export default function OwnerSecurityGate({ onUnlock, isUnlocked }) {
           </form>
 
           {error && (
-            <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-rose-400 font-bold animate-shake">
+            <div className="mt-2.5 flex items-center justify-center gap-1 text-xs text-rose-600 font-bold">
               <AlertCircle className="w-3.5 h-3.5" />
               <span>{error}</span>
             </div>
           )}
         </div>
 
-        {/* Numeric Keypad (4x3) */}
-        <div className="grid grid-cols-3 gap-2.5 max-w-[260px] mx-auto mb-6">
+        {/* Tactile Keypad - Sharp rectangular buttons with hard drop shadow */}
+        <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto mb-5">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
             <button
               key={num}
               type="button"
               onClick={() => handleDigitClick(num.toString())}
-              className="h-12 rounded-xl bg-slate-900/90 hover:bg-amber-500/15 text-slate-100 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 text-lg font-mono font-black transition-all active:scale-95 cursor-pointer flex items-center justify-center shadow-xs"
+              className="h-11 border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 font-mono text-base font-black rounded-none shadow-[2px_2px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
             >
               {num}
             </button>
@@ -151,43 +151,40 @@ export default function OwnerSecurityGate({ onUnlock, isUnlocked }) {
           <button
             type="button"
             onClick={handleClear}
-            className="h-12 rounded-xl bg-slate-950 text-slate-500 hover:text-rose-400 border border-slate-800 text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-center"
+            className="h-11 border-2 border-slate-900 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-bold rounded-none shadow-[2px_2px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
           >
             مسح
           </button>
           <button
             type="button"
             onClick={() => handleDigitClick('0')}
-            className="h-12 rounded-xl bg-slate-900/90 hover:bg-amber-500/15 text-slate-100 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 text-lg font-mono font-black transition-all active:scale-95 cursor-pointer flex items-center justify-center"
+            className="h-11 border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 font-mono text-base font-black rounded-none shadow-[2px_2px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
           >
             0
           </button>
           <button
             type="button"
             onClick={handleBackspace}
-            className="h-12 rounded-xl bg-slate-950 text-slate-500 hover:text-amber-300 border border-slate-800 text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-center"
+            className="h-11 border-2 border-slate-900 bg-slate-100 hover:bg-amber-50 text-slate-600 hover:text-amber-800 text-xs font-bold rounded-none shadow-[2px_2px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
           >
             ⌫
           </button>
         </div>
 
-        {/* Fast Unlock Action Button */}
+        {/* Enter Button - Sharp Brutalist Style */}
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-black text-sm transition-all shadow-lg shadow-amber-500/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full py-2.5 border-2 border-slate-900 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-none shadow-[3px_3px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer"
         >
-          <Unlock className="w-4 h-4" />
+          <Unlock className="w-3.5 h-3.5" />
           <span>فتح الخزنة التنفيذية</span>
         </button>
 
-        {/* Security Notice */}
-        <div className="mt-5 pt-4 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
-          <span className="flex items-center gap-1 font-mono">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            تشفير الجلسة نشط
-          </span>
-          <span className="text-[10px] text-slate-400 font-mono">الرمز الافتراضي: 7799</span>
+        {/* Footer info */}
+        <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500 font-mono font-bold">
+          <span>تشفير جلسة محلي ✓</span>
+          <span>الرمز: 7799</span>
         </div>
       </div>
     </div>

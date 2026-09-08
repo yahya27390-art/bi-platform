@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  Crown,
-  ShieldCheck,
   Lock,
   Eye,
   EyeOff,
@@ -15,7 +13,6 @@ import {
   ArrowUpRight,
   Sparkles,
   Award,
-  Clock,
   Layers,
   CheckCircle2,
   PackageX,
@@ -37,6 +34,8 @@ export default function OwnerExecutiveDashboard() {
   const [privacyMode, setPrivacyMode] = useState(false);
   const [reportsModalOpen, setReportsModalOpen] = useState(false);
   const [reportsModalTab, setReportsModalTab] = useState('stagnant');
+  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [gaugeHovered, setGaugeHovered] = useState(false);
 
   const handleLock = () => {
     sessionStorage.removeItem(VAULT_SESSION_KEY);
@@ -78,323 +77,424 @@ export default function OwnerExecutiveDashboard() {
 
   // Branches breakdown
   const BRANCHES = [
-    { name: 'الفرع الرئيسي', sales: 428881.08, share: 43.3, color: 'from-blue-600 to-blue-700', badge: 'المتصدر' },
-    { name: 'فرع الرواف هيونداي', sales: 291365.50, share: 29.4, color: 'from-indigo-600 to-indigo-700', badge: 'هيونداي' },
-    { name: 'فرع كيا المعتمد', sales: 269275.58, share: 27.2, color: 'from-amber-600 to-amber-700', badge: 'كيا' },
-    { name: 'المتجر الإلكتروني (سلة)', sales: 41783.00, share: 4.2, color: 'from-emerald-600 to-emerald-700', badge: 'نمو رقمي' }
+    { id: 'b1', name: 'الفرع الرئيسي', sales: 428881.08, share: 43.3, color: '#2563EB', tag: 'المركز الأول' },
+    { id: 'b2', name: 'فرع الرواف هيونداي', sales: 291365.50, share: 29.4, color: '#4F46E5', tag: 'هيونداي' },
+    { id: 'b3', name: 'فرع كيا المعتمد', sales: 269275.58, share: 27.2, color: '#D97706', tag: 'كيا' },
+    { id: 'b4', name: 'متجر سلة أونلاين', sales: 41783.00, share: 4.2, color: '#059669', tag: 'أونلاين' }
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-sans pb-16" dir="rtl">
-      {/* ── 1. Executive Titanium Top Command Bar ── */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#0A0E1A] via-[#0E1526] to-[#0A0E1A] border border-amber-500/25 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20 shrink-0">
-            <Crown className="w-7 h-7" />
+    <div className="space-y-6 max-w-7xl mx-auto font-sans pb-16 bg-[#F8FAFC] text-slate-900" dir="rtl">
+      
+      {/* ── 1. Header: Sharp Sketchbook Architectural Style (No Rounded Edges) ── */}
+      <div className="border-2 border-slate-900 bg-white p-4 sm:p-5 shadow-[5px_5px_0px_0px_#0F172A] rounded-none flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 border-2 border-slate-900 bg-amber-300 rounded-none flex items-center justify-center font-mono font-black text-xl shadow-[3px_3px_0px_0px_#0F172A] shrink-0">
+            ★
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                غرفة القيادة التنفيذية للمالك
+              <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
+                لوحة المالك التنفيذية — خلاصة الأعمال
               </h1>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
-                C-SUITE VAULT
+              <span className="text-[10px] font-mono font-black px-2 py-0.5 border-2 border-slate-900 bg-yellow-200 text-slate-900 rounded-none">
+                C-SUITE
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5 font-medium">
-              شركة درة السيارة لقطع الغيار · مؤشرات القرار الاستراتيجي والأرباح المباشرة
+            <p className="text-xs text-slate-600 font-bold mt-0.5">
+              شركة درة السيارة لقطع غيار هيونداي وكيا · قراءة مالية ومخزنية مباشرة بدون حشو
             </p>
           </div>
         </div>
 
-        {/* Action Controls: Privacy Mode + Print + Lock Vault */}
+        {/* Action Buttons: Sharp Rectangular Buttons with Tactile Drop Shadows */}
         <div className="flex items-center gap-2 self-end md:self-center">
-          {/* Privacy Mask Toggle */}
+          {/* Privacy Toggle */}
           <button
             onClick={() => setPrivacyMode(!privacyMode)}
-            className={`px-3 py-2 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 ${
-              privacyMode
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                : 'bg-slate-900/90 text-slate-300 border-slate-700 hover:text-white'
+            className={`px-3 py-2 border-2 border-slate-900 text-xs font-black rounded-none shadow-[3px_3px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer ${
+              privacyMode ? 'bg-amber-300 text-slate-950' : 'bg-white text-slate-900 hover:bg-slate-100'
             }`}
-            title="إخفاء أو إظهار الأرقام الحساسة بنقرة واحدة"
+            title="إخفاء أو إظهار الأرقام الحساسة"
           >
-            {privacyMode ? <EyeOff className="w-4 h-4 text-amber-400" /> : <Eye className="w-4 h-4 text-slate-400" />}
-            <span>{privacyMode ? 'وضع الخصوصية نشط 👁️' : 'حماية الأرقام'}</span>
+            {privacyMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <span>{privacyMode ? 'الأرقام مخفية 👁️' : 'حماية الأرقام'}</span>
           </button>
 
-          {/* 1-Click Executive Print */}
+          {/* 1-Page Print */}
           <button
             onClick={handlePrint}
-            className="px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700 hover:border-blue-500 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
-            title="طباعة التقرير التنفيذي المختصر"
+            className="px-3 py-2 border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 text-xs font-black rounded-none shadow-[3px_3px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Printer className="w-4 h-4 text-blue-400" />
-            <span>تقرير المالك A4</span>
+            <Printer className="w-4 h-4" />
+            <span>طباعة A4</span>
           </button>
 
-          {/* Instant Security Lock */}
+          {/* Instant Lock */}
           <button
             onClick={handleLock}
-            className="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 hover:border-rose-600 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
-            title="قفل الخزنة التنفيذية فوراً"
+            className="px-3 py-2 border-2 border-slate-900 bg-rose-100 hover:bg-rose-200 text-rose-950 text-xs font-black rounded-none shadow-[3px_3px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Lock className="w-4 h-4" />
-            <span>قفل فوري</span>
+            <span>قفل</span>
           </button>
         </div>
       </div>
 
-      {/* ── 2. The 4 Big Bottom-Line Executive Cards (مختصرة بدون كلام كتير) ── */}
+      {/* ── 2. The 4 Big Bottom-Line Cards: Sharp Brutalist Rectangles (No Rounded Corners) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
         {/* Card 1: Net Sales */}
-        <div className="relative p-5 rounded-3xl bg-[#0B1120] border border-blue-500/20 shadow-xl overflow-hidden group hover:border-blue-500/40 transition-all">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-bold mb-2">
-            <span>صافي المبيعات الفعلي</span>
-            <span className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
-              <DollarSign className="w-4 h-4" />
+        <div className="relative border-2 border-slate-900 bg-white p-5 shadow-[4px_4px_0px_0px_#0F172A] rounded-none">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-1 border-b border-dashed border-slate-300 pb-2">
+            <span>[ 01 ] صافي المبيعات الفعلي</span>
+            <span className="font-mono text-emerald-700 bg-emerald-100 px-1.5 py-0.2 border border-slate-900 text-[11px] font-bold">
+              +123.7%
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+          <div className="text-2xl sm:text-3xl font-black text-slate-950 font-mono tracking-tight mt-3">
             {mask(formatSAR(NET_SALES))}
           </div>
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="text-emerald-400 font-bold flex items-center gap-0.5">
-              <ArrowUpRight className="w-3.5 h-3.5" />
-              +123.7% من المستهدف
-            </span>
-            <span className="text-slate-500 font-mono text-[11px]">بعد خصم المردودات</span>
+          {/* Hand-drawn sketch underline */}
+          <div className="mt-2 text-[11px] text-slate-600 font-bold flex items-center gap-1">
+            <span>تجاوز التارجت بـ</span>
+            <span className="font-mono text-emerald-800 bg-yellow-200 px-1 font-black">+{mask(formatSAR(NET_SALES - MONTHLY_TARGET))}</span>
           </div>
         </div>
 
         {/* Card 2: Net Profit */}
-        <div className="relative p-5 rounded-3xl bg-[#0B1120] border border-emerald-500/25 shadow-xl overflow-hidden group hover:border-emerald-500/50 transition-all">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-bold mb-2">
-            <span>صافي الربح المكتسب</span>
-            <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
-              <TrendingUp className="w-4 h-4" />
+        <div className="relative border-2 border-slate-900 bg-white p-5 shadow-[4px_4px_0px_0px_#0F172A] rounded-none">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-1 border-b border-dashed border-slate-300 pb-2">
+            <span>[ 02 ] صافي الربح الحقيقي</span>
+            <span className="font-mono text-blue-900 bg-blue-100 px-1.5 py-0.2 border border-slate-900 text-[11px] font-bold">
+              صافي 28%
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono tracking-tight">
+          <div className="text-2xl sm:text-3xl font-black text-emerald-700 font-mono tracking-tight mt-3">
             {mask(formatSAR(NET_PROFIT))}
           </div>
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="text-emerald-300 font-bold font-mono">هامش صافي: {PROFIT_MARGIN}%</span>
-            <span className="text-slate-500 font-mono text-[11px]">ربح خالص معتمد</span>
+          <div className="mt-2 text-[11px] text-slate-600 font-bold flex items-center gap-1">
+            <span>هامش الربح الصافي:</span>
+            <span className="font-mono font-black text-slate-900">{PROFIT_MARGIN}%</span>
+            <span className="text-[10px] text-slate-500 font-normal mr-1">(محسوب بدقة)</span>
           </div>
         </div>
 
         {/* Card 3: Monthly Fixed Operating Costs */}
-        <div className="relative p-5 rounded-3xl bg-[#0B1120] border border-amber-500/20 shadow-xl overflow-hidden group hover:border-amber-500/40 transition-all">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-bold mb-2">
-            <span>التشغيل والرواتب الشهرية</span>
-            <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
-              <Award className="w-4 h-4" />
+        <div className="relative border-2 border-slate-900 bg-white p-5 shadow-[4px_4px_0px_0px_#0F172A] rounded-none">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-1 border-b border-dashed border-slate-300 pb-2">
+            <span>[ 03 ] التشغيل والرواتب الثابتة</span>
+            <span className="font-mono text-amber-900 bg-amber-100 px-1.5 py-0.2 border border-slate-900 text-[11px] font-bold">
+              90K شهرياً
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-300 font-mono tracking-tight">
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight mt-3">
             {mask(formatSAR(TOTAL_MONTHLY_OPEX))}
           </div>
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="text-emerald-400 font-bold font-mono">تغطية الأرباح: {OPEX_COVERAGE_RATIO}%</span>
-            <span className="text-slate-500 font-mono text-[11px]">رواتب + تشغيل شامل</span>
+          <div className="mt-2 text-[11px] text-slate-600 font-bold flex items-center gap-1">
+            <span>تغطية الأرباح للتشغيل:</span>
+            <span className="font-mono font-black text-emerald-700 bg-emerald-100 px-1">{OPEX_COVERAGE_RATIO}%</span>
+            <span className="text-xs">↗ (3.1 أضعاف)</span>
           </div>
         </div>
 
         {/* Card 4: Inventory Real Assets */}
-        <div className="relative p-5 rounded-3xl bg-[#0B1120] border border-cyan-500/20 shadow-xl overflow-hidden group hover:border-cyan-500/40 transition-all">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-bold mb-2">
-            <span>أصول المخزون بالمستودعات</span>
-            <span className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400">
-              <Boxes className="w-4 h-4" />
+        <div className="relative border-2 border-slate-900 bg-white p-5 shadow-[4px_4px_0px_0px_#0F172A] rounded-none">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-1 border-b border-dashed border-slate-300 pb-2">
+            <span>[ 04 ] أصول المخزون بالمستودع</span>
+            <span className="font-mono text-cyan-900 bg-cyan-100 px-1.5 py-0.2 border border-slate-900 text-[11px] font-bold">
+              8,693 صنف
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
-            {formatNum(REAL_INVENTORY_STATS.totalBalance)} <span className="text-sm font-sans font-bold text-slate-400">قطعة</span>
+          <div className="text-2xl sm:text-3xl font-black text-slate-950 font-mono tracking-tight mt-3">
+            {formatNum(REAL_INVENTORY_STATS.totalBalance)} <span className="text-sm font-sans font-bold text-slate-600">قطعة</span>
           </div>
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="text-cyan-300 font-bold font-mono">{formatNum(REAL_INVENTORY_STATS.totalSKUs)} صنف SKU</span>
-            <span className="text-slate-500 font-mono text-[11px]">هيونداي وكيا</span>
+          <div className="mt-2 text-[11px] text-slate-600 font-bold flex items-center justify-between">
+            <span>مبيعات منصرفة: {formatNum(REAL_INVENTORY_STATS.totalIssued)}</span>
+            <span className="font-mono text-rose-700 font-black">2,082 راكد ⚠️</span>
           </div>
         </div>
       </div>
 
-      {/* ── 3. Visual Executive Cockpit: Target Gauge & Branches & Inventory Pulse ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Gauge & Target Achievement (123.7%) */}
-        <div className="p-6 rounded-3xl bg-[#0B1120] border border-slate-800 shadow-xl flex flex-col justify-between">
+      {/* ── 3. Interactive Hand-Drawn Sketch Charts & Tactical Visuals ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        {/* Left Column (5 cols): Hand-drawn SVG Speedometer / Gauge */}
+        <div 
+          onMouseEnter={() => setGaugeHovered(true)}
+          onMouseLeave={() => setGaugeHovered(false)}
+          className="lg:col-span-5 border-2 border-slate-900 bg-white p-6 shadow-[5px_5px_0px_0px_#0F172A] rounded-none flex flex-col justify-between"
+        >
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-black text-white flex items-center gap-2">
-                <Flame className="w-4 h-4 text-amber-400" />
-                <span>معدل إنجاز المستهدف البيعي</span>
+            <div className="flex items-center justify-between border-b-2 border-dashed border-slate-300 pb-3 mb-4">
+              <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
+                <span>✦</span>
+                <span>مقياس إنجاز التارجت (Hand-Drawn Gauge)</span>
               </h3>
-              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                متفوق 🚀
+              <span className="text-xs font-mono font-black bg-yellow-200 border border-slate-900 px-2 py-0.5 rounded-none">
+                123.7% من الهدف
               </span>
             </div>
 
-            {/* Visual Speedometer Progress */}
-            <div className="relative my-6 flex flex-col items-center justify-center">
-              <div className="text-4xl sm:text-5xl font-black text-white font-mono tracking-tight">
-                {TARGET_ACHIEVEMENT}%
-              </div>
-              <div className="text-xs text-emerald-400 font-bold mt-1">
-                تجاوز التارجت بـ +{mask(formatSAR(NET_SALES - MONTHLY_TARGET))}
-              </div>
-
-              <div className="w-full bg-slate-900 rounded-full h-3 mt-5 overflow-hidden border border-slate-800">
-                <div
-                  className="bg-gradient-to-r from-blue-500 via-emerald-500 to-amber-400 h-full rounded-full transition-all duration-1000"
-                  style={{ width: `${Math.min(100, TARGET_ACHIEVEMENT)}%` }}
+            {/* Hand-Drawn Interactive SVG Speedometer Gauge */}
+            <div className="relative flex flex-col items-center justify-center my-3">
+              <svg className="w-64 h-36 overflow-visible" viewBox="0 0 200 115">
+                {/* Background arc: sketchy dashed gray curve */}
+                <path
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#E2E8F0"
+                  strokeWidth="14"
+                  strokeLinecap="butt"
                 />
+                
+                {/* Target marker line at 100% (approx at angle 180 * (100/150) = 120 deg) */}
+                <line x1="100" y1="20" x2="100" y2="35" stroke="#64748B" strokeWidth="2" strokeDasharray="2 2" />
+                <text x="100" y="15" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#64748B" fontFamily="monospace">تارجت 800K</text>
+
+                {/* Progress arc: Hand-drawn sketchy Green/Amber curve */}
+                <path
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#10B981"
+                  strokeWidth="14"
+                  strokeDasharray="251"
+                  strokeDashoffset={251 - (251 * (Math.min(130, TARGET_ACHIEVEMENT) / 150))}
+                  strokeLinecap="butt"
+                  className="transition-all duration-700"
+                />
+
+                {/* Hand-drawn sketch tick marks around perimeter */}
+                {[0, 30, 60, 90, 120, 150].map((deg, i) => {
+                  const rad = (Math.PI / 180) * (180 + deg);
+                  const x1 = 100 + 72 * Math.cos(rad);
+                  const y1 = 100 + 72 * Math.sin(rad);
+                  const x2 = 100 + 82 * Math.cos(rad);
+                  const y2 = 100 + 82 * Math.sin(rad);
+                  return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#0F172A" strokeWidth="2" />;
+                })}
+
+                {/* Center Pivot: sharp square */}
+                <rect x="94" y="94" width="12" height="12" fill="#0F172A" />
+
+                {/* Hand-drawn Needle: wiggles slightly on hover */}
+                <g className={`transition-transform duration-500 origin-[100px_100px] ${gaugeHovered ? 'rotate-[-10deg]' : 'rotate-0'}`}>
+                  {/* Needle pointing past 100% at ~123.7% position */}
+                  <line x1="100" y1="100" x2="148" y2="46" stroke="#0F172A" strokeWidth="4" strokeLinecap="round" />
+                  <line x1="100" y1="100" x2="148" y2="46" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" />
+                  {/* Hand-drawn arrow tip */}
+                  <polygon points="148,46 142,53 149,55" fill="#0F172A" />
+                </g>
+              </svg>
+
+              {/* Hand-drawn annotation text callout */}
+              <div className="border border-slate-900 bg-amber-100 px-3 py-1 mt-1 text-center shadow-[2px_2px_0px_0px_#0F172A]">
+                <div className="font-mono text-xl font-black text-slate-950">
+                  {TARGET_ACHIEVEMENT}%
+                </div>
+                <div className="text-[10px] text-slate-700 font-bold">
+                  فائض محقق: +{mask(formatSAR(NET_SALES - MONTHLY_TARGET))} فوق المطلوب!
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-850 flex items-center justify-between text-xs">
-            <span className="text-slate-400">تارجت الشهر المطلوب:</span>
-            <span className="font-mono font-black text-slate-200">{mask(formatSAR(MONTHLY_TARGET))}</span>
+          <div className="pt-3 border-t border-dashed border-slate-300 flex items-center justify-between text-xs font-bold text-slate-600">
+            <span>تارجت أغسطس المطلوب:</span>
+            <span className="font-mono text-slate-900">{mask(formatSAR(MONTHLY_TARGET))}</span>
           </div>
         </div>
 
-        {/* Branches Real Cash Ranking (ترتيب الفروع الحقيقي) */}
-        <div className="p-6 rounded-3xl bg-[#0B1120] border border-slate-800 shadow-xl flex flex-col justify-between">
+        {/* Right Column (7 cols): Hand-drawn Interactive Branch Flow Bars */}
+        <div className="lg:col-span-7 border-2 border-slate-900 bg-white p-6 shadow-[5px_5px_0px_0px_#0F172A] rounded-none flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-black text-white flex items-center gap-2 mb-4">
-              <MapPin className="w-4 h-4 text-blue-400" />
-              <span>ترتيب الفروع ومصادر الكاش</span>
-            </h3>
+            <div className="flex items-center justify-between border-b-2 border-dashed border-slate-300 pb-3 mb-4">
+              <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
+                <span>✦</span>
+                <span>مصادر تدفق الكاش بين الفروع (انقر للتحديد والتفصيل)</span>
+              </h3>
+              <span className="text-xs text-slate-500 font-bold">4 مصادر معتمدة</span>
+            </div>
 
-            <div className="space-y-3">
-              {BRANCHES.map((b, idx) => (
-                <div key={b.name} className="p-2.5 rounded-2xl bg-slate-950/60 border border-slate-850 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-lg bg-slate-800 text-slate-300 font-mono font-black text-xs flex items-center justify-center">
-                      {idx + 1}
-                    </span>
-                    <div>
-                      <div className="text-xs font-bold text-white">{b.name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">{b.share}% من الإجمالي</div>
+            {/* Hand-drawn Sketchy Progress Bars with Hatch Patterns */}
+            <div className="space-y-3.5 my-2">
+              {BRANCHES.map((b, idx) => {
+                const isSelected = selectedBranch === b.id;
+                return (
+                  <div
+                    key={b.id}
+                    onClick={() => setSelectedBranch(isSelected ? null : b.id)}
+                    className={`p-3 border-2 transition-all cursor-pointer rounded-none ${
+                      isSelected
+                        ? 'border-slate-900 bg-amber-50 shadow-[3px_3px_0px_0px_#0F172A] translate-x-[-2px]'
+                        : 'border-slate-300 bg-slate-50 hover:border-slate-900 hover:bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 border border-slate-900 bg-white flex items-center justify-center font-mono text-xs font-black">
+                          {idx + 1}
+                        </span>
+                        <span className="text-slate-900">{b.name}</span>
+                        <span className="text-[10px] font-mono bg-slate-200 border border-slate-400 px-1 py-0.2">
+                          {b.tag}
+                        </span>
+                      </div>
+                      <div className="font-mono font-black text-sm text-slate-950">
+                        {mask(formatSAR(b.sales))}
+                        <span className="text-[11px] font-normal text-slate-500 mr-1.5">({b.share}%)</span>
+                      </div>
+                    </div>
+
+                    {/* Sketched Bar Line */}
+                    <div className="w-full bg-slate-200 border border-slate-900 h-3 rounded-none overflow-hidden p-0.5">
+                      <div
+                        className="h-full transition-all duration-500"
+                        style={{
+                          width: `${b.share}%`,
+                          backgroundColor: b.color,
+                          backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.4) 3px, rgba(255,255,255,0.4) 6px)'
+                        }}
+                      />
                     </div>
                   </div>
-                  <div className="text-left font-mono font-black text-xs text-emerald-400">
-                    {mask(formatSAR(b.sales))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-850 flex items-center justify-between text-xs text-slate-400">
-            <span>إجمالي المبيعات الميدانية:</span>
-            <span className="font-mono font-bold text-white">{mask(formatSAR(NET_SALES))}</span>
-          </div>
-        </div>
-
-        {/* Operating Fixed Overhead Breakdown (تفصيل الـ 90 ألف المعتمدة) */}
-        <div className="p-6 rounded-3xl bg-[#0B1120] border border-slate-800 shadow-xl flex flex-col justify-between">
-          <div>
-            <h3 className="text-sm font-black text-white flex items-center gap-2 mb-4">
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
-              <span>ميزانية التشغيل الشهرية المعتمدة (90 ألف)</span>
-            </h3>
-
-            <div className="space-y-2.5">
-              <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-850 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-slate-200">الرواتب والأجور الشهرية</div>
-                  <div className="text-[10px] text-slate-400">لكافة موظفي الفروع والمستودع</div>
-                </div>
-                <div className="font-mono font-black text-xs text-white">
-                  {mask(formatSAR(OPEX_SALARIES))}
-                </div>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-850 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-slate-200">التشغيل، الإيجار، الكهرباء والشحن</div>
-                  <div className="text-[10px] text-slate-400">معدل كامل الفروع شامل الخدمات</div>
-                </div>
-                <div className="font-mono font-black text-xs text-white">
-                  {mask(formatSAR(OPEX_FACILITIES))}
-                </div>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-850 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-slate-200">هامش الأمان والتحوط</div>
-                  <div className="text-[10px] text-slate-400">تحسباً لأي طارئ أو زيادة تشغيلية</div>
-                </div>
-                <div className="font-mono font-black text-xs text-amber-400">
-                  {mask(formatSAR(OPEX_CONTINGENCY))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-3 border-t border-slate-850 flex items-center justify-between text-xs">
-            <span className="text-slate-400 font-medium">صافي الربح بعد خصم كامل التشغيل:</span>
-            <span className="font-mono font-black text-emerald-400">
-              +{mask(formatSAR(NET_PROFIT - TOTAL_MONTHLY_OPEX))}
-            </span>
+          <div className="pt-3 border-t border-dashed border-slate-300 flex items-center justify-between text-xs font-bold text-slate-600">
+            <span>إجمالي المبيعات المحققة لجميع المنافذ:</span>
+            <span className="font-mono text-slate-950 text-sm font-black">{mask(formatSAR(NET_SALES))}</span>
           </div>
         </div>
       </div>
 
-      {/* ── 4. Strategic One-Tap Directives (أزرار القرار التنفيذي السريع للمالك) ── */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#0B1120] via-[#0D1527] to-[#0B1120] border border-amber-500/20 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-400" />
-            <h3 className="text-base font-black text-white">
-              قرارات المالك التنفيذية السريعة (One-Tap Actions)
+      {/* ── 4. Tactical Breakdown: Fixed Overhead & Inventory Dead Capital ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        
+        {/* Left: Fixed Operational Overhead Breakdown (90,000 SAR) */}
+        <div className="border-2 border-slate-900 bg-white p-5 shadow-[4px_4px_0px_0px_#0F172A] rounded-none">
+          <div className="flex items-center justify-between border-b-2 border-dashed border-slate-300 pb-2 mb-3">
+            <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
+              <span>■</span>
+              <span>تفصيل التشغيل الشهري الثابت (90 ألف ر.س)</span>
             </h3>
+            <span className="text-xs font-mono font-bold text-slate-600">معتمد وموثق</span>
           </div>
-          <span className="text-xs text-slate-400 font-medium">توجيهات مباشرة للعمليات وسلاسل الإمداد</span>
+
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center justify-between p-2 border border-slate-800 bg-slate-50">
+              <div>
+                <strong className="text-slate-900">1. رواتب الموظفين الشهرية</strong>
+                <div className="text-[10px] text-slate-500">كافة العاملين بالفروع والمستودع</div>
+              </div>
+              <div className="font-mono font-black text-sm text-slate-900">{mask(formatSAR(OPEX_SALARIES))}</div>
+            </div>
+
+            <div className="flex items-center justify-between p-2 border border-slate-800 bg-slate-50">
+              <div>
+                <strong className="text-slate-900">2. الإيجارات والكهرباء والشحن</strong>
+                <div className="text-[10px] text-slate-500">متوسط فروع القصيم كاملة</div>
+              </div>
+              <div className="font-mono font-black text-sm text-slate-900">{mask(formatSAR(OPEX_FACILITIES))}</div>
+            </div>
+
+            <div className="flex items-center justify-between p-2 border border-slate-800 bg-slate-50">
+              <div>
+                <strong className="text-slate-900">3. هامش الأمان والتحوط</strong>
+                <div className="text-[10px] text-slate-500">تحسباً لأي طارئ أو زيادة بنود</div>
+              </div>
+              <div className="font-mono font-black text-sm text-amber-800">{mask(formatSAR(OPEX_CONTINGENCY))}</div>
+            </div>
+          </div>
+
+          {/* Bottom hand-drawn highlight note */}
+          <div className="mt-3 p-2 border-2 border-dashed border-emerald-600 bg-emerald-50 text-xs font-bold text-emerald-950 flex items-center justify-between">
+            <span>صافي الكاش الفائض بعد كامل التشغيل:</span>
+            <span className="font-mono font-black text-sm text-emerald-800">+{mask(formatSAR(NET_PROFIT - TOTAL_MONTHLY_OPEX))}</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          {/* Directive 1: Stagnant Parts */}
+        {/* Right: Hand-Drawn Inventory Liquidity & Dead Stock Alert */}
+        <div className="border-2 border-slate-900 bg-white p-5 shadow-[4px_4px_0px_0px_#0F172A] rounded-none">
+          <div className="flex items-center justify-between border-b-2 border-dashed border-slate-300 pb-2 mb-3">
+            <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
+              <span>■</span>
+              <span>مؤشر سيولة المخزون (8,693 صنف)</span>
+            </h3>
+            <span className="text-xs font-mono font-bold text-slate-600">جرد سبتمبر 2026</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-center my-2">
+            <div className="p-3 border-2 border-slate-900 bg-amber-50">
+              <div className="text-[11px] font-bold text-amber-900">أصناف راكدة (تجميد سيولة)</div>
+              <div className="text-2xl font-mono font-black text-slate-950 mt-1">2,082</div>
+              <div className="text-[10px] text-slate-600">صنف بدون أي مبيعات</div>
+            </div>
+
+            <div className="p-3 border-2 border-slate-900 bg-rose-50">
+              <div className="text-[11px] font-bold text-rose-900">أصناف نافذة بطلب نشط</div>
+              <div className="text-2xl font-mono font-black text-slate-950 mt-1">2,186</div>
+              <div className="text-[10px] text-slate-600">صفر رصيد (فرص ضائعة)</div>
+            </div>
+          </div>
+
+          <div className="p-2 border border-slate-800 bg-slate-50 text-xs flex items-center justify-between mt-3 font-bold text-slate-700">
+            <span>نسبة الأصناف النشطة بالمستودع:</span>
+            <span className="font-mono text-slate-950 font-black">76.1% (6,611 صنف يدور بنجاح)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 5. Three Fast One-Tap Decision Directives (أزرار القرار التنفيذي السريع) ── */}
+      <div className="border-2 border-slate-900 bg-white p-5 shadow-[5px_5px_0px_0px_#0F172A] rounded-none">
+        <div className="flex items-center justify-between border-b-2 border-dashed border-slate-300 pb-2 mb-3">
+          <h3 className="text-sm font-black text-slate-950 flex items-center gap-1.5">
+            <span>⚡</span>
+            <span>توجيهات المالك بضغطة زر واحدة (Directives)</span>
+          </h3>
+          <span className="text-xs text-slate-500 font-bold">قرارات تشغيلية مباشرة</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <button
             onClick={() => openReport('stagnant')}
-            className="p-4 rounded-2xl bg-slate-900/80 hover:bg-amber-500/15 border border-slate-800 hover:border-amber-500/40 text-right transition-all group active:scale-98 cursor-pointer"
+            className="p-3.5 border-2 border-slate-900 bg-amber-50 hover:bg-amber-100 text-right shadow-[3px_3px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all rounded-none cursor-pointer"
           >
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="font-bold text-amber-300">تسييل الأصناف الراكدة</span>
-              <ChevronLeft className="w-4 h-4 text-slate-500 group-hover:text-amber-400 transition-transform group-hover:-translate-x-1" />
+            <div className="flex items-center justify-between text-xs font-black text-amber-950 mb-1">
+              <span>[ 1 ] تسييل الـ 2,082 صنف راكد</span>
+              <span>←</span>
             </div>
-            <div className="text-xs text-slate-300">
-              استعراض الـ <strong className="font-mono text-white">2,082</strong> صنفاً مجمداً بالمستودع لتحرير السيولة عبر عروض خاصة.
-            </div>
+            <p className="text-[11px] text-slate-700 font-medium">
+              فتح قائمة الأصناف الراكدة لتحرير الكاش المجمد عبر حزم عروض صيانة سريعة.
+            </p>
           </button>
 
-          {/* Directive 2: Out of Stock */}
           <button
             onClick={() => openReport('out_of_stock')}
-            className="p-4 rounded-2xl bg-slate-900/80 hover:bg-rose-500/15 border border-slate-800 hover:border-rose-500/40 text-right transition-all group active:scale-98 cursor-pointer"
+            className="p-3.5 border-2 border-slate-900 bg-rose-50 hover:bg-rose-100 text-right shadow-[3px_3px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all rounded-none cursor-pointer"
           >
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="font-bold text-rose-300">إصدار أوامر توريد عاجلة</span>
-              <ChevronLeft className="w-4 h-4 text-slate-500 group-hover:text-rose-400 transition-transform group-hover:-translate-x-1" />
+            <div className="flex items-center justify-between text-xs font-black text-rose-950 mb-1">
+              <span>[ 2 ] إصدار أوامر توريد للنواقص</span>
+              <span>←</span>
             </div>
-            <div className="text-xs text-slate-300">
-              متابعة الـ <strong className="font-mono text-white">2,186</strong> صنفاً حرجاً نافداً ولها طلب نشط لوقف الفرص الضائعة.
-            </div>
+            <p className="text-[11px] text-slate-700 font-medium">
+              متابعة الـ 2,186 صنفاً النافذة من المخزون لمنع هروب الزبائن للمنافسين.
+            </p>
           </button>
 
-          {/* Directive 3: Top Selling & Margins */}
           <button
             onClick={() => openReport('top_selling')}
-            className="p-4 rounded-2xl bg-slate-900/80 hover:bg-emerald-500/15 border border-slate-800 hover:border-emerald-500/40 text-right transition-all group active:scale-98 cursor-pointer"
+            className="p-3.5 border-2 border-slate-900 bg-emerald-50 hover:bg-emerald-100 text-right shadow-[3px_3px_0px_0px_#0F172A] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all rounded-none cursor-pointer"
           >
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="font-bold text-emerald-300">تحصين الأصناف الأكثر طلباً</span>
-              <ChevronLeft className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-transform group-hover:-translate-x-1" />
+            <div className="flex items-center justify-between text-xs font-black text-emerald-950 mb-1">
+              <span>[ 3 ] تحصين التوب 50 صنفاً</span>
+              <span>←</span>
             </div>
-            <div className="text-xs text-slate-300">
-              تأمين عقود سنوية لـ <strong className="font-mono text-white">توب 50</strong> صنفاً تمثل عصب إيرادات الفروع.
-            </div>
+            <p className="text-[11px] text-slate-700 font-medium">
+              مراجعة الأصناف المتصدرة للمبيعات وتأمين عقود سنوية لضمان استقرار الأرباح.
+            </p>
           </button>
         </div>
       </div>
