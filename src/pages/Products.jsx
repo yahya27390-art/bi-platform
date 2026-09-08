@@ -23,8 +23,14 @@ import {
   Flame,
   Clock,
   RotateCcw,
+  FileSpreadsheet,
+  TrendingDown,
+  PackageX,
+  ArrowUpRight,
+  BarChart3,
 } from 'lucide-react';
 import { REAL_INVENTORY_STATS, REAL_ALL_PARTS } from '../data/realInventoryData';
+import ExecutiveReportsModal from '../components/shared/ExecutiveReportsModal';
 
 const PAGE_SIZE = 50;
 
@@ -64,6 +70,13 @@ export default function Products() {
   const [sortBy, setSortBy] = useState('issued'); // 'issued' | 'balance' | 'received' | 'opening' | 'sku'
   const [sortDesc, setSortDesc] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
+  const [reportsModalInitialTab, setReportsModalInitialTab] = useState('stagnant');
+
+  const openReport = (tabId) => {
+    setReportsModalInitialTab(tabId);
+    setIsReportsModalOpen(true);
+  };
 
   // Filter & Sort Pipeline
   const filteredParts = useMemo(() => {
@@ -140,10 +153,23 @@ export default function Products() {
           </p>
         </div>
 
-        {/* Live File Verification Badge */}
-        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-900 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-2xs shrink-0 self-start lg:self-center">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>مطابقة لسجل حركة المخزن: «حركة مخزن الى شهر 9 2026.xlsx»</span>
+        {/* Top Header Actions */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start lg:self-center">
+          {/* Live File Verification Badge */}
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-900 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>مطابقة لسجل حركة المخزن: «حركة مخزن الى شهر 9 2026.xlsx»</span>
+          </div>
+
+          {/* Executive Reports Trigger Button */}
+          <button
+            type="button"
+            onClick={() => openReport('stagnant')}
+            className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#0F172A] hover:bg-blue-600 text-white text-xs font-black shadow-sm transition-all active:scale-95 border border-slate-700 hover:border-blue-500 cursor-pointer"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+            <span>مركز التقارير التنفيذية (50 صنف)</span>
+          </button>
         </div>
       </div>
 
@@ -198,6 +224,205 @@ export default function Products() {
           </div>
           <div className="text-[11px] text-indigo-700 font-bold">
             قطعة موردة للمخازن
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2.5 Executive Inventory Reports Hub (6 Quick-Launch Cards) ── */}
+      <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-900 via-[#0E172A] to-slate-900 text-white p-5 md:p-6 shadow-md space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
+              <FileSpreadsheet className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-black text-white">
+                منظومة التقارير التنفيذية والمخزنية المتخصصة (Executive BI Reports)
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5 font-medium">
+                تقارير معتمدة لكبار المدراء تضم أفضل 50 صنفاً وفق معايير الركود، الطلب، النفاد، ودوران الفئات
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-xl self-start sm:self-center font-bold">
+            مطابقة محاسبية 100%
+          </span>
+        </div>
+
+        {/* The 6 Specialized Report Launch Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {/* Report 1: Stagnant */}
+          <div
+            onClick={() => openReport('stagnant')}
+            className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-amber-500/50 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="p-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <Clock className="w-4 h-4" />
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
+                  2,082 صنف راكد
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white group-hover:text-amber-300 transition-colors">
+                  الأصناف الراكدة (تجميد سيولة)
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                  أصناف لها رصيد فعلي بالمستودع (5,337 قطعة) بدون أي مبيعات نهائياً وتتطلب عروض تصفية.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-amber-400 group-hover:translate-x-1 transition-transform">
+              <span>عرض الـ 50 صنف الراكد</span>
+              <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
+            </div>
+          </div>
+
+          {/* Report 2: Top Selling */}
+          <div
+            onClick={() => openReport('top_selling')}
+            className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-emerald-500/50 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="p-2 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <Flame className="w-4 h-4" />
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
+                  توب 50 صنف
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white group-hover:text-emerald-300 transition-colors">
+                  الأصناف الأكثر طلباً ومبيعاً
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                  حققت 29,372 قطعة مباعة (38.1% من إجمالي مبيعات الشركة) بقيادة كلبسات البطانة وزيوت DPF.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition-transform">
+              <span>عرض الـ 50 صنف الأكثر مبيعاً</span>
+              <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
+            </div>
+          </div>
+
+          {/* Report 3: Out of Stock */}
+          <div
+            onClick={() => openReport('out_of_stock')}
+            className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-rose-500/50 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="p-2 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  <PackageX className="w-4 h-4" />
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">
+                  2,186 صنف نفد
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white group-hover:text-rose-300 transition-colors">
+                  نفدت من المخزون وكان عليها طلب
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                  سجلت مبيعات تاريخية لـ 6,395 قطعة وأصبح رصيدها صفراً، مما يمثل فرص مبيعات مفقودة فورية.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-rose-400 group-hover:translate-x-1 transition-transform">
+              <span>عرض الـ 50 صنف المنتهي (أمر شراء)</span>
+              <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
+            </div>
+          </div>
+
+          {/* Report 4: Zero Movement */}
+          <div
+            onClick={() => openReport('zero_movement')}
+            className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-cyan-500/50 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  <AlertTriangle className="w-4 h-4" />
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">
+                  1,458 صنف خامل
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white group-hover:text-cyan-300 transition-colors">
+                  أصناف بدون حركة نهائياً
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                  أصناف لم تشهد أي توريد (0 وارد) ولا أي مبيعات (0 منصرف) منذ بداية الفترة برصيد 3,600 قطعة.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-cyan-400 group-hover:translate-x-1 transition-transform">
+              <span>عرض الـ 50 صنف الخامل كلياً</span>
+              <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
+            </div>
+          </div>
+
+          {/* Report 5: Most Active Categories */}
+          <div
+            onClick={() => openReport('active_categories')}
+            className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/50 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="p-2 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  <TrendingUp className="w-4 h-4" />
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono">
+                  9 فئات رئيسية
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white group-hover:text-blue-300 transition-colors">
+                  أكثر الفئات نشاطاً ومبيعات
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                  تتصدرها زيوت وسوائل التبريد (29,595 مباع) والكلبسات (11,491 مباع) والفلاتر بأعلى دوران (71.7%).
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-blue-400 group-hover:translate-x-1 transition-transform">
+              <span>عرض التقرير المقارن للفئات</span>
+              <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
+            </div>
+          </div>
+
+          {/* Report 6: Most Stagnant Categories */}
+          <div
+            onClick={() => openReport('stagnant_categories')}
+            className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-orange-500/50 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="p-2 rounded-xl bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                  <TrendingDown className="w-4 h-4" />
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30 font-mono">
+                  مؤشر الركود
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white group-hover:text-orange-300 transition-colors">
+                  أكثر الفئات ركوداً وبطء حركة
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                  تحليل الفئات ذات أعلى نسبة أصناف راكدة بقيادة الهيكل والبودي (28.9% ركود) والمحرك (28.4%).
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-orange-400 group-hover:translate-x-1 transition-transform">
+              <span>عرض تقرير ركود الفئات</span>
+              <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
+            </div>
           </div>
         </div>
       </div>
@@ -539,6 +764,13 @@ export default function Products() {
           </div>
         </div>
       </div>
+
+      {/* ── 7. Enterprise Executive Reports Modal Hub ── */}
+      <ExecutiveReportsModal
+        isOpen={isReportsModalOpen}
+        onClose={() => setIsReportsModalOpen(false)}
+        initialTab={reportsModalInitialTab}
+      />
     </div>
   );
 }
