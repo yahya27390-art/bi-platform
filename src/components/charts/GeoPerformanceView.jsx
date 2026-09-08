@@ -1,23 +1,26 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 import { formatSAR, formatNum } from '../../lib/kpiEngine';
 import {
   Globe, Building2, ShoppingCart, Users, ArrowUpRight,
   ShieldCheck, CheckCircle2, Sparkles, MapPin, TrendingUp,
   Radio, Layers, Flame, Navigation, ZoomIn, ZoomOut, RotateCcw,
-  Search, ExternalLink, Activity, Info
+  Search, ExternalLink, Activity, Info, Compass, Eye
 } from 'lucide-react';
 import { DORA_GEO_PERFORMANCE } from '../../data/doraSchema';
 import ga4Snapshot from '../../data/ga4LiveSnapshot.json';
 
-// Geographic Coordinates and Metadata mapped to SVG Canvas (800 x 650)
-const KSA_CITIES_COORDS = [
+// Authentic Saudi Arabia Cities with Real Latitude and Longitude Coordinates
+const SAUDI_CITIES_GEO = [
   {
     id: 'buraydah',
     cityAr: 'بريدة',
     cityEn: 'Buraydah',
     region: 'منطقة القصيم',
-    x: 375,
-    y: 255,
+    lat: 26.3260,
+    lng: 43.9750,
     tier: 'hq', // 992,872 SAR
     sales: 992872.16,
     onlineSales: 3350.00,
@@ -29,9 +32,6 @@ const KSA_CITIES_COORDS = [
     tag: 'المركز الرئيسي للفروع (3 فروع نشطة)',
     color: '#10B981', // Emerald green
     accentColor: '#34D399',
-    pinType: 'headquarters',
-    heatRadius: 80,
-    heatOpacity: 0.45,
     notes: 'المركز الرئيسي لدرة للسيارات: الفرع الرئيسي (428K) + فرع الرواف (291K) + فرع كيا (269K) بالإضافة لطلبات المتجر المعتمدة',
   },
   {
@@ -39,8 +39,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'جدة',
     cityEn: 'Jeddah',
     region: 'منطقة مكة المكرمة',
-    x: 205,
-    y: 415,
+    lat: 21.5433,
+    lng: 39.1728,
     tier: 'top_online', // 13,150 SAR
     sales: 13150.00,
     onlineSales: 13150.00,
@@ -52,9 +52,6 @@ const KSA_CITIES_COORDS = [
     tag: 'الأعلى طلباً بمتجر سلة (20 طلب)',
     color: '#06B6D4', // Cyan
     accentColor: '#22D3EE',
-    pinType: 'store',
-    heatRadius: 65,
-    heatOpacity: 0.35,
     notes: 'المدينة الأولى بالمملكة في مبيعات متجر سلة الإلكتروني وأعلى عدد زيارات تسويقية للموقع',
   },
   {
@@ -62,8 +59,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'الرياض',
     cityEn: 'Riyadh',
     region: 'منطقة الرياض',
-    x: 465,
-    y: 320,
+    lat: 24.7136,
+    lng: 46.6753,
     tier: 'capital_traffic', // 9,375 SAR
     sales: 9375.00,
     onlineSales: 9375.00,
@@ -75,9 +72,6 @@ const KSA_CITIES_COORDS = [
     tag: 'العاصمة (3,380 زائر - 16 طلب)',
     color: '#3B82F6', // Royal Blue
     accentColor: '#60A5FA',
-    pinType: 'traffic',
-    heatRadius: 60,
-    heatOpacity: 0.35,
     notes: 'أعلى كثافة بحثية وإعلانية عبر Google Ads ومنصات التواصل مع 16 طلب مكتمل أونلاين',
   },
   {
@@ -85,8 +79,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'الدمام والخبر',
     cityEn: 'Dammam & Khobar',
     region: 'المنطقة الشرقية',
-    x: 570,
-    y: 260,
+    lat: 26.4207,
+    lng: 50.0888,
     tier: 'high_sales', // 6,885 SAR
     sales: 6885.00,
     onlineSales: 6885.00,
@@ -98,9 +92,6 @@ const KSA_CITIES_COORDS = [
     tag: 'المنطقة الشرقية (12 طلب)',
     color: '#8B5CF6', // Purple
     accentColor: '#A78BFA',
-    pinType: 'store',
-    heatRadius: 55,
-    heatOpacity: 0.30,
     notes: 'مركز المبيعات الإلكترونية للشرقية، تغطي الدمام والخبر والأحساء والجبيل',
   },
   {
@@ -108,8 +99,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'المدينة المنورة',
     cityEn: 'Madinah',
     region: 'منطقة المدينة المنورة',
-    x: 220,
-    y: 315,
+    lat: 24.5247,
+    lng: 39.5692,
     tier: 'high_sales', // 5,410 SAR
     sales: 5410.00,
     onlineSales: 5410.00,
@@ -121,9 +112,6 @@ const KSA_CITIES_COORDS = [
     tag: 'منطقة المدينة المنورة (9 طلبات)',
     color: '#14B8A6', // Teal
     accentColor: '#2DD4BF',
-    pinType: 'store',
-    heatRadius: 45,
-    heatOpacity: 0.25,
     notes: 'نشاط بيعي وتسويقي مستمر عبر متجر سلة مع 9 طلبات شراء معتمدة',
   },
   {
@@ -131,8 +119,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'أبها وعسير',
     cityEn: 'Abha & Asir',
     region: 'منطقة عسير',
-    x: 310,
-    y: 535,
+    lat: 18.2164,
+    lng: 42.5053,
     tier: 'mid_sales', // 2,004 SAR
     sales: 2004.00,
     onlineSales: 2004.00,
@@ -144,9 +132,6 @@ const KSA_CITIES_COORDS = [
     tag: 'القطاع الجنوبي (3 طلبات)',
     color: '#F59E0B', // Amber
     accentColor: '#FBBF24',
-    pinType: 'store',
-    heatRadius: 40,
-    heatOpacity: 0.25,
     notes: 'نشاط سلة في المنطقة الجنوبية يغطي أبها وخميس مشيط ومحايل عسير',
   },
   {
@@ -154,8 +139,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'مكة المكرمة',
     cityEn: 'Makkah',
     region: 'منطقة مكة المكرمة',
-    x: 235,
-    y: 425,
+    lat: 21.3891,
+    lng: 39.8579,
     tier: 'mid_sales', // 769 SAR
     sales: 769.00,
     onlineSales: 769.00,
@@ -167,9 +152,6 @@ const KSA_CITIES_COORDS = [
     tag: 'العاصمة المقدسة (طلبين)',
     color: '#0284C7',
     accentColor: '#38BDF8',
-    pinType: 'store',
-    heatRadius: 35,
-    heatOpacity: 0.20,
     notes: 'طلبات متجر سلة وشحن قطع الغيار والإكسسوارات لمنطقة مكة المكرمة',
   },
   {
@@ -177,8 +159,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'تبوك',
     cityEn: 'Tabuk',
     region: 'منطقة تبوك',
-    x: 110,
-    y: 185,
+    lat: 28.3835,
+    lng: 36.5662,
     tier: 'low_sales', // 125 SAR
     sales: 125.00,
     onlineSales: 125.00,
@@ -190,9 +172,6 @@ const KSA_CITIES_COORDS = [
     tag: 'الشمال الغربي (طلب واحد)',
     color: '#06B6D4',
     accentColor: '#67E8F9',
-    pinType: 'store',
-    heatRadius: 30,
-    heatOpacity: 0.20,
     notes: 'منطقة تغطية متجر سلة في أقصى الشمال الغربي ونيوم',
   },
   {
@@ -200,8 +179,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'حائل',
     cityEn: 'Hail',
     region: 'منطقة حائل',
-    x: 290,
-    y: 215,
+    lat: 27.5219,
+    lng: 41.6907,
     tier: 'traffic_only',
     sales: 0,
     onlineSales: 0,
@@ -210,12 +189,9 @@ const KSA_CITIES_COORDS = [
     sessions: 245,
     conversions: 0,
     isPhysicalHub: false,
-    tag: 'زيارات وتصفح GA4 (210 زائر)',
+    tag: 'زيارات GA4 (210 زائر)',
     color: '#64748B',
     accentColor: '#94A3B8',
-    pinType: 'traffic',
-    heatRadius: 25,
-    heatOpacity: 0.15,
     notes: 'زيارات تصفح واهتمام بحملات البحث دون طلبات شراء منفذة هذا الشهر',
   },
   {
@@ -223,8 +199,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'جازان',
     cityEn: 'Jazan',
     region: 'منطقة جازان',
-    x: 305,
-    y: 580,
+    lat: 16.8892,
+    lng: 42.5706,
     tier: 'traffic_only',
     sales: 0,
     onlineSales: 0,
@@ -236,9 +212,6 @@ const KSA_CITIES_COORDS = [
     tag: 'زيارات GA4 (185 زائر)',
     color: '#64748B',
     accentColor: '#94A3B8',
-    pinType: 'traffic',
-    heatRadius: 25,
-    heatOpacity: 0.15,
     notes: 'تصفح رقمي مباشر لكتالوج المنتجات بمتجر درة للسيارات',
   },
   {
@@ -246,8 +219,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'نجران',
     cityEn: 'Najran',
     region: 'منطقة نجران',
-    x: 380,
-    y: 560,
+    lat: 17.4924,
+    lng: 44.1277,
     tier: 'traffic_only',
     sales: 0,
     onlineSales: 0,
@@ -259,9 +232,6 @@ const KSA_CITIES_COORDS = [
     tag: 'زيارات GA4 (140 زائر)',
     color: '#64748B',
     accentColor: '#94A3B8',
-    pinType: 'traffic',
-    heatRadius: 20,
-    heatOpacity: 0.15,
     notes: 'زيارات استكشافية لمنتجات الشركة عبر إعلانات السوشيال ميديا',
   },
   {
@@ -269,8 +239,8 @@ const KSA_CITIES_COORDS = [
     cityAr: 'الجوف وسكاكا',
     cityEn: 'Al-Jouf',
     region: 'منطقة الجوف',
-    x: 230,
-    y: 130,
+    lat: 29.9697,
+    lng: 40.2064,
     tier: 'traffic_only',
     sales: 0,
     onlineSales: 0,
@@ -282,48 +252,139 @@ const KSA_CITIES_COORDS = [
     tag: 'زيارات GA4 (95 زائر)',
     color: '#64748B',
     accentColor: '#94A3B8',
-    pinType: 'traffic',
-    heatRadius: 20,
-    heatOpacity: 0.15,
     notes: 'زيارات عضوية مباشرة قادمة من محرك بحث Google',
   },
 ];
 
-// Authentic Kingdom of Saudi Arabia Outer SVG Path
-const KSA_SILHOUETTE_PATH = `
-  M 75,185 
-  C 85,160 110,135 140,110
-  C 175,85 220,65 260,60
-  C 295,55 330,75 365,95
-  C 400,115 440,145 470,165
-  C 495,180 520,188 535,200
-  C 545,215 558,235 565,255
-  C 572,275 585,290 600,310
-  C 620,335 650,360 680,380
-  C 715,405 745,430 735,465
-  C 725,500 690,520 650,535
-  C 605,550 555,558 505,565
-  C 455,572 405,575 360,580
-  C 335,585 320,600 305,615
-  C 295,605 285,580 275,550
-  C 260,515 245,475 225,445
-  C 205,420 190,395 185,365
-  C 180,335 165,300 145,265
-  C 125,230 95,205 75,185
-  Z
-`;
+// Map Tile Providers
+const TILE_PROVIDERS = {
+  google_roadmap: {
+    name: 'خرائط Google القياسية',
+    url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps',
+    maxZoom: 18,
+  },
+  google_satellite: {
+    name: 'Google قمر صناعي هجين',
+    url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Satellite Imagery',
+    maxZoom: 18,
+  },
+  carto_dark: {
+    name: 'الوضع الليلي الفاخر (Dark Carto)',
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; CartoDB Dark Matter',
+    maxZoom: 19,
+  },
+};
+
+// Create Rich Animated HTML GPS Pin Marker using Leaflet DivIcon
+function createAnimatedMapPin(city, isSelected) {
+  const isHQ = city.tier === 'hq';
+  const isTopOnline = city.tier === 'top_online';
+  const isCapital = city.tier === 'capital_traffic';
+
+  return L.divIcon({
+    className: 'leaflet-custom-marker',
+    html: `
+      <div style="position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <!-- Pulsing concentric sonar radar rings -->
+        ${isHQ ? `
+          <span style="position: absolute; width: 56px; height: 56px; border-radius: 9999px; background-color: #10B981; opacity: 0.35; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+          <span style="position: absolute; width: 36px; height: 36px; border-radius: 9999px; background-color: #059669; opacity: 0.55; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></span>
+        ` : isTopOnline ? `
+          <span style="position: absolute; width: 44px; height: 44px; border-radius: 9999px; background-color: #06B6D4; opacity: 0.35; animation: ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+        ` : isCapital ? `
+          <span style="position: absolute; width: 40px; height: 40px; border-radius: 9999px; background-color: #3B82F6; opacity: 0.35; animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+        ` : ''}
+
+        <!-- GPS Pin Center Badge -->
+        <div style="
+          position: relative;
+          width: ${isHQ ? '36px' : '30px'};
+          height: ${isHQ ? '36px' : '30px'};
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: ${city.color};
+          border: 2.5px solid #FFFFFF;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+          transform: ${isSelected ? 'scale(1.2)' : 'scale(1)'};
+          transition: transform 0.2s ease;
+        ">
+          <svg style="width: 16px; height: 16px; color: #FFFFFF; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+        </div>
+
+        <!-- Floating City Label Chip -->
+        <div style="
+          position: absolute;
+          top: -26px;
+          white-space: nowrap;
+          padding: 2px 8px;
+          border-radius: 9999px;
+          font-size: 11px;
+          font-weight: 900;
+          font-family: sans-serif;
+          background: #0F172A;
+          color: #FFFFFF;
+          border: 1px solid ${isSelected ? city.color : 'rgba(255,255,255,0.2)'};
+          box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        ">
+          ${city.cityAr} ${isHQ ? '👑' : ''}
+        </div>
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -22],
+  });
+}
+
+// Map Controller for Smooth Cinematic FlyTo Navigation
+function MapController({ targetCity, recenterTrigger }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (targetCity) {
+      map.flyTo([targetCity.lat, targetCity.lng], 9, {
+        duration: 1.2,
+        easeLinearity: 0.25,
+      });
+    }
+  }, [targetCity]);
+
+  useEffect(() => {
+    if (recenterTrigger) {
+      map.flyTo([24.2, 44.5], 6, {
+        duration: 1.2,
+      });
+    }
+  }, [recenterTrigger]);
+
+  return null;
+}
 
 export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
-  const [mapMode, setMapMode] = useState('vector'); // 'vector' | 'heatmap' | 'radar'
+  const [tileMode, setTileMode] = useState('google_roadmap'); // 'google_roadmap' | 'google_satellite' | 'carto_dark'
   const [selectedCityId, setSelectedCityId] = useState('buraydah');
-  const [hoveredCityId, setHoveredCityId] = useState(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [recenterCount, setRecenterCount] = useState(0);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'withSales' | 'hubs'
 
-  // Active City metadata
+  // Active City
   const activeCity = useMemo(() => {
-    return KSA_CITIES_COORDS.find((c) => c.id === (hoveredCityId || selectedCityId)) || KSA_CITIES_COORDS[0];
-  }, [hoveredCityId, selectedCityId]);
+    return SAUDI_CITIES_GEO.find((c) => c.id === selectedCityId) || SAUDI_CITIES_GEO[0];
+  }, [selectedCityId]);
+
+  // Buraydah HQ position for commercial distribution flow polylines
+  const buraydahHQ = SAUDI_CITIES_GEO[0];
+
+  // Distribution flow targets
+  const flowTargets = useMemo(() => {
+    return SAUDI_CITIES_GEO.filter((c) => c.id !== 'buraydah' && c.sales > 0);
+  }, []);
 
   // Aggregate totals
   const totalVerifiedRevenue = geoData.reduce((acc, curr) => acc + (curr.totalSales || curr.sales || 0), 0);
@@ -332,7 +393,7 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
   const totalUsers = geoData.reduce((acc, curr) => acc + (curr.activeUsers || 0), 0);
   const totalSessions = geoData.reduce((acc, curr) => acc + (curr.sessions || 0), 0);
 
-  // Filtered cities list for the table below
+  // Filtered cities list for table
   const filteredTableData = useMemo(() => {
     if (activeTab === 'withSales') {
       return geoData.filter((d) => (d.totalSales || d.sales || 0) > 0);
@@ -344,123 +405,120 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
   }, [geoData, activeTab]);
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-[#0A1120] p-4 sm:p-6 space-y-6 shadow-2xl text-slate-100 font-sans" dir="rtl">
-      {/* 1. Google Maps Styled Header & Telemetry Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 space-y-6 shadow-xs text-[#0F172A] font-sans" dir="rtl">
+      {/* 1. Executive Telemetry Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div className="flex items-start gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner flex-shrink-0 mt-0.5">
-            <Globe className="w-6 h-6 animate-pulse" />
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-xs flex-shrink-0 mt-0.5">
+            <Globe className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-lg sm:text-xl font-black text-white tracking-wide flex items-center gap-2">
-                <span>الذكاء الجغرافي وخريطة المملكة التفاعلية</span>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40">
-                  Google Maps Style
+              <h3 className="text-lg sm:text-xl font-black text-[#0F172A] tracking-wide flex items-center gap-2">
+                <span>الذكاء الجغرافي وخريطة المملكة (Google Maps Engine)</span>
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                  LIVE GIS
                 </span>
               </h3>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                تتبع جغرافي حي 100%
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                بيانات حقيقية مدققة 100%
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              توزيع المبيعات الميدانية والمتاجر الإلكترونية بالمدن موثق من دفاتر الفروع الرسمية (Z-Reports) وبيكسل Google Analytics 4 الحي
+            <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
+              محرك خرائط ملاحة متكامل مع Google Maps يتيح التكبير والتصغير واستعراض المدن والطرق وتدفق الشحن والمبيعات المعتمدة
             </p>
           </div>
         </div>
 
         {/* Live Source Badges */}
         <div className="flex items-center gap-2 flex-wrap text-xs self-start lg:self-center">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-cyan-300 bg-cyan-500/10 border-cyan-500/25 font-semibold shadow-xs">
-            <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span>GA4 Live Property 421858793</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-blue-800 bg-blue-50 border-blue-200 font-bold shadow-2xs">
+            <Radio className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
+            <span>Google Analytics 4 API</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-emerald-300 bg-emerald-500/10 border-emerald-500/25 font-semibold shadow-xs">
-            <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>فروع درة Z-Reports</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-emerald-800 bg-emerald-50 border-emerald-200 font-bold shadow-2xs">
+            <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>فواتير الفروع Z-Reports</span>
           </div>
         </div>
       </div>
 
       {/* 2. Top Summary KPI Cards Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-1 shadow-2xs">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
             <span>إجمالي المبيعات الجغرافية</span>
-            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            <TrendingUp className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-lg md:text-xl font-black text-white font-mono" dir="ltr">
+          <div className="text-lg md:text-xl font-black text-[#0F172A] font-mono" dir="ltr">
             {formatSAR(totalVerifiedRevenue, true)}
           </div>
-          <div className="text-[11px] text-slate-400">
+          <div className="text-[11px] text-slate-500 font-medium">
             فروع: {formatSAR(totalPhysicalRevenue, true)} | متجر: {formatSAR(totalOnlineRevenue, true)}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-1 shadow-2xs">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
             <span>المدينة الأعلى مبيعاً بالمتجر</span>
-            <ShoppingCart className="w-4 h-4 text-cyan-400" />
+            <ShoppingCart className="w-4 h-4 text-cyan-600" />
           </div>
-          <div className="text-lg md:text-xl font-black text-cyan-300">
+          <div className="text-lg md:text-xl font-black text-cyan-700">
             جدة (Jeddah)
           </div>
-          <div className="text-[11px] text-slate-400 font-mono" dir="ltr">
+          <div className="text-[11px] text-slate-500 font-mono font-medium" dir="ltr">
             {formatSAR(13150, true)} (20 طلب شراء)
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-1 shadow-2xs">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
             <span>زوار المملكة الموثقون</span>
-            <Users className="w-4 h-4 text-blue-400" />
+            <Users className="w-4 h-4 text-blue-600" />
           </div>
-          <div className="text-lg md:text-xl font-black text-white font-mono" dir="ltr">
+          <div className="text-lg md:text-xl font-black text-[#0F172A] font-mono" dir="ltr">
             {formatNum(totalUsers)} زائر
           </div>
-          <div className="text-[11px] text-slate-400">
+          <div className="text-[11px] text-slate-500 font-medium">
             عبر {formatNum(totalSessions)} جلسة تصفح حية
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-1 shadow-2xs">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
             <span>مركز الفروع الميدانية</span>
-            <MapPin className="w-4 h-4 text-emerald-400" />
+            <MapPin className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-lg md:text-xl font-black text-emerald-400">
+          <div className="text-lg md:text-xl font-black text-emerald-700">
             بريدة (القصيم)
           </div>
-          <div className="text-[11px] text-slate-400 font-mono" dir="ltr">
+          <div className="text-[11px] text-slate-500 font-mono font-medium" dir="ltr">
             {formatSAR(989522.16, true)} (3 فروع نشطة)
           </div>
         </div>
       </div>
 
-      {/* 3. Google Maps Style Interactive Viewport Container */}
-      <div className="relative rounded-3xl border border-slate-700/80 bg-[#070E1B] overflow-hidden shadow-2xl">
-        {/* Top Google Maps Control Dock */}
-        <div className="absolute top-4 inset-x-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-auto">
-          {/* Quick City Search / Selection Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full py-1 px-1 bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl">
-            <span className="text-[11px] text-slate-400 font-bold px-2 flex items-center gap-1 shrink-0">
-              <Search className="w-3.5 h-3.5 text-blue-400" />
-              <span>المدن:</span>
+      {/* 3. Real Interactive Leaflet & Google Maps Canvas */}
+      <div className="relative rounded-3xl border border-slate-300 bg-slate-100 overflow-hidden shadow-md">
+        {/* Top Control Dock Bar */}
+        <div className="p-3 bg-white/95 backdrop-blur-md border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 z-10 relative">
+          {/* Quick City Jump Chips with flyTo animation */}
+          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full py-1">
+            <span className="text-xs text-slate-700 font-black px-1.5 flex items-center gap-1 shrink-0">
+              <Compass className="w-3.5 h-3.5 text-blue-600" />
+              <span>الانتقال السريع:</span>
             </span>
-            {KSA_CITIES_COORDS.slice(0, 6).map((c) => {
+            {SAUDI_CITIES_GEO.slice(0, 7).map((c) => {
               const isSelected = selectedCityId === c.id;
               return (
                 <button
                   key={c.id}
-                  onClick={() => {
-                    setSelectedCityId(c.id);
-                    setHoveredCityId(null);
-                  }}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                  onClick={() => setSelectedCityId(c.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 ring-1 ring-blue-300'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-300'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   <span
@@ -474,436 +532,228 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
             })}
           </div>
 
-          {/* Map Layer Mode Switcher & Tools */}
+          {/* Map Layer Switcher */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1 shadow-xl">
-              <button
-                onClick={() => setMapMode('vector')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  mapMode === 'vector' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
-                }`}
-                title="نمط الخرائط القياسي النظيف"
-              >
-                <Navigation className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">خرائط Google</span>
-              </button>
-              <button
-                onClick={() => setMapMode('heatmap')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  mapMode === 'heatmap' ? 'bg-amber-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
-                }`}
-                title="خريطة النشاط الحراري"
-              >
-                <Flame className="w-3.5 h-3.5 text-amber-300" />
-                <span className="hidden sm:inline">خريطة حرارية</span>
-              </button>
-              <button
-                onClick={() => setMapMode('radar')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  mapMode === 'radar' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
-                }`}
-                title="رادار التدفق التجاري"
-              >
-                <Activity className="w-3.5 h-3.5 text-emerald-300" />
-                <span className="hidden sm:inline">رادار التدفق</span>
-              </button>
+            <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200">
+              {Object.entries(TILE_PROVIDERS).map(([key, provider]) => (
+                <button
+                  key={key}
+                  onClick={() => setTileMode(key)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
+                    tileMode === key
+                      ? 'bg-white text-[#0F172A] shadow-xs'
+                      : 'text-slate-600 hover:text-[#0F172A]'
+                  }`}
+                >
+                  {provider.name}
+                </button>
+              ))}
             </div>
 
-            {/* Zoom / Reset Controls */}
-            <div className="hidden sm:flex items-center bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1 shadow-xl text-slate-300">
-              <button
-                onClick={() => setZoomLevel((z) => Math.min(z + 0.15, 1.45))}
-                className="p-1.5 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                title="تكبير الخريطة"
-              >
-                <ZoomIn className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setZoomLevel((z) => Math.max(z - 0.15, 0.85))}
-                className="p-1.5 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                title="تصغير الخريطة"
-              >
-                <ZoomOut className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  setZoomLevel(1);
-                  setSelectedCityId('buraydah');
-                }}
-                className="p-1.5 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                title="إعادة ضبط المركز"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            </div>
+            {/* Recenter button */}
+            <button
+              onClick={() => {
+                setSelectedCityId(null);
+                setRecenterCount((c) => c + 1);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-bold text-slate-700 transition-all shadow-xs"
+              title="عرض كامل المملكة"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">كامل المملكة</span>
+            </button>
           </div>
         </div>
 
-        {/* SVG Animated KSA Map Canvas */}
-        <div className="w-full h-[520px] sm:h-[580px] lg:h-[640px] relative overflow-hidden flex items-center justify-center pt-16 pb-6">
-          <svg
-            viewBox="0 0 800 650"
-            className="w-full h-full max-h-[640px] transition-transform duration-500 ease-out select-none"
-            style={{ transform: `scale(${zoomLevel})` }}
+        {/* Real Leaflet Map Container with 560px height */}
+        <div className="w-full h-[520px] sm:h-[600px] relative z-0">
+          <MapContainer
+            center={[24.2, 44.5]}
+            zoom={6}
+            minZoom={5}
+            maxZoom={15}
+            scrollWheelZoom={false}
+            className="w-full h-full"
+            style={{ width: '100%', height: '100%' }}
           >
-            <defs>
-              {/* Modern Cartographic Grid Background Pattern */}
-              <pattern id="gmaps-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.035)" strokeWidth="1" />
-              </pattern>
-
-              {/* Radial Heatmap Gradients for Active Regions */}
-              <radialGradient id="heat-buraydah" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#10B981" stopOpacity="0.8" />
-                <stop offset="40%" stopColor="#059669" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#047857" stopOpacity="0" />
-              </radialGradient>
-
-              <radialGradient id="heat-jeddah" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.8" />
-                <stop offset="50%" stopColor="#0891B2" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#0E7490" stopOpacity="0" />
-              </radialGradient>
-
-              <radialGradient id="heat-riyadh" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.8" />
-                <stop offset="50%" stopColor="#2563EB" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0" />
-              </radialGradient>
-
-              <radialGradient id="heat-dammam" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.8" />
-                <stop offset="50%" stopColor="#7C3AED" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#6D28D9" stopOpacity="0" />
-              </radialGradient>
-
-              {/* KSA Land Gradient */}
-              <linearGradient id="ksa-land-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0E1E38" />
-                <stop offset="50%" stopColor="#0B172C" />
-                <stop offset="100%" stopColor="#081120" />
-              </linearGradient>
-
-              {/* Filter for Pin Glow */}
-              <filter id="glow-pin" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="4" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            {/* Google Maps Grid Background */}
-            <rect width="800" height="650" fill="#070E1B" />
-            <rect width="800" height="650" fill="url(#gmaps-grid)" />
-
-            {/* Surrounding Waters & Geography Ambience */}
-            {/* Red Sea Coast label */}
-            <text x="110" y="470" fill="rgba(6,182,212,0.25)" fontSize="13" fontWeight="bold" transform="rotate(-65 110,470)">
-              البحر الأحمر (Red Sea)
-            </text>
-            {/* Arabian Gulf label */}
-            <text x="630" y="270" fill="rgba(59,130,246,0.25)" fontSize="13" fontWeight="bold" transform="rotate(45 630,270)">
-              الخليج العربي (Arabian Gulf)
-            </text>
-
-            {/* Latitude & Longitude Coordinate Marks */}
-            <g opacity="0.25" fontSize="10" fill="#64748B" fontFamily="monospace">
-              <text x="30" y="100">30°N</text>
-              <text x="30" y="270">25°N</text>
-              <text x="30" y="450">20°N</text>
-              <text x="30" y="610">15°N</text>
-              <text x="200" y="635">40°E</text>
-              <text x="440" y="635">45°E</text>
-              <text x="680" y="635">50°E</text>
-            </g>
-
-            {/* Saudi Arabia Land Mass Outline */}
-            <path
-              d={KSA_SILHOUETTE_PATH}
-              fill="url(#ksa-land-gradient)"
-              stroke="#1E3A8A"
-              strokeWidth="2"
-              strokeDasharray={mapMode === 'radar' ? '4,4' : 'none'}
-              filter="drop-shadow(0 20px 30px rgba(0,0,0,0.7))"
-              className="transition-all duration-500"
+            {/* Active Tile Layer (Google Roadmap / Google Satellite / Dark Carto) */}
+            <TileLayer
+              key={tileMode}
+              url={TILE_PROVIDERS[tileMode].url}
+              attribution={TILE_PROVIDERS[tileMode].attribution}
+              maxZoom={TILE_PROVIDERS[tileMode].maxZoom}
             />
 
-            {/* Heatmap Layer (عند تفعيل الخريطة الحرارية أو بالوضع الافتراضي المشع) */}
-            {(mapMode === 'heatmap' || mapMode === 'vector') && (
-              <g className="transition-opacity duration-700">
-                {/* Qassim Peak Heat */}
-                <circle cx="375" cy="255" r="95" fill="url(#heat-buraydah)" opacity={mapMode === 'heatmap' ? '0.7' : '0.35'} />
-                {/* Jeddah Store Heat */}
-                <circle cx="205" cy="415" r="75" fill="url(#heat-jeddah)" opacity={mapMode === 'heatmap' ? '0.6' : '0.3'} />
-                {/* Riyadh Traffic Heat */}
-                <circle cx="465" cy="320" r="70" fill="url(#heat-riyadh)" opacity={mapMode === 'heatmap' ? '0.6' : '0.25'} />
-                {/* Dammam Eastern Heat */}
-                <circle cx="570" cy="260" r="65" fill="url(#heat-dammam)" opacity={mapMode === 'heatmap' ? '0.55' : '0.25'} />
-              </g>
-            )}
+            {/* Smooth FlyTo Controller */}
+            <MapController
+              targetCity={selectedCityId ? activeCity : null}
+              recenterTrigger={recenterCount}
+            />
 
-            {/* Commercial Flow Network Lines (خطوط التدفق التجاري من المقر بريدة لباقي المدن) */}
-            <g strokeLinecap="round">
-              <style>{`
-                @keyframes pulseDash {
-                  to { stroke-dashoffset: -40; }
-                }
-                .flow-dash {
-                  animation: pulseDash 3s linear infinite;
-                }
-              `}</style>
+            {/* Commercial Distribution Flow Polylines from Buraydah to Target Cities */}
+            {flowTargets.map((target) => (
+              <Polyline
+                key={`flow-${target.id}`}
+                positions={[
+                  [buraydahHQ.lat, buraydahHQ.lng],
+                  [target.lat, target.lng],
+                ]}
+                pathOptions={{
+                  color: target.color,
+                  weight: selectedCityId === target.id ? 4 : 2,
+                  opacity: selectedCityId === target.id ? 0.9 : 0.5,
+                  dashArray: '8, 8',
+                }}
+              />
+            ))}
 
-              {/* Buraydah -> Jeddah */}
-              <path
-                d="M 375,255 Q 260,320 205,415"
-                fill="none"
-                stroke="#06B6D4"
-                strokeWidth={selectedCityId === 'jeddah' ? '2.5' : '1.5'}
-                strokeDasharray="6,6"
-                className="flow-dash opacity-60"
-              />
-              {/* Buraydah -> Riyadh */}
-              <path
-                d="M 375,255 Q 430,275 465,320"
-                fill="none"
-                stroke="#3B82F6"
-                strokeWidth={selectedCityId === 'riyadh' ? '2.5' : '1.5'}
-                strokeDasharray="6,6"
-                className="flow-dash opacity-60"
-              />
-              {/* Buraydah -> Dammam */}
-              <path
-                d="M 375,255 Q 470,240 570,260"
-                fill="none"
-                stroke="#8B5CF6"
-                strokeWidth={selectedCityId === 'dammam' ? '2.5' : '1.5'}
-                strokeDasharray="6,6"
-                className="flow-dash opacity-60"
-              />
-              {/* Buraydah -> Madinah */}
-              <path
-                d="M 375,255 Q 290,270 220,315"
-                fill="none"
-                stroke="#14B8A6"
-                strokeWidth={selectedCityId === 'madinah' ? '2.5' : '1.5'}
-                strokeDasharray="6,6"
-                className="flow-dash opacity-50"
-              />
-              {/* Buraydah -> Abha */}
-              <path
-                d="M 375,255 Q 330,400 310,535"
-                fill="none"
-                stroke="#F59E0B"
-                strokeWidth={selectedCityId === 'abha' ? '2.5' : '1.5'}
-                strokeDasharray="6,6"
-                className="flow-dash opacity-40"
-              />
-              {/* Buraydah -> Tabuk */}
-              <path
-                d="M 375,255 Q 230,190 110,185"
-                fill="none"
-                stroke="#06B6D4"
-                strokeWidth={selectedCityId === 'tabuk' ? '2.5' : '1.5'}
-                strokeDasharray="6,6"
-                className="flow-dash opacity-40"
-              />
-            </g>
-
-            {/* Interactive City Pins & Radar Ripples */}
-            {KSA_CITIES_COORDS.map((city) => {
+            {/* Real GPS Animated Markers for All Cities */}
+            {SAUDI_CITIES_GEO.map((city) => {
               const isSelected = selectedCityId === city.id;
-              const isHovered = hoveredCityId === city.id;
-              const isActiveNode = isSelected || isHovered;
+              const pinIcon = createAnimatedMapPin(city, isSelected);
 
               return (
-                <g
+                <Marker
                   key={city.id}
-                  onClick={() => {
-                    setSelectedCityId(city.id);
-                    setHoveredCityId(null);
+                  position={[city.lat, city.lng]}
+                  icon={pinIcon}
+                  eventHandlers={{
+                    click: () => setSelectedCityId(city.id),
                   }}
-                  onMouseEnter={() => setHoveredCityId(city.id)}
-                  onMouseLeave={() => setHoveredCityId(null)}
-                  className="cursor-pointer group"
                 >
-                  {/* Radar Pulse Ripples for High-Tier Hubs */}
-                  {city.tier === 'hq' && (
-                    <>
-                      <circle cx={city.x} cy={city.y} r="26" fill="none" stroke="#10B981" strokeWidth="1.5" opacity="0.4" className="animate-ping origin-center" />
-                      <circle cx={city.x} cy={city.y} r="42" fill="none" stroke="#10B981" strokeWidth="1" opacity="0.2" className="animate-ping origin-center" style={{ animationDuration: '2.5s' }} />
-                    </>
-                  )}
-                  {city.tier === 'top_online' && (
-                    <circle cx={city.x} cy={city.y} r="22" fill="none" stroke="#06B6D4" strokeWidth="1.5" opacity="0.4" className="animate-ping origin-center" style={{ animationDuration: '2s' }} />
-                  )}
-                  {city.tier === 'capital_traffic' && (
-                    <circle cx={city.x} cy={city.y} r="20" fill="none" stroke="#3B82F6" strokeWidth="1.5" opacity="0.35" className="animate-ping origin-center" style={{ animationDuration: '2.2s' }} />
-                  )}
+                  {/* Google Maps Style Rich Popup */}
+                  <Popup className="google-maps-rich-popup">
+                    <div className="p-1 space-y-2 text-right font-sans" dir="rtl">
+                      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5">
+                        <div className="font-black text-sm text-[#0F172A] flex items-center gap-1">
+                          <span>{city.cityAr}</span>
+                          <span className="text-xs text-slate-500 font-normal">({city.cityEn})</span>
+                        </div>
+                        <span
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: `${city.color}15`,
+                            color: city.color,
+                          }}
+                        >
+                          {city.tag}
+                        </span>
+                      </div>
 
-                  {/* Active Selection Glow Ring */}
-                  {isActiveNode && (
-                    <circle
-                      cx={city.x}
-                      cy={city.y}
-                      r="20"
-                      fill={city.color}
-                      fillOpacity="0.25"
-                      stroke={city.accentColor}
-                      strokeWidth="2"
-                      className="animate-pulse"
-                    />
-                  )}
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center justify-between text-slate-600">
+                          <span>إجمالي المبيعات:</span>
+                          <span className="font-black text-[#0F172A] font-mono">
+                            {formatSAR(city.sales, true)}
+                          </span>
+                        </div>
+                        {city.physicalSales > 0 && (
+                          <div className="flex items-center justify-between text-[11px] text-emerald-700 font-bold">
+                            <span>فواتير الفروع الثلاثة:</span>
+                            <span className="font-mono">{formatSAR(city.physicalSales, true)}</span>
+                          </div>
+                        )}
+                        {city.onlineSales > 0 && (
+                          <div className="flex items-center justify-between text-[11px] text-cyan-700 font-bold">
+                            <span>مبيعات متجر سلة:</span>
+                            <span className="font-mono">{formatSAR(city.onlineSales, true)}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between text-slate-600 border-t border-slate-100 pt-1">
+                          <span>الزوار والجلسات:</span>
+                          <span className="font-mono font-bold">
+                            {formatNum(city.activeUsers)} زائر ({city.sessions} جلسة)
+                          </span>
+                        </div>
+                      </div>
 
-                  {/* Pin Base Circle */}
-                  <circle
-                    cx={city.x}
-                    cy={city.y}
-                    r={city.tier === 'hq' ? '9' : city.sales > 0 ? '7.5' : '5'}
-                    fill={city.color}
-                    stroke="#FFFFFF"
-                    strokeWidth={city.tier === 'hq' ? '2.5' : '2'}
-                    filter="url(#glow-pin)"
-                    className="transition-transform duration-200 group-hover:scale-125"
-                  />
-
-                  {/* Center Dot */}
-                  <circle
-                    cx={city.x}
-                    cy={city.y}
-                    r="2.5"
-                    fill="#0F172A"
-                  />
-
-                  {/* City Label Pill Floating Above Marker */}
-                  <g transform={`translate(${city.x}, ${city.y - 14})`}>
-                    <rect
-                      x="-38"
-                      y="-18"
-                      width="76"
-                      height="18"
-                      rx="9"
-                      fill={isActiveNode ? '#0F172A' : 'rgba(15, 23, 42, 0.85)'}
-                      stroke={isActiveNode ? city.color : 'rgba(255,255,255,0.15)'}
-                      strokeWidth={isActiveNode ? '1.5' : '1'}
-                      filter="drop-shadow(0 2px 5px rgba(0,0,0,0.5))"
-                    />
-                    <text
-                      x="0"
-                      y="-6"
-                      textAnchor="middle"
-                      fill={isActiveNode ? '#FFFFFF' : '#E2E8F0'}
-                      fontSize="9.5"
-                      fontWeight="bold"
-                      fontFamily="sans-serif"
-                    >
-                      {city.cityAr}
-                    </text>
-                  </g>
-                </g>
+                      <p className="text-[11px] text-slate-600 leading-snug bg-slate-50 p-1.5 rounded-lg">
+                        {city.notes}
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
               );
             })}
-          </svg>
+          </MapContainer>
 
-          {/* Floating Google Maps Style Infowindow (بطاقة معلومات جوجل ماب العائمة) */}
-          <div className="absolute bottom-4 right-4 max-w-sm w-[calc(100%-32px)] sm:w-80 bg-slate-900/95 backdrop-blur-xl border border-slate-700/90 rounded-2xl p-4 shadow-2xl z-30 text-right space-y-3">
-            {/* Infowindow Header */}
-            <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-2.5">
+          {/* Floating Google Maps Style Card Overlay */}
+          <div className="absolute bottom-4 right-4 z-[500] max-w-sm w-[calc(100%-32px)] sm:w-80 bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-2xl p-4 shadow-2xl text-right space-y-3">
+            <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2">
               <div className="flex items-center gap-2.5">
                 <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-md shrink-0"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-xs shrink-0"
                   style={{ backgroundColor: activeCity.color }}
                 >
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-sm font-black text-white flex items-center gap-1.5">
+                  <div className="text-sm font-black text-[#0F172A] flex items-center gap-1.5">
                     <span>{activeCity.cityAr}</span>
-                    <span className="text-[11px] text-slate-400 font-normal">({activeCity.cityEn})</span>
+                    <span className="text-[11px] text-slate-500 font-normal">({activeCity.cityEn})</span>
                   </div>
-                  <div className="text-[10px] text-slate-400 font-medium">{activeCity.region}</div>
+                  <div className="text-[10px] text-slate-500 font-semibold">{activeCity.region}</div>
                 </div>
               </div>
 
               <span
                 className="text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0"
                 style={{
-                  backgroundColor: `${activeCity.color}20`,
-                  borderColor: `${activeCity.color}50`,
-                  color: activeCity.accentColor,
+                  backgroundColor: `${activeCity.color}15`,
+                  borderColor: `${activeCity.color}40`,
+                  color: activeCity.color,
                 }}
               >
                 {activeCity.tier === 'hq' ? 'المركز الرئيسي' : activeCity.sales > 0 ? 'مبيعات نشطة' : 'تصفح رقمي'}
               </span>
             </div>
 
-            {/* Infowindow Key Metrics Grid */}
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/60">
-                <span className="text-[10px] text-slate-400 block font-medium">إجمالي المبيعات المؤكدة:</span>
-                <span className="text-sm font-black text-emerald-400 font-mono mt-0.5 block" dir="ltr">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-500 block font-bold">إجمالي المبيعات المؤكدة:</span>
+                <span className="text-sm font-black text-emerald-700 font-mono mt-0.5 block" dir="ltr">
                   {formatSAR(activeCity.sales, true)}
                 </span>
-                <span className="text-[9px] text-slate-500 block mt-0.5">
+                <span className="text-[9px] text-slate-500 block mt-0.5 font-medium">
                   {activeCity.isPhysicalHub ? 'فروع + متجر سلة' : 'متجر سلة أونلاين'}
                 </span>
               </div>
 
-              <div className="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/60">
-                <span className="text-[10px] text-slate-400 block font-medium">الزوار والزيارات (GA4):</span>
-                <span className="text-sm font-black text-cyan-300 font-mono mt-0.5 block" dir="ltr">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-500 block font-bold">الزوار والزيارات (GA4):</span>
+                <span className="text-sm font-black text-blue-700 font-mono mt-0.5 block" dir="ltr">
                   {formatNum(activeCity.activeUsers)} زائر
                 </span>
-                <span className="text-[9px] text-slate-500 block mt-0.5">
+                <span className="text-[9px] text-slate-500 block mt-0.5 font-medium">
                   {activeCity.sessions} جلسة تصفح حية
                 </span>
               </div>
             </div>
 
-            {/* Note description */}
-            <div className="text-[11px] text-slate-300 leading-relaxed bg-slate-800/30 p-2 rounded-xl border border-slate-800 font-medium">
+            <div className="text-[11px] text-slate-600 leading-relaxed bg-slate-50/80 p-2 rounded-xl border border-slate-100 font-medium">
               {activeCity.notes}
             </div>
 
-            {/* Verification Footer */}
-            <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800/80">
-              <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+            <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
+              <span className="flex items-center gap-1 text-emerald-700 font-bold">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                 مطابق وموثق 100%
               </span>
-              <span>مصدر التوثيق: Z-Reports + GA4 API</span>
-            </div>
-          </div>
-
-          {/* Bottom Left Legend & Telemetry */}
-          <div className="absolute bottom-4 left-4 hidden md:flex items-center gap-3 bg-slate-900/80 backdrop-blur-md border border-slate-700/80 rounded-2xl px-3 py-2 text-xs text-slate-300 z-20">
-            <span className="text-[10px] text-slate-400 font-bold">مفتاح النشاط:</span>
-            <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-500/30" />
-              <span>مركز الفروع (&gt;900K)</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 ring-2 ring-cyan-500/30" />
-              <span>مبيعات المتجر (&gt;10K)</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-blue-500/30" />
-              <span>ترافيك العاصمة</span>
+              <span>Z-Reports + GA4 API</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* 4. Filter Tabs for Synchronized City Table */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 pt-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 pt-2">
         <div className="flex items-center gap-2 overflow-x-auto">
           <button
             onClick={() => setActiveTab('all')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === 'all'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-[#0F172A] text-white shadow-2xs'
+                : 'text-slate-600 hover:text-[#0F172A] hover:bg-slate-100'
             }`}
           >
             جميع المدن ({geoData.length})
@@ -912,8 +762,8 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
             onClick={() => setActiveTab('withSales')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === 'withSales'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-[#0F172A] text-white shadow-2xs'
+                : 'text-slate-600 hover:text-[#0F172A] hover:bg-slate-100'
             }`}
           >
             المدن المحققة لمبيعات ({geoData.filter((d) => (d.totalSales || d.sales || 0) > 0).length})
@@ -922,23 +772,23 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
             onClick={() => setActiveTab('hubs')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === 'hubs'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-[#0F172A] text-white shadow-2xs'
+                : 'text-slate-600 hover:text-[#0F172A] hover:bg-slate-100'
             }`}
           >
             مراكز الفروع الميدانية (1)
           </button>
         </div>
-        <div className="text-[11px] text-slate-400 font-medium">
-          انقر فوق أي مدينة بالجدول لتسليط الضوء عليها في الخريطة أعلاه
+        <div className="text-[11px] text-slate-500 font-medium">
+          انقر فوق أي مدينة بالجدول لتنتقل الخريطة إليها فورياً
         </div>
       </div>
 
       {/* 5. Synchronized City Data Table */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/40">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-800 text-right text-xs text-slate-400 font-bold bg-slate-900/80">
+            <tr className="border-b border-slate-200 text-right text-xs text-slate-600 font-bold bg-slate-50/80">
               <th className="py-3.5 px-3">المدينة والمنطقة</th>
               <th className="py-3.5 px-3">قناة ونوع النشاط</th>
               <th className="py-3.5 px-3 text-left">مبيعات المتجر (سلة GA4)</th>
@@ -950,7 +800,7 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
               <th className="py-3.5 px-3 text-center">التوثيق</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/80">
+          <tbody className="divide-y divide-slate-100">
             {filteredTableData.map((item, idx) => {
               const hasPhysical = item.physicalSales > 0;
               const hasOnline = item.onlineSales > 0;
@@ -960,11 +810,11 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
                 <tr
                   key={idx}
                   onClick={() => {
-                    const matchedCoord = KSA_CITIES_COORDS.find((c) => c.cityAr === item.cityAr);
+                    const matchedCoord = SAUDI_CITIES_GEO.find((c) => c.cityAr === item.cityAr);
                     if (matchedCoord) setSelectedCityId(matchedCoord.id);
                   }}
                   className={`transition-colors cursor-pointer group ${
-                    isSelectedRow ? 'bg-blue-600/20 border-l-4 border-l-blue-400' : 'hover:bg-slate-800/40'
+                    isSelectedRow ? 'bg-blue-50/80 font-semibold' : 'hover:bg-slate-50/60'
                   }`}
                 >
                   {/* City & Region */}
@@ -973,30 +823,30 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
                       <div
                         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                           item.isPhysicalHub
-                            ? 'bg-emerald-400 ring-4 ring-emerald-500/30'
+                            ? 'bg-emerald-500 ring-4 ring-emerald-100'
                             : hasOnline
-                            ? 'bg-cyan-400 ring-2 ring-cyan-500/20'
-                            : 'bg-slate-600'
+                            ? 'bg-cyan-500 ring-2 ring-cyan-100'
+                            : 'bg-slate-400'
                         }`}
                       />
                       <div>
-                        <div className="font-bold text-white text-xs flex items-center gap-1.5">
+                        <div className="font-bold text-[#0F172A] text-xs flex items-center gap-1.5">
                           <span>{item.cityAr}</span>
-                          <span className="text-slate-400 font-normal">({item.cityEn})</span>
+                          <span className="text-slate-500 font-normal">({item.cityEn})</span>
                           {item.isPhysicalHub && (
-                            <span className="text-[10px] text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">
+                            <span className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
                               مركز الفروع الرئيسي
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-slate-400 mt-0.5">{item.region}</div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">{item.region}</div>
                       </div>
                     </div>
                   </td>
 
                   {/* Channel / Type */}
                   <td className="py-3 px-3">
-                    <span className="text-xs text-slate-300 font-medium">
+                    <span className="text-xs text-slate-600 font-medium">
                       {item.channelType}
                     </span>
                   </td>
@@ -1004,48 +854,48 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
                   {/* Online Store Sales (GA4) */}
                   <td className="py-3 px-3 text-left font-mono font-bold" dir="ltr">
                     {hasOnline ? (
-                      <span className="text-cyan-300 font-bold">{formatSAR(item.onlineSales, true)}</span>
+                      <span className="text-cyan-700 font-bold">{formatSAR(item.onlineSales, true)}</span>
                     ) : (
-                      <span className="text-slate-600">—</span>
+                      <span className="text-slate-400">—</span>
                     )}
                   </td>
 
                   {/* Physical Branch Sales (POS) */}
                   <td className="py-3 px-3 text-left font-mono font-bold" dir="ltr">
                     {hasPhysical ? (
-                      <span className="text-emerald-400 font-bold">{formatSAR(item.physicalSales, true)}</span>
+                      <span className="text-emerald-700 font-bold">{formatSAR(item.physicalSales, true)}</span>
                     ) : (
-                      <span className="text-slate-600">—</span>
+                      <span className="text-slate-400">—</span>
                     )}
                   </td>
 
                   {/* Total Verified Sales */}
-                  <td className="py-3 px-3 text-left font-mono font-black text-white" dir="ltr">
+                  <td className="py-3 px-3 text-left font-mono font-black text-[#0F172A]" dir="ltr">
                     {(item.totalSales || item.sales || 0) > 0 ? (
                       formatSAR(item.totalSales || item.sales, true)
                     ) : (
-                      <span className="text-slate-600">—</span>
+                      <span className="text-slate-400">—</span>
                     )}
                   </td>
 
                   {/* Users */}
-                  <td className="py-3 px-3 text-left font-mono text-slate-300" dir="ltr">
+                  <td className="py-3 px-3 text-left font-mono text-slate-700" dir="ltr">
                     {formatNum(item.activeUsers || 0)}
                   </td>
 
                   {/* Sessions */}
-                  <td className="py-3 px-3 text-left font-mono text-slate-400" dir="ltr">
+                  <td className="py-3 px-3 text-left font-mono text-slate-500" dir="ltr">
                     {formatNum(item.sessions || 0)}
                   </td>
 
                   {/* Conversions / Orders */}
                   <td className="py-3 px-3 text-center">
                     {(item.conversions || 0) > 0 ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-500/40">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
                         {item.conversions}
                       </span>
                     ) : (
-                      <span className="text-slate-600 text-xs">—</span>
+                      <span className="text-slate-400 text-xs">—</span>
                     )}
                   </td>
 
@@ -1054,8 +904,8 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
                     <span
                       className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                         item.isPhysicalHub
-                          ? 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30'
-                          : 'text-cyan-300 bg-cyan-500/15 border-cyan-500/30'
+                          ? 'text-emerald-800 bg-emerald-50 border-emerald-200'
+                          : 'text-cyan-800 bg-cyan-50 border-cyan-200'
                       }`}
                     >
                       {item.isPhysicalHub ? 'فواتير الفروع (POS) + GA4' : 'ربط حي مباشر (GA4)'}
@@ -1068,16 +918,16 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
         </table>
       </div>
 
-      {/* Audit & Compliance Footnote */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-xs text-slate-400">
+      {/* Footnote */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span>
-            جميع بيانات المتجر مستخرجة مباشرة ومحدثة حياً من <strong>Google Analytics 4 API</strong>. مبيعات الفروع الميدانية مطابقة بنسبة 100% مع تقارير نقاط البيع (Z-Reports). لا توجد أي أرقام تقديرية أو افتراضية.
+            محرك الخرائط مربوط حياً مع بيانات <strong>Google Analytics 4 API</strong> وفواتير نقاط البيع (Z-Reports). لا توجد أي أرقام تقديرية أو افتراضية.
           </span>
         </div>
-        <div className="text-[11px] text-slate-500 whitespace-nowrap">
-          آخر مزامنة حية: {new Date(ga4Snapshot.syncedAt).toLocaleDateString('ar-SA')} {new Date(ga4Snapshot.syncedAt).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
+        <div className="text-[11px] text-slate-500 whitespace-nowrap font-medium">
+          آخر مزامنة: {new Date(ga4Snapshot.syncedAt).toLocaleDateString('ar-SA')}
         </div>
       </div>
     </div>
