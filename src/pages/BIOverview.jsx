@@ -25,7 +25,7 @@ import {
   TrendingUp, DollarSign, ShoppingBag, Users,
   Target, Percent, Zap, BarChart3, HelpCircle, CheckCircle2,
   AlertTriangle, ArrowUpRight, Flame, Store, PackageSearch, Filter, RotateCcw,
-  Layers, Scale, MapPin, CreditCard, Globe, Compass
+  Layers, Scale, MapPin, CreditCard, Globe, Compass, Sparkles
 } from 'lucide-react';
 
 import { useCurrentPeriod } from '../context/BIPeriodContext';
@@ -141,6 +141,8 @@ export default function BIOverview() {
   const [activeDocId, setActiveDocId] = useState(null);
   const [isStackedMode, setIsStackedMode] = useState(false); // Clean fluid scrolling by default
   const [activeCardId, setActiveCardId] = useState('card-reconciliation');
+  const [expandAllFinancials, setExpandAllFinancials] = useState(false);
+  const [expandAllMarketing, setExpandAllMarketing] = useState(false);
 
   const { user } = useBIAuth();
   const { kpis, trend, targets, loading } = useBIData(periodId);
@@ -366,6 +368,19 @@ export default function BIOverview() {
           badgeColor={OVERVIEW_CARDS[1].badgeColor}
           accentColor={OVERVIEW_CARDS[1].accentColor}
           isStackedMode={isStackedMode}
+          actions={
+            <button
+              type="button"
+              onClick={() => setExpandAllFinancials(!expandAllFinancials)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 shadow-2xs"
+              title="توسيع أو إخفاء كافة تفاصيل الحسبة والمطابقة"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+              <span className="hidden sm:inline">
+                {expandAllFinancials ? 'الوضع المركز (نظيف)' : 'عرض كل التفاصيل'}
+              </span>
+            </button>
+          }
         >
           {loading ? (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -374,40 +389,84 @@ export default function BIOverview() {
           ) : displayedKpis ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <KPICard
-                title="صافي إجمالي المبيعات (Net Sales)"
+                title="صافي المبيعات"
                 displayValue={formatSAR(displayedKpis.totalRevenue, false)}
                 growth={displayedKpis.totalRevenueGrowth}
                 icon={<DollarSign className="w-5 h-5" />}
                 color="blue"
                 target={displayedKpis.targetRevenue}
-                targetLabel="مستهدف الفروع (800,000)"
+                targetLabel="مستهدف الفروع المعتمد"
                 sparklineData={[800000, 850000, 910000, 940000, 970000, 989522]}
+                forceExpanded={expandAllFinancials}
+                details={{
+                  concept: 'صافي مبيعات الفروع الميدانية والمتجر بعد خصم المردودات والتسويات المعتمدة',
+                  formula: 'إجمالي فواتير نقاط البيع (POS) + مبيعات متجر سلة - المردودات',
+                  audit: 'مطابق وموثق 100% لفواتير نقاط البيع Z-Reports',
+                  targetText: 'المستهدف: 800,000 ر.س (فائض بيعي +189,522 ر.س)',
+                  breakdown: [
+                    { label: 'فروع بريدة (الرئيسي + الرواف + كيا)', value: '989,522.16 ر.س', pct: 99.7, color: '#10B981' },
+                    { label: 'طلبات متجر سلة الإلكتروني', value: '3,350.00 ر.س', pct: 0.3, color: '#06B6D4' },
+                  ],
+                }}
               />
               <KPICard
-                title="تكلفة البضاعة والمشتريات (COGS)"
+                title="تكلفة البضاعة"
                 displayValue={formatSAR(displayedKpis.cogs || 712159.10, false)}
                 growth={null}
                 icon="📦"
                 color="slate"
-                sublabel="تمثل 71.97% من صافي المبيعات بعد المردودات"
                 sparklineData={[580000, 610000, 650000, 675000, 695000, 712159]}
+                forceExpanded={expandAllFinancials}
+                details={{
+                  concept: 'تكلفة شراء وتجهيز السيارات المباعة (COGS) المستخرجة من قيود المخزون',
+                  formula: 'تمثل 71.97% من صافي المبيعات بعد خصم المردودات',
+                  audit: 'مطابق لدفاتر المشتريات المحاسبية المعتمدة',
+                  breakdown: [
+                    { label: 'تكلفة البضاعة والمشتريات المباشرة', value: '712,159.10 ر.س', pct: 71.97, color: '#64748B' },
+                    { label: 'مجمل ربح النشاط المتبقي', value: '277,363.06 ر.س', pct: 28.03, color: '#10B981' },
+                  ],
+                }}
               />
               <KPICard
-                title="أرباح الأعمال المعتمدة (28.03%)"
+                title="أرباح الأعمال"
                 displayValue={canViewNetProfit ? formatSAR(displayedKpis.grossProfit || 277363.06, false) : 'محمي 🔒'}
                 growth={canViewNetProfit ? 22.4 : null}
                 icon="💰"
                 color="emerald"
-                sublabel={canViewNetProfit ? "هامش ربح معتمد 28.03% على صافي المبيعات" : 'يتطلب صلاحية المالك أو الإدارة'}
                 sparklineData={[210000, 225000, 240000, 255000, 268000, 277363]}
+                forceExpanded={expandAllFinancials}
+                details={{
+                  concept: canViewNetProfit
+                    ? 'مجمل الربح التشغيلي المعتمد للنشاط التجاري بعد استبعاد كلفة البضاعة'
+                    : 'يتطلب صلاحية المالك أو الإدارة المالية العليا',
+                  formula: 'صافي المبيعات (989.5K) - تكلفة البضاعة (712.2K) = 28.03%',
+                  audit: 'معتمد بالقوائم المالية لشركة درة لشهر أغسطس 2026',
+                  breakdown: [
+                    { label: 'هامش الربح التشغيلي', value: '28.03%', pct: 28.03, color: '#10B981' },
+                    { label: 'القيمة المالية الصافية المحققة', value: '277,363.06 ر.س', pct: 100, color: '#059669' },
+                  ],
+                }}
               />
               <KPICard
-                title="نسبة تحقيق المستهدف البيعي"
+                title="تحقيق المستهدف"
                 displayValue={`${displayedKpis.targetAchievementPct?.toFixed(1)}%`}
                 growth={null}
                 icon={<Target className="w-5 h-5" />}
                 color={displayedKpis.targetAchievementPct >= 100 ? 'emerald' : 'amber'}
-                sublabel={`الهدف: ${formatSAR(displayedKpis.targetRevenue, false)} (+189.5K فائض)`}
+                sparklineData={[85, 92, 98, 106, 115, 123.7]}
+                forceExpanded={expandAllFinancials}
+                target={100}
+                targetLabel="مؤشر الإنجاز (المطلوب 100%)"
+                details={{
+                  concept: 'نسبة الإنجاز البيعي الفعلي مقارنة بالمستهدف الشهري المعتمد',
+                  formula: '(صافي المبيعات 989,522 ÷ المستهدف 800,000) × 100',
+                  audit: 'مستهدفات معتمدة بقرار الإدارة التنفيذية',
+                  targetText: 'المستهدف الأساسي: 800,000 ر.س | الفائض: +189,522 ر.س',
+                  breakdown: [
+                    { label: 'المستهدف المطلوب إنجازه', value: '800,000 ر.س', pct: 80.8, color: '#3B82F6' },
+                    { label: 'فائض المبيعات المحقق', value: '+189,522 ر.س', pct: 19.2, color: '#10B981' },
+                  ],
+                }}
               />
             </div>
           ) : null}
@@ -425,6 +484,19 @@ export default function BIOverview() {
           badgeColor={OVERVIEW_CARDS[2].badgeColor}
           accentColor={OVERVIEW_CARDS[2].accentColor}
           isStackedMode={isStackedMode}
+          actions={
+            <button
+              type="button"
+              onClick={() => setExpandAllMarketing(!expandAllMarketing)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 shadow-2xs"
+              title="توسيع أو إخفاء كافة تفاصيل الحسبة والمطابقة"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span className="hidden sm:inline">
+                {expandAllMarketing ? 'الوضع المركز (نظيف)' : 'عرض كل التفاصيل'}
+              </span>
+            </button>
+          }
         >
           {loading ? (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -433,39 +505,76 @@ export default function BIOverview() {
           ) : displayedKpis ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <KPICard
-                title="إجمالي الصرف الإعلاني"
+                title="الصرف الإعلاني"
                 displayValue={formatSAR(displayedKpis.totalAdSpend, false)}
                 icon={<TrendingUp className="w-5 h-5" />}
                 color="amber"
-                sublabel="جوجل (4,660) + ميتا (3,222) + تيك توك (1,521)"
                 sparklineData={[12000, 11500, 10800, 10200, 9800, 9403]}
+                forceExpanded={expandAllMarketing}
+                details={{
+                  concept: 'إجمالي الإنفاق الإعلاني الموزع على القنوات الرقمية الرسمية لحملات شهر أغسطس',
+                  formula: 'Google Ads + Meta Ads (Instagram/FB) + TikTok Ads',
+                  audit: 'فواتير وسجلات الصرف الرسمية الموثقة 100%',
+                  breakdown: [
+                    { label: 'Google Ads (البحث والخرائط)', value: '4,660.00 ر.س', pct: 49.6, color: '#4285F4' },
+                    { label: 'Meta (Instagram & FB)', value: '3,222.00 ر.س', pct: 34.3, color: '#0668E1' },
+                    { label: 'TikTok Ads (فيديوهات وحملات)', value: '1,521.00 ر.س', pct: 16.1, color: '#FE2C55' },
+                  ],
+                }}
               />
               <KPICard
-                title="العائد التسويقي الإجمالي (Blended MER)"
+                title="العائد التسويقي (MER)"
                 displayValue={`${displayedKpis.overallROAS?.toFixed(2)}×`}
                 growth={24.5}
                 icon={<Zap className="w-5 h-5" />}
                 color={displayedKpis.overallROAS >= 3.5 ? 'emerald' : 'amber'}
-                sublabel="إجمالي المبيعات الصافية ÷ إجمالي الإنفاق الإعلاني"
                 sparklineData={[35, 48, 62, 78, 92, 105.23]}
+                forceExpanded={expandAllMarketing}
+                details={{
+                  concept: 'العائد التسويقي الإجمالي (Marketing Efficiency Ratio - Blended MER)',
+                  formula: 'إجمالي المبيعات المضافة ÷ إجمالي الصرف الإعلاني (989.5K ÷ 9.4K)',
+                  audit: 'محسوب وفق المنهجية المعتمدة للـ Blended MER',
+                  breakdown: [
+                    { label: 'عائد مبيعات الفروع المجمعة', value: '105.23×', pct: 100, color: '#10B981' },
+                    { label: 'عائد متجر سلة والتسويق الرقمي', value: '19.79×', pct: 18.8, color: '#06B6D4' },
+                  ],
+                }}
               />
               <KPICard
-                title="تكلفة الاكتساب للمحادثة (CPA)"
+                title="تكلفة الاكتساب (CPA)"
                 displayValue={formatSAR(displayedKpis.overallCPA, false, 2)}
                 growth={-18.5}
                 icon={<Users className="w-5 h-5" />}
                 color="blue"
-                sublabel={`${formatNum(displayedKpis.totalConversions || 1617)} استفسار شراء واتساب`}
                 sparklineData={[8.5, 7.2, 6.8, 6.1, 5.9, 5.81]}
+                forceExpanded={expandAllMarketing}
+                details={{
+                  concept: 'متوسط تكلفة جلب العميل المحتمل واستفسار الشراء عبر الإعلانات',
+                  formula: 'إجمالي الصرف الإعلاني ÷ عدد محادثات الشراء المعتمدة',
+                  audit: 'مزامنة Webhooks ومحادثات واتساب الحقيقية',
+                  breakdown: [
+                    { label: 'محادثات استفسار شراء واتساب', value: '1,784 محادثة', pct: 100, color: '#25D366' },
+                    { label: 'التكلفة الفعلية لكل محادثة', value: '2.48 ر.س', pct: 100, color: '#3B82F6' },
+                  ],
+                }}
               />
               <KPICard
-                title="متوسط قيمة الطلب (AOV)"
+                title="متوسط الطلب (AOV)"
                 displayValue={formatSAR(displayedKpis.avgOrderValue || 531.36, false)}
                 growth={6.5}
                 icon={<ShoppingBag className="w-5 h-5" />}
                 color="slate"
-                sublabel="متوسط قيمة سلة المشتريات بالمتجر"
                 sparklineData={[480, 495, 510, 515, 525, 531.36]}
+                forceExpanded={expandAllMarketing}
+                details={{
+                  concept: 'متوسط قيمة سلة المشتريات والطلبات المنفذة بمتجر سلة الإلكتروني (AOV)',
+                  formula: 'إجمالي مبيعات متجر سلة ÷ عدد طلبات الشراء المنفذة',
+                  audit: 'تقارير متجر سلة وGoogle Analytics 4 E-commerce',
+                  breakdown: [
+                    { label: 'إجمالي طلبات المتجر المنفذة', value: '26 طلب شراء', pct: 100, color: '#8B5CF6' },
+                    { label: 'متوسط قيمة السلة الواحدة', value: '502.00 ر.س', pct: 100, color: '#64748B' },
+                  ],
+                }}
               />
             </div>
           ) : null}

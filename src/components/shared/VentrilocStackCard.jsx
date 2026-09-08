@@ -12,6 +12,7 @@ export default function VentrilocStackCard({
   badgeColor = 'blue',
   accentColor = '#2563EB',
   isStackedMode = false,
+  actions = null,
   children,
 }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -97,21 +98,24 @@ export default function VentrilocStackCard({
             </div>
           </div>
 
-          {/* Quick collapse/expand button */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-[#0F172A] hover:bg-slate-100 transition-all text-xs flex items-center gap-1 font-semibold shrink-0"
-            title={collapsed ? 'توسيع البطاقة' : 'طي البطاقة'}
-          >
-            <span className="text-[11px] hidden md:inline">
-              {collapsed ? 'عرض' : 'طي'}
-            </span>
-            {collapsed ? (
-              <ChevronDown className="w-4 h-4" />
-            ) : (
-              <ChevronUp className="w-4 h-4" />
-            )}
-          </button>
+          {/* Actions & Quick collapse/expand button */}
+          <div className="flex items-center gap-2 shrink-0">
+            {actions}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-[#0F172A] hover:bg-slate-100 transition-all text-xs flex items-center gap-1 font-semibold shrink-0"
+              title={collapsed ? 'توسيع البطاقة' : 'طي البطاقة'}
+            >
+              <span className="text-[11px] hidden md:inline">
+                {collapsed ? 'عرض' : 'طي'}
+              </span>
+              {collapsed ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronUp className="w-4 h-4" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Card Content */}
