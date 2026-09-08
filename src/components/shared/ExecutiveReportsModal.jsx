@@ -29,6 +29,7 @@ import {
 import { formatNum } from '../../lib/kpiEngine';
 import { cn } from '@/lib/utils';
 import { REAL_ALL_PARTS, REAL_INVENTORY_STATS } from '../../data/realInventoryData';
+import doraLogo from '@/assets/dora_logo.png';
 
 // ── Corporate Report Definitions ──
 export const REPORT_TABS = [
@@ -293,14 +294,50 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      id="executive-modal-container"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto print:static print:inset-auto print:z-auto print:p-0 print:m-0 print:bg-transparent print:backdrop-blur-none print:overflow-visible print:block print:w-full"
       dir="rtl"
     >
       {/* Modal Dialog Box */}
-      <div className="relative w-full max-w-7xl max-h-[94vh] flex flex-col rounded-3xl border border-slate-700/60 bg-[#0F172A] text-white shadow-2xl overflow-hidden my-auto">
+      <div
+        id="executive-report-printable-area"
+        className="relative w-full max-w-7xl max-h-[94vh] flex flex-col rounded-3xl border border-slate-700/60 bg-[#0F172A] text-white shadow-2xl overflow-hidden my-auto print:static print:w-full print:max-w-none print:max-h-none print:bg-white print:text-slate-900 print:border-none print:shadow-none print:rounded-none print:m-0 print:p-0 print:overflow-visible print:block"
+      >
         
-        {/* ── 1. Enterprise Corporate Top Header ── */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between p-5 md:px-7 border-b border-slate-800 bg-[#0B1120] gap-4">
+        {/* ── Official Printable Corporate Letterhead (Visible ONLY in Print / PDF) ── */}
+        <div className="hidden print:block border-b-2 border-slate-900 pb-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src={doraLogo} alt="درة السيارة" className="h-12 w-auto object-contain" />
+              <div>
+                <h1 className="text-xl font-black text-slate-950">شركة درة السيارة لقطع غيار السيارات</h1>
+                <p className="text-xs text-slate-600 font-bold">متخصصون في قطع غيار هيونداي وكيا المعتمدة · المملكة العربية السعودية - القصيم (بريدة)</p>
+              </div>
+            </div>
+            <div className="text-left text-xs font-mono">
+              <div className="font-black text-slate-950">سجل اعتماد: DORA-AUDIT-2026-09</div>
+              <div className="text-slate-600 font-bold">تاريخ التقرير: 8 سبتمبر 2026</div>
+              <div className="text-emerald-800 font-bold">مطابق لملف: حركة مخزن الى شهر 9 2026.xlsx</div>
+            </div>
+          </div>
+
+          <div className="mt-3 pt-2 border-t border-slate-300 flex items-center justify-between">
+            <h2 className="text-base font-black text-slate-950">
+              {activeTab === 'stagnant' && 'تقرير الجرد والتدقيق المالي: الأصناف الـ 50 الأكثر ركوداً وتجميداً بالمستودع'}
+              {activeTab === 'top_selling' && 'تقرير الأداء التجاري: الأصناف الـ 50 الأكثر طلباً ومبيعاً (Best Sellers)'}
+              {activeTab === 'out_of_stock' && 'تقرير المخزون الحرج: أصناف نفدت بطلب نشط - أوامر شراء طارئة (Critical Stockouts)'}
+              {activeTab === 'zero_movement' && 'تقرير الأصول الخاملة: أصناف بدون أي حركة نهائياً منذ بداية الفترة (Dormant Capital)'}
+              {activeTab === 'active_categories' && 'التقرير التحليلي الشامل: أكثر فئات قطع الغيار نشاطاً ومبيعات'}
+              {activeTab === 'stagnant_categories' && 'تقرير سلاسل الإمداد: تحليل معدلات ركود فئات قطع الغيار'}
+            </h2>
+            <div className="text-xs font-bold text-slate-700">
+              نطاق التقرير: <span className="font-mono font-black text-slate-950">{activeTab.includes('categories') ? '9 فئات معتمدة' : 'قائمة الـ 50 صنفاً المعتمدة'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 1. Enterprise Corporate Top Header (Screen Only) ── */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between p-5 md:px-7 border-b border-slate-800 bg-[#0B1120] gap-4 no-print">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-md border border-blue-400/30 shrink-0">
               <Building2 className="w-6 h-6" />
@@ -325,7 +362,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
           <div className="flex items-center gap-2 self-end md:self-center">
             <button
               onClick={handleExportCSV}
-              className="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-emerald-600 text-slate-200 hover:text-white border border-slate-700 hover:border-emerald-500 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+              className="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-emerald-600 text-slate-200 hover:text-white border border-slate-700 hover:border-emerald-500 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
               title="تصدير التقرير الفعلي إلى ملف Excel معتمد"
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
@@ -334,7 +371,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
 
             <button
               onClick={handlePrint}
-              className="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700 hover:border-blue-500 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+              className="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700 hover:border-blue-500 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
               title="طباعة التقرير أو حفظه بصيغة PDF رسمية"
             >
               <Printer className="w-4 h-4 text-blue-400" />
@@ -343,7 +380,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-500/30 transition-colors ml-1"
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-500/30 transition-colors ml-1 cursor-pointer"
               title="إغلاق النافذة (Esc)"
             >
               <X className="w-5 h-5" />
@@ -351,8 +388,8 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
           </div>
         </div>
 
-        {/* ── 2. Report Navigation Tabs (The 6 Essential Reports) ── */}
-        <div className="px-5 md:px-7 pt-3 bg-[#0B1120]/70 border-b border-slate-800/80 overflow-x-auto scrollbar-thin">
+        {/* ── 2. Report Navigation Tabs (Screen Only) ── */}
+        <div className="px-5 md:px-7 pt-3 bg-[#0B1120]/70 border-b border-slate-800/80 overflow-x-auto scrollbar-thin no-print">
           <div className="flex items-center gap-2 pb-3 min-w-max">
             {REPORT_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -365,7 +402,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                     setSearchTerm('');
                   }}
                   className={cn(
-                    'px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2.5 border',
+                    'px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2.5 border cursor-pointer',
                     isActive
                       ? 'bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-500/20 scale-[1.02]'
                       : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 border-slate-800'
@@ -387,29 +424,32 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
           </div>
         </div>
 
-        {/* ── 3. Modal Scrollable Content Body ── */}
-        <div className="p-5 md:p-7 overflow-y-auto max-h-[calc(94vh-170px)] space-y-6">
+        {/* ── 3. Modal Content Body (Scrolls on screen, expands in print) ── */}
+        <div
+          id="executive-modal-scroll-body"
+          className="p-5 md:p-7 overflow-y-auto max-h-[calc(94vh-170px)] space-y-6 print:overflow-visible print:max-h-none print:p-0 print:space-y-3 print:block"
+        >
           
           {/* Active Report Header Description Banner */}
-          <div className="p-4 md:p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-[#131E35] to-slate-900 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-4 md:p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-[#131E35] to-slate-900 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 print:bg-slate-50 print:border print:border-slate-300 print:p-3 print:rounded-xl print:text-slate-900 print:mb-3">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shrink-0">
+              <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shrink-0 print:bg-blue-50 print:text-blue-800 print:border-blue-200">
                 <TabIcon className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base md:text-lg font-black text-white flex items-center gap-2">
+                <h3 className="text-base md:text-lg font-black text-white print:text-slate-950 flex items-center gap-2">
                   <span>{currentTabMeta.title}</span>
-                  <span className="text-xs font-mono font-normal text-slate-400">
+                  <span className="text-xs font-mono font-normal text-slate-400 print:text-slate-600">
                     ({activeTab.includes('categories') ? 'تحليل شامل لـ 9 فئات' : 'تقرير الـ 50 صنف المعتمد'})
                   </span>
                 </h3>
-                <p className="text-xs text-slate-300 mt-0.5">{currentTabMeta.subtitle}</p>
+                <p className="text-xs text-slate-300 print:text-slate-700 mt-0.5">{currentTabMeta.subtitle}</p>
               </div>
             </div>
 
             {/* Strategic Directive / Recommendation Pill */}
-            <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-slate-300 max-w-md">
-              <span className="font-bold text-amber-400 block mb-0.5">📌 التوجيه التنفيذي الموصى به:</span>
+            <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-slate-300 max-w-md print:bg-amber-50 print:border print:border-amber-300 print:text-amber-950 print:max-w-none print:w-auto">
+              <span className="font-bold text-amber-400 print:text-amber-900 block mb-0.5">📌 التوجيه التنفيذي الموصى به:</span>
               {activeTab === 'stagnant' && (
                 <span>تنشيط حزم عروض صيانة تشمل الأصناف المجمدة، ونقل الأصناف لفروع الرواف وكيا وفق طلبات العملاء.</span>
               )}
@@ -432,34 +472,34 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
           </div>
 
           {/* ── 4. Executive Metric KPI Bar for Current Report ── */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 print:grid-cols-4 print:gap-2 print:mb-3">
             {activeTab === 'stagnant' && (
               <>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">إجمالي الأصناف الراكدة</div>
-                  <div className="text-2xl font-black text-amber-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">إجمالي الأصناف الراكدة</div>
+                  <div className="text-2xl font-black text-amber-400 print:text-slate-950 font-mono">
                     {formatNum(computedData.stagnant.totalCount)}
                   </div>
-                  <div className="text-[11px] text-slate-500 font-bold">كود قطعة غيار برصيد بدون بيع</div>
+                  <div className="text-[11px] text-slate-500 print:text-slate-600 font-bold">كود قطعة غيار برصيد بدون بيع</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">إجمالي الوحدات المجمدة</div>
-                  <div className="text-2xl font-black text-white font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">إجمالي الوحدات المجمدة</div>
+                  <div className="text-2xl font-black text-white print:text-amber-900 font-mono">
                     {formatNum(computedData.stagnant.totalFrozenUnits)}
                   </div>
-                  <div className="text-[11px] text-amber-400/90 font-bold">قطعة غيار محبوسة بالمستودعات</div>
+                  <div className="text-[11px] text-amber-400/90 print:text-amber-800 font-bold">قطعة غيار محبوسة بالمستودعات</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">نسبة الركود من الأصناف</div>
-                  <div className="text-2xl font-black text-rose-400 font-mono">23.9%</div>
-                  <div className="text-[11px] text-slate-500 font-bold">من إجمالي 8,693 صنف</div>
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">نسبة الركود من الأصناف</div>
+                  <div className="text-2xl font-black text-rose-400 print:text-rose-900 font-mono">23.9%</div>
+                  <div className="text-[11px] text-slate-500 print:text-slate-600 font-bold">من إجمالي 8,693 صنف</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">أعلى صنف مجمد بالمستودع</div>
-                  <div className="text-sm font-black text-white truncate" title={computedData.stagnant.topItem?.name}>
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">أعلى صنف مجمد بالمستودع</div>
+                  <div className="text-sm font-black text-white print:text-slate-950 truncate" title={computedData.stagnant.topItem?.name}>
                     {computedData.stagnant.topItem?.name}
                   </div>
-                  <div className="text-[11px] text-amber-400 font-mono font-bold">
+                  <div className="text-[11px] text-amber-400 print:text-slate-800 font-mono font-bold">
                     {computedData.stagnant.topItem?.balance} حبة ({computedData.stagnant.topItem?.sku})
                   </div>
                 </div>
@@ -468,68 +508,68 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
 
             {activeTab === 'top_selling' && (
               <>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">مبيعات قمة الـ 50 صنف</div>
-                  <div className="text-2xl font-black text-emerald-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">مبيعات قمة الـ 50 صنف</div>
+                  <div className="text-2xl font-black text-emerald-400 print:text-slate-950 font-mono">
                     {formatNum(computedData.top_selling.totalTop50Sales)}
                   </div>
-                  <div className="text-[11px] text-emerald-300 font-bold">قطعة غيار مباعة</div>
+                  <div className="text-[11px] text-emerald-300 print:text-emerald-800 font-bold">قطعة غيار مباعة</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">الحصة من مبيعات الشركة</div>
-                  <div className="text-2xl font-black text-white font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">الحصة من مبيعات الشركة</div>
+                  <div className="text-2xl font-black text-white print:text-slate-950 font-mono">
                     {computedData.top_selling.top50Share}%
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">من إجمالي 77,047 قطعة مباعة</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">من إجمالي 77,047 قطعة مباعة</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">الصنف الأكثر مبيعاً بالمطلق</div>
-                  <div className="text-sm font-black text-white truncate" title={computedData.top_selling.topItem?.name}>
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">الصنف الأكثر مبيعاً بالمطلق</div>
+                  <div className="text-sm font-black text-white print:text-slate-950 truncate" title={computedData.top_selling.topItem?.name}>
                     {computedData.top_selling.topItem?.name}
                   </div>
-                  <div className="text-[11px] text-emerald-400 font-mono font-bold">
+                  <div className="text-[11px] text-emerald-400 print:text-emerald-800 font-mono font-bold">
                     {formatNum(computedData.top_selling.topItem?.issued)} حبة مباعة
                   </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">متوسط مبيعات الصنف بالقمة</div>
-                  <div className="text-2xl font-black text-blue-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">متوسط مبيعات الصنف بالقمة</div>
+                  <div className="text-2xl font-black text-blue-400 print:text-slate-950 font-mono">
                     {formatNum(Math.round(computedData.top_selling.totalTop50Sales / 50))}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">قطعة لكل صنف متصدر</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">قطعة لكل صنف متصدر</div>
                 </div>
               </>
             )}
 
             {activeTab === 'out_of_stock' && (
               <>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">أصناف صفرية رصيد بطلب نشط</div>
-                  <div className="text-2xl font-black text-rose-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">أصناف صفرية رصيد بطلب نشط</div>
+                  <div className="text-2xl font-black text-rose-400 print:text-slate-950 font-mono">
                     {formatNum(computedData.out_of_stock.totalCount)}
                   </div>
-                  <div className="text-[11px] text-rose-300 font-bold">كود قطعة بحاجة لإعادة طلب فورية</div>
+                  <div className="text-[11px] text-rose-300 print:text-rose-800 font-bold">كود قطعة بحاجة لإعادة طلب فورية</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">حجم المبيعات المحققة سابقاً</div>
-                  <div className="text-2xl font-black text-white font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">حجم المبيعات المحققة سابقاً</div>
+                  <div className="text-2xl font-black text-white print:text-slate-950 font-mono">
                     {formatNum(computedData.out_of_stock.totalHistoricalSales)}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">قطعة تم بيعها ونفد رصيدها بالكامل</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">قطعة تم بيعها ونفد رصيدها بالكامل</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">نسبة النفاد من الأصناف النشطة</div>
-                  <div className="text-2xl font-black text-amber-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">نسبة النفاد من الأصناف النشطة</div>
+                  <div className="text-2xl font-black text-amber-400 print:text-slate-950 font-mono">
                     {computedData.out_of_stock.stockoutRate}%
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">من 6,611 صنف تم بيعه</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">من 6,611 صنف تم بيعه</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">أعلى صنف نفد ويحتاج توريد</div>
-                  <div className="text-sm font-black text-white truncate" title={computedData.out_of_stock.topItem?.name}>
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">أعلى صنف نفد ويحتاج توريد</div>
+                  <div className="text-sm font-black text-white print:text-slate-950 truncate" title={computedData.out_of_stock.topItem?.name}>
                     {computedData.out_of_stock.topItem?.name}
                   </div>
-                  <div className="text-[11px] text-rose-400 font-mono font-bold">
+                  <div className="text-[11px] text-rose-400 print:text-rose-800 font-mono font-bold">
                     باع {computedData.out_of_stock.topItem?.issued} حبة (رصيده الآن: 0)
                   </div>
                 </div>
@@ -538,33 +578,33 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
 
             {activeTab === 'zero_movement' && (
               <>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">أصناف خاملة تماماً (0 بيع / 0 وارد)</div>
-                  <div className="text-2xl font-black text-cyan-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">أصناف خاملة تماماً (0 بيع / 0 وارد)</div>
+                  <div className="text-2xl font-black text-cyan-400 print:text-slate-950 font-mono">
                     {formatNum(computedData.zero_movement.totalCount)}
                   </div>
-                  <div className="text-[11px] text-cyan-300 font-bold">كود قطعة لم يتحرك نهائياً</div>
+                  <div className="text-[11px] text-cyan-300 print:text-slate-700 font-bold">كود قطعة لم يتحرك نهائياً</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">إجمالي الوحدات المعطلة بالمخزن</div>
-                  <div className="text-2xl font-black text-white font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">إجمالي الوحدات المعطلة بالمخزن</div>
+                  <div className="text-2xl font-black text-white print:text-slate-950 font-mono">
                     {formatNum(computedData.zero_movement.totalFrozenUnits)}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">قطعة متوارثة من الرصيد الافتتاحي</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">قطعة متوارثة من الرصيد الافتتاحي</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">النسبة من إجمالي الأصناف</div>
-                  <div className="text-2xl font-black text-purple-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">النسبة من إجمالي الأصناف</div>
+                  <div className="text-2xl font-black text-purple-400 print:text-slate-950 font-mono">
                     {computedData.zero_movement.shareOfSKUs}%
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">من كودات المخزون الكلية</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">من كودات المخزون الكلية</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">أعلى صنف خامل</div>
-                  <div className="text-sm font-black text-white truncate" title={computedData.zero_movement.topItem?.name}>
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">أعلى صنف خامل</div>
+                  <div className="text-sm font-black text-white print:text-slate-950 truncate" title={computedData.zero_movement.topItem?.name}>
                     {computedData.zero_movement.topItem?.name}
                   </div>
-                  <div className="text-[11px] text-cyan-400 font-mono font-bold">
+                  <div className="text-[11px] text-cyan-400 print:text-slate-800 font-mono font-bold">
                     {computedData.zero_movement.topItem?.balance} حبة افتتاحية راكدة
                   </div>
                 </div>
@@ -573,78 +613,78 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
 
             {activeTab === 'active_categories' && (
               <>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">الفئة الأولى مبيعاً</div>
-                  <div className="text-base font-black text-emerald-400 truncate">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">الفئة الأولى مبيعاً</div>
+                  <div className="text-base font-black text-emerald-400 print:text-slate-950 truncate">
                     {computedData.active_categories.topCategory?.name}
                   </div>
-                  <div className="text-[11px] text-emerald-300 font-bold font-mono">
+                  <div className="text-[11px] text-emerald-300 print:text-emerald-800 font-bold font-mono">
                     {formatNum(computedData.active_categories.topCategory?.issued)} قطعة مباعة
                   </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">أعلى معدل دوران مخزون</div>
-                  <div className="text-2xl font-black text-blue-400 font-mono">71.7%</div>
-                  <div className="text-[11px] text-slate-400 font-bold">فئة الفلاتر والمصفيات</div>
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">أعلى معدل دوران مخزون</div>
+                  <div className="text-2xl font-black text-blue-400 print:text-slate-950 font-mono">71.7%</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">فئة الفلاتر والمصفيات</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">إجمالي مبيعات الفئات الـ 9</div>
-                  <div className="text-2xl font-black text-white font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">إجمالي مبيعات الفئات الـ 9</div>
+                  <div className="text-2xl font-black text-white print:text-slate-950 font-mono">
                     {formatNum(REAL_INVENTORY_STATS.totalIssued)}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">قطعة غيار لجميع الفروع</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">قطعة غيار لجميع الفروع</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">متوسط معدل الدوران العام</div>
-                  <div className="text-2xl font-black text-indigo-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">متوسط معدل الدوران العام</div>
+                  <div className="text-2xl font-black text-indigo-400 print:text-slate-950 font-mono">
                     {computedData.active_categories.avgTurnover}%
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">معدل صحي وممتاز للقطاع</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">معدل صحي وممتاز للقطاع</div>
                 </div>
               </>
             )}
 
             {activeTab === 'stagnant_categories' && (
               <>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">الفئة الأكثر ركوداً</div>
-                  <div className="text-base font-black text-rose-400 truncate">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">الفئة الأكثر ركوداً</div>
+                  <div className="text-base font-black text-rose-400 print:text-slate-950 truncate">
                     {computedData.stagnant_categories.mostStagnantCategory?.name}
                   </div>
-                  <div className="text-[11px] text-rose-300 font-bold font-mono">
+                  <div className="text-[11px] text-rose-300 print:text-rose-800 font-bold font-mono">
                     معدل دوران: {computedData.stagnant_categories.mostStagnantCategory?.turnoverRate}% فقط
                   </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">الأصناف الراكدة بالفئة المتصدرة</div>
-                  <div className="text-2xl font-black text-amber-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">الأصناف الراكدة بالفئة المتصدرة</div>
+                  <div className="text-2xl font-black text-amber-400 print:text-slate-950 font-mono">
                     {computedData.stagnant_categories.mostStagnantCategory?.zeroSalesCount} صنف
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">
                     تمثل {computedData.stagnant_categories.mostStagnantCategory?.stagnantSkuRatio}% من فئة الهيكل
                   </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">مخزون الهيكل والإنارة المحتجز</div>
-                  <div className="text-2xl font-black text-white font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">مخزون الهيكل والإنارة المحتجز</div>
+                  <div className="text-2xl font-black text-white print:text-slate-950 font-mono">
                     {formatNum(computedData.stagnant_categories.mostStagnantCategory?.balance)}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">قطعة غيار غير مباعة</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">قطعة غيار غير مباعة</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                  <div className="text-xs text-slate-400 font-medium">إجمالي كودات الركود عبر الفئات</div>
-                  <div className="text-2xl font-black text-orange-400 font-mono">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">إجمالي كودات الركود عبر الفئات</div>
+                  <div className="text-2xl font-black text-orange-400 print:text-slate-950 font-mono">
                     {formatNum(computedData.stagnant_categories.totalStagnantSKUs)}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-bold">كود صنف صفر مبيعات</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">كود صنف صفر مبيعات</div>
                 </div>
               </>
             )}
           </div>
 
-          {/* ── 5. Search & Filters Toolbar (When viewing part tables) ── */}
+          {/* ── 5. Search & Filters Toolbar (Screen Only - Hidden in Print) ── */}
           {!activeTab.includes('categories') && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 no-print">
               <div className="relative w-full sm:w-80">
                 <Search className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -669,7 +709,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                     key={b.key}
                     onClick={() => setBrandFilter(b.key)}
                     className={cn(
-                      'px-3 py-1.5 rounded-xl text-xs font-bold transition-colors whitespace-nowrap border',
+                      'px-3 py-1.5 rounded-xl text-xs font-bold transition-colors whitespace-nowrap border cursor-pointer',
                       brandFilter === b.key
                         ? 'bg-blue-600 text-white border-blue-500'
                         : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-slate-200'
@@ -684,146 +724,133 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
 
           {/* ── 6. Category Analytics Display (Tabs 5 & 6) ── */}
           {activeTab.includes('categories') ? (
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
-                <table className="w-full text-xs text-right">
-                  <thead>
-                    <tr className="border-b border-slate-800 bg-slate-950/80 text-slate-300 font-black">
-                      <th className="py-3.5 px-4 w-12 text-center">#</th>
-                      <th className="py-3.5 px-4">الفئة الرئيسية</th>
-                      <th className="py-3.5 px-4">عدد الأصناف SKUs</th>
-                      <th className="py-3.5 px-4">المبيعات (المنصرف)</th>
-                      <th className="py-3.5 px-4">المخزون الحالي</th>
-                      <th className="py-3.5 px-4 min-w-[150px]">معدل الدوران %</th>
-                      <th className="py-3.5 px-4">أصناف راكدة بالفئة</th>
-                      <th className="py-3.5 px-4">الصنف الأبرز في الفئة</th>
-                      <th className="py-3.5 px-4 text-center">التقييم المؤسسي</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {(activeTab === 'active_categories'
-                      ? computedData.active_categories.categories
-                      : computedData.stagnant_categories.categories
-                    ).map((cat, idx) => {
-                      return (
-                        <tr key={cat.name} className="hover:bg-slate-800/40 transition-colors">
-                          <td className="py-3.5 px-4 text-center font-mono font-bold">
-                            {idx < 3 ? (
-                              <span
-                                className={cn(
-                                  'inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black',
-                                  idx === 0
-                                    ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
-                                    : idx === 1
-                                    ? 'bg-slate-300/20 text-slate-200 border border-slate-300/40'
-                                    : 'bg-amber-700/20 text-amber-400 border border-amber-700/40'
-                                )}
-                              >
-                                {idx + 1}
+            <div className="space-y-4 print:space-y-0">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden print:border print:border-slate-300 print:rounded-none print:overflow-visible print:bg-transparent">
+                <div className="overflow-x-auto print:overflow-visible">
+                  <table className="w-full text-xs text-right print-table">
+                    <thead>
+                      <tr className="border-b border-slate-800 bg-slate-950/80 text-slate-300 font-black print:bg-slate-100 print:text-slate-950 print:border-b-2 print:border-slate-400">
+                        <th className="py-3.5 px-4 w-12 text-center print:py-1.5 print:px-1.5 print:w-8 print:text-[10px] print:border print:border-slate-300">#</th>
+                        <th className="py-3.5 px-4 print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-300">الفئة الرئيسية</th>
+                        <th className="py-3.5 px-4 print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-300">عدد الأصناف SKUs</th>
+                        <th className="py-3.5 px-4 print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-300">المبيعات (المنصرف)</th>
+                        <th className="py-3.5 px-4 print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-300">المخزون الحالي</th>
+                        <th className="py-3.5 px-4 min-w-[150px] print:min-w-0 print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-300">معدل الدوران %</th>
+                        <th className="py-3.5 px-4 print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-300">أصناف راكدة بالفئة</th>
+                        <th className="py-3.5 px-4 print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-300">الصنف الأبرز في الفئة</th>
+                        <th className="py-3.5 px-4 text-center print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-300">التقييم المؤسسي</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60 print:divide-slate-200">
+                      {(activeTab === 'active_categories'
+                        ? computedData.active_categories.categories
+                        : computedData.stagnant_categories.categories
+                      ).map((cat, idx) => {
+                        return (
+                          <tr key={cat.name} className="hover:bg-slate-800/40 transition-colors print:border-b print:border-slate-200">
+                            <td className="py-3.5 px-4 text-center font-mono font-bold print:py-1 print:px-1 print:text-[10px] print:border print:border-slate-200">
+                              <span className="print:text-slate-900 font-bold">{idx + 1}</span>
+                            </td>
+                            <td className="py-3.5 px-4 font-bold text-white print:text-slate-950 text-sm print:text-[10px] print:py-1 print:px-2 print:border print:border-slate-200">
+                              {cat.name}
+                            </td>
+                            <td className="py-3.5 px-4 font-mono text-slate-300 print:text-slate-900 print:py-1 print:px-2 print:text-[10px] print:border print:border-slate-200">
+                              {formatNum(cat.count)} كود
+                            </td>
+                            <td className="py-3.5 px-4 font-mono font-black text-emerald-400 print:text-emerald-900 text-sm print:text-[10px] print:py-1 print:px-2 print:border print:border-slate-200">
+                              {formatNum(cat.issued)} قطعة
+                              <span className="text-[10px] text-slate-400 print:text-slate-600 font-normal mr-1">
+                                ({cat.salesShare}%)
                               </span>
-                            ) : (
-                              <span className="text-slate-500">{idx + 1}</span>
-                            )}
-                          </td>
-                          <td className="py-3.5 px-4 font-bold text-white text-sm">
-                            {cat.name}
-                          </td>
-                          <td className="py-3.5 px-4 font-mono text-slate-300">
-                            {formatNum(cat.count)} كود
-                          </td>
-                          <td className="py-3.5 px-4 font-mono font-black text-emerald-400 text-sm">
-                            {formatNum(cat.issued)} قطعة
-                            <span className="text-[10px] text-slate-400 font-normal mr-1">
-                              ({cat.salesShare}%)
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 font-mono font-black text-cyan-400 text-sm">
-                            {formatNum(cat.balance)} قطعة
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between text-[11px] font-mono">
-                                <span className="font-black text-white">{cat.turnoverRate}%</span>
-                                <span className="text-slate-500">معدل دوران</span>
+                            </td>
+                            <td className="py-3.5 px-4 font-mono font-black text-cyan-400 print:text-slate-950 text-sm print:text-[10px] print:py-1 print:px-2 print:border print:border-slate-200">
+                              {formatNum(cat.balance)} قطعة
+                            </td>
+                            <td className="py-3.5 px-4 print:py-1 print:px-2 print:text-[10px] print:border print:border-slate-200">
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between text-[11px] font-mono print:text-[10px]">
+                                  <span className="font-black text-white print:text-slate-950">{cat.turnoverRate}%</span>
+                                  <span className="text-slate-500 print:text-slate-600">معدل دوران</span>
+                                </div>
+                                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden no-print">
+                                  <div
+                                    className={cn(
+                                      'h-full rounded-full transition-all',
+                                      cat.turnoverRate > 70
+                                        ? 'bg-emerald-500'
+                                        : cat.turnoverRate > 60
+                                        ? 'bg-blue-500'
+                                        : 'bg-amber-500'
+                                    )}
+                                    style={{ width: `${Math.min(100, cat.turnoverRate)}%` }}
+                                  />
+                                </div>
                               </div>
-                              <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                                <div
-                                  className={cn(
-                                    'h-full rounded-full transition-all',
-                                    cat.turnoverRate > 70
-                                      ? 'bg-emerald-500'
-                                      : cat.turnoverRate > 60
-                                      ? 'bg-blue-500'
-                                      : 'bg-amber-500'
-                                  )}
-                                  style={{ width: `${Math.min(100, cat.turnoverRate)}%` }}
-                                />
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-3.5 px-4 font-mono text-slate-300">
-                            <span className={cn('font-bold', cat.stagnantSkuRatio > 25 ? 'text-rose-400' : 'text-slate-300')}>
-                              {formatNum(cat.zeroSalesCount)}
-                            </span>{' '}
-                            <span className="text-[10px] text-slate-500">
-                              ({cat.stagnantSkuRatio}%)
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 text-slate-300">
-                            {cat.topItem ? (
-                              <div className="max-w-[170px] truncate" title={`${cat.topItem.name} (${cat.topItem.sku})`}>
-                                <span className="font-bold text-slate-200">{cat.topItem.name}</span>
-                                <div className="text-[10px] font-mono text-slate-500">{cat.topItem.sku}</div>
-                              </div>
-                            ) : (
-                              '-'
-                            )}
-                          </td>
-                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                            {cat.turnoverRate >= 70 ? (
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                نشاط استثنائي 🔥
+                            </td>
+                            <td className="py-3.5 px-4 font-mono text-slate-300 print:text-slate-900 print:py-1 print:px-2 print:text-[10px] print:border print:border-slate-200">
+                              <span className={cn('font-bold', cat.stagnantSkuRatio > 25 ? 'text-rose-400 print:text-rose-900' : 'text-slate-300 print:text-slate-900')}>
+                                {formatNum(cat.zeroSalesCount)}
+                              </span>{' '}
+                              <span className="text-[10px] text-slate-500 print:text-slate-600">
+                                ({cat.stagnantSkuRatio}%)
                               </span>
-                            ) : cat.turnoverRate >= 61 ? (
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                                دوران مستقر ⚡
-                              </span>
-                            ) : (
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                                ركود مرتفع ⚠️
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-300 print:text-slate-900 print:py-1 print:px-2 print:text-[10px] print:border print:border-slate-200">
+                              {cat.topItem ? (
+                                <div className="max-w-[170px] truncate" title={`${cat.topItem.name} (${cat.topItem.sku})`}>
+                                  <span className="font-bold text-slate-200 print:text-slate-950">{cat.topItem.name}</span>
+                                  <div className="text-[10px] font-mono text-slate-500 print:text-slate-600">{cat.topItem.sku}</div>
+                                </div>
+                              ) : (
+                                '-'
+                              )}
+                            </td>
+                            <td className="py-3.5 px-4 text-center whitespace-nowrap print:py-1 print:px-2 print:text-[10px] print:border print:border-slate-200">
+                              {cat.turnoverRate >= 70 ? (
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 print:bg-emerald-50 print:text-emerald-950 print:border-emerald-300">
+                                  نشاط استثنائي 🔥
+                                </span>
+                              ) : cat.turnoverRate >= 61 ? (
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 print:bg-blue-50 print:text-blue-950 print:border-blue-300">
+                                  دوران مستقر ⚡
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 print:bg-rose-50 print:text-rose-950 print:border-rose-300">
+                                  ركود مرتفع ⚠️
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           ) : (
-            /* ── 7. Top 50 Items Table (Tabs 1 to 4) ── */
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-right">
+            /* ── 7. Top 50 Items Table (Tabs 1 to 4) - Flawless multi-page print ── */
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden print:border print:border-slate-300 print:rounded-none print:overflow-visible print:bg-transparent">
+              <div className="overflow-x-auto print:overflow-visible">
+                <table className="w-full text-xs text-right print-table">
                   <thead>
-                    <tr className="border-b border-slate-800 bg-slate-950/80 text-slate-300 font-black">
-                      <th className="py-3.5 px-4 w-12 text-center">الرتبة</th>
-                      <th className="py-3.5 px-4">كود الصنف (OEM Part No.)</th>
-                      <th className="py-3.5 px-4 min-w-[200px]">اسم قطعة الغيار</th>
-                      <th className="py-3.5 px-4">الماركة</th>
-                      <th className="py-3.5 px-4">الفئة</th>
-                      <th className="py-3.5 px-3">الرصيد الافتتاحي</th>
-                      <th className="py-3.5 px-3">الوارد</th>
-                      <th className="py-3.5 px-4 bg-emerald-950/40 text-emerald-300">المنصرف (المبيعات)</th>
-                      <th className="py-3.5 px-4 bg-blue-950/40 text-blue-300">الرصيد بالمستودع</th>
-                      <th className="py-3.5 px-4 text-center">الحالة والتوجيه</th>
+                    <tr className="border-b border-slate-800 bg-slate-950/80 text-slate-300 font-black print:bg-slate-100 print:text-slate-950 print:border-b-2 print:border-slate-400">
+                      <th className="py-3.5 px-4 w-12 text-center print:py-2 print:px-1.5 print:w-9 print:text-[10px] print:border print:border-slate-300">#</th>
+                      <th className="py-3.5 px-4 print:py-2 print:px-2 print:text-[10px] print:border print:border-slate-300">كود الصنف (OEM Part No.)</th>
+                      <th className="py-3.5 px-4 min-w-[200px] print:min-w-0 print:py-2 print:px-2 print:text-[10px] print:border print:border-slate-300">اسم قطعة الغيار</th>
+                      <th className="py-3.5 px-4 print:py-2 print:px-1.5 print:text-[10px] print:border print:border-slate-300">الماركة</th>
+                      <th className="py-3.5 px-4 print:py-2 print:px-2 print:text-[10px] print:border print:border-slate-300">الفئة</th>
+                      <th className="py-3.5 px-3 print:py-2 print:px-1.5 print:text-[10px] print:border print:border-slate-300">افتتاحي</th>
+                      <th className="py-3.5 px-3 print:py-2 print:px-1.5 print:text-[10px] print:border print:border-slate-300">وارد</th>
+                      <th className="py-3.5 px-4 bg-emerald-950/40 text-emerald-300 print:bg-transparent print:text-slate-950 print:py-2 print:px-1.5 print:text-[10px] print:border print:border-slate-300">منصرف (مبيعات)</th>
+                      <th className="py-3.5 px-4 bg-blue-950/40 text-blue-300 print:bg-transparent print:text-slate-950 print:py-2 print:px-2 print:text-[10px] print:border print:border-slate-300 print:font-black">رصيد المستودع</th>
+                      <th className="py-3.5 px-4 text-center print:py-2 print:px-2 print:text-[10px] print:border print:border-slate-300">الحالة والتوجيه</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-800/60 print:divide-slate-200">
                     {filteredItems.length === 0 ? (
                       <tr>
-                        <td colSpan={10} className="py-12 text-center text-slate-500">
+                        <td colSpan={10} className="py-12 text-center text-slate-500 print:text-slate-600">
                           لا توجد أصناف مطابقة لمعايير البحث في قائمة الـ 50 المحددة.
                         </td>
                       </tr>
@@ -831,114 +858,119 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                       filteredItems.map((part, index) => {
                         const isTop3 = index < 3;
                         return (
-                          <tr key={part.id || part.sku} className="hover:bg-slate-800/40 transition-colors">
+                          <tr key={part.id || part.sku} className="hover:bg-slate-800/40 transition-colors print:border-b print:border-slate-200">
                             {/* Rank */}
-                            <td className="py-3 px-4 text-center font-mono font-bold">
-                              {isTop3 ? (
-                                <span
-                                  className={cn(
-                                    'inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black shadow-sm',
-                                    index === 0
-                                      ? 'bg-amber-400 text-slate-950'
-                                      : index === 1
-                                      ? 'bg-slate-300 text-slate-950'
-                                      : 'bg-amber-700 text-white'
-                                  )}
-                                >
-                                  {index + 1}
-                                </span>
-                              ) : (
-                                <span className="text-slate-500 font-mono">#{index + 1}</span>
-                              )}
+                            <td className="py-3 px-4 text-center font-mono font-bold print:py-1.5 print:px-1.5 print:text-[10px] print:border print:border-slate-200">
+                              <span className="print:hidden">
+                                {isTop3 ? (
+                                  <span
+                                    className={cn(
+                                      'inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black shadow-sm',
+                                      index === 0
+                                        ? 'bg-amber-400 text-slate-950'
+                                        : index === 1
+                                        ? 'bg-slate-300 text-slate-950'
+                                        : 'bg-amber-700 text-white'
+                                    )}
+                                  >
+                                    {index + 1}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500 font-mono">#{index + 1}</span>
+                                )}
+                              </span>
+                              <span className="hidden print:inline font-mono font-bold text-slate-900">
+                                #{index + 1}
+                              </span>
                             </td>
 
                             {/* SKU */}
-                            <td className="py-3 px-4 font-mono font-bold text-white tracking-wide">
+                            <td className="py-3 px-4 font-mono font-bold text-white print:text-slate-950 tracking-wide print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-200">
                               {part.sku}
                             </td>
 
                             {/* Name */}
-                            <td className="py-3 px-4">
-                              <div className="font-bold text-slate-100">{part.name}</div>
-                              <div className="text-[10px] text-slate-500 font-mono">
+                            <td className="py-3 px-4 print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-200">
+                              <div className="font-bold text-slate-100 print:text-slate-950">{part.name}</div>
+                              <div className="text-[10px] text-slate-500 print:text-slate-600 font-mono">
                                 الوحدة: {part.unit || 'حبه'}
                               </div>
                             </td>
 
                             {/* Brand Badge */}
-                            <td className="py-3 px-4 whitespace-nowrap">
+                            <td className="py-3 px-4 whitespace-nowrap print:py-1.5 print:px-1.5 print:text-[10px] print:border print:border-slate-200">
                               {part.brand === 'hyundai' && (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 print:bg-blue-50 print:text-blue-900 print:border-blue-200">
                                   هيونداي
                                 </span>
                               )}
                               {part.brand === 'kia' && (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 print:bg-purple-50 print:text-purple-900 print:border-purple-200">
                                   كيا
                                 </span>
                               )}
                               {part.brand === 'mobis' && (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                                  موبيس أصلي
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 print:bg-indigo-50 print:text-indigo-900 print:border-indigo-200">
+                                  موبيس
                                 </span>
                               )}
                               {part.brand === 'general' && (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-slate-300 border border-slate-600">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-slate-300 border border-slate-600 print:bg-slate-100 print:text-slate-800 print:border-slate-300">
                                   عام
                                 </span>
                               )}
                             </td>
 
                             {/* Category */}
-                            <td className="py-3 px-4 whitespace-nowrap">
-                              <span className="text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/60">
+                            <td className="py-3 px-4 whitespace-nowrap print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-200">
+                              <span className="text-[11px] print:text-[10px] text-slate-400 print:text-slate-800 bg-slate-800/80 print:bg-slate-100 px-2 py-0.5 rounded-md border border-slate-700/60 print:border-slate-300">
                                 {part.category}
                               </span>
                             </td>
 
                             {/* Opening */}
-                            <td className="py-3 px-3 font-mono font-bold text-slate-400">
+                            <td className="py-3 px-3 font-mono font-bold text-slate-400 print:text-slate-900 print:py-1.5 print:px-1.5 print:text-[10px] print:border print:border-slate-200">
                               {formatNum(part.opening)}
                             </td>
 
                             {/* Received */}
-                            <td className="py-3 px-3 font-mono font-bold text-slate-300">
+                            <td className="py-3 px-3 font-mono font-bold text-slate-300 print:text-slate-900 print:py-1.5 print:px-1.5 print:text-[10px] print:border print:border-slate-200">
                               {formatNum(part.received)}
                             </td>
 
                             {/* Issued (Sales) */}
-                            <td className="py-3 px-4 font-mono font-black text-emerald-400 bg-emerald-950/20 text-sm">
+                            <td className="py-3 px-4 font-mono font-black text-emerald-400 print:text-emerald-950 bg-emerald-950/20 print:bg-transparent text-sm print:text-[10px] print:py-1.5 print:px-1.5 print:border print:border-slate-200">
                               {formatNum(part.issued)}
                             </td>
 
                             {/* Balance (Current Stock) */}
-                            <td className="py-3 px-4 font-mono font-black text-blue-300 bg-blue-950/20 text-sm">
+                            <td className="py-3 px-4 font-mono font-black text-blue-300 print:text-slate-950 bg-blue-950/20 print:bg-transparent text-sm print:text-[10px] print:py-1.5 print:px-2 print:border print:border-slate-200">
                               {formatNum(part.balance)}
                             </td>
 
                             {/* Status & Recommendation */}
-                            <td className="py-3 px-4 text-center whitespace-nowrap">
+                            <td className="py-3 px-4 text-center whitespace-nowrap print:py-1.5 print:px-2 print:text-[10px] print:border print:border-slate-200">
                               {activeTab === 'stagnant' && (
-                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 inline-flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 print:bg-amber-100 print:text-amber-900 print:border-amber-300 inline-flex items-center gap-1">
+                                  <Clock className="w-3 h-3 print:hidden" />
                                   <span>تجميد {part.balance} حبة</span>
                                 </span>
                               )}
                               {activeTab === 'top_selling' && (
-                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1">
-                                  <Flame className="w-3 h-3" />
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 print:bg-emerald-100 print:text-emerald-900 print:border-emerald-300 inline-flex items-center gap-1">
+                                  <Flame className="w-3 h-3 print:hidden" />
                                   <span>طلب استثنائي</span>
                                 </span>
                               )}
                               {activeTab === 'out_of_stock' && (
-                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 inline-flex items-center gap-1">
-                                  <PackageX className="w-3 h-3" />
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 print:bg-rose-100 print:text-rose-900 print:border-rose-300 inline-flex items-center gap-1">
+                                  <PackageX className="w-3 h-3 print:hidden" />
                                   <span>طلب شراء عاجل</span>
                                 </span>
                               )}
                               {activeTab === 'zero_movement' && (
-                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 inline-flex items-center gap-1">
-                                  <AlertTriangle className="w-3 h-3" />
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 print:bg-slate-100 print:text-slate-900 print:border-slate-300 inline-flex items-center gap-1">
+                                  <AlertTriangle className="w-3 h-3 print:hidden" />
                                   <span>خمول تام</span>
                                 </span>
                               )}
@@ -954,29 +986,32 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
           )}
 
           {/* ── 8. Executive Corporate Signatures Footer (C-Suite Approval Block) ── */}
-          <div className="pt-6 border-t border-slate-800 mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-1">
-              <div className="text-slate-500 font-bold">إعداد وتدقيق المستودعات</div>
-              <div className="font-black text-slate-200">إدارة المخازن وسلاسل الإمداد</div>
-              <div className="text-[11px] text-emerald-400 font-mono mt-1">مطابق لملف سبتمبر 2026 ✓</div>
+          <div className="pt-6 border-t border-slate-800 mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs print:break-inside-avoid print:mt-5 print:pt-4 print:border-t-2 print:border-slate-400 print:grid-cols-3 print:gap-3">
+            <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-lg print:text-slate-900">
+              <div className="text-slate-500 font-bold print:text-slate-600">إعداد وتدقيق المستودعات</div>
+              <div className="font-black text-slate-200 print:text-slate-950">إدارة المخازن وسلاسل الإمداد</div>
+              <div className="text-[11px] text-emerald-400 font-mono mt-1 print:text-emerald-800 print:font-bold">مطابق للجرد الفعلي الميداني ✓</div>
+              <div className="text-[9px] text-slate-400 print:text-slate-600 mt-2 font-mono">التوقيع والاعتماد: _________________</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-1">
-              <div className="text-slate-500 font-bold">المراجعة والرقابة المالية</div>
-              <div className="font-black text-slate-200">إدارة الحسابات والمالية</div>
-              <div className="text-[11px] text-blue-400 font-mono mt-1">معتمد محاسبياً ونظامياً ✓</div>
+            <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-lg print:text-slate-900">
+              <div className="text-slate-500 font-bold print:text-slate-600">المراجعة والرقابة المالية</div>
+              <div className="font-black text-slate-200 print:text-slate-950">إدارة الحسابات والمالية</div>
+              <div className="text-[11px] text-blue-400 font-mono mt-1 print:text-blue-800 print:font-bold">معتمد محاسبياً ونظامياً ✓</div>
+              <div className="text-[9px] text-slate-400 print:text-slate-600 mt-2 font-mono">التوقيع والاعتماد: _________________</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-1">
-              <div className="text-slate-500 font-bold">الاعتماد التنفيذي النهائي</div>
-              <div className="font-black text-slate-200">الرئيس التنفيذي - درة السيارة</div>
-              <div className="text-[11px] text-purple-400 font-mono mt-1">صادر للاستخدام الإداري ✓</div>
+            <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-lg print:text-slate-900">
+              <div className="text-slate-500 font-bold print:text-slate-600">الاعتماد التنفيذي النهائي</div>
+              <div className="font-black text-slate-200 print:text-slate-950">الرئيس التنفيذي - درة السيارة</div>
+              <div className="text-[11px] text-purple-400 font-mono mt-1 print:text-purple-800 print:font-bold">صادر للاستخدام الإداري ✓</div>
+              <div className="text-[9px] text-slate-400 print:text-slate-600 mt-2 font-mono">الختم الرسمي: [ شركة درة السيارة - معتمد ]</div>
             </div>
           </div>
         </div>
 
-        {/* ── 9. Bottom Footer Bar ── */}
-        <div className="p-3.5 px-6 border-t border-slate-800 bg-[#0B1120] flex items-center justify-between text-xs text-slate-500">
+        {/* ── 9. Bottom Footer Bar (Screen Only) ── */}
+        <div className="p-3.5 px-6 border-t border-slate-800 bg-[#0B1120] flex items-center justify-between text-xs text-slate-500 no-print">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
             <span>نظام التقارير الذكي لشركة درة السيارة · قطع غيار هيونداي وكيا</span>

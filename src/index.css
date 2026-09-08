@@ -79,3 +79,152 @@
   animation: glowBreathe 3.5s ease-in-out infinite;
 }
 
+/* ============================================================
+   EXECUTIVE AUDIT REPORT PRINT / PDF STYLESHEET (A4 CORPORATE)
+   ============================================================ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 8mm 10mm 8mm;
+  }
+
+  /* Force background colors, borders, and crisp graphics */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Clean print body & hide everything outside modal */
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
+    direction: rtl !important;
+  }
+
+  /* Reset layout wrappers to prevent clipping and empty pages */
+  #root, .min-h-screen, .bi-main-content, main {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    position: static !important;
+    width: 100% !important;
+  }
+
+  /* Hide app navigation, headers, sidebars, drawer backdrops */
+  aside,
+  header:not(.print-header),
+  nav,
+  .bi-main-content > header,
+  .no-print,
+  .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* Hide background page content when modal is open */
+  .bi-main-content > main > *:not(#executive-modal-container) {
+    display: none !important;
+  }
+
+  /* Modal container expands naturally for multi-page print */
+  #executive-modal-container {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Modal card converts to clean A4 paper page */
+  #executive-report-printable-area {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  /* Scrollable body expands without scrollbars */
+  #executive-modal-scroll-body {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  /* Table rules for A4 multi-page pagination */
+  .print-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+    font-size: 10px !important;
+  }
+
+  .print-table thead {
+    display: table-header-group !important;
+  }
+
+  .print-table tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  .print-table th {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 6px 4px !important;
+    font-weight: 800 !important;
+    font-size: 10px !important;
+  }
+
+  .print-table td {
+    border: 1px solid #e2e8f0 !important;
+    padding: 4px 5px !important;
+    color: #1e293b !important;
+    font-size: 10px !important;
+  }
+
+  .print-table tr:nth-child(even) td {
+    background-color: #f8fafc !important;
+  }
+
+  .print-avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+
