@@ -5,6 +5,7 @@ import { usePeriods } from '../../hooks/useBIData';
 import { useCurrentPeriod } from '../../context/BIPeriodContext';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import doraLogo from '@/assets/dora_logo.png';
 
 export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, onPeriodChange }) {
   const { user, roleLabel, logout } = useBIAuth();
@@ -19,13 +20,27 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
 
   return (
     <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4 shadow-sm">
-      {/* Mobile menu */}
-      <button
-        className="lg:hidden text-slate-600 hover:text-[#0F172A]"
-        onClick={onOpenMobileSidebar}
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+      <div className="flex items-center gap-3">
+        {/* Mobile menu */}
+        <button
+          className="lg:hidden text-slate-600 hover:text-[#0F172A]"
+          onClick={onOpenMobileSidebar}
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        {/* Brand Logo & Name (No frame, pure transparent logo) */}
+        <div className="flex items-center gap-2">
+          <img
+            src={doraLogo}
+            alt="درة السيارة"
+            className="h-8 sm:h-9 w-auto object-contain drop-shadow-xs"
+          />
+          <span className="text-sm font-black text-[#0F172A] tracking-tight hidden sm:inline font-sans">
+            درة السيارة
+          </span>
+        </div>
+      </div>
 
       {/* Period Selector */}
       {periods?.length > 0 && (

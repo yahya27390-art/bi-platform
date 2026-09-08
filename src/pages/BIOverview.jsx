@@ -27,6 +27,7 @@ import {
   AlertTriangle, ArrowUpRight, Flame, Store, PackageSearch, Filter, RotateCcw,
   Layers, Scale, MapPin, CreditCard, Globe, Compass, Sparkles
 } from 'lucide-react';
+import doraLogo from '@/assets/dora_logo.png';
 
 import { useCurrentPeriod } from '../context/BIPeriodContext';
 
@@ -65,8 +66,8 @@ const OVERVIEW_CARDS = [
   {
     id: 'card-branches',
     title: 'أداء الفروع الميدانية ومطابقة المبيعات (Dora Branches)',
-    shortTitle: 'الفروع الميدانية (3 فروع)',
-    icon: <Store className="w-5 h-5" />,
+    shortTitle: 'فروع درة السيارة (3 فروع)',
+    icon: <img src={doraLogo} alt="درة السيارة" className="w-5 h-5 object-contain" />,
     badge: 'Z-REPORT MATCHED',
     badgeColor: 'emerald',
     accentColor: '#059669',
@@ -228,18 +229,25 @@ export default function BIOverview() {
     <div className="space-y-6 sm:space-y-8 relative w-full overflow-x-hidden" dir="rtl">
       {/* 1. Page Header & Period Selector */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xs">
-        <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-black text-[#0F172A] tracking-tight">
-              مركز القيادة التنفيذي (Executive Command Center)
-            </h1>
-            <span className="text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-              LIVE C-LEVEL
-            </span>
+        <div className="flex items-start sm:items-center gap-3.5">
+          <img
+            src={doraLogo}
+            alt="درة السيارة"
+            className="w-11 h-11 sm:w-12 sm:h-12 object-contain drop-shadow-xs shrink-0"
+          />
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-black text-[#0F172A] tracking-tight">
+                مركز القيادة التنفيذي — درة السيارة
+              </h1>
+              <span className="text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                LIVE C-LEVEL
+              </span>
+            </div>
+            <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
+              {currentPeriod?.labelAr || currentPeriod?.label} · تحليل استراتيجي ومترابط لكافة التدفقات النقدية، المبيعات الميدانية، والإنفاق الإعلاني
+            </p>
           </div>
-          <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
-            {currentPeriod?.labelAr || currentPeriod?.label} · تحليل استراتيجي ومترابط لكافة التدفقات النقدية، المبيعات الميدانية، والإنفاق الإعلاني
-          </p>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">

@@ -5,6 +5,7 @@ import {
   LayoutDashboard, TrendingUp, ShoppingCart, MapPin, Package,
   DollarSign, Target, Upload, Building2, Sparkles, X
 } from 'lucide-react';
+import doraLogo from '@/assets/dora_logo.png';
 
 const NAV_ITEMS = [
   { label: 'نظرة عامة', icon: LayoutDashboard, path: '/', exact: true },
@@ -44,13 +45,17 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full items-center py-4">
-      {/* Brand Icon */}
+      {/* Brand Icon: Official Dora Logo (No frames, no backgrounds) */}
       <Link
         to="/"
-        className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shrink-0 shadow-lg shadow-blue-900/40 hover:scale-105 transition-transform mb-4"
+        className="w-12 h-12 flex items-center justify-center shrink-0 hover:scale-110 transition-transform mb-4"
         title="درة للسيارات — BI Platform"
       >
-        <Building2 className="w-6 h-6 text-white" />
+        <img
+          src={doraLogo}
+          alt="درة السيارة"
+          className="w-11 h-11 object-contain drop-shadow-md"
+        />
       </Link>
 
       <div className="w-8 h-px bg-slate-800/80 mb-3" />
