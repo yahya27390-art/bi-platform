@@ -56,6 +56,7 @@ import {
 import { formatSAR, formatNum } from '../lib/kpiEngine';
 import ga4Snapshot from '../data/ga4LiveSnapshot.json';
 import gscSnapshot from '../data/gscLiveSnapshot.json';
+import { REAL_INVENTORY_STATS, REAL_ALL_PARTS } from '../data/realInventoryData';
 import {
   loadAgentMemories,
   saveAgentMemories,
@@ -959,7 +960,42 @@ export default function PrivateCampaignLab() {
     const tiktokContext = formatTikTokForAgentPrompt(tiktokConfig);
     const metaContext = formatMetaForAgentPrompt(metaConfig);
     const googleContext = formatGoogleAdsForAgentPrompt(googleConfig);
-    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${sallaContext}\n\n${tiktokContext}\n\n${metaContext}\n\n${googleContext}\n\n${memoriesContext}\n\n${tasksContext}`;
+
+    // Authentic Inventory Movement Context (8,693 SKUs)
+    const topStagnantSample = REAL_ALL_PARTS
+      .filter((p) => p.balance > 0 && p.issued === 0)
+      .sort((a, b) => b.balance - a.balance)
+      .slice(0, 6)
+      .map((p) => `${p.name} [كود: ${p.sku}] رصيد راكد: ${p.balance} حبة`)
+      .join('، ');
+
+    const topSellingSample = [...REAL_ALL_PARTS]
+      .sort((a, b) => b.issued - a.issued)
+      .slice(0, 6)
+      .map((p) => `${p.name} [كود: ${p.sku}] مبيعات منصرفة: ${p.issued} حبة`)
+      .join('، ');
+
+    const topStockoutSample = REAL_ALL_PARTS
+      .filter((p) => p.balance <= 0 && p.issued > 0)
+      .sort((a, b) => b.issued - a.issued)
+      .slice(0, 5)
+      .map((p) => `${p.name} [كود: ${p.sku}] مبيعات سابقة: ${p.issued} حبة`)
+      .join('، ');
+
+    const inventoryContext = `
+📦 **سجل الجرد الفعلي وحركة المخزن المعتمد (8,693 صنف - سبتمبر 2026 - حركة مخزن الى شهر 9 2026.xlsx):**
+- إجمالي كودات قطع الغيار المسجلة (SKUs): ${formatNum(REAL_INVENTORY_STATS.totalSKUs)} صنف (هيونداي: ${REAL_INVENTORY_STATS.brandStats.hyundai.count} صنف، كيا: ${REAL_INVENTORY_STATS.brandStats.kia.count} صنف، موبيس أصلي: ${REAL_INVENTORY_STATS.brandStats.mobis.count} صنف).
+- إجمالي رصيد المخزون المتوفر بالمستودعات: ${formatNum(REAL_INVENTORY_STATS.totalBalance)} قطعة غيار.
+- إجمالي حركة المبيعات الفعلية (المنصرف): ${formatNum(REAL_INVENTORY_STATS.totalIssued)} قطعة غيار.
+- إجمالي الكميات الواردة للمستودعات: ${formatNum(REAL_INVENTORY_STATS.totalReceived)} قطعة.
+- الأصناف الراكدة (تجميد سيولة - صفر مبيعات): 2,082 صنف بالمستودع (أبرزها: ${topStagnantSample}).
+- الأصناف الأكثر مبيعاً وطلباً: 6,611 صنفاً نشطاً (أبرزها: ${topSellingSample}).
+- أصناف حرجة نفدت من المخزون بطلب نشط (فرص مبيعات ضائعة): 2,186 صنف صفر رصيد (أبرزها: ${topStockoutSample}).
+- تحليل نشاط الفئات الـ 9: فئة "الفلاتر والمصفيات" الأعلى دوراناً (71.7%)، فئة "الزيوت وسوائل التبريد" الأعلى حجماً (29,886 قطعة)، فئة "الهيكل والإنارة" الأكثر ركوداً (64.9% ركود).
+*توجيه استراتيجي للإيجنت:* وظف هذه الأرقام في اقتراح حزم التخفيضات لتسييل الأصناف الراكدة، وركز الإعلانات على القطع الأكثر طلباً وتجنب الإعلان عن القطع النافذة.
+`;
+
+    const fullSystemPrompt = `${DORA_SYSTEM_PROMPT}\n\n${budgetContext}\n\n${inventoryContext}\n\n${sallaContext}\n\n${tiktokContext}\n\n${metaContext}\n\n${googleContext}\n\n${memoriesContext}\n\n${tasksContext}`;
 
     // Append textual content of documents (csv, txt, json) to prompt
     let fullUserQueryText = userQuery;
