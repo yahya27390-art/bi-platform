@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useBIAuth, AUTH_ACCOUNTS } from './BIAuthContext';
 import { 
   ShieldCheck, 
