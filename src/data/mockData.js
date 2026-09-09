@@ -448,11 +448,11 @@ export const MOCK_FINANCIALS = {
       marketing: 9403.00, // Google: 4,660.27 + Meta: 3,221.60 + TikTok: 1,521.13
       other: 10000     // احتياطي زيادة ونقصان ونثريات
     },
-    totalOpex: 99403.00, // 60,000 (رواتب) + 20,000 (تشغيل/إيجار/كهرباء/شحن) + 10,000 (احتياطي) + 9,403 (إعلانات)
-    ebitda: 177960.06, ebitdaMarginPct: 17.98, depreciation: 0,
-    ebit: 177960.06, interest: 0, ebt: 177960.06, tax: 0,
-    netProfit: 177960.06, netProfitMarginPct: 17.98, // 277,363.06 (مجمل الربح) - 9,403 (تسويق) - 90,000 (تشغيل واحتياطي) = 177,960.06 SAR
-    cashFlow: 177960.06, accountsReceivable: 31200, inventoryValue: 190400,
+    totalOpex: 90000.00, // 60,000 (رواتب) + 20,000 (تشغيل/إيجار/كهرباء/شحن) + 10,000 (احتياطي)
+    ebitda: 187363.06, ebitdaMarginPct: 18.93, depreciation: 0,
+    ebit: 187363.06, interest: 0, ebt: 187363.06, tax: 0,
+    netProfit: 187363.06, netProfitMarginPct: 18.93, // 277,363.06 (مجمل الربح 28.03%) - 90,000 (المصروفات التشغيلية) = 187,363.06 SAR
+    cashFlow: 187363.06, accountsReceivable: 31200, inventoryValue: 190400,
     monthlyTarget: 800000, targetAchievementPct: 123.69,
     blendedMER: 105.23, // 989,522.16 / 9,403.00
   },
@@ -476,7 +476,7 @@ export const MOCK_REVENUE_TREND = [
   { month: 'مايو', monthEn: 'May', revenue: 358000, grossProfit: 159700, netProfit: 26400, adSpend: 30500 },
   { month: 'يونيو', monthEn: 'Jun', revenue: 385000, grossProfit: 173250, netProfit: 28900, adSpend: 29200 },
   { month: 'يوليو', monthEn: 'Jul', revenue: 404000, grossProfit: 180000, netProfit: 33405, adSpend: 31800 },
-  { month: 'أغسطس', monthEn: 'Aug', revenue: 989522, grossProfit: 277363, netProfit: 177960, adSpend: 9403 },
+  { month: 'أغسطس', monthEn: 'Aug', revenue: 989522, grossProfit: 277363, netProfit: 187363, adSpend: 9403 },
   { month: 'سبتمبر', monthEn: 'Sep', revenue: 487200, grossProfit: 218240, netProfit: 57494, adSpend: 38500 },
 ];
 
@@ -489,7 +489,7 @@ export const MOCK_TARGETS = {
     metaROAS: 4.5, googleROAS: 4.2, tiktokROAS: 3.5,
   },
   'p-2026-08': {
-    revenue: 800000, netProfit: 177960.06, adSpend: 9403,
+    revenue: 800000, netProfit: 187363.06, adSpend: 9403,
     blendedMER: 85.0, // Blended MER: Total Company Sales (989.5K) / Total Ad Spend (9.4K) = 105.23x
     roas: 15.0, // Overall direct platform-attributed ROAS (Actual: 19.79x)
     orders: 73, newCustomers: 1617, cpa: 5.81,

@@ -546,29 +546,40 @@ export default function SallaIntegrationModal({ isOpen, onClose, onSyncComplete,
                 <span>أحدث طلبات متجر سلة المستلمة:</span>
                 <span className="text-[10px] font-mono text-emerald-400">مجموع: 41,783 ر.س</span>
               </div>
-              <div className="space-y-1.5">
-                {sallaConfig.syncedStats?.recentOrders?.map((ord) => (
-                  <div
-                    key={ord.id}
-                    className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs"
-                  >
-                    <div>
-                      <div className="font-bold text-white flex items-center gap-2">
-                        <span className="font-mono text-slate-400 text-[11px]">{ord.id}</span>
-                        <span>{ord.customer}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-mono">
-                          {ord.city}
-                        </span>
+              {sallaConfig.syncedStats?.recentOrders && sallaConfig.syncedStats.recentOrders.length > 0 ? (
+                <div className="space-y-1.5">
+                  {sallaConfig.syncedStats.recentOrders.map((ord) => (
+                    <div
+                      key={ord.id}
+                      className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs"
+                    >
+                      <div>
+                        <div className="font-bold text-white flex items-center gap-2">
+                          <span className="font-mono text-slate-400 text-[11px]">{ord.id}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-mono">
+                            {ord.city || 'سلة'}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">{ord.items} · {ord.date}</div>
                       </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">{ord.items} · {ord.date}</div>
+                      <div className="text-left">
+                        <div className="font-mono font-bold text-emerald-400">{formatSAR(ord.total, true)}</div>
+                        <span className="text-[10px] text-teal-400">{ord.status}</span>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <div className="font-mono font-bold text-emerald-400">{formatSAR(ord.total, true)}</div>
-                      <span className="text-[10px] text-teal-400">{ord.status}</span>
-                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 text-center space-y-1.5">
+                  <div className="text-sm font-bold text-slate-300">لا توجد سجلات طلبات فردية مسجلة حالياً</div>
+                  <div className="text-[11px] text-slate-400 leading-relaxed">
+                    القناة متصلة بالمتجر وبانتظار استلام طلبات حية لحظياً عبر Salla Webhook.
                   </div>
-                ))}
-              </div>
+                  <div className="text-[10px] text-emerald-400 font-mono pt-1">
+                    ✓ إجمالي مبيعات أغسطس المعتمدة: 41,783 ر.س (69 طلباً)
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

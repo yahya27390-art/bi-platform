@@ -58,15 +58,33 @@ export const AUTH_ACCOUNTS = [
   },
 ];
 
+// Strict Session Inactivity Timeout: 5 minutes (300,000 milliseconds)
+export const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
+export const LAST_ACTIVE_KEY = 'bi_last_active_time';
+export const LOGOUT_REASON_KEY = 'bi_logout_reason';
+
 // Universal Master Passwords accepted for convenience and management emergency access
 const MASTER_PASSWORDS = ['dora2026', 'dora#2026', 'dora@2026'];
 
 export function BIAuthProvider({ children }) {
-  // STRICT GATEKEEPER: Default to null if not authenticated!
+  // STRICT GATEKEEPER: Default to null if not authenticated or expired!
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('bi_active_user');
       if (saved) {
+        const lastActiveStr = localStorage.getItem(LAST_ACTIVE_KEY);
+        const lastActive = lastActiveStr ? parseInt(lastActiveStr, 10) : 0;
+        const now = Date.now();
+
+        // If inactive for more than 5 minutes on startup, strictly terminate session
+        if (lastActive && now - lastActive >= INACTIVITY_TIMEOUT_MS) {
+          localStorage.removeItem('bi_active_user');
+          localStorage.removeItem(LAST_ACTIVE_KEY);
+          sessionStorage.removeItem('dora_owner_vault_unlocked');
+          sessionStorage.setItem(LOGOUT_REASON_KEY, 'inactivity_5min');
+          return null;
+        }
+
         const parsed = JSON.parse(saved);
         // Ensure valid user object
         if (parsed && parsed.id && parsed.role) {
@@ -80,6 +98,66 @@ export function BIAuthProvider({ children }) {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // ── STRICT 5-MINUTE INACTIVITY AUTO-LOGOUT ENGINE ─────────────────────────
+  useEffect(() => {
+    if (!user) return;
+
+    // Stamp current time as active on mount / login
+    const recordActivity = () => {
+      const now = Date.now();
+      localStorage.setItem(LAST_ACTIVE_KEY, now.toString());
+    };
+
+    // Throttled event handler to avoid performance overhead (max once per 2 seconds)
+    let lastThrottledTime = 0;
+    const handleUserActivity = () => {
+      const now = Date.now();
+      if (now - lastThrottledTime > 2000) {
+        lastThrottledTime = now;
+        localStorage.setItem(LAST_ACTIVE_KEY, now.toString());
+      }
+    };
+
+    // Ensure initial timestamp exists
+    if (!localStorage.getItem(LAST_ACTIVE_KEY)) {
+      recordActivity();
+    }
+
+    // Attach listeners for all user movements and inputs
+    const ACTIVITY_EVENTS = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    ACTIVITY_EVENTS.forEach((evt) => {
+      window.addEventListener(evt, handleUserActivity, { passive: true });
+    });
+
+    // Check interval every 2 seconds
+    const intervalId = setInterval(() => {
+      const lastActiveStr = localStorage.getItem(LAST_ACTIVE_KEY);
+      const lastActive = lastActiveStr ? parseInt(lastActiveStr, 10) : Date.now();
+      const elapsed = Date.now() - lastActive;
+
+      if (elapsed >= INACTIVITY_TIMEOUT_MS) {
+        console.warn('🔒 تم استيفاء مهلة عدم النشاط (5 دقائق). إنهاء الجلسة فوراً لأسباب أمنية.');
+        sessionStorage.setItem(LOGOUT_REASON_KEY, 'inactivity_5min');
+        sessionStorage.removeItem('dora_owner_vault_unlocked');
+        localStorage.removeItem('bi_active_user');
+        localStorage.removeItem(LAST_ACTIVE_KEY);
+        setUser(null);
+
+        // Redirect to login
+        if (!window.location.hash.includes('/login') && !window.location.pathname.includes('/login')) {
+          window.location.hash = '#/login';
+        }
+      }
+    }, 2000);
+
+    return () => {
+      clearInterval(intervalId);
+      ACTIVITY_EVENTS.forEach((evt) => {
+        window.removeEventListener(evt, handleUserActivity);
+      });
+    };
+  }, [user]);
 
   // Sync Supabase Auth listener if configured
   useEffect(() => {
@@ -100,6 +178,8 @@ export function BIAuthProvider({ children }) {
         };
         setUser(biUser);
         localStorage.setItem('bi_active_user', JSON.stringify(biUser));
+        localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
+        sessionStorage.removeItem(LOGOUT_REASON_KEY);
       }
     });
 
@@ -148,6 +228,8 @@ export function BIAuthProvider({ children }) {
           };
           setUser(authUser);
           localStorage.setItem('bi_active_user', JSON.stringify(authUser));
+          localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
+          sessionStorage.removeItem(LOGOUT_REASON_KEY);
           return authUser;
         }
       }
@@ -173,6 +255,8 @@ export function BIAuthProvider({ children }) {
             };
             setUser(biUser);
             localStorage.setItem('bi_active_user', JSON.stringify(biUser));
+            localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
+            sessionStorage.removeItem(LOGOUT_REASON_KEY);
             return biUser;
           }
         } catch (supaErr) {
@@ -200,6 +284,7 @@ export function BIAuthProvider({ children }) {
       };
       setUser(updated);
       localStorage.setItem('bi_active_user', JSON.stringify(updated));
+      localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
     }
   };
 
@@ -214,6 +299,9 @@ export function BIAuthProvider({ children }) {
     }
     setUser(null);
     localStorage.removeItem('bi_active_user');
+    localStorage.removeItem(LAST_ACTIVE_KEY);
+    sessionStorage.removeItem('dora_owner_vault_unlocked');
+    sessionStorage.removeItem(LOGOUT_REASON_KEY);
   };
 
   const permissions = getBIPermissions(user?.role);

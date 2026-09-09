@@ -34,17 +34,6 @@ const CHANNELS_DATA = [
     spend: '1,521 ر.س',
     ctr: '2.03%',
     cpa: '217 ر.س'
-  },
-  {
-    key: 'snapchat',
-    name: 'سناب شات (Snapchat)',
-    color: '#D97706',
-    fillColor: 'rgba(217, 119, 6, 0.28)',
-    value: [3.15, 68, 1.85, 2.1, 16.5],
-    roas: '×3.15',
-    spend: '500 ر.س',
-    ctr: '1.80%',
-    cpa: '65 ر.س'
   }
 ];
 

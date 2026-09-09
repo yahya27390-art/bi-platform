@@ -80,7 +80,7 @@ export default function OwnerSecurityGate({ onUnlock }) {
         {/* Title & Handwritten subheader */}
         <div className="border-b-2 border-dashed border-slate-300 pb-3 mb-5">
           <h1 className="text-xl font-black text-slate-900 tracking-tight">
-            بوابة الخزنة — صاحب الشركة
+            درة السيارة ( owner )
           </h1>
           <p className="text-xs text-slate-600 mt-1 font-mono font-bold">
             [ وصول مقيد ومحمي برموز أمان خاصة ]

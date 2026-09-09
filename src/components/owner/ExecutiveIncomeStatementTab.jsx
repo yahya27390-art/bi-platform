@@ -16,18 +16,26 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
         return `${tar?.name || ''}<br/>القيمة: <strong>${formatSAR(Number(rawVal || 0))}</strong>`;
       }
     },
-    grid: { left: 55, right: 25, bottom: 40, top: 40, containLabel: true },
+    grid: { left: 10, right: 10, bottom: 45, top: 35, containLabel: true },
     xAxis: {
       type: 'category',
-      data: ['الإيراد الإجمالي', 'تكلفة البضاعة (COGS)', 'مجمل الربح', 'المصاريف التشغيلية (OPEX)', 'صافي الربح الفعلي'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, fontWeight: 'bold', color: '#334155' }
+      data: ['الإيرادات', 'تكلفة البضاعة', 'مجمل الربح', 'المصاريف التشغيلية (OPEX)', 'صافي الربح'],
+      axisLabel: {
+        fontFamily: 'Cairo',
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: '#334155',
+        interval: 0,
+        rotate: 15,
+      }
     },
     yAxis: {
       type: 'value',
       axisLabel: {
         formatter: (val) => `${(val / 1000).toFixed(0)}K`,
         fontFamily: 'Cairo',
-        color: '#64748B'
+        color: '#64748B',
+        fontSize: 10,
       },
       splitLine: { lineStyle: { color: '#F1F5F9' } }
     },
@@ -49,10 +57,10 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
           position: 'top',
           fontFamily: 'Cairo',
           fontWeight: 'bold',
-          fontSize: 11,
+          fontSize: 10,
           formatter: (p) => {
             const v = p?.value != null ? (typeof p.value === 'object' ? p.value.value : p.value) : 0;
-            return `${(Number(v) / 1000).toFixed(1)}K`;
+            return `${(Number(v) / 1000).toFixed(0)}K`;
           }
         },
         data: [
@@ -78,16 +86,16 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
       orient: 'horizontal',
       bottom: 0,
       left: 'center',
-      itemGap: 14,
+      itemGap: 8,
       icon: 'circle',
-      textStyle: { fontFamily: 'Cairo', fontSize: 11, color: '#334155', fontWeight: 'bold' }
+      textStyle: { fontFamily: 'Cairo', fontSize: 10, color: '#334155', fontWeight: 'bold' }
     },
     series: [
       {
         name: 'قنوات الإيرادات',
         type: 'pie',
-        radius: ['44%', '66%'],
-        center: ['50%', '42%'],
+        radius: ['38%', '58%'],
+        center: ['50%', '38%'],
         avoidLabelOverlap: true,
         itemStyle: {
           borderRadius: 6,
@@ -98,9 +106,9 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
           show: false
         },
         data: [
-          { value: 428881.08, name: 'الفرع الرئيسي', itemStyle: { color: '#0F2744' } },
-          { value: 291365.50, name: 'فرع الرواف هيونداي', itemStyle: { color: '#0284C7' } },
-          { value: 269275.58, name: 'فرع كيا المعتمد', itemStyle: { color: '#F97316' } },
+          { value: 428885.49, name: 'الفرع الرئيسي', itemStyle: { color: '#0F2744' } },
+          { value: 291371.67, name: 'فرع الرواف هيونداي', itemStyle: { color: '#0284C7' } },
+          { value: 269265.00, name: 'فرع كيا المعتمد', itemStyle: { color: '#F97316' } },
           { value: 41783.00, name: 'متجر سلة أونلاين', itemStyle: { color: '#10B981' } }
         ]
       }
@@ -120,21 +128,21 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
         return `${item?.name || ''}: <strong>${val} ر.س</strong>`;
       }
     },
-    grid: { left: 55, right: 30, bottom: 25, top: 15, containLabel: true },
+    grid: { left: 10, right: 20, bottom: 25, top: 15, containLabel: true },
     xAxis: {
       type: 'value',
-      axisLabel: { formatter: (v) => `${v / 1000}K`, fontFamily: 'Cairo', color: '#64748B' },
+      axisLabel: { formatter: (v) => `${v / 1000}K`, fontFamily: 'Cairo', color: '#64748B', fontSize: 10 },
       splitLine: { lineStyle: { color: '#F1F5F9' } }
     },
     yAxis: {
       type: 'category',
-      data: ['الاحتياطي والطوارئ', 'الإيجارات والمرافق والشحن', 'الرواتب والأجور الشهرية'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, fontWeight: 'bold', color: '#334155' }
+      data: ['طوارئ', 'مرافق وإيجار', 'رواتب وأجور'],
+      axisLabel: { fontFamily: 'Cairo', fontSize: 10, fontWeight: 'bold', color: '#334155' }
     },
     series: [
       {
         type: 'bar',
-        barWidth: '55%',
+        barWidth: '50%',
         data: [
           { value: 10000, itemStyle: { color: '#F97316' } },
           { value: 20000, itemStyle: { color: '#0284C7' } },
@@ -169,17 +177,17 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
         </div>`;
       }
     },
-    grid: { left: 45, right: 30, bottom: 35, top: 35, containLabel: true },
+    grid: { left: 10, right: 10, bottom: 35, top: 35, containLabel: true },
     xAxis: {
       type: 'category',
-      data: ['هامش مجمل الربح', 'هامش الأرباح التشغيلية', 'هامش صافي الربح'],
-      axisLabel: { fontFamily: 'Cairo', fontSize: 11, color: '#1E293B', fontWeight: 'bold' }
+      data: ['مجمل الربح', 'المصاريف التشغيلية (OPEX)', 'صافي الربح الفعلي'],
+      axisLabel: { fontFamily: 'Cairo', fontSize: 10, color: '#1E293B', fontWeight: 'bold' }
     },
     yAxis: {
       type: 'value',
       axisLabel: { formatter: '{value}%', fontFamily: 'Cairo', color: '#64748B' },
       splitLine: { lineStyle: { color: '#F1F5F9' } },
-      max: 50
+      max: 35
     },
     series: [
       {
@@ -187,9 +195,9 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
         type: 'bar',
         barWidth: 46,
         data: [
-          { value: 37.12, itemStyle: { color: '#0F2744', borderRadius: [6, 6, 0, 0] } },
-          { value: 29.42, itemStyle: { color: '#0284C7', borderRadius: [6, 6, 0, 0] } },
-          { value: 28.03, itemStyle: { color: '#10B981', borderRadius: [6, 6, 0, 0] } }
+          { value: 28.03, itemStyle: { color: '#0F2744', borderRadius: [6, 6, 0, 0] } },
+          { value: 9.10, itemStyle: { color: '#F97316', borderRadius: [6, 6, 0, 0] } },
+          { value: 18.93, itemStyle: { color: '#10B981', borderRadius: [6, 6, 0, 0] } }
         ],
         label: {
           show: true,
@@ -217,11 +225,11 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono font-bold">
-            صافي الأرباح: {mask(formatSAR(netProfit))}
+          <span className="px-3 py-1 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-xs font-mono font-bold">
+            مجمل الربح: {mask(formatSAR(grossProfit))} (28.03%)
           </span>
-          <span className="px-3 py-1 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-mono font-bold">
-            هامش الصافي: 28.03%
+          <span className="px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono font-bold">
+            صافي الربح الفعلي: {mask(formatSAR(netProfit))} (18.93%)
           </span>
         </div>
       </div>

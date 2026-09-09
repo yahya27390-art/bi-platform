@@ -24,17 +24,89 @@ export const DEFAULT_SALLA_CONFIG = {
     conversionRate: 3.2,
     cartAbandonmentRate: 62.4,
     topSellingProducts: [
-      { id: 'p-1', name: 'فحمات فرامل سيراميك هيونداي إلنترا / سوناتا (Mobis)', orders: 24, revenue: 6720 },
-      { id: 'p-2', name: 'بكج صيانة كيا سيراتو (فلتر هواء + فلتر مكيف + زيت 5W30)', orders: 19, revenue: 5890 },
-      { id: 'p-3', name: 'طقم بواجي إيريديوم ليزر تويوتا كورولا / كامري', orders: 15, revenue: 4950 },
-      { id: 'p-4', name: 'مساعدات أمامية أصلية هيونداي أكسنت', orders: 11, revenue: 4180 },
+      {
+        id: 'salla-prod-1',
+        name: 'طقم كلتش وحذاف وفحمة ديزل 1.6 و1.7 أصلي',
+        sku: '232002A405-412002D220-414202D000',
+        orders: 1,
+        revenue: 3350,
+        profit: 3350,
+        emoji: '⚙️',
+        color: '#0284C7',
+      },
+      {
+        id: 'salla-prod-2',
+        name: 'طلبية تبريد كيا سورينتو 2015',
+        sku: 'SALLA-COOLING-SORENTO',
+        orders: 2,
+        revenue: 2820,
+        profit: 2820,
+        emoji: '❄️',
+        color: '#059669',
+      },
+      {
+        id: 'salla-prod-3',
+        name: 'طلبيه خاصه ازيرا',
+        sku: 'SALLA-AZERA-SPEC',
+        orders: 1,
+        revenue: 2500,
+        profit: 2500,
+        emoji: '🚗',
+        color: '#7C3AED',
+      },
+      {
+        id: 'salla-prod-4',
+        name: 'كمبروسر مكيف موهافي كوري',
+        sku: 'SALLA-MOHAVE-AC',
+        orders: 2,
+        revenue: 2230,
+        unitPrice: 1115,
+        profit: 2230,
+        emoji: '❄️',
+        color: '#EA580C',
+      },
+      {
+        id: 'salla-prod-5',
+        name: 'كمبروسر مكيف هيونداي أزيرا وكيا كادينزا ديزل 2018-...',
+        sku: '97701G8200K',
+        orders: 1,
+        revenue: 1100,
+        profit: 1100,
+        emoji: '🔧',
+        color: '#2563EB',
+      },
+      {
+        id: 'salla-prod-6',
+        name: 'كمبرسر هيونداي كونا ديزل 18 / 20 كوري',
+        sku: '97701j9300',
+        orders: 1,
+        revenue: 1000,
+        profit: 1000,
+        emoji: '🔧',
+        color: '#475569',
+      },
+      {
+        id: 'salla-prod-7',
+        name: 'عكس امامي يسار هيونداي النترا 2020 أصلي',
+        sku: '49500F2100',
+        orders: 1,
+        revenue: 930,
+        profit: 930,
+        emoji: '🔩',
+        color: '#0D9488',
+      },
+      {
+        id: 'salla-prod-8',
+        name: 'كمبروسر سورينتو بنزين 16/15 كوري',
+        sku: '97701C5850k',
+        orders: 1,
+        revenue: 930,
+        profit: 930,
+        emoji: '❄️',
+        color: '#D97706',
+      },
     ],
-    recentOrders: [
-      { id: 'ORD-8921', customer: 'أحمد الغامدي', city: 'جدة', total: 640, status: 'مكتمل', items: 'فحمات فرامل + فلتر هواء', date: 'اليوم 14:20' },
-      { id: 'ORD-8920', customer: 'سعد القحطاني', city: 'الرياض', total: 890, status: 'مكتمل', items: 'بكج صيانة كيا + بواجي', date: 'اليوم 11:05' },
-      { id: 'ORD-8919', customer: 'محمد المطيري', city: 'بريدة', total: 310, status: 'مكتمل (استلام من الفرع)', items: 'طقم بواجي تويوتا', date: 'أمس 20:45' },
-      { id: 'ORD-8918', customer: 'خالد الدوسري', city: 'الدمام', total: 540, status: 'جاري التوصيل', items: 'فلتر زيت + زيت شل 5W30', date: 'أمس 16:15' },
-    ],
+    recentOrders: [],
   },
 };
 
@@ -47,6 +119,18 @@ export function loadSallaConfig() {
       return DEFAULT_SALLA_CONFIG;
     }
     const parsed = JSON.parse(saved);
+    // Sanitize any legacy mock orders and mock products to strictly enforce AGENTS.md rule
+    const sanitizedRecentOrders = (parsed.syncedStats?.recentOrders || []).filter(
+      ord => ord && !ord.customer && !ord.id?.startsWith('ORD-89')
+    );
+    let sanitizedTopProducts = (parsed.syncedStats?.topSellingProducts || []).filter(
+      p => p && !['p-1', 'p-2', 'p-3', 'p-4'].includes(p.id) && !p.name?.includes('Mobis') && !p.name?.includes('سيراتو') && !p.name?.includes('بواجي') && !p.name?.includes('مساعدات')
+    );
+    // If empty or legacy mock items were purged, load authentic official Salla products
+    if (sanitizedTopProducts.length === 0) {
+      sanitizedTopProducts = DEFAULT_SALLA_CONFIG.syncedStats.topSellingProducts;
+    }
+
     const merged = {
       ...DEFAULT_SALLA_CONFIG,
       ...parsed,
@@ -56,8 +140,17 @@ export function loadSallaConfig() {
       syncedStats: {
         ...DEFAULT_SALLA_CONFIG.syncedStats,
         ...(parsed.syncedStats || {}),
+        recentOrders: sanitizedRecentOrders,
+        topSellingProducts: sanitizedTopProducts,
       },
     };
+    // If dirty legacy mock data was detected in localStorage, rewrite it immediately
+    if (
+      (parsed.syncedStats?.topSellingProducts?.length || 0) !== sanitizedTopProducts.length ||
+      (parsed.syncedStats?.recentOrders?.length || 0) !== sanitizedRecentOrders.length
+    ) {
+      saveSallaConfig(merged);
+    }
     return merged;
   } catch {
     return DEFAULT_SALLA_CONFIG;

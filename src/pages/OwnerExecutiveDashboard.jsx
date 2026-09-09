@@ -1,498 +1,226 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Lock,
   Eye,
   EyeOff,
-  Printer,
   TrendingUp,
-  DollarSign,
-  Boxes,
   MapPin,
-  Flame,
-  AlertTriangle,
-  ArrowUpRight,
-  Sparkles,
-  Award,
-  Layers,
-  CheckCircle2,
-  PackageX,
-  ExternalLink,
-  ChevronLeft,
-  Upload,
   BarChart3,
-  FileSpreadsheet,
-  PieChart,
-  Wallet,
-  Activity,
-  ShieldCheck,
-  Compass
+  ShoppingCart,
+  Smartphone,
+  Monitor,
+  Package,
 } from 'lucide-react';
-import ReactECharts from 'echarts-for-react';
-import { formatSAR, formatNum } from '../lib/kpiEngine';
-import { REAL_INVENTORY_STATS } from '../data/realInventoryData';
 import doraLogo from '@/assets/dora_logo.png';
 import OwnerSecurityGate from '../components/owner/OwnerSecurityGate';
-import ExecutiveReportsModal from '../components/shared/ExecutiveReportsModal';
 import ExecutiveIncomeStatementTab from '../components/owner/ExecutiveIncomeStatementTab';
-import ExecutiveBalanceSheetTab from '../components/owner/ExecutiveBalanceSheetTab';
-import ExecutiveRatiosRadarTab from '../components/owner/ExecutiveRatiosRadarTab';
-import ExecutiveProfitabilityGauges from '../components/owner/ExecutiveProfitabilityGauges';
+import OwnerCampaignTab from '../components/owner/OwnerCampaignTab';
+import OwnerBranchesTab from '../components/owner/OwnerBranchesTab';
+import OwnerStoreTab from '../components/owner/OwnerStoreTab';
+import OwnerInventoryTab from '../components/owner/OwnerInventoryTab';
 
 const VAULT_SESSION_KEY = 'dora_owner_vault_unlocked';
+const VIEW_MODE_KEY = 'dora_owner_view_mode';
 
-export default function OwnerExecutiveDashboard() {
-  const navigate = useNavigate();
-  const [isUnlocked, setIsUnlocked] = useState(() => {
-    return sessionStorage.getItem(VAULT_SESSION_KEY) === 'true';
-  });
-  const [activeTab, setActiveTab] = useState('summary');
-  const [privacyMode, setPrivacyMode] = useState(false);
-  const [reportsModalOpen, setReportsModalOpen] = useState(false);
-  const [reportsModalTab, setReportsModalTab] = useState('stagnant');
+// ── Authentic August 2026 Figures ─────────────────────────────────────────────
+const NET_SALES = 989522.16;
+const COGS_TOTAL = 712159.10; // تكلفة البضاعة المباعة والمشتريات المعتمدة (71.97%)
+const GROSS_PROFIT = 277363.06; // مجمل الربح المحقق قبل المصروفات التشغيلية (28.03%)
+const MONTHLY_TARGET = 800000;
+const GROSS_MARGIN_PCT = 28.03;
+const OPEX_SALARIES = 60000;
+const OPEX_FACILITIES = 20000;
+const OPEX_CONTINGENCY = 10000;
+const TOTAL_MONTHLY_OPEX = 90000; // رواتب 60 ألف + مرافق وإيجارات 20 ألف + احتياطي 10 آلاف
+const NET_PROFIT = GROSS_PROFIT - TOTAL_MONTHLY_OPEX; // 187,363.06 SAR (صافي الربح الفعلي بعد خصم OPEX)
+const NET_MARGIN_PCT = Number(((NET_PROFIT / NET_SALES) * 100).toFixed(2)); // 18.93%
+const OPEX_COVERAGE_RATIO = Math.round((GROSS_PROFIT / TOTAL_MONTHLY_OPEX) * 100); // 308% تغطية مجمل الربح للتشغيل
 
-  const handleLock = () => {
-    sessionStorage.removeItem(VAULT_SESSION_KEY);
-    setIsUnlocked(false);
-  };
+// Tab configuration (5 core executive pillars)
+const TABS = [
+  { id: 'summary', label: 'المالية', emoji: '💰', icon: BarChart3 },
+  { id: 'inventory', label: 'الأصناف', emoji: '📦', icon: Package },
+  { id: 'branches', label: 'الفروع', emoji: '🏪', icon: MapPin },
+  { id: 'campaigns', label: 'الحملات', emoji: '📊', icon: TrendingUp },
+  { id: 'store', label: 'المتجر', emoji: '🛒', icon: ShoppingCart },
+];
 
-  const handlePrint = () => {
-    window.print();
-  };
+// ── Summary Tab: Verified KPI Cards Only ──────────────────────────────────────
+function SummaryTab({ privacyMode, viewMode = 'mobile' }) {
+  const mask = (val) => (privacyMode ? '••••••' : val);
 
-  const openReport = (tab) => {
-    setReportsModalTab(tab);
-    setReportsModalOpen(true);
-  };
-
-  // Masking helper for privacy mode
-  const mask = (val) => {
-    if (privacyMode) return '••••••';
-    return val;
-  };
-
-  if (!isUnlocked) {
-    return <OwnerSecurityGate onUnlock={() => setIsUnlocked(true)} isUnlocked={isUnlocked} />;
-  }
-
-  // ── Authentic Corporate Baseline Figures (August 2026 Mapped Data) ──
-  const NET_SALES = 989522.16;
-  const NET_PROFIT = 277363.06;
-  const GROSS_PROFIT = 367363.06;
-  const COGS_TOTAL = NET_SALES - GROSS_PROFIT; // 622,159.10 SAR
-  const MONTHLY_TARGET = 800000;
-  const PROFIT_MARGIN = 28.03;
-
-  // Monthly Operating Fixed Overhead
-  const OPEX_SALARIES = 60000;
-  const OPEX_FACILITIES = 20000;
-  const OPEX_CONTINGENCY = 10000;
-  const TOTAL_MONTHLY_OPEX = OPEX_SALARIES + OPEX_FACILITIES + OPEX_CONTINGENCY; // 90,000 SAR
-  const OPEX_COVERAGE_RATIO = ((NET_PROFIT / TOTAL_MONTHLY_OPEX) * 100).toFixed(0); // 308%
-
-  // Branches breakdown
-  const BRANCHES = [
-    { id: 'b1', name: 'الفرع الرئيسي', sales: 428881.08, share: 43.3, color: '#0F2744', tag: 'المركز الأول' },
-    { id: 'b2', name: 'فرع الرواف هيونداي', sales: 291365.50, share: 29.4, color: '#0284C7', tag: 'هيونداي' },
-    { id: 'b3', name: 'فرع كيا المعتمد', sales: 269275.58, share: 27.2, color: '#F97316', tag: 'كيا' },
-    { id: 'b4', name: 'متجر سلة أونلاين', sales: 41783.00, share: 4.2, color: '#10B981', tag: 'أونلاين' }
+  const kpis = [
+    {
+      label: 'صافي المبيعات',
+      value: mask(NET_SALES.toLocaleString('ar-SA', { maximumFractionDigits: 0 })),
+      unit: 'ر.س',
+      sub: `${mask(((NET_SALES / MONTHLY_TARGET) * 100).toFixed(1))}% من التارجت`,
+      color: '#0284C7',
+      bg: '#EFF6FF',
+      icon: '📈',
+    },
+    {
+      label: 'مجمل الربح',
+      value: mask(GROSS_PROFIT.toLocaleString('ar-SA', { maximumFractionDigits: 0 })),
+      unit: 'ر.س',
+      sub: `هامش مجمل: ${mask(GROSS_MARGIN_PCT)}%`,
+      color: '#0284C7',
+      bg: '#F0F9FF',
+      icon: '🏆',
+    },
+    {
+      label: 'صافي الربح الفعلي',
+      value: mask(NET_PROFIT.toLocaleString('ar-SA', { maximumFractionDigits: 0 })),
+      unit: 'ر.س',
+      sub: `هامش صافي: ${mask(NET_MARGIN_PCT)}%`,
+      color: '#059669',
+      bg: '#F0FDF4',
+      icon: '💵',
+    },
+    {
+      label: 'تغطية المصروفات',
+      value: mask(`${OPEX_COVERAGE_RATIO}%`),
+      unit: '',
+      sub: `OPEX: ${mask(TOTAL_MONTHLY_OPEX.toLocaleString('ar-SA'))} ر.س`,
+      color: '#D97706',
+      bg: '#FFFBEB',
+      icon: '⚡',
+    },
   ];
 
-  // August 2026 Financial Pillars Option (Authentic Single-Month Closure)
-  const performanceTrendOption = {
-    backgroundColor: 'transparent',
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      confine: true,
-      formatter: (params) => {
-        const item = params[0];
-        return `<div style="font-family: Cairo; padding: 4px;">
-          <div style="font-weight: bold; color: #0F2744; margin-bottom: 4px;">${item.name}</div>
-          <div style="color: #334155;">القيمة الفعلية: <b>${mask(Number(item.value).toLocaleString())} ر.س</b></div>
-        </div>`;
-      }
-    },
-    grid: { left: 45, right: 30, bottom: 35, top: 35, containLabel: true },
-    xAxis: {
-      type: 'category',
-      data: ['صافي المبيعات', 'مجمل الربح', 'الأرباح التشغيلية', 'صافي الربح'],
-      axisLabel: {
-        fontFamily: 'Cairo',
-        fontSize: 11,
-        color: '#1E293B',
-        fontWeight: 'bold',
-        interval: 0
-      }
-    },
-    yAxis: {
-      type: 'value',
-      axisLabel: { formatter: (v) => `${v / 1000}K`, fontFamily: 'Cairo', color: '#64748B' },
-      splitLine: { lineStyle: { color: '#F1F5F9' } }
-    },
-    series: [
-      {
-        name: 'أغسطس 2026 (الفعلي)',
-        type: 'bar',
-        barWidth: 50,
-        data: [
-          { value: 989522, itemStyle: { color: '#0F2744', borderRadius: [6, 6, 0, 0] } },
-          { value: 367363, itemStyle: { color: '#0284C7', borderRadius: [6, 6, 0, 0] } },
-          { value: 277363, itemStyle: { color: '#F97316', borderRadius: [6, 6, 0, 0] } },
-          { value: 277363, itemStyle: { color: '#10B981', borderRadius: [6, 6, 0, 0] } }
-        ],
-        label: {
-          show: true,
-          position: 'top',
-          fontFamily: 'Cairo',
-          fontSize: 11,
-          fontWeight: 'bold',
-          formatter: (p) => `${mask((p.value / 1000).toFixed(1))}K ر.س`,
-          color: '#1E293B'
-        }
-      }
-    ]
-  };
-
-  const TABS = [
-    { id: 'summary', label: 'Executive Summary', arLabel: 'ملخص الأداء المالي المعتمد', icon: BarChart3 },
-    { id: 'income', label: 'Income Statement', arLabel: 'قائمة الدخل ومخطط الشلال', icon: TrendingUp },
-    { id: 'inventory', label: 'Warehouse Inventory', arLabel: 'تدقيق المستودع والمخزون الفعلي', icon: Boxes },
-    { id: 'radar', label: '5-Axis Efficiency Radar', arLabel: 'مصفوفة الكفاءة وعائد القنوات', icon: Compass },
+  const pillars = [
+    { label: 'الرواتب', value: OPEX_SALARIES, color: '#0284C7' },
+    { label: 'المرافق', value: OPEX_FACILITIES, color: '#7C3AED' },
+    { label: 'الطوارئ', value: OPEX_CONTINGENCY, color: '#D97706' },
   ];
+
+  // Target progress
+  const targetPct = Math.min((NET_SALES / MONTHLY_TARGET) * 100, 200);
+
+  const [showDetailedStatement, setShowDetailedStatement] = useState(viewMode === 'desktop');
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-sans pb-16 bg-[#F4F7FB] min-h-screen text-slate-900" dir="rtl">
-      
-      {/* ── 1. Top Executive Bar ── */}
-      <div className="bg-white border border-slate-200 p-4 sm:p-5 rounded-2xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#0A192F] text-amber-400 flex items-center justify-center font-black text-xl shadow-md shrink-0">
-            ★
-          </div>
+    <div className="space-y-4 pb-2">
+
+      {/* ── Monthly Target Strip ── */}
+      <div className="bg-gradient-to-l from-[#0A192F] to-[#0F2744] rounded-2xl p-4 sm:p-5 text-white shadow-sm">
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-[#0A192F] tracking-tight">
-                لوحة المالك التنفيذية — الإدارة العليا (C-Suite Cockpit)
-              </h1>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
-                فهد ناصر الجوعي
-              </span>
+            <div className="text-xs text-slate-300 font-medium">تارجت أغسطس 2026</div>
+            <div className="text-2xl sm:text-3xl font-black mt-0.5">
+              {mask(MONTHLY_TARGET.toLocaleString('ar-SA'))} <span className="text-sm text-slate-300">ر.س</span>
             </div>
-            <p className="text-xs text-slate-500 font-bold mt-0.5">
-              شركة درة السيارة لقطع غيار هيونداي وكيا · قراءة مالية ومخزنية تفاعلية بأسلوب إنفوجرافيك مؤسسي
-            </p>
+          </div>
+          <div className="text-left">
+            <div className="text-3xl sm:text-4xl font-black text-amber-400">{mask(`${targetPct.toFixed(1)}%`)}</div>
+            <div className="text-[10px] sm:text-xs text-green-300 font-bold mt-0.5">✅ تجاوزنا الهدف المطلوب</div>
           </div>
         </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 self-end md:self-center flex-wrap">
-          {/* Direct Button to Data Import Center */}
-          <button
-            onClick={() => navigate('/import')}
-            className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
-            title="الذهاب لمركز استيراد وتدقيق البيانات"
-          >
-            <Upload className="w-4 h-4 text-white" />
-            <span>مركز استيراد البيانات</span>
-          </button>
-
-          {/* Privacy Toggle */}
-          <button
-            onClick={() => setPrivacyMode(!privacyMode)}
-            className={`px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              privacyMode
-                ? 'bg-amber-100 border-amber-300 text-amber-950'
-                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-            }`}
-            title="إخفاء أو إظهار الأرقام الحساسة"
-          >
-            {privacyMode ? <EyeOff className="w-4 h-4 text-amber-700" /> : <Eye className="w-4 h-4 text-slate-500" />}
-            <span>{privacyMode ? 'الأرقام مخفية 👁️' : 'حماية الأرقام'}</span>
-          </button>
-
-          {/* 1-Page Print */}
-          <button
-            onClick={handlePrint}
-            className="px-3 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <Printer className="w-4 h-4 text-slate-500" />
-            <span>طباعة A4</span>
-          </button>
-
-          {/* Instant Lock */}
-          <button
-            onClick={handleLock}
-            className="px-3 py-2 border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <Lock className="w-4 h-4 text-rose-600" />
-            <span>قفل</span>
-          </button>
+        <div className="h-3 bg-white/15 rounded-full overflow-hidden">
+          <div
+            className="h-3 rounded-full bg-gradient-to-r from-amber-400 to-green-400 transition-all duration-1000"
+            style={{ width: `${Math.min(targetPct, 100)}%` }}
+          />
+        </div>
+        <div className="flex flex-wrap gap-1 justify-between text-[10px] sm:text-xs text-slate-400 mt-1.5 font-mono">
+          <span>المبيعات الفعلية: {mask(NET_SALES.toLocaleString('ar-SA', { maximumFractionDigits: 0 }))} ر.س</span>
+          <span>فائض المبيعات: {mask(((NET_SALES - MONTHLY_TARGET)).toLocaleString('ar-SA', { maximumFractionDigits: 0 }))} ر.س</span>
         </div>
       </div>
 
-      {/* ── 2. Data Import Alert / Quick Action Callout for Owner ── */}
-      <div className="bg-gradient-to-r from-[#0A192F] to-[#1E3A5F] rounded-2xl p-4 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300 shrink-0">
-            <Upload className="w-5 h-5" />
+      {/* ── KPI Cards (Responsive grid: 4 cols on desktop, 2 cols on mobile) ── */}
+      <div className={`grid ${viewMode === 'desktop' ? 'grid-cols-4' : 'grid-cols-2'} gap-2.5 sm:gap-4`}>
+        {kpis.map((kpi, i) => (
+          <div
+            key={i}
+            className="rounded-2xl p-3 sm:p-4 border transition-all hover:shadow-md"
+            style={{ backgroundColor: kpi.bg, borderColor: `${kpi.color}30` }}
+          >
+            <div className="text-2xl mb-1.5">{kpi.icon}</div>
+            <div className="text-[10px] sm:text-xs text-slate-500 mb-0.5">{kpi.label}</div>
+            <div className="font-black text-sm sm:text-lg text-slate-900 leading-tight">
+              {kpi.value} {kpi.unit && <span className="text-[10px] font-bold text-slate-500">{kpi.unit}</span>}
+            </div>
+            <div className="text-[9px] sm:text-xs mt-1 font-bold truncate" style={{ color: kpi.color }}>{kpi.sub}</div>
           </div>
+        ))}
+      </div>
+
+      {/* ── Charts Section (Side-by-side on desktop) ── */}
+      <div className={viewMode === 'desktop' ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : 'space-y-3'}>
+        {/* Profit Waterfall bar chart */}
+        <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-sm border border-slate-100 flex flex-col justify-between">
           <div>
-            <h4 className="text-sm font-bold text-white">
-              مركز استيراد وتدقيق البيانات والحوكمة (Data Import & Governance)
-            </h4>
-            <p className="text-xs text-blue-200/80 mt-0.5">
-              يتيح لك كمالك رفع واعتماد كشوف فواتير الفروع (Z-Report)، الحوالات البنكية، شيتات إعلانات ميتا وتيك توك، وتحديث الأرصدة المخزنية فورياً.
-            </p>
+            <div className="text-xs font-bold text-slate-500 mb-3">الأرقام المالية الرئيسية — أغسطس 2026 فقط</div>
+            {[
+              { label: 'صافي المبيعات', value: NET_SALES, color: '#0284C7', max: NET_SALES },
+              { label: 'مجمل الربح', value: GROSS_PROFIT, color: '#7C3AED', max: NET_SALES },
+              { label: 'صافي الربح', value: NET_PROFIT, color: '#059669', max: NET_SALES },
+              { label: 'OPEX', value: TOTAL_MONTHLY_OPEX, color: '#D97706', max: NET_SALES },
+            ].map((row, i) => (
+              <div key={i} className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] sm:text-xs text-slate-500 w-20 text-right shrink-0">{row.label}</span>
+                <div className="flex-1 bg-slate-100 rounded-full h-4 sm:h-5 overflow-hidden">
+                  <div
+                    className="h-full rounded-full flex items-center justify-end pr-1.5 transition-all duration-700"
+                    style={{
+                      width: `${(row.value / row.max) * 100}%`,
+                      backgroundColor: row.color,
+                    }}
+                  >
+                    <span className="text-[9px] sm:text-[10px] font-bold text-white whitespace-nowrap">
+                      {mask((row.value / 1000).toFixed(0))}K
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-[10px] text-slate-400 text-center mt-2 pt-2 border-t border-slate-100">
+            ⚠️ أغسطس 2026 فقط — لا توجد أي بيانات تقديرية
           </div>
         </div>
+
+        {/* OPEX Breakdown */}
+        <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-sm border border-slate-100 flex flex-col justify-between">
+          <div>
+            <div className="text-xs font-bold text-slate-500 mb-2.5">توزيع المصروفات التشغيلية الثابتة</div>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              {pillars.map((p, i) => (
+                <div key={i} className="text-center p-2 sm:p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                  <div className="text-[10px] sm:text-xs text-slate-400 mb-0.5">{p.label}</div>
+                  <div className="font-black text-xs sm:text-sm" style={{ color: p.color }}>
+                    {mask((p.value / 1000).toFixed(0))}K ر.س
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="text-center mt-2.5 py-2 sm:py-2.5 bg-green-50 rounded-xl border border-green-100">
+            <div className="text-[10px] sm:text-xs text-green-600 font-bold">نسبة تغطية مجمل الربح للـ OPEX</div>
+            <div className="text-lg sm:text-xl font-black text-green-700">{mask(`${OPEX_COVERAGE_RATIO}%`)}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Income Statement Detailed Tab (Collapsible on Mobile, Expanded on Desktop) ── */}
+      <div className="pt-1">
         <button
-          onClick={() => navigate('/import')}
-          className="px-4 py-2 rounded-xl bg-white hover:bg-blue-50 text-[#0A192F] text-xs font-black transition-all shadow-sm shrink-0 flex items-center gap-2"
+          type="button"
+          onClick={() => setShowDetailedStatement(!showDetailedStatement)}
+          className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 font-bold text-xs flex items-center justify-between shadow-xs transition-all"
         >
-          <span>دخول مركز الاستيراد والرفع</span>
-          <ChevronLeft className="w-4 h-4" />
+          <div className="flex items-center gap-2">
+            <span className="text-base">📑</span>
+            <span>التحليل المالي وقائمة الدخل الموسعة (Income Statement)</span>
+          </div>
+          <span className="text-[10px] sm:text-[11px] text-teal-600 font-bold">
+            {showDetailedStatement ? 'إخفاء التفاصيل ▲' : 'عرض التفاصيل والمخططات ▼'}
+          </span>
         </button>
-      </div>
 
-      {/* ── 3. Exact Layout of Image 3: Two-Column Layout with Vertical Nav Rail ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* Navigation Rail (Col-3 on desktop, Deep Navy #0A192F) - EXACT MATCH WITH IMAGE 3 */}
-        <div className="lg:col-span-3 bg-[#0A192F] p-3 rounded-2xl shadow-md space-y-2 sticky top-20">
-          <div className="px-3 py-2 border-b border-slate-700/60 mb-2">
-            <div className="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider">
-              Executive Navigation
-            </div>
-            <div className="text-xs font-bold text-slate-300">
-              أقسام لوحة الإدارة العليا
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-black transition-all cursor-pointer text-right ${
-                    isActive
-                      ? 'bg-[#FF5B00] text-white shadow-lg shadow-[#FF5B00]/30 ring-2 ring-[#FF5B00]/40'
-                      : 'text-slate-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <tab.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                    <div>
-                      <div className="font-bold">{tab.label}</div>
-                      <div className={`text-[10px] ${isActive ? 'text-white/90' : 'text-slate-400'}`}>{tab.arLabel}</div>
-                    </div>
-                  </div>
-                  <ChevronLeft className={`w-3.5 h-3.5 transition-transform ${isActive ? 'translate-x-[-2px] text-white' : 'text-slate-500'}`} />
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="pt-3 border-t border-slate-700/60 mt-4 px-2 text-[10px] text-slate-400 font-medium hidden lg:block">
-            <div className="text-slate-300 font-bold mb-1">بيانات حقيقية 100%</div>
-            أرقام أغسطس 2026 مطابقة للدفاتر وكشوف نقاط البيع والبنك.
-          </div>
-        </div>
-
-        {/* Content Area (Col-9 on desktop) */}
-        <div className="lg:col-span-9 space-y-6">
-
-          {/* TAB 1: EXECUTIVE SUMMARY */}
-          {activeTab === 'summary' && (
-            <div className="space-y-6 animate-fadeIn">
-              {/* The 6 Authentic Key Executive Financial Metrics (Zero Assumed/Unverified Cards) */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-                
-                {/* 1. Total Revenue */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-                  <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    صافي المبيعات (Net Sales)
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
-                    {mask(formatSAR(NET_SALES))}
-                  </div>
-                  <div className="mt-2 text-[10px] text-emerald-700 font-bold flex items-center gap-1">
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>3 فروع + سلة</span>
-                  </div>
-                </div>
-
-                {/* 2. Gross Profit */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-                  <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    مجمل الربح (Gross Profit)
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-blue-900 font-mono mt-2">
-                    {mask(formatSAR(GROSS_PROFIT))}
-                  </div>
-                  <div className="mt-2 text-[10px] text-blue-700 font-bold flex items-center gap-1">
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>هامش 37.1% مجمل</span>
-                  </div>
-                </div>
-
-                {/* 3. Cost of Goods Sold (COGS) */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-                  <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    تكلفة البضاعة (COGS)
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-rose-800 font-mono mt-2">
-                    {mask(formatSAR(COGS_TOTAL))}
-                  </div>
-                  <div className="mt-2 text-[10px] text-slate-500 font-bold flex items-center gap-1">
-                    <span>62.88% من المبيعات</span>
-                  </div>
-                </div>
-
-                {/* 4. Monthly Fixed OPEX */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-                  <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    التشغيل الثابت (OPEX)
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-amber-900 font-mono mt-2">
-                    {mask(formatSAR(TOTAL_MONTHLY_OPEX))}
-                  </div>
-                  <div className="mt-2 text-[10px] text-slate-500 font-bold flex items-center gap-1">
-                    <span>رواتب ومرافق وتشغيل</span>
-                  </div>
-                </div>
-
-                {/* 5. Net Profit */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-                  <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    صافي الربح (Net Profit)
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-emerald-700 font-mono mt-2">
-                    {mask(formatSAR(NET_PROFIT))}
-                  </div>
-                  <div className="mt-2 text-[10px] text-emerald-800 font-bold flex items-center gap-1">
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>صافي 28.03% (معتمد)</span>
-                  </div>
-                </div>
-
-                {/* 6. Inventory Items */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-                  <div className="text-[11px] font-bold text-slate-500 mb-1">
-                    أصناف المستودع (SKUs)
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-[#0A192F] font-mono mt-2">
-                    8,693 <span className="text-xs font-sans text-slate-500 font-normal">صنف</span>
-                  </div>
-                  <div className="mt-2 text-[10px] text-rose-700 font-bold flex items-center justify-between">
-                    <span>2,082 صنف راكد</span>
-                    <button onClick={() => openReport('stagnant')} className="text-blue-600 hover:underline">
-                      فحص ↗
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: Full-Width Profitability Gauges (Spacious & Clean) */}
-              <ExecutiveProfitabilityGauges />
-
-              {/* Row 3: Financial Performance Trend (8 Cols) + Top Branches (4 Cols) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                {/* Multi-Line Performance Trend (8 Cols) */}
-                <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
-                  <div className="border-b border-slate-100 pb-3 mb-4">
-                    <h3 className="text-sm font-black text-[#0A192F]">
-                      الأعمدة المالية الأربعة - أغسطس 2026 المعتمد (Financial Pillars)
-                    </h3>
-                    <p className="text-[11px] text-slate-400 font-medium">
-                      مقارنة صافي المبيعات ومجمل الربح والأرباح التشغيلية وصافي الأرباح الفعلية
-                    </p>
-                  </div>
-                  <div className="h-[290px]" dir="ltr">
-                    <ReactECharts option={performanceTrendOption} style={{ height: '100%', width: '100%' }} />
-                  </div>
-                </div>
-
-                {/* Top Branch Summary Box (4 Cols) */}
-                <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2 border-b border-slate-100 pb-3">
-                      <h3 className="text-sm font-black text-[#0A192F]">مساهمة الفروع بالأرباح</h3>
-                      <span className="text-slate-400 font-mono text-[10px]">August 2026</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 font-medium mb-3">
-                      أداء الفروع المعتمدة ونقاط البيع
-                    </p>
-
-                    <div className="space-y-3">
-                      {BRANCHES.map((b) => (
-                        <div key={b.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="font-bold text-slate-800 flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: b.color }} />
-                              {b.name}
-                            </span>
-                            <span className="font-mono font-bold text-slate-900">{mask(formatSAR(b.sales))}</span>
-                          </div>
-                          {/* Progress bar */}
-                          <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-500"
-                              style={{ width: `${b.share}%`, backgroundColor: b.color }}
-                            />
-                          </div>
-                          <div className="text-[10px] text-slate-400 mt-1 flex justify-between font-mono">
-                            <span>الحصة: {b.share}%</span>
-                            <span className="text-slate-500 font-bold">{b.tag}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="text-[11px] text-slate-500 text-center border-t border-slate-100 pt-3 font-bold mt-2">
-                    الفرع الرئيسي والرواف يحققان 72.7% من إجمالي الدخل
-                  </div>
-                </div>
-              </div>
-
-              {/* Row: Quick Audit Reports Callout Banner */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
-                    <FileSpreadsheet className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-[#0A192F]">
-                      تقارير تدقيق أصناف المستودع والحركة (Executive Inventory Audit)
-                    </h4>
-                    <p className="text-xs text-slate-500 font-medium">
-                      استعراض فوري لأكثر 50 صنفاً طلباً، الأصناف الراكدة (2,082 صنفاً)، والأصناف التي نفذت مع بقاء الطلب عليها بصيغة رسمية جاهزة للطباعة والتصدير.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => openReport('stagnant')}
-                    className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs font-bold transition-all"
-                  >
-                    الأصناف الراكدة (2,082)
-                  </button>
-                  <button
-                    onClick={() => openReport('top_selling')}
-                    className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all"
-                  >
-                    الأكثر طلباً (50)
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: INCOME STATEMENT */}
-          {activeTab === 'income' && (
+        {showDetailedStatement && (
+          <div className="mt-3">
             <ExecutiveIncomeStatementTab
               mask={mask}
               netSales={NET_SALES}
@@ -501,30 +229,218 @@ export default function OwnerExecutiveDashboard() {
               opexTotal={TOTAL_MONTHLY_OPEX}
               cogsTotal={COGS_TOTAL}
             />
-          )}
-
-          {/* TAB 3: REAL WAREHOUSE INVENTORY AUDIT */}
-          {activeTab === 'inventory' && (
-            <ExecutiveBalanceSheetTab
-              mask={mask}
-              onOpenReportsModal={openReport}
-            />
-          )}
-
-          {/* TAB 4: 5-AXIS EFFICIENCY RADAR & MARKETING PERFORMANCE */}
-          {activeTab === 'radar' && (
-            <ExecutiveRatiosRadarTab />
-          )}
-
-        </div>
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
 
-      {/* Corporate Executive Audit Reports Modal (A4 Print Ready) */}
-      <ExecutiveReportsModal
-        isOpen={reportsModalOpen}
-        onClose={() => setReportsModalOpen(false)}
-        initialTab={reportsModalTab}
-      />
+// ── Main Dashboard ──────────────────────────────────────────────────────────────
+export default function OwnerExecutiveDashboard() {
+  const [isUnlocked, setIsUnlocked] = useState(() =>
+    sessionStorage.getItem(VAULT_SESSION_KEY) === 'true'
+  );
+  const [activeTab, setActiveTab] = useState('summary');
+  const [privacyMode, setPrivacyMode] = useState(false);
+  const [viewMode, setViewMode] = useState(() =>
+    localStorage.getItem(VIEW_MODE_KEY) || 'mobile'
+  );
+
+  const handleLock = () => {
+    sessionStorage.removeItem(VAULT_SESSION_KEY);
+    setIsUnlocked(false);
+  };
+
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    localStorage.setItem(VIEW_MODE_KEY, mode);
+  };
+
+  if (!isUnlocked) {
+    return <OwnerSecurityGate onUnlock={() => setIsUnlocked(true)} isUnlocked={isUnlocked} />;
+  }
+
+  const isDesktop = viewMode === 'desktop';
+
+  return (
+    <div
+      className="min-h-screen font-sans text-slate-900"
+      style={{ backgroundColor: '#F0F4F8', direction: 'rtl' }}
+    >
+      {/* ── Header ── */}
+      <header
+        className="sticky top-0 z-30 border-b border-slate-800"
+        style={{
+          background: 'rgba(15, 23, 42, 0.98)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+        }}
+      >
+        <div className={`mx-auto px-3 sm:px-4 py-2 sm:py-3 ${isDesktop ? 'max-w-6xl' : 'max-w-md'}`}>
+          <div className="flex items-center justify-between gap-2">
+            {/* Logo + Brand */}
+            <div className="flex items-center gap-2 min-w-0">
+              <img src={doraLogo} alt="درة" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />
+              <div className="min-w-0">
+                <div className="text-white font-black text-xs sm:text-sm leading-tight flex items-center gap-1.5">
+                  <span className="truncate">درة السيارة ( owner )</span>
+                </div>
+                {isDesktop && (
+                  <div className="text-amber-400/90 text-[9px] font-bold truncate">
+                    C-Suite Cockpit • أغسطس 2026
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* View Switcher (جوال ↔ كمبيوتر) */}
+            <div className="flex items-center bg-slate-800/90 p-0.5 sm:p-1 rounded-xl border border-slate-700/60 shadow-inner shrink-0">
+              <button
+                type="button"
+                onClick={() => handleViewModeChange('mobile')}
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                  !isDesktop
+                    ? 'bg-amber-400 text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="معاينة الهاتف (Mobile View)"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                <span className="text-[10px] sm:text-[11px]">جوال</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleViewModeChange('desktop')}
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                  isDesktop
+                    ? 'bg-amber-400 text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="معاينة الكمبيوتر (Desktop View)"
+              >
+                <Monitor className="w-3.5 h-3.5" />
+                <span className="text-[10px] sm:text-[11px]">كمبيوتر</span>
+              </button>
+            </div>
+
+            {/* Quick Actions (Privacy + Lock) */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={() => setPrivacyMode(!privacyMode)}
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all ${
+                  privacyMode ? 'bg-amber-500 text-white' : 'bg-white/10 hover:bg-white/20 text-slate-300'
+                }`}
+                title={privacyMode ? 'إظهار الأرقام' : 'إخفاء الأرقام (حماية)'}
+              >
+                {privacyMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+              <button
+                onClick={handleLock}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center bg-rose-500/20 hover:bg-rose-500/40 transition-all text-rose-300"
+                title="قفل الخزنة"
+              >
+                <Lock className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Desktop Top Navigation Tabs */}
+          {isDesktop && (
+            <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {TABS.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs transition-all ${
+                        isActive
+                          ? 'bg-amber-400 text-slate-950 shadow-md font-black'
+                          : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <span className="text-base">{tab.emoji}</span>
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <span>البيانات الفعلية: أغسطس 2026 فقط</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* ── Main Canvas ── */}
+      <main
+        className={`mx-auto transition-all duration-300 ${
+          isDesktop
+            ? 'max-w-6xl px-4 sm:px-6 lg:px-8 py-6'
+            : 'max-w-md px-3 py-4 pb-28 shadow-2xl bg-[#F0F4F8] min-h-[calc(100vh-60px)] border-x border-slate-200/50'
+        }`}
+      >
+        {activeTab === 'summary' && (
+          <SummaryTab privacyMode={privacyMode} viewMode={viewMode} />
+        )}
+        {activeTab === 'inventory' && (
+          <OwnerInventoryTab viewMode={viewMode} />
+        )}
+        {activeTab === 'branches' && (
+          <OwnerBranchesTab viewMode={viewMode} />
+        )}
+        {activeTab === 'campaigns' && (
+          <OwnerCampaignTab viewMode={viewMode} />
+        )}
+        {activeTab === 'store' && (
+          <OwnerStoreTab viewMode={viewMode} />
+        )}
+      </main>
+
+      {/* ── Bottom Navigation Bar (Shown ONLY in Mobile View - 5 Pillars) ── */}
+      {!isDesktop && (
+        <nav
+          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 border-t border-slate-800 shadow-2xl"
+          style={{
+            background: 'rgba(10, 25, 47, 0.98)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+          }}
+        >
+          <div className="grid grid-cols-5 w-full">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex flex-col items-center justify-center py-2.5 gap-0.5 transition-all duration-200 relative ${
+                    isActive ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  {/* Active indicator line */}
+                  {isActive && (
+                    <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-amber-400 rounded-b-full" />
+                  )}
+                  <span className={`text-xl leading-none ${isActive ? 'scale-110' : ''} transition-transform`}>
+                    {tab.emoji}
+                  </span>
+                  <span className={`text-[10px] font-bold ${isActive ? 'text-amber-400' : 'text-slate-500'}`}>
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }

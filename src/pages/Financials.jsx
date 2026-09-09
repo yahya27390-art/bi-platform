@@ -86,7 +86,7 @@ export default function Financials() {
                     <span className="text-slate-700 font-bold">{formatSAR(fin.ecommerceRevenue)}</span>
                   </div>
                   <div className="flex justify-between py-3">
-                    <span className="text-slate-700 font-semibold">تكلفة البضاعة المباعة (COGS ~50%)</span>
+                    <span className="text-slate-700 font-semibold">تكلفة البضاعة المباعة (COGS 71.97%)</span>
                     <span className="text-red-600 font-bold">({formatSAR(fin.cogs)})</span>
                   </div>
                   <div className="flex justify-between py-3 bg-emerald-50/70 px-3 rounded-lg border border-emerald-100">
@@ -117,7 +117,7 @@ export default function Financials() {
                       </div>
                     }>
                     <div className="flex justify-between py-3 bg-blue-50/90 px-3 rounded-lg border border-blue-200">
-                      <span className="text-blue-950 font-black">صافي الربح النهائي (Net Profit Margin 28.02%)</span>
+                      <span className="text-blue-950 font-black">صافي الربح النهائي (Net Profit)</span>
                       <div className="flex items-center gap-2">
                         <span className="text-blue-800 font-black text-sm">{fin.netProfitMarginPct?.toFixed(2)}%</span>
                         <span className="text-blue-900 font-black text-lg">{formatSAR(fin.netProfit)}</span>

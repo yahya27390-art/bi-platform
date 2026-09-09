@@ -35,26 +35,22 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
   const location = useLocation();
   const { permissions, user } = useBIAuth();
 
+  // OWNER gets a dedicated full-screen mobile dashboard – no sidebar needed
+  if (user?.role === 'OWNER' || location.pathname === '/owner') return null;
+
   const isItemVisible = (item) => {
     // 1. The AI Agent (/campaign-lab): EXCLUSIVE TO ADMIN (يحيي محمد باشا), strictly hidden from OWNER
     if (item.path === '/campaign-lab' || item.privateOnly) {
       return user?.role === 'ADMIN' && !!permissions?.canViewPrivateCampaignLab;
     }
-    // 2. Owner Executive Vault: Visible to OWNER and ADMIN only
+    // 2. Owner Executive Vault: Visible to ADMIN only (owner bypasses sidebar entirely)
     if (item.isOwnerVault) {
-      return user?.role === 'OWNER' || user?.role === 'ADMIN';
+      return user?.role === 'ADMIN';
     }
     return true;
   };
 
-  // For OWNER, prioritize their dedicated executive interface at the top
-  const visibleNavItems = NAV_ITEMS.filter(isItemVisible).sort((a, b) => {
-    if (user?.role === 'OWNER') {
-      if (a.isOwnerVault) return -1;
-      if (b.isOwnerVault) return 1;
-    }
-    return 0;
-  });
+  const visibleNavItems = NAV_ITEMS.filter(isItemVisible);
 
   const isActive = (item) => {
     if (item.exact) return location.pathname === item.path;
@@ -118,7 +114,7 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
                 )}
               />
 
-              {/* Floating Tooltip (منسدلة/تلميح عائم أنيق على اليمين) */}
+              {/* Floating Tooltip */}
               <div className="absolute right-full mr-3.5 px-3 py-1.5 bg-[#0F172A] text-white text-xs font-bold rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 shadow-2xl border border-slate-700/90 z-50">
                 {item.label}
                 {item.isOwnerVault && (

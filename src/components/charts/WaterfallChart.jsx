@@ -5,16 +5,20 @@ export default function WaterfallChart({ height = 330 }) {
   const categories = [
     'صافي المبيعات (Net)',
     'تكلفة البضاعة (71.97%)',
-    'ربح الأعمال المعتمد (28.03%)'
+    'مجمل الربح (28.03%)',
+    'المصاريف التشغيلية (OPEX)',
+    'صافي الربح الفعلي (18.93%)'
   ];
 
   // Waterfall calculation based on August 2026 Dora Cars audited data:
   // Net Revenue: 989,522.16 SAR
   // COGS: -712,159.10 SAR (71.97%)
-  // Profit: 277,363.06 SAR (28.03% of net sales)
-  const baseData = [0, 277363, 0];
-  const positiveData = [989522, '-', 277363];
-  const negativeData = ['-', 712159, '-'];
+  // Gross Profit: 277,363.06 SAR (28.03% of net sales)
+  // OPEX: -90,000.00 SAR
+  // Net Profit: 187,363.06 SAR (18.93% of net sales)
+  const baseData = [0, 277363, 0, 187363, 0];
+  const positiveData = [989522, '-', 277363, '-', 187363];
+  const negativeData = ['-', 712159, '-', 90000, '-'];
 
   const option = {
     backgroundColor: 'transparent',
@@ -88,9 +92,9 @@ export default function WaterfallChart({ height = 330 }) {
         },
         itemStyle: {
           color: (params) => {
-            if (params.dataIndex === 0) return '#1E3A8A'; // Deep Navy Blue for Net Revenue
+            if (params.dataIndex === 0) return '#0F2744'; // Deep Navy Blue for Net Revenue
             if (params.dataIndex === 2) return '#0284C7'; // Ocean Blue for Gross Profit
-            return '#059669'; // Emerald Green for Net Profit
+            return '#10B981'; // Emerald Green for Net Profit
           },
           borderRadius: [6, 6, 0, 0],
         },
@@ -110,7 +114,10 @@ export default function WaterfallChart({ height = 330 }) {
           formatter: (p) => p.value !== '-' ? `-${(p.value / 1000).toFixed(1)}K` : '',
         },
         itemStyle: {
-          color: '#E11D48',
+          color: (params) => {
+            if (params.dataIndex === 1) return '#EF4444'; // Red for COGS
+            return '#F97316'; // Orange for OPEX
+          },
           borderRadius: [0, 0, 6, 6],
         },
         data: negativeData,

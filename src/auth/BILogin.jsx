@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useBIAuth, AUTH_ACCOUNTS } from './BIAuthContext';
 import { 
   ShieldCheck, 
+  ShieldAlert,
   Lock, 
   User, 
   AlertCircle, 
@@ -26,6 +27,18 @@ export default function BILogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showCredentialsHelper, setShowCredentialsHelper] = useState(false);
+  const [securityNotice, setSecurityNotice] = useState(() => {
+    try {
+      const reason = sessionStorage.getItem('bi_logout_reason');
+      if (reason === 'inactivity_5min') {
+        sessionStorage.removeItem('bi_logout_reason');
+        return 'تم إنهاء الجلسة تلقائياً لعدم وجود أي حركة لمدة 5 دقائق حفاظاً على أمان وسرية البيانات. يرجى تسجيل الدخول مجدداً.';
+      }
+    } catch {
+      // ignore
+    }
+    return '';
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,6 +99,17 @@ export default function BILogin() {
             <span>بوابة الدخول المشفرة والمحمية</span>
           </div>
         </div>
+
+        {/* Security Inactivity Notice */}
+        {securityNotice && (
+          <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-relaxed animate-fadeIn">
+            <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <div className="font-bold text-amber-300">أمان الجلسات (Auto-Logout)</div>
+              <div className="text-amber-200/90">{securityNotice}</div>
+            </div>
+          </div>
+        )}
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
