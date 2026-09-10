@@ -290,6 +290,16 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
     return { filteredItems: sliced, totalMatchingBeforeLimit, totalTabAllCount };
   }, [activeTab, computedData, brandFilter, searchTerm, itemLimit]);
 
+  // ── CSV Formula Injection Sanitizer ──
+  const cleanCsv = (val) => {
+    if (val === null || val === undefined) return '';
+    let str = String(val);
+    if (/^[=\+\-\@\t\r]/.test(str)) {
+      str = `'${str}`; // Prepend single quote to prevent spreadsheet formula execution
+    }
+    return str.replace(/"/g, '""');
+  };
+
   // ── CSV Export Function ──
   const handleExportCSV = () => {
     let csvContent = '\uFEFF'; // UTF-8 BOM for Excel Arabic compatibility
@@ -303,7 +313,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
       csvContent += 'الترتيب,اسم الفئة,عدد الأصناف SKUs,إجمالي المبيعات (المنصرف),المخزون المتوفر,معدل دوران المخزون %,نسبة المبيعات من الشركة %,الأصناف الراكدة,نسبة ركود الأصناف %,الصنف الأكثر طلباً\n';
 
       cats.forEach((c, idx) => {
-        csvContent += `"${idx + 1}","${c.name}","${c.count}","${c.issued}","${c.balance}","${c.turnoverRate}%","${c.salesShare}%","${c.zeroSalesCount}","${c.stagnantSkuRatio}%","${c.topItem ? `${c.topItem.name} (${c.topItem.sku})` : '-'}"\n`;
+        csvContent += `"${cleanCsv(idx + 1)}","${cleanCsv(c.name)}","${cleanCsv(c.count)}","${cleanCsv(c.issued)}","${cleanCsv(c.balance)}","${cleanCsv(c.turnoverRate)}%","${cleanCsv(c.salesShare)}%","${cleanCsv(c.zeroSalesCount)}","${cleanCsv(c.stagnantSkuRatio)}%","${cleanCsv(c.topItem ? `${c.topItem.name} (${c.topItem.sku})` : '-')}"\n`;
       });
     } else {
       const items = filteredItems;
@@ -317,7 +327,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
       items.forEach((p, idx) => {
         const brandArabic =
           p.brand === 'hyundai' ? 'هيونداي' : p.brand === 'kia' ? 'كيا' : p.brand === 'mobis' ? 'موبيس أصلي' : 'عام';
-        csvContent += `"${idx + 1}","${formatSkuValue(p.sku, swapSku)}","${p.name}","${brandArabic}","${p.category}","${p.unit || 'حبه'}","${p.opening || 0}","${p.received || 0}","${p.issued || 0}","${p.balance || 0}","${p.status || ''}"\n`;
+        csvContent += `"${cleanCsv(idx + 1)}","${cleanCsv(formatSkuValue(p.sku, swapSku))}","${cleanCsv(p.name)}","${cleanCsv(brandArabic)}","${cleanCsv(p.category)}","${cleanCsv(p.unit || 'حبه')}","${cleanCsv(p.opening || 0)}","${cleanCsv(p.received || 0)}","${cleanCsv(p.issued || 0)}","${cleanCsv(p.balance || 0)}","${cleanCsv(p.status || '')}"\n`;
       });
     }
 

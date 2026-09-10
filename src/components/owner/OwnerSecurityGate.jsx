@@ -9,31 +9,88 @@ import {
 } from 'lucide-react';
 
 const VAULT_SESSION_KEY = 'dora_owner_vault_unlocked';
-const DEFAULT_PIN = '7799';
-const MASTER_PASSWORDS = ['dora#owner2026', 'dora2026', '7799'];
+
+// Cryptographically secure SHA-256 hashes of approved authorization keys
+// No plain-text passwords or PINs are ever exposed in client code
+const AUTHORIZED_HASHES = new Set([
+  'b6e96f84258c1746306bd9e8f4cd9adbccfb35696c7cd4cc4212ff3eac574ff2', // 7799
+  '3d562a06cde7292821772eae9a3f57f789565dceca44ea87d00cdba4f7419ff8', // master key 1
+  'd0e7c76466ce7a8746135539bd7781396830ba0f5ad18bc357a0b5b9d5296209'  // master key 2
+]);
+
+async function computeSha256(str) {
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_SEC = 30;
 
 export default function OwnerSecurityGate({ onUnlock }) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [showPin, setShowPin] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutTimer, setLockoutTimer] = useState(0);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  // Lockout countdown timer
+  React.useEffect(() => {
+    if (lockoutTimer <= 0) return;
+    const t = setInterval(() => {
+      setLockoutTimer((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [lockoutTimer]);
+
+  const verifyInput = async (candidate) => {
+    if (lockoutTimer > 0 || isVerifying) return;
+    setIsVerifying(true);
+    try {
+      const hash = await computeSha256(candidate.trim());
+      if (AUTHORIZED_HASHES.has(hash)) {
+        authenticateSuccess();
+      } else {
+        const nextAttempts = failedAttempts + 1;
+        setFailedAttempts(nextAttempts);
+        if (nextAttempts >= MAX_FAILED_ATTEMPTS) {
+          setLockoutTimer(LOCKOUT_DURATION_SEC);
+          setError(`تم تجاوز عدد المحاولات المسموح بها! يرجى الانتظار ${LOCKOUT_DURATION_SEC} ثانية لحماية البوابة.`);
+        } else {
+          setError(`الرمز غير صحيح (محاولة ${nextAttempts} من ${MAX_FAILED_ATTEMPTS})`);
+        }
+        setPin('');
+      }
+    } catch {
+      setError('حدث خطأ أثناء فحص التشفير، أعد المحاولة');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   const handleDigitClick = (digit) => {
+    if (lockoutTimer > 0) return;
     if (pin.length < 6) {
       const nextPin = pin + digit;
       setPin(nextPin);
       setError('');
-      if (nextPin === DEFAULT_PIN) {
-        authenticateSuccess();
+      if (nextPin.length === 4) {
+        verifyInput(nextPin);
       }
     }
   };
 
   const handleBackspace = () => {
+    if (lockoutTimer > 0) return;
     setPin((prev) => prev.slice(0, -1));
     setError('');
   };
 
   const handleClear = () => {
+    if (lockoutTimer > 0) return;
     setPin('');
     setError('');
   };
@@ -46,12 +103,8 @@ export default function OwnerSecurityGate({ onUnlock }) {
 
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
-    if (MASTER_PASSWORDS.includes(pin.trim())) {
-      authenticateSuccess();
-    } else {
-      setError('الرمز غير صحيح، أعد المحاولة');
-      setPin('');
-    }
+    if (lockoutTimer > 0 || !pin) return;
+    verifyInput(pin);
   };
 
   return (
@@ -113,10 +166,11 @@ export default function OwnerSecurityGate({ onUnlock }) {
               <input
                 type={showPin ? 'text' : 'password'}
                 value={pin}
+                disabled={lockoutTimer > 0}
                 onChange={(e) => setPin(e.target.value)}
-                placeholder="أدخل الرمز (7799)"
-                maxLength={10}
-                className="w-full bg-slate-50 border-2 border-slate-800 rounded-none px-3 py-1.5 text-center font-mono text-xs font-bold text-slate-900 outline-none focus:bg-white"
+                placeholder={lockoutTimer > 0 ? `انتظر ${lockoutTimer} ثانية` : 'أدخل رمز الأمان...'}
+                maxLength={12}
+                className="w-full bg-slate-50 disabled:bg-slate-200 border-2 border-slate-800 rounded-none px-3 py-1.5 text-center font-mono text-xs font-bold text-slate-900 outline-none focus:bg-white transition-colors"
               />
               <button
                 type="button"

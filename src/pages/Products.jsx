@@ -148,6 +148,15 @@ export default function Products() {
 
   // Direct CSV Export of all filtered parts from main table
   const exportFilteredPartsCSV = () => {
+    const cleanCsv = (val) => {
+      if (val === null || val === undefined) return '';
+      let str = String(val);
+      if (/^[=\+\-\@\t\r]/.test(str)) {
+        str = `'${str}`; // Prevent spreadsheet formula execution
+      }
+      return str.replace(/"/g, '""');
+    };
+
     let csvContent = '\uFEFF';
     csvContent += 'م,رقم الصنف OEM,اسم قطعة الغيار,الماركة,الفئة,الوحدة,الرصيد الافتتاحي,الوارد الإضافي,المنصرف (المبيعات),الرصيد الفعلي,الحالة\n';
     
@@ -160,7 +169,7 @@ export default function Products() {
           : p.brand === 'mobis'
           ? 'موبيس'
           : 'عام';
-      csvContent += `"${idx + 1}","${formatSku(p.sku)}","${p.name}","${brandArabic}","${p.category}","${p.unit || 'حبه'}","${p.opening || 0}","${p.received || 0}","${p.issued || 0}","${p.balance || 0}","${p.status || ''}"\n`;
+      csvContent += `"${cleanCsv(idx + 1)}","${cleanCsv(formatSku(p.sku))}","${cleanCsv(p.name)}","${cleanCsv(brandArabic)}","${cleanCsv(p.category)}","${cleanCsv(p.unit || 'حبه')}","${cleanCsv(p.opening || 0)}","${cleanCsv(p.received || 0)}","${cleanCsv(p.issued || 0)}","${cleanCsv(p.balance || 0)}","${cleanCsv(p.status || '')}"\n`;
     });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
