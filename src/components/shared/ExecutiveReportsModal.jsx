@@ -46,8 +46,8 @@ export const REPORT_TABS = [
   {
     id: 'top_selling',
     title: 'الأكثر طلباً ومبيعاً',
-    subtitle: 'أعلى 50 صنف من حيث حجم المنصرف والمبيعات المباشرة',
-    badge: 'توب 50 صنف',
+    subtitle: 'الأصناف الأعلى مبيعاً وحركة من إجمالي قطع الغيار المباعة',
+    badge: '6,611 صنف',
     badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     icon: Flame,
     accent: 'emerald'
@@ -95,6 +95,9 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
   const [searchTerm, setSearchTerm] = useState('');
   const [brandFilter, setBrandFilter] = useState('all');
   const [swapSku, setSwapSku] = useState(true); // Default to swapped sides as requested by user
+  // Report items limit scope: 50, 100, 250, 500, 1000, 'all', or custom number
+  const [itemLimit, setItemLimit] = useState(100);
+  const [customLimitInput, setCustomLimitInput] = useState('');
 
   // Sync initial tab when changed from props
   React.useEffect(() => {
@@ -151,26 +154,24 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
     const stagnantAll = REAL_ALL_PARTS
       .filter((p) => p.balance > 0 && p.issued === 0)
       .sort((a, b) => b.balance - a.balance);
-    const stagnantTop50 = stagnantAll.slice(0, 50);
     const totalStagnantBalance = stagnantAll.reduce((acc, p) => acc + p.balance, 0);
 
     // 2. Top Selling Items: sorted by issued descending
-    const topSellingAll = [...REAL_ALL_PARTS].sort((a, b) => b.issued - a.issued);
-    const topSellingTop50 = topSellingAll.slice(0, 50);
-    const totalTop50Sales = topSellingTop50.reduce((acc, p) => acc + p.issued, 0);
+    const topSellingAll = [...REAL_ALL_PARTS]
+      .filter((p) => p.issued > 0)
+      .sort((a, b) => b.issued - a.issued);
+    const totalTopSellingSales = topSellingAll.reduce((acc, p) => acc + p.issued, 0);
 
     // 3. Out of stock with past movement: balance <= 0 and issued > 0, sorted by issued descending
     const outOfStockAll = REAL_ALL_PARTS
       .filter((p) => p.balance <= 0 && p.issued > 0)
       .sort((a, b) => b.issued - a.issued);
-    const outOfStockTop50 = outOfStockAll.slice(0, 50);
     const totalOutOfStockSales = outOfStockAll.reduce((acc, p) => acc + p.issued, 0);
 
     // 4. Zero movement completely: issued == 0 and received == 0, sorted by balance descending
     const zeroMovementAll = REAL_ALL_PARTS
       .filter((p) => p.issued === 0 && p.received === 0)
       .sort((a, b) => b.balance - a.balance);
-    const zeroMovementTop50 = zeroMovementAll.slice(0, 50);
     const totalZeroMovementBalance = zeroMovementAll.reduce((acc, p) => acc + p.balance, 0);
 
     // 5 & 6. Category Analytics
@@ -221,28 +222,27 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
         totalCount: stagnantAll.length,
         totalFrozenUnits: totalStagnantBalance,
         topItem: stagnantAll[0],
-        items: stagnantTop50
+        all: stagnantAll
       },
       top_selling: {
-        totalCount: REAL_INVENTORY_STATS.itemsWithSales,
-        totalTop50Sales,
-        top50Share: ((totalTop50Sales / REAL_INVENTORY_STATS.totalIssued) * 100).toFixed(1),
+        totalCount: topSellingAll.length,
+        totalTopSales: totalTopSellingSales,
         topItem: topSellingAll[0],
-        items: topSellingTop50
+        all: topSellingAll
       },
       out_of_stock: {
         totalCount: outOfStockAll.length,
         totalHistoricalSales: totalOutOfStockSales,
         stockoutRate: ((outOfStockAll.length / REAL_INVENTORY_STATS.itemsWithSales) * 100).toFixed(1),
         topItem: outOfStockAll[0],
-        items: outOfStockTop50
+        all: outOfStockAll
       },
       zero_movement: {
         totalCount: zeroMovementAll.length,
         totalFrozenUnits: totalZeroMovementBalance,
         shareOfSKUs: ((zeroMovementAll.length / REAL_INVENTORY_STATS.totalSKUs) * 100).toFixed(1),
         topItem: zeroMovementAll[0],
-        items: zeroMovementTop50
+        all: zeroMovementAll
       },
       active_categories: {
         categories: activeCategories,
@@ -257,13 +257,16 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
     };
   }, []);
 
-  // Filter current 50 items by search & brand
-  const filteredItems = useMemo(() => {
+  // Filter items by search & brand, and apply chosen itemLimit
+  const { filteredItems, totalMatchingBeforeLimit, totalTabAllCount } = useMemo(() => {
     if (activeTab === 'active_categories' || activeTab === 'stagnant_categories') {
-      return [];
+      return { filteredItems: [], totalMatchingBeforeLimit: 0, totalTabAllCount: 0 };
     }
-    const currentList = computedData[activeTab]?.items || [];
-    return currentList.filter((item) => {
+    const currentList = computedData[activeTab]?.all || [];
+    const totalTabAllCount = currentList.length;
+
+    // Apply Brand & Search filter across the full list
+    const matched = currentList.filter((item) => {
       const matchBrand = brandFilter === 'all' || item.brand === brandFilter;
       const matchSearch =
         !searchTerm.trim() ||
@@ -272,7 +275,20 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
         item.category.toLowerCase().includes(searchTerm.toLowerCase());
       return matchBrand && matchSearch;
     });
-  }, [activeTab, computedData, brandFilter, searchTerm]);
+
+    const totalMatchingBeforeLimit = matched.length;
+
+    // Apply itemLimit (e.g. 50, 100, 250, 500, 1000, 'all', or custom number)
+    let sliced;
+    if (itemLimit === 'all') {
+      sliced = matched;
+    } else {
+      const limit = typeof itemLimit === 'number' ? itemLimit : parseInt(itemLimit, 10) || 100;
+      sliced = matched.slice(0, limit);
+    }
+
+    return { filteredItems: sliced, totalMatchingBeforeLimit, totalTabAllCount };
+  }, [activeTab, computedData, brandFilter, searchTerm, itemLimit]);
 
   // ── CSV Export Function ──
   const handleExportCSV = () => {
@@ -290,17 +306,18 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
         csvContent += `"${idx + 1}","${c.name}","${c.count}","${c.issued}","${c.balance}","${c.turnoverRate}%","${c.salesShare}%","${c.zeroSalesCount}","${c.stagnantSkuRatio}%","${c.topItem ? `${c.topItem.name} (${c.topItem.sku})` : '-'}"\n`;
       });
     } else {
-      const items = computedData[activeTab]?.items || [];
+      const items = filteredItems;
       const tabTitle = REPORT_TABS.find((t) => t.id === activeTab)?.title || 'التقرير';
 
       csvContent += `تقرير شركة درة السيارة - ${tabTitle}\n`;
-      csvContent += `تاريخ الاستخراج: 8 سبتمبر 2026 | المصدر: حركة مخزن الى شهر 9 2026.xlsx\n\n`;
+      csvContent += `تاريخ الاستخراج: 10 سبتمبر 2026 | المصدر: حركة مخزن الى شهر 9 2026.xlsx\n`;
+      csvContent += `نطاق التقرير: تم استخراج ${items.length} صنف من أصل ${totalMatchingBeforeLimit} صنف مطابق\n\n`;
       csvContent += 'الترتيب,رقم الصنف OEM,اسم قطعة الغيار,الماركة,الفئة الرئيسية,الوحدة,الرصيد الافتتاحي,الوارد,المنصرف (المبيعات),الرصيد الحالي بالمستودع,حالة المخزون\n';
 
       items.forEach((p, idx) => {
         const brandArabic =
           p.brand === 'hyundai' ? 'هيونداي' : p.brand === 'kia' ? 'كيا' : p.brand === 'mobis' ? 'موبيس أصلي' : 'عام';
-        csvContent += `"${idx + 1}","${formatSkuValue(p.sku, swapSku)}","${p.name}","${brandArabic}","${p.category}","${p.unit}","${p.opening}","${p.received}","${p.issued}","${p.balance}","${p.status}"\n`;
+        csvContent += `"${idx + 1}","${formatSkuValue(p.sku, swapSku)}","${p.name}","${brandArabic}","${p.category}","${p.unit || 'حبه'}","${p.opening || 0}","${p.received || 0}","${p.issued || 0}","${p.balance || 0}","${p.status || ''}"\n`;
       });
     }
 
@@ -310,11 +327,20 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
     link.href = url;
     link.setAttribute(
       'download',
-      `DORA_CARS_REPORT_${activeTab.toUpperCase()}_${new Date().toISOString().slice(0, 10)}.csv`
+      `DORA_CARS_${activeTab.toUpperCase()}_${filteredItems.length}_ITEMS_${new Date().toISOString().slice(0, 10)}.csv`
     );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // ── Custom Limit Form Submit ──
+  const handleApplyCustomLimit = (e) => {
+    if (e) e.preventDefault();
+    const val = parseInt(customLimitInput, 10);
+    if (!isNaN(val) && val > 0) {
+      setItemLimit(val);
+    }
   };
 
   // ── Print Function ──
@@ -358,15 +384,15 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
 
           <div className="mt-3 pt-2 border-t border-slate-300 flex items-center justify-between">
             <h2 className="text-base font-black text-slate-950">
-              {activeTab === 'stagnant' && 'تقرير الجرد والتدقيق المالي: الأصناف الـ 50 الأكثر ركوداً وتجميداً بالمستودع'}
-              {activeTab === 'top_selling' && 'تقرير الأداء التجاري: الأصناف الـ 50 الأكثر طلباً ومبيعاً (Best Sellers)'}
-              {activeTab === 'out_of_stock' && 'تقرير المخزون الحرج: أصناف نفدت بطلب نشط - أوامر شراء طارئة (Critical Stockouts)'}
-              {activeTab === 'zero_movement' && 'تقرير الأصول الخاملة: أصناف بدون أي حركة نهائياً منذ بداية الفترة (Dormant Capital)'}
+              {activeTab === 'stagnant' && `تقرير الجرد والتدقيق المالي: الأصناف الأكثر ركوداً وتجميداً بالمستودع (${filteredItems.length} صنف)`}
+              {activeTab === 'top_selling' && `تقرير الأداء التجاري: الأصناف الأكثر طلباً ومبيعاً Best Sellers (${filteredItems.length} صنف)`}
+              {activeTab === 'out_of_stock' && `تقرير المخزون الحرج: أصناف نفدت بطلب نشط - أوامر شراء طارئة (${filteredItems.length} صنف)`}
+              {activeTab === 'zero_movement' && `تقرير الأصول الخاملة: أصناف بدون أي حركة نهائياً (${filteredItems.length} صنف)`}
               {activeTab === 'active_categories' && 'التقرير التحليلي الشامل: أكثر فئات قطع الغيار نشاطاً ومبيعات'}
               {activeTab === 'stagnant_categories' && 'تقرير سلاسل الإمداد: تحليل معدلات ركود فئات قطع الغيار'}
             </h2>
             <div className="text-xs font-bold text-slate-700">
-              نطاق التقرير: <span className="font-mono font-black text-slate-950">{activeTab.includes('categories') ? '9 فئات معتمدة' : 'قائمة الـ 50 صنفاً المعتمدة'}</span>
+              نطاق التقرير المعتمد: <span className="font-mono font-black text-slate-950">{activeTab.includes('categories') ? '9 فئات معتمدة' : `${filteredItems.length} صنف (من إجمالي ${totalMatchingBeforeLimit} صنف مطابق)`}</span>
             </div>
           </div>
         </div>
@@ -475,7 +501,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                 <h3 className="text-base md:text-lg font-black text-white print:text-slate-950 flex items-center gap-2">
                   <span>{currentTabMeta.title}</span>
                   <span className="text-xs font-mono font-normal text-slate-400 print:text-slate-600">
-                    ({activeTab.includes('categories') ? 'تحليل شامل لـ 9 فئات' : 'تقرير الـ 50 صنف المعتمد'})
+                    ({activeTab.includes('categories') ? 'تحليل شامل لـ 9 فئات معتمدة' : `تم تضمين ${filteredItems.length} صنف بالتقرير من أصل ${totalMatchingBeforeLimit}`})
                   </span>
                 </h3>
                 <p className="text-xs text-slate-300 print:text-slate-700 mt-0.5">{currentTabMeta.subtitle}</p>
@@ -492,7 +518,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                 <span>إبرام عقود توريد سنوية مسبقة بأسعار تفضيلية مع الموردين لحماية هوامش الربح ومنع انقطاع الأصناف.</span>
               )}
               {activeTab === 'out_of_stock' && (
-                <span>إصدار أوامر شراء طارئة (Emergency Purchase Orders) فورية لـ 50 كوداً حرجاً يمثلون مبيعات مفقودة.</span>
+                <span>إصدار أوامر شراء طارئة (Emergency Purchase Orders) فورية للأصناف الحرجة التي نفدت وتمثل مبيعات مفقودة.</span>
               )}
               {activeTab === 'zero_movement' && (
                 <span>جرد ميداني لمطابقة تواريخ الصلاحية وحالة القطع مع دراسة إرجاع المخزون الخامل للموزع المعتمد.</span>
@@ -544,16 +570,16 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
             {activeTab === 'top_selling' && (
               <>
                 <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
-                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">مبيعات قمة الـ 50 صنف</div>
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">مبيعات أصناف التقرير المحددة</div>
                   <div className="text-2xl font-black text-emerald-400 print:text-slate-950 font-mono">
-                    {formatNum(computedData.top_selling.totalTop50Sales)}
+                    {formatNum(filteredItems.reduce((acc, it) => acc + (it.issued || 0), 0))}
                   </div>
-                  <div className="text-[11px] text-emerald-300 print:text-emerald-800 font-bold">قطعة غيار مباعة</div>
+                  <div className="text-[11px] text-emerald-300 print:text-emerald-800 font-bold">قطعة غيار مباعة لـ {filteredItems.length} صنف</div>
                 </div>
                 <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
                   <div className="text-xs text-slate-400 print:text-slate-600 font-medium">الحصة من مبيعات الشركة</div>
                   <div className="text-2xl font-black text-white print:text-slate-950 font-mono">
-                    {computedData.top_selling.top50Share}%
+                    {((filteredItems.reduce((acc, it) => acc + (it.issued || 0), 0) / REAL_INVENTORY_STATS.totalIssued) * 100).toFixed(1)}%
                   </div>
                   <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">من إجمالي 77,047 قطعة مباعة</div>
                 </div>
@@ -567,11 +593,11 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                   </div>
                 </div>
                 <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1 print:bg-slate-50 print:border print:border-slate-300 print:p-2.5 print:rounded-xl print:text-slate-900">
-                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">متوسط مبيعات الصنف بالقمة</div>
+                  <div className="text-xs text-slate-400 print:text-slate-600 font-medium">متوسط مبيعات الصنف بالتقرير</div>
                   <div className="text-2xl font-black text-blue-400 print:text-slate-950 font-mono">
-                    {formatNum(Math.round(computedData.top_selling.totalTop50Sales / 50))}
+                    {filteredItems.length > 0 ? formatNum(Math.round(filteredItems.reduce((acc, it) => acc + (it.issued || 0), 0) / filteredItems.length)) : 0}
                   </div>
-                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">قطعة لكل صنف متصدر</div>
+                  <div className="text-[11px] text-slate-400 print:text-slate-600 font-bold">قطعة لكل كود مدرج بالتقرير</div>
                 </div>
               </>
             )}
@@ -719,40 +745,133 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
 
           {/* ── 5. Search & Filters Toolbar (Screen Only - Hidden in Print) ── */}
           {!activeTab.includes('categories') && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 no-print">
-              <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="ابحث برقم الصنف OEM أو الاسم..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pr-9 pl-3 py-2 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-blue-500 transition-colors"
-                />
+            <div className="space-y-3 no-print">
+              {/* Row 1: Search & Brand Filters */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800">
+                <div className="relative w-full sm:w-80">
+                  <Search className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="ابحث برقم الصنف OEM أو الاسم..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pr-9 pl-3 py-2 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
+                {/* Brand Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
+                  <span className="text-[11px] text-slate-500 font-bold ml-1 hidden lg:inline">الماركة:</span>
+                  {[
+                    { key: 'all', label: 'كل الماركات' },
+                    { key: 'hyundai', label: 'هيونداي' },
+                    { key: 'kia', label: 'كيا' },
+                    { key: 'mobis', label: 'موبيس' },
+                    { key: 'general', label: 'عام' }
+                  ].map((b) => (
+                    <button
+                      key={b.key}
+                      onClick={() => setBrandFilter(b.key)}
+                      className={cn(
+                        'px-3 py-1.5 rounded-xl text-xs font-bold transition-colors whitespace-nowrap border cursor-pointer',
+                        brandFilter === b.key
+                          ? 'bg-blue-600 text-white border-blue-500 shadow-sm'
+                          : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-slate-200'
+                      )}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Brand Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-                {[
-                  { key: 'all', label: 'الكل' },
-                  { key: 'hyundai', label: 'هيونداي' },
-                  { key: 'kia', label: 'كيا' },
-                  { key: 'mobis', label: 'موبيس' },
-                  { key: 'general', label: 'عام' }
-                ].map((b) => (
-                  <button
-                    key={b.key}
-                    onClick={() => setBrandFilter(b.key)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-xl text-xs font-bold transition-colors whitespace-nowrap border cursor-pointer',
-                      brandFilter === b.key
-                        ? 'bg-blue-600 text-white border-blue-500'
-                        : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-slate-200'
+              {/* Row 2: Item Count & Scope Selector (محدد عدد أصناف التقرير والتصدير) */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/95 to-indigo-950/40 border border-slate-800 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1.5 text-xs font-black text-slate-200 ml-1">
+                    <Filter className="w-4 h-4 text-blue-400" />
+                    <span>عدد أصناف التقرير والتصدير:</span>
+                  </div>
+
+                  {/* Preset Limit Buttons */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {[
+                      { val: 50, label: '50 صنف' },
+                      { val: 100, label: '100 صنف' },
+                      { val: 250, label: '250 صنف' },
+                      { val: 500, label: '500 صنف' },
+                      { val: 1000, label: '1,000 صنف' },
+                      { val: 'all', label: `الكل (${formatNum(totalMatchingBeforeLimit)})` }
+                    ].map((btn) => {
+                      const isSelected = itemLimit === btn.val;
+                      return (
+                        <button
+                          key={String(btn.val)}
+                          onClick={() => {
+                            setItemLimit(btn.val);
+                            setCustomLimitInput('');
+                          }}
+                          className={cn(
+                            'px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer flex items-center gap-1 active:scale-95',
+                            isSelected
+                              ? 'bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-500/20 ring-1 ring-blue-400/40'
+                              : 'bg-slate-950/70 text-slate-400 border-slate-800 hover:text-slate-200 hover:border-slate-700'
+                          )}
+                        >
+                          {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                          <span>{btn.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom Number Input Form */}
+                  <form onSubmit={handleApplyCustomLimit} className="flex items-center gap-1.5 mr-1">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        max={totalMatchingBeforeLimit || 10000}
+                        placeholder="عدد مخصص..."
+                        value={customLimitInput}
+                        onChange={(e) => setCustomLimitInput(e.target.value)}
+                        className="w-24 bg-slate-950/90 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 font-mono transition-colors text-center"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={!customLimitInput || parseInt(customLimitInput, 10) <= 0}
+                      className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-blue-600 disabled:opacity-40 disabled:hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all cursor-pointer"
+                    >
+                      تطبيق
+                    </button>
+                  </form>
+                </div>
+
+                {/* Scope Status Badge */}
+                <div className="flex items-center gap-2 self-end xl:self-center">
+                  <div className="px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                    <span className="text-slate-400">
+                      يتم استخراج:{' '}
+                      <span className="text-white font-mono font-black text-sm">{formatNum(filteredItems.length)}</span>{' '}
+                      صنف
+                    </span>
+                    <span className="text-slate-600 font-mono">/</span>
+                    <span className="text-slate-500 font-mono text-[11px]">
+                      إجمالي المطابق: {formatNum(totalMatchingBeforeLimit)}
+                    </span>
+                    {itemLimit === 'all' ? (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                        تغطية شاملة 100%
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        محدد بأول {formatNum(filteredItems.length)}
+                      </span>
                     )}
-                  >
-                    {b.label}
-                  </button>
-                ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -904,7 +1023,7 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
                     {filteredItems.length === 0 ? (
                       <tr>
                         <td colSpan={10} className="py-12 text-center text-slate-500 print:text-slate-600">
-                          لا توجد أصناف مطابقة لمعايير البحث في قائمة الـ 50 المحددة.
+                          لا توجد أصناف مطابقة لمعايير البحث في نطاق هذا التقرير.
                         </td>
                       </tr>
                     ) : (
@@ -1064,13 +1183,15 @@ export default function ExecutiveReportsModal({ isOpen, onClose, initialTab = 's
         </div>
 
         {/* ── 9. Bottom Footer Bar (Screen Only) ── */}
-        <div className="p-3.5 px-6 border-t border-slate-800 bg-[#0B1120] flex items-center justify-between text-xs text-slate-500 no-print">
+        <div className="p-3.5 px-6 border-t border-slate-800 bg-[#0B1120] flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2 no-print">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>نظام التقارير الذكي لشركة درة السيارة · قطع غيار هيونداي وكيا</span>
+            <span>نظام التقارير الذكي لشركة درة السيارة · قطع غيار هيونداي وكيا المعتمدة</span>
           </div>
-          <div className="font-mono text-[11px]">
-            عرض 50 صنف معتمد حسب المعايير المحاسبية الرسمية
+          <div className="font-mono text-[11px] text-slate-400">
+            {activeTab.includes('categories')
+              ? 'عرض تحليل 9 فئات معتمدة'
+              : `عرض ${filteredItems.length} صنف (من أصل ${totalMatchingBeforeLimit} صنف مطابق) · نطاق محدد للطباعة والإكسل`}
           </div>
         </div>
       </div>

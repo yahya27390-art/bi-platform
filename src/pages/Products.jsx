@@ -146,6 +146,33 @@ export default function Products() {
     setCurrentPage(1);
   };
 
+  // Direct CSV Export of all filtered parts from main table
+  const exportFilteredPartsCSV = () => {
+    let csvContent = '\uFEFF';
+    csvContent += 'م,رقم الصنف OEM,اسم قطعة الغيار,الماركة,الفئة,الوحدة,الرصيد الافتتاحي,الوارد الإضافي,المنصرف (المبيعات),الرصيد الفعلي,الحالة\n';
+    
+    filteredParts.forEach((p, idx) => {
+      const brandArabic =
+        p.brand === 'hyundai'
+          ? 'هيونداي'
+          : p.brand === 'kia'
+          ? 'كيا'
+          : p.brand === 'mobis'
+          ? 'موبيس'
+          : 'عام';
+      csvContent += `"${idx + 1}","${formatSku(p.sku)}","${p.name}","${brandArabic}","${p.category}","${p.unit || 'حبه'}","${p.opening || 0}","${p.received || 0}","${p.issued || 0}","${p.balance || 0}","${p.status || ''}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `DORA_PARTS_FILTERED_${filteredParts.length}_ITEMS_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6 text-right font-sans" dir="rtl">
       {/* ── 1. Top Header & Official Ledger Verification Badge ── */}
@@ -179,7 +206,7 @@ export default function Products() {
             className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#0F172A] hover:bg-blue-600 text-white text-xs font-black shadow-sm transition-all active:scale-95 border border-slate-700 hover:border-blue-500 cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-            <span>مركز التقارير التنفيذية (50 صنف)</span>
+            <span>مركز التقارير وتصدير الأصناف (مخصص)</span>
           </button>
         </div>
       </div>
@@ -251,7 +278,7 @@ export default function Products() {
                 منظومة التقارير التنفيذية والمخزنية المتخصصة (Executive BI Reports)
               </h2>
               <p className="text-xs text-slate-400 mt-0.5 font-medium">
-                تقارير معتمدة لكبار المدراء تضم أفضل 50 صنفاً وفق معايير الركود، الطلب، النفاد، ودوران الفئات
+                تقارير تفاعلية معتمدة تتيح تحديد عدد الأصناف (100، 500، أو الكل) للتصدير الفوري والطباعة الرسمية
               </p>
             </div>
           </div>
@@ -286,7 +313,7 @@ export default function Products() {
               </div>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-amber-400 group-hover:translate-x-1 transition-transform">
-              <span>عرض الـ 50 صنف الراكد</span>
+              <span>فتح تقرير الركود وتحديد العدد</span>
               <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
             </div>
           </div>
@@ -302,7 +329,7 @@ export default function Products() {
                   <Flame className="w-4 h-4" />
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
-                  توب 50 صنف
+                  6,611 صنف بمبيعات
                 </span>
               </div>
               <div>
@@ -315,7 +342,7 @@ export default function Products() {
               </div>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition-transform">
-              <span>عرض الـ 50 صنف الأكثر مبيعاً</span>
+              <span>فتح تقرير المبيعات والتصدير</span>
               <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
             </div>
           </div>
@@ -344,7 +371,7 @@ export default function Products() {
               </div>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-rose-400 group-hover:translate-x-1 transition-transform">
-              <span>عرض الـ 50 صنف المنتهي (أمر شراء)</span>
+              <span>فتح تقرير نواقص المخزون والتصدير</span>
               <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
             </div>
           </div>
@@ -373,7 +400,7 @@ export default function Products() {
               </div>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-slate-700/40 text-xs font-bold text-cyan-400 group-hover:translate-x-1 transition-transform">
-              <span>عرض الـ 50 صنف الخامل كلياً</span>
+              <span>فتح تقرير الأصول الخاملة والتصدير</span>
               <ArrowUpRight className="w-3.5 h-3.5 rotate-45" />
             </div>
           </div>
@@ -546,10 +573,21 @@ export default function Products() {
       </div>
 
       {/* ── 4. Filter Results Summary & Sort Status ── */}
-      <div className="flex items-center justify-between text-xs text-slate-500 px-1">
-        <div>
-          تم العثور على <strong className="text-slate-900 font-mono font-black">{formatNum(filteredParts.length)}</strong> صنف مطابق
-          {filteredParts.length !== REAL_INVENTORY_STATS.totalSKUs && ` (من أصل ${formatNum(REAL_INVENTORY_STATS.totalSKUs)} صنف)`}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 px-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <div>
+            تم العثور على <strong className="text-slate-900 font-mono font-black">{formatNum(filteredParts.length)}</strong> صنف مطابق
+            {filteredParts.length !== REAL_INVENTORY_STATS.totalSKUs && ` (من أصل ${formatNum(REAL_INVENTORY_STATS.totalSKUs)} صنف)`}
+          </div>
+          <button
+            type="button"
+            onClick={exportFilteredPartsCSV}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white font-bold text-xs shadow-2xs transition-all active:scale-95 cursor-pointer"
+            title="تصدير جميع الأصناف المطابقة للبحث والفلترة الحالية"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+            <span>تصدير نتائج البحث ({formatNum(filteredParts.length)} صنف) CSV</span>
+          </button>
         </div>
         <div className="flex items-center gap-3">
           <span>
