@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { loadSallaConfig } from '../../lib/sallaIntegration';
+import { useCurrentPeriod } from '../../context/BIPeriodContext';
 
 // ── Real Salla Store Data (August 2026 Official Accounts) ─────────────────────
 const STORE_STATS = {
@@ -28,6 +29,7 @@ function StatCard({ emoji, label, value, subValue, bg, textColor }) {
 
 export default function OwnerStoreTab({ viewMode = 'mobile' }) {
   const [activeView, setActiveView] = useState('overview'); // 'overview' | 'products' | 'orders'
+  const { activePeriodObj } = useCurrentPeriod();
   const sallaConfig = loadSallaConfig();
   const liveOrders = (sallaConfig?.syncedStats?.recentOrders || []).filter(
     ord => ord && !ord.customer && !ord.id?.startsWith('ORD-89')
@@ -51,7 +53,9 @@ export default function OwnerStoreTab({ viewMode = 'mobile' }) {
           <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-xl">🛒</div>
           <div>
             <h2 className="font-black text-base">متجر سلة أونلاين</h2>
-            <p className="text-emerald-200 text-xs">doracars.com — أغسطس 2026</p>
+            <p className="text-emerald-200 text-xs">
+              doracars.com — {activePeriodObj?.label || 'أغسطس 2026'} ({activePeriodObj?.isAudited ? 'مبيعات معتمدة' : 'ربط ومزامنة حية'})
+            </p>
           </div>
           <div className="mr-auto flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />

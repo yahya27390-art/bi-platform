@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useCurrentPeriod } from '../../context/BIPeriodContext';
 
 // ── Real Branch Data (August 2026 Official Audited Accounting Reports) ─────────
 // Figures strictly verified against Official POS reports & Returns reports:
@@ -184,11 +185,12 @@ function BranchCard({ branch, isSelected, onSelect }) {
 
 export default function OwnerBranchesTab({ viewMode = 'mobile' }) {
   const [selectedId, setSelectedId] = useState(null);
+  const { activePeriodObj } = useCurrentPeriod();
 
   const totalGross = BRANCHES.reduce((s, b) => s + b.grossSales, 0);
   const totalSales = BRANCHES.reduce((s, b) => s + b.sales, 0); // صافي المبيعات
   const totalReturns = BRANCHES.reduce((s, b) => s + b.returns, 0);
-  const totalTarget = BRANCHES.reduce((s, b) => s + b.target, 0);
+  const totalTarget = activePeriodObj?.target || BRANCHES.reduce((s, b) => s + b.target, 0);
   const totalPct = ((totalSales / totalTarget) * 100).toFixed(1);
 
   return (
@@ -200,7 +202,9 @@ export default function OwnerBranchesTab({ viewMode = 'mobile' }) {
           <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center text-xl">🏪</div>
           <div>
             <h2 className="font-black text-base">الفروع والتارجت</h2>
-            <p className="text-slate-300 text-xs">أغسطس 2026 — 4 فروع معتمدة</p>
+            <p className="text-slate-300 text-xs">
+              {activePeriodObj?.label || 'أغسطس 2026'} — {activePeriodObj?.isAudited ? '4 فروع معتمدة ومطابقة محاسبياً' : 'ربط ومتابعة المبيعات الحية'}
+            </p>
           </div>
         </div>
 

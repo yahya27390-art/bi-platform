@@ -290,3 +290,7 @@ export function formatMetaForAgentPrompt(config) {
 *توجيه استراتيجي للإيجنت:* ميتا تمثل قناة التحويل الذهبية لدرة عبر الواتساب (1,614 محادثة بـ 1.82 ر.س للمحادثة) ومع رمز CAPI المربوط الآن أصبحت جميع التحويلات مؤكدة على السيرفر. استغل بيانات الـ 174 ألف حدث لتصميم خطط إعادة الاستهداف وحملات الواتساب لعروض اليوم الوطني.
 `;
 }
+
+// Alias for token validation
+export const validateTokenAndPermissions = inspectMetaToken;
+
