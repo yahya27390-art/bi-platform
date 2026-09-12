@@ -48,8 +48,8 @@ export default function MediaBuying() {
   const { data: funnels }               = useAdFunnel(periodId, activePlatform === 'all' ? 'meta' : activePlatform);
 
   const shownPlatforms = activePlatform === 'all'
-    ? (platforms || []).filter(p => p.spend > 0)
-    : (platforms || []).filter(p => p.slug === activePlatform && p.spend > 0);
+    ? (platforms || [])
+    : (platforms || []).filter(p => p.slug === activePlatform);
 
   const STATUS_LABELS = { active: 'نشط', paused: 'موقوف', ended: 'منتهي', draft: 'مسودة' };
   const STATUS_COLORS_MAP = { active: 'text-emerald-800 bg-emerald-100', paused: 'text-amber-800 bg-amber-100', ended: 'text-slate-600 bg-slate-100' };
@@ -98,9 +98,17 @@ export default function MediaBuying() {
 
           <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-2xl p-1 shadow-inner">
             {periods?.slice(0, 3).map(p => (
-              <button key={p.id} onClick={() => setPeriodId(p.id)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${periodId === p.id ? 'bg-[#0F172A] text-white shadow-md' : 'text-slate-600 hover:text-slate-900'}`}>
-                {p.labelAr || p.label}
+              <button
+                key={p.id}
+                onClick={() => setPeriodId(p.id)}
+                className={cn(
+                  'px-3 py-1.5 rounded-xl text-xs font-bold transition-all',
+                  periodId === p.id
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
+                )}
+              >
+                {p.label}
               </button>
             ))}
           </div>
@@ -161,15 +169,18 @@ export default function MediaBuying() {
       </div>
 
       {/* Platform Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
         {PLATFORM_TABS.map(tab => (
-          <button key={tab.slug} onClick={() => setActivePlatform(tab.slug)}
+          <button
+            key={tab.slug}
+            onClick={() => setActivePlatform(tab.slug)}
             className={cn(
-              'px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all',
+              'px-4 py-2 rounded-xl text-xs font-bold transition-all',
               activePlatform === tab.slug
-                ? 'bg-[#0F172A] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 bg-white border border-slate-200'
-            )}>
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-100'
+            )}
+          >
             {tab.label}
           </button>
         ))}
@@ -182,78 +193,110 @@ export default function MediaBuying() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-          {shownPlatforms.map(p => (
-            <div key={p.slug} className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4 shadow-sm">
-              {/* Platform header */}
-              <div className="flex items-center justify-between">
-                <PlatformBadge platform={p.slug} size="md" />
-                <div className="flex items-center gap-2">
-                  <GrowthChip value={p.roasGrowth} />
-                  <span className="text-xs text-slate-500 font-semibold">{p.campaigns || 0} حملات</span>
+          {shownPlatforms.map(p => {
+            const hasSpend = p.spend > 0;
+            return (
+              <div key={p.slug} className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4 shadow-sm">
+                {/* Platform header */}
+                <div className="flex items-center justify-between">
+                  <PlatformBadge platform={p.slug} size="md" />
+                  <div className="flex items-center gap-2">
+                    {hasSpend ? (
+                      <>
+                        <GrowthChip value={p.roasGrowth} />
+                        <span className="text-xs text-slate-500 font-semibold">{p.campaigns || 0} حملات</span>
+                      </>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        جاهز للتشغيل
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* ROAS hero */}
-              <div className="py-3 border-y border-slate-100">
-                <div className="text-3xl font-black text-slate-900">{formatMultiplier(p.roas)}</div>
-                <div className="text-xs text-slate-500 mt-1 font-medium">ROAS المباشر — الإيراد المسند ÷ الإنفاق</div>
-              </div>
-
-              {/* KPI Grid */}
-              <div className="grid grid-cols-3 gap-2">
-                <KPICell label="الإنفاق" value={formatSAR(p.spend, false)} />
-                <KPICell label="CPA" value={formatSAR(p.cpa)} metric="cpa" />
-                <KPICell label="CTR" value={p.ctr?.toFixed(2)} unit="%" metric="ctr" />
-                <KPICell label="CPM" value={formatSAR(p.cpm)} metric="cpm" />
-                <KPICell label="CPC" value={formatSAR(p.cpc)} metric="cpc" />
-                <KPICell label="تحويلات" value={formatNum(p.conversions)} />
-              </div>
-
-              {/* More stats */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
-                  <div className="text-slate-500 font-medium">المشاهدات</div>
-                  <div className="text-slate-900 font-bold">{formatCompact(p.impressions)}</div>
+                {/* ROAS hero */}
+                <div className="py-3 border-y border-slate-100">
+                  {hasSpend ? (
+                    <>
+                      <div className="text-3xl font-black text-slate-900">{formatMultiplier(p.roas)}</div>
+                      <div className="text-xs text-slate-500 mt-1 font-medium">ROAS المباشر — الإيراد المسند ÷ الإنفاق</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-black text-slate-800">0.00 ر.س</div>
+                      <div className="text-xs text-slate-500 mt-1 font-medium">القناة متصلة بالـ API — بانتظار بدء الصرف أو المزامنة</div>
+                    </>
+                  )}
                 </div>
-                <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
-                  <div className="text-slate-500 font-medium">النقرات</div>
-                  <div className="text-slate-900 font-bold">{formatCompact(p.clicks)}</div>
+
+                {/* KPI Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  <KPICell label="الإنفاق" value={formatSAR(p.spend, false)} />
+                  <KPICell label="CPA" value={hasSpend ? formatSAR(p.cpa) : '—'} metric={hasSpend ? 'cpa' : undefined} />
+                  <KPICell label="CTR" value={hasSpend ? p.ctr?.toFixed(2) : '0.00'} unit="%" metric={hasSpend ? 'ctr' : undefined} />
+                  <KPICell label="CPM" value={hasSpend ? formatSAR(p.cpm) : '—'} metric={hasSpend ? 'cpm' : undefined} />
+                  <KPICell label="CPC" value={hasSpend ? formatSAR(p.cpc) : '—'} metric={hasSpend ? 'cpc' : undefined} />
+                  <KPICell label="تحويلات" value={formatNum(p.conversions || 0)} />
                 </div>
-                {p.reach > 0 && (
+
+                {/* More stats */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
+                    <div className="text-slate-500 font-medium">المشاهدات</div>
+                    <div className="text-slate-900 font-bold">{p.impressions > 0 ? formatCompact(p.impressions) : '0'}</div>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
+                    <div className="text-slate-500 font-medium">النقرات</div>
+                    <div className="text-slate-900 font-bold">{p.clicks > 0 ? formatCompact(p.clicks) : '0'}</div>
+                  </div>
                   <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
                     <div className="text-slate-500 font-medium">الوصول</div>
-                    <div className="text-slate-900 font-bold">{formatCompact(p.reach)}</div>
+                    <div className="text-slate-900 font-bold">{p.reach > 0 ? formatCompact(p.reach) : '0'}</div>
                   </div>
-                )}
-                <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
-                  <div className="text-slate-500 font-medium">إيراد مسند</div>
-                  <div className="text-emerald-700 font-bold">{formatSAR(p.attributedRevenue, true)}</div>
+                  <div className="bg-slate-50 border border-slate-100 rounded-lg p-2">
+                    <div className="text-slate-500 font-medium">إيراد مسند</div>
+                    <div className="text-emerald-700 font-bold">{hasSpend ? formatSAR(p.attributedRevenue, true) : '0 ر.س'}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Funnel */}
-      {funnels && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <SectionHeader
-            title={`مسار التحويل — ${activePlatform === 'all' ? 'ميتا' : PLATFORM_TABS.find(t => t.slug === activePlatform)?.label}`}
-            subtitle="من الوصول الأولي إلى إتمام الطلب"
-            className="mb-6"
-          />
-          <FunnelViz
-            data={Array.isArray(funnels) ? funnels : funnels[activePlatform === 'all' ? 'meta' : activePlatform] || []}
-            height={280}
-          />
-        </div>
-      )}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <SectionHeader
+          title={`مسار التحويل — ${activePlatform === 'all' ? 'ميتا' : PLATFORM_TABS.find(t => t.slug === activePlatform)?.label}`}
+          subtitle={funnels && (Array.isArray(funnels) ? funnels : funnels[activePlatform === 'all' ? 'meta' : activePlatform] || []).some(d => d.value > 0) ? "من الوصول الأولي إلى إتمام الطلب" : "جاهز للتشغيل — بانتظار تدفق الزيارات للشهر الجديد"}
+          className="mb-6"
+        />
+        {(() => {
+          const funnelData = Array.isArray(funnels) ? funnels : funnels?.[activePlatform === 'all' ? 'meta' : activePlatform] || [];
+          const hasTraffic = funnelData.length > 0 && funnelData.some(d => d.value > 0);
+          return hasTraffic ? (
+            <FunnelViz data={funnelData} height={280} />
+          ) : (
+            <div className="py-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-2">
+              <div className="text-3xl">📡</div>
+              <div className="text-sm font-bold text-slate-700">بانتظار تدفق الزيارات والتحويلات للشهر الجديد</div>
+              <div className="text-xs text-slate-500 max-w-md mx-auto">
+                مسار التحويل متصل وجاهز للاستقبال اللحظي فور بدء صرف الحملات وتسجيل الزيارات والتحويلات عبر واجهة الربط (API).
+              </div>
+            </div>
+          );
+        })()}
+      </div>
 
       {/* Campaigns Table */}
-      {campaigns?.length > 0 && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <SectionHeader title="الحملات الإعلانية المعتمدة" subtitle={`${campaigns.length} حملة`} className="mb-5" />
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <SectionHeader
+          title="الحملات الإعلانية المعتمدة"
+          subtitle={campaigns?.length > 0 ? `${campaigns.length} حملة مسجلة وموثقة` : "0 حملات نشطة مسجلة لهذا الشهر"}
+          className="mb-5"
+        />
+        {campaigns?.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -279,10 +322,10 @@ export default function MediaBuying() {
                     <td className="py-3 px-2 text-slate-900 font-mono text-xs font-bold" dir="ltr">{formatSAR(c.spend, true)}</td>
                     <td className="py-3 px-2">
                       <span className={cn('font-black text-xs', c.roas >= 3 ? 'text-emerald-700' : c.roas >= 1.5 ? 'text-amber-700' : 'text-red-700')} dir="ltr">
-                        {formatMultiplier(c.roas)}
+                        {c.spend > 0 ? formatMultiplier(c.roas) : '—'}
                       </span>
                     </td>
-                    <td className="py-3 px-2 text-xs text-slate-700 font-bold" dir="ltr">{formatSAR(c.cpa)}</td>
+                    <td className="py-3 px-2 text-xs text-slate-700 font-bold" dir="ltr">{c.spend > 0 ? formatSAR(c.cpa) : '—'}</td>
                     <td className="py-3 px-2 text-slate-900 text-xs font-bold">{formatNum(c.conversions)}</td>
                     <td className="py-3 px-2 text-slate-600 text-xs font-medium">{c.branchAttribution === 'ecommerce' ? 'المتجر الإلكتروني' : c.branchAttribution === 'hyundai-rawaf' ? 'فرع الرواف' : 'فرع كيا'}</td>
                   </tr>
@@ -290,8 +333,16 @@ export default function MediaBuying() {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="py-10 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-2">
+            <div className="text-3xl">🎯</div>
+            <div className="text-sm font-bold text-slate-700">لا توجد حملات ممولة مسجلة لهذا الشهر حالياً</div>
+            <div className="text-xs text-slate-500 max-w-md mx-auto">
+              القنوات الإعلانية (Meta · Google · TikTok) متصلة بالـ API وجاهزة للتشغيل واستقبال بيانات الحملات الحية فور إطلاقها.
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* TikTok Integration Modal */}
       <TikTokIntegrationModal

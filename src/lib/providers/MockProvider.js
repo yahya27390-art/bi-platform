@@ -96,35 +96,36 @@ export class MockProvider {
 
   // ── Ad Metrics by Platform ──────────────────────────────────
   async getAdMetricsByPlatform(periodId) {
-    await delay(160);
+    await delay(100);
     const rawMetrics = MOCK_PLATFORM_PERIOD_METRICS[periodId] || MOCK_PLATFORM_PERIOD_METRICS['p-2026-09'];
     const prevMetrics = this._getPrevAdMetrics(periodId);
 
-    return rawMetrics.map(m => {
+    return (rawMetrics || []).map(m => {
       const prev = prevMetrics?.find(p => p.platformSlug === m.platformSlug);
       const platform = MOCK_PLATFORMS.find(p => p.slug === m.platformSlug);
+      const hasSpend = m.spend > 0;
       return {
         ...m,
         ...platform,
         // Calculated KPIs from raw fields
-        roas:     m.roas || calcROAS(m.attributedRevenue, m.spend),
-        cpa:      m.costPerConversion !== undefined ? m.costPerConversion : calcCPA(m.spend, m.conversions),
-        ctr:      m.ctr !== undefined ? m.ctr : calcCTR(m.clicks, m.impressions),
-        cpc:      m.cpc !== undefined ? m.cpc : calcCPC(m.spend, m.clicks),
-        cpm:      m.cpm !== undefined ? m.cpm : calcCPM(m.spend, m.impressions),
-        convRate: calcConversionRate(m.conversions, m.clicks),
+        roas:     hasSpend ? (m.roas || calcROAS(m.attributedRevenue, m.spend)) : 0,
+        cpa:      hasSpend ? (m.costPerConversion !== undefined ? m.costPerConversion : calcCPA(m.spend, m.conversions)) : 0,
+        ctr:      hasSpend ? (m.ctr !== undefined ? m.ctr : calcCTR(m.clicks, m.impressions)) : 0,
+        cpc:      hasSpend ? (m.cpc !== undefined ? m.cpc : calcCPC(m.spend, m.clicks)) : 0,
+        cpm:      hasSpend ? (m.cpm !== undefined ? m.cpm : calcCPM(m.spend, m.impressions)) : 0,
+        convRate: hasSpend ? calcConversionRate(m.conversions, m.clicks) : 0,
         // Growth vs previous period
-        spendGrowth:   prev ? calcGrowth(m.spend, prev.spend) : 0,
-        roasGrowth:    prev ? calcGrowth(calcROAS(m.attributedRevenue, m.spend), calcROAS(prev.attributedRevenue, prev.spend)) : 0,
-        convGrowth:    prev ? calcGrowth(m.conversions, prev.conversions) : 0,
-        revenueGrowth: prev ? calcGrowth(m.attributedRevenue, prev.attributedRevenue) : 0,
+        spendGrowth:   prev && hasSpend ? calcGrowth(m.spend, prev.spend) : 0,
+        roasGrowth:    prev && hasSpend ? calcGrowth(calcROAS(m.attributedRevenue, m.spend), calcROAS(prev.attributedRevenue, prev.spend)) : 0,
+        convGrowth:    prev && hasSpend ? calcGrowth(m.conversions, prev.conversions) : 0,
+        revenueGrowth: prev && hasSpend ? calcGrowth(m.attributedRevenue, prev.attributedRevenue) : 0,
       };
     });
   }
 
   // ── Campaigns ────────────────────────────────────────────────
   async getCampaigns(filters = {}) {
-    await delay(180);
+    await delay(120);
     let campaigns = [...MOCK_CAMPAIGNS];
     if (filters.periodId)  campaigns = campaigns.filter(c => c.periodId === filters.periodId);
     if (filters.platform)  campaigns = campaigns.filter(c => {
@@ -138,17 +139,20 @@ export class MockProvider {
     return campaigns.map(c => {
       const acc  = MOCK_AD_ACCOUNTS.find(a => a.id === c.adAccountId);
       const plat = MOCK_PLATFORMS.find(p => p.id === acc?.platformId);
-      const spend = c.totalBudget * (c.status === 'active' ? 0.97 : c.status === 'ended' ? 1.0 : 0.80);
-      const conv  = Math.round(spend / 58);
-      const rev   = spend * 4.2;
+      const spend = c.spend !== undefined ? c.spend : (c.totalBudget || 0);
+      const conv  = c.conversions !== undefined ? c.conversions : (spend > 0 ? Math.round(spend / 58) : 0);
+      const roas  = c.roas !== undefined ? c.roas : (spend > 0 ? 4.2 : 0);
+      const cpa   = c.cpa !== undefined ? c.cpa : (conv > 0 ? (spend / conv) : 0);
       return {
         ...c,
-        platform: plat?.slug || 'manual',
+        platform: plat?.slug || (c.platformMeta?.platform || 'manual'),
         platformLabel: plat?.nameAr || 'يدوي',
         platformColor: plat?.color || '#6B7280',
-        spend, conversions: conv, attributedRevenue: rev,
-        roas: calcROAS(rev, spend),
-        cpa:  calcCPA(spend, conv),
+        spend,
+        conversions: conv,
+        attributedRevenue: spend * roas,
+        roas,
+        cpa,
       };
     });
   }
