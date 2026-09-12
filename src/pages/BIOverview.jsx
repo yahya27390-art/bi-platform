@@ -196,13 +196,13 @@ export default function BIOverview() {
     let adSpend = kpis.totalAdSpend;
 
     if (channelFilter === 'branches') {
-      rev = kpis.branchRevenue || 989522.16;
+      rev = kpis.branchRevenue !== undefined ? kpis.branchRevenue : 0;
       targetRev = 800000;
-      adSpend = kpis.totalAdSpend * 0.70;
+      adSpend = (kpis.totalAdSpend || 0) * 0.70;
     } else if (channelFilter === 'ecommerce') {
-      rev = kpis.ecommerceRevenue || 36660.19;
+      rev = kpis.ecommerceRevenue !== undefined ? kpis.ecommerceRevenue : 0;
       targetRev = 50000;
-      adSpend = kpis.totalAdSpend * 0.30;
+      adSpend = (kpis.totalAdSpend || 0) * 0.30;
     }
 
     if (platformFilter !== 'all' && platforms) {
@@ -399,80 +399,88 @@ export default function BIOverview() {
               <KPICard
                 title="صافي المبيعات"
                 displayValue={formatSAR(displayedKpis.totalRevenue, false)}
-                growth={displayedKpis.totalRevenueGrowth}
+                growth={displayedKpis.totalRevenue > 0 ? displayedKpis.totalRevenueGrowth : null}
                 icon={<DollarSign className="w-5 h-5" />}
                 color="blue"
                 target={displayedKpis.targetRevenue}
                 targetLabel="مستهدف الفروع المعتمد"
-                sparklineData={[800000, 850000, 910000, 940000, 970000, 989522]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? [800000, 850000, 910000, 940000, 970000, 989522] : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 details={{
                   concept: 'صافي مبيعات الفروع الميدانية والمتجر بعد خصم المردودات والتسويات المعتمدة',
                   formula: 'إجمالي فواتير نقاط البيع (POS) + مبيعات متجر سلة - المردودات',
-                  audit: 'مطابق وموثق 100% لفواتير نقاط البيع Z-Reports',
-                  targetText: 'المستهدف: 800,000 ر.س (فائض بيعي +189,522 ر.س)',
-                  breakdown: [
+                  audit: displayedKpis.totalRevenue > 0 ? 'مطابق وموثق 100% لفواتير نقاط البيع Z-Reports' : 'بانتظار تسجيل فواتير نقاط البيع للمدة المحددة',
+                  targetText: displayedKpis.totalRevenue > 0 ? 'المستهدف: 800,000 ر.س (فائض بيعي +189,522 ر.س)' : `المستهدف: ${formatSAR(displayedKpis.targetRevenue, false)} (جاهز للتشغيل)`,
+                  breakdown: displayedKpis.totalRevenue > 0 ? [
                     { label: 'فروع بريدة (الرئيسي + الرواف + كيا)', value: '989,522.16 ر.س', pct: 99.7, color: '#10B981' },
                     { label: 'طلبات متجر سلة الإلكتروني', value: '3,350.00 ر.س', pct: 0.3, color: '#06B6D4' },
+                  ] : [
+                    { label: 'بانتظار مزامنة فواتير الشهر', value: '0 ر.س', pct: 0, color: '#94A3B8' },
                   ],
                 }}
               />
               <KPICard
                 title="تكلفة البضاعة"
-                displayValue={formatSAR(displayedKpis.cogs || 712159.10, false)}
+                displayValue={formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.cogs || 712159.10) : 0, false)}
                 growth={null}
                 icon="📦"
                 color="slate"
-                sparklineData={[580000, 610000, 650000, 675000, 695000, 712159]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? [580000, 610000, 650000, 675000, 695000, 712159] : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 details={{
-                  concept: 'تكلفة شراء وتجهيز السيارات المباعة (COGS) المستخرجة من قيود المخزون',
-                  formula: 'تمثل 71.97% من صافي المبيعات بعد خصم المردودات',
-                  audit: 'مطابق لدفاتر المشتريات المحاسبية المعتمدة',
-                  breakdown: [
+                  concept: 'تكلفة شراء وتجهيز البضاعة (COGS) المستخرجة من قيود المخزون',
+                  formula: 'تمثل تكلفة المشتريات المرتبطة بالمبيعات المنجزة',
+                  audit: displayedKpis.totalRevenue > 0 ? 'مطابق لدفاتر المشتريات المحاسبية المعتمدة' : 'بانتظار قيود المخزون للمدة الحالية',
+                  breakdown: displayedKpis.totalRevenue > 0 ? [
                     { label: 'تكلفة البضاعة والمشتريات المباشرة', value: '712,159.10 ر.س', pct: 71.97, color: '#64748B' },
                     { label: 'مجمل ربح النشاط المتبقي', value: '277,363.06 ر.س', pct: 28.03, color: '#10B981' },
+                  ] : [
+                    { label: 'بانتظار قيود المخزون والمشتريات', value: '0 ر.س', pct: 0, color: '#94A3B8' },
                   ],
                 }}
               />
               <KPICard
                 title="أرباح الأعمال"
-                displayValue={canViewNetProfit ? formatSAR(displayedKpis.grossProfit || 277363.06, false) : 'محمي 🔒'}
-                growth={canViewNetProfit ? 22.4 : null}
+                displayValue={canViewNetProfit ? formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.grossProfit || 277363.06) : 0, false) : 'محمي 🔒'}
+                growth={canViewNetProfit && displayedKpis.totalRevenue > 0 ? 22.4 : null}
                 icon="💰"
                 color="emerald"
-                sparklineData={[210000, 225000, 240000, 255000, 268000, 277363]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? [210000, 225000, 240000, 255000, 268000, 277363] : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 details={{
                   concept: canViewNetProfit
                     ? 'مجمل الربح التشغيلي المعتمد للنشاط التجاري بعد استبعاد كلفة البضاعة'
                     : 'يتطلب صلاحية المالك أو الإدارة المالية العليا',
-                  formula: 'صافي المبيعات (989.5K) - تكلفة البضاعة (712.2K) = 28.03%',
-                  audit: 'معتمد بالقوائم المالية لشركة درة لشهر أغسطس 2026',
-                  breakdown: [
+                  formula: 'صافي المبيعات - تكلفة البضاعة المباعة',
+                  audit: displayedKpis.totalRevenue > 0 ? 'معتمد بالقوائم المالية لشركة درة لشهر أغسطس 2026' : 'بانتظار إغلاق دفاتر الشهر',
+                  breakdown: displayedKpis.totalRevenue > 0 ? [
                     { label: 'هامش الربح التشغيلي', value: '28.03%', pct: 28.03, color: '#10B981' },
                     { label: 'القيمة المالية الصافية المحققة', value: '277,363.06 ر.س', pct: 100, color: '#059669' },
+                  ] : [
+                    { label: 'بانتظار تدفق المبيعات التشغيلية', value: '0 ر.س', pct: 0, color: '#94A3B8' },
                   ],
                 }}
               />
               <KPICard
                 title="تحقيق المستهدف"
-                displayValue={`${displayedKpis.targetAchievementPct?.toFixed(1)}%`}
+                displayValue={`${(displayedKpis.targetAchievementPct || 0).toFixed(1)}%`}
                 growth={null}
                 icon={<Target className="w-5 h-5" />}
                 color={displayedKpis.targetAchievementPct >= 100 ? 'emerald' : 'amber'}
-                sparklineData={[85, 92, 98, 106, 115, 123.7]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? [85, 92, 98, 106, 115, 123.7] : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 target={100}
                 targetLabel="مؤشر الإنجاز (المطلوب 100%)"
                 details={{
                   concept: 'نسبة الإنجاز البيعي الفعلي مقارنة بالمستهدف الشهري المعتمد',
-                  formula: '(صافي المبيعات 989,522 ÷ المستهدف 800,000) × 100',
+                  formula: '(صافي المبيعات ÷ المستهدف) × 100',
                   audit: 'مستهدفات معتمدة بقرار الإدارة التنفيذية',
-                  targetText: 'المستهدف الأساسي: 800,000 ر.س | الفائض: +189,522 ر.س',
-                  breakdown: [
+                  targetText: `المستهدف الأساسي: ${formatSAR(displayedKpis.targetRevenue, false)}`,
+                  breakdown: displayedKpis.totalRevenue > 0 ? [
                     { label: 'المستهدف المطلوب إنجازه', value: '800,000 ر.س', pct: 80.8, color: '#3B82F6' },
                     { label: 'فائض المبيعات المحقق', value: '+189,522 ر.س', pct: 19.2, color: '#10B981' },
+                  ] : [
+                    { label: 'المستهدف الشهري المعتمد', value: formatSAR(displayedKpis.targetRevenue, false), pct: 100, color: '#3B82F6' },
                   ],
                 }}
               />

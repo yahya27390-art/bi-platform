@@ -12,8 +12,8 @@ export const DORA_BRANCHES = [
     city: 'بريدة',
     defaultTarget: 350000,
     currency: 'SAR',
-    manager: 'أحمد التميمي',
-    phone: '+966 16 381 0001',
+    manager: 'إدارة الفرع الرئيسي',
+    phone: '0530051001',
     address: 'طريق الملك عبد العزيز، بريدة',
   },
   {
@@ -24,8 +24,8 @@ export const DORA_BRANCHES = [
     city: 'بريدة',
     defaultTarget: 250000,
     currency: 'SAR',
-    manager: 'سليمان الرواف',
-    phone: '+966 16 382 0002',
+    manager: 'إدارة فرع الرواف',
+    phone: '0530051360',
     address: 'حي الرواف، بريدة',
   },
   {
@@ -36,8 +36,8 @@ export const DORA_BRANCHES = [
     city: 'بريدة',
     defaultTarget: 200000,
     currency: 'SAR',
-    manager: 'خالد المنصور',
-    phone: '+966 16 383 0003',
+    manager: 'إدارة فرع كيا',
+    phone: '0539454377',
     address: 'طريق الملك فهد، بريدة',
   },
 ];
@@ -51,9 +51,9 @@ export const DORA_PERIODS = [
     labelEn: 'September 2026',
     startDate: '2026-09-01',
     endDate: '2026-09-30',
-    status: 'REVIEW', // OPEN | REVIEW | APPROVED | LOCKED
-    approvedBy: 'يحيى الحربي (المالك)',
-    approvedAt: '2026-09-05T18:00:00Z',
+    status: 'OPEN', // OPEN | REVIEW | APPROVED | LOCKED
+    approvedBy: null,
+    approvedAt: null,
   },
   {
     id: 'p-2026-08',
@@ -100,68 +100,6 @@ export const DORA_TARGETS = [
 
 // Evidence & Source documents
 export const DORA_DOCUMENTS = [
-  // September 2026
-  {
-    id: 'doc-sep-01',
-    periodId: 'p-2026-09',
-    branchId: 'main',
-    category: 'branch_sales_screenshot',
-    fileName: 'Main_Branch_Sales_Sep2026.png',
-    fileUrl: 'evidence/main_branch_gross_aug2026.png',
-    uploadedBy: 'أحمد التميمي (مدير الفرع)',
-    uploadedAt: '2026-09-03T14:20:00Z',
-    verificationStatus: 'VERIFIED',
-    notes: 'سكرين شوت تقرير نقاط البيع Z-Report متضمن الإجمالي والمرتجعات',
-  },
-  {
-    id: 'doc-sep-02',
-    periodId: 'p-2026-09',
-    branchId: 'al-rawaf',
-    category: 'branch_sales_screenshot',
-    fileName: 'AlRawaf_Sales_Report_Sep2026.png',
-    fileUrl: 'evidence/rawaf_branch_gross_aug2026.png',
-    uploadedBy: 'سليمان الرواف',
-    uploadedAt: '2026-09-03T15:10:00Z',
-    verificationStatus: 'VERIFIED',
-    notes: 'تقرير مبيعات شهر سبتمبر فرع الرواف المعتمد',
-  },
-  {
-    id: 'doc-sep-03',
-    periodId: 'p-2026-09',
-    branchId: 'kia',
-    category: 'branch_sales_screenshot',
-    fileName: 'Kia_Branch_Sales_Sep2026.png',
-    fileUrl: 'evidence/kia_branch_gross_aug2026.png',
-    uploadedBy: 'خالد المنصور',
-    uploadedAt: '2026-09-03T16:00:00Z',
-    verificationStatus: 'VERIFIED',
-    notes: 'تقرير مبيعات ومرتجعات فرع كيا',
-  },
-  {
-    id: 'doc-sep-04',
-    periodId: 'p-2026-09',
-    branchId: null,
-    category: 'bank_transfers_excel',
-    fileName: 'Bank_Transfers_Consolidated_Sep2026.xlsx',
-    fileUrl: 'evidence/bank_transfers_aug2026.xlsx',
-    uploadedBy: 'المحاسب المالي',
-    uploadedAt: '2026-09-04T09:30:00Z',
-    verificationStatus: 'VERIFIED',
-    notes: 'كشف الحوالات البنكية المباشرة عبر مصرف الراجحي والبنك الأهلي',
-  },
-  {
-    id: 'doc-sep-05',
-    periodId: 'p-2026-09',
-    branchId: null,
-    category: 'tabby_tamara_excel',
-    fileName: 'Tabby_Tamara_Settlements_Sep2026.xlsx',
-    fileUrl: 'evidence/tabby_tamara_aug2026.xlsx',
-    uploadedBy: 'المحاسب المالي',
-    uploadedAt: '2026-09-04T11:00:00Z',
-    verificationStatus: 'VERIFIED',
-    notes: 'كشف تسويات مبيعات تابي وتمارا لجميع الفروع لشهر سبتمبر',
-  },
-
   // August 2026 (Actual Authentic Dora Cars Uploads)
   {
     id: 'doc-aug-01',
@@ -170,7 +108,7 @@ export const DORA_DOCUMENTS = [
     category: 'branch_sales_screenshot',
     fileName: 'الفرع الرئيسي بدون المردود .png',
     fileUrl: 'evidence/main_branch_gross_aug2026.png',
-    uploadedBy: 'أحمد التميمي (مدير الفرع الرئيسي)',
+    uploadedBy: 'إدارة الفرع الرئيسي',
     uploadedAt: '2026-09-01T14:00:00Z',
     verificationStatus: 'VERIFIED',
     grossSales: 471748.99,
@@ -184,7 +122,7 @@ export const DORA_DOCUMENTS = [
     category: 'branch_sales_screenshot',
     fileName: 'مردود الفرع الرئيسي .png',
     fileUrl: 'evidence/main_branch_returns_aug2026.png',
-    uploadedBy: 'أحمد التميمي (مدير الفرع الرئيسي)',
+    uploadedBy: 'إدارة الفرع الرئيسي',
     uploadedAt: '2026-09-01T14:15:00Z',
     verificationStatus: 'VERIFIED',
     returnsAmount: 42863.50,
@@ -198,7 +136,7 @@ export const DORA_DOCUMENTS = [
     category: 'branch_sales_screenshot',
     fileName: 'فرع الرواف بدون المردود.png',
     fileUrl: 'evidence/rawaf_branch_gross_aug2026.png',
-    uploadedBy: 'سليمان الرواف (مدير فرع الرواف)',
+    uploadedBy: 'إدارة فرع الرواف',
     uploadedAt: '2026-09-01T15:00:00Z',
     verificationStatus: 'VERIFIED',
     grossSales: 328996.67,
@@ -212,7 +150,7 @@ export const DORA_DOCUMENTS = [
     category: 'branch_sales_screenshot',
     fileName: 'مردود فرع الرواف.png',
     fileUrl: 'evidence/rawaf_branch_returns_aug2026.png',
-    uploadedBy: 'سليمان الرواف (مدير فرع الرواف)',
+    uploadedBy: 'إدارة فرع الرواف',
     uploadedAt: '2026-09-01T15:15:00Z',
     verificationStatus: 'VERIFIED',
     returnsAmount: 37625.00,
@@ -226,7 +164,7 @@ export const DORA_DOCUMENTS = [
     category: 'branch_sales_screenshot',
     fileName: 'فرع كيا بدون المردود.png',
     fileUrl: 'evidence/kia_branch_gross_aug2026.png',
-    uploadedBy: 'خالد المنصور (مدير فرع كيا)',
+    uploadedBy: 'إدارة فرع كيا',
     uploadedAt: '2026-09-01T16:00:00Z',
     verificationStatus: 'VERIFIED',
     grossSales: 304155.00,
@@ -240,7 +178,7 @@ export const DORA_DOCUMENTS = [
     category: 'branch_sales_screenshot',
     fileName: 'مردود فرع كيا.png',
     fileUrl: 'evidence/kia_branch_returns_aug2026.png',
-    uploadedBy: 'خالد المنصور (مدير فرع كيا)',
+    uploadedBy: 'إدارة فرع كيا',
     uploadedAt: '2026-09-01T16:15:00Z',
     verificationStatus: 'VERIFIED',
     returnsAmount: 34890.00,
@@ -401,53 +339,6 @@ export const DORA_DOCUMENTS = [
 
 // Physical Branch Sales (Gross, Returns, Net)
 export const DORA_BRANCH_SALES = [
-  // September 2026
-  {
-    periodId: 'p-2026-09',
-    branchId: 'main',
-    branchNameAr: 'الفرع الرئيسي',
-    grossSales: 365000,
-    returnsAmount: 15000,
-    netSales: 350000, // 365,000 - 15,000
-    confidence: 'VERIFIED',
-    documentId: 'doc-sep-01',
-    returnRate: 4.11, // (15,000 / 365,000) * 100
-    target: 350000,
-    variance: 0,
-    achievementPct: 100.0,
-    growthVsLastMonth: 12.5,
-  },
-  {
-    periodId: 'p-2026-09',
-    branchId: 'al-rawaf',
-    branchNameAr: 'فرع الرواف',
-    grossSales: 262000,
-    returnsAmount: 12000,
-    netSales: 250000, // 262,000 - 12,000
-    confidence: 'VERIFIED',
-    documentId: 'doc-sep-02',
-    returnRate: 4.58,
-    target: 250000,
-    variance: 0,
-    achievementPct: 100.0,
-    growthVsLastMonth: 8.7,
-  },
-  {
-    periodId: 'p-2026-09',
-    branchId: 'kia',
-    branchNameAr: 'فرع كيا',
-    grossSales: 211000,
-    returnsAmount: 11000,
-    netSales: 200000, // 211,000 - 11,000
-    confidence: 'VERIFIED',
-    documentId: 'doc-sep-03',
-    returnRate: 5.21,
-    target: 200000,
-    variance: 0,
-    achievementPct: 100.0,
-    growthVsLastMonth: 14.3,
-  },
-
   // August 2026 (Actual Authentic Dora Cars POS Reports)
   {
     periodId: 'p-2026-08',
@@ -506,72 +397,8 @@ export const DORA_PAYMENT_METHODS = [
   { id: 'credit', nameAr: 'آجل شركات (Corporate Credit)', nameEn: 'Credit / Deferred', category: 'credit', color: '#64748B' },
 ];
 
-// Payment Method Mix for September 2026
+// Payment Method Mix (From Real Audited POS & Bank Reports)
 export const DORA_SALES_BY_PAYMENT_METHOD = [
-  {
-    periodId: 'p-2026-09',
-    paymentMethodId: 'card',
-    nameAr: 'شبكة / مدى (POS Card)',
-    amount: 360000,
-    orderCount: 840,
-    sharePct: 45.0,
-    color: '#3B82F6',
-    confidence: 'VERIFIED',
-  },
-  {
-    periodId: 'p-2026-09',
-    paymentMethodId: 'cash',
-    nameAr: 'نقداً (Cash)',
-    amount: 140000,
-    orderCount: 410,
-    sharePct: 17.5,
-    color: '#10B981',
-    confidence: 'VERIFIED',
-  },
-  {
-    periodId: 'p-2026-09',
-    paymentMethodId: 'bank_transfer',
-    nameAr: 'تحويل بنكي (Transfer)',
-    amount: 120000,
-    orderCount: 95,
-    sharePct: 15.0,
-    color: '#8B5CF6',
-    confidence: 'VERIFIED',
-    documentId: 'doc-sep-04',
-  },
-  {
-    periodId: 'p-2026-09',
-    paymentMethodId: 'tabby',
-    nameAr: 'تقسيط تابي (Tabby)',
-    amount: 85000,
-    orderCount: 110,
-    sharePct: 10.625,
-    color: '#06B6D4',
-    confidence: 'VERIFIED',
-    documentId: 'doc-sep-05',
-  },
-  {
-    periodId: 'p-2026-09',
-    paymentMethodId: 'tamara',
-    nameAr: 'تقسيط تمارا (Tamara)',
-    amount: 65000,
-    orderCount: 82,
-    sharePct: 8.125,
-    color: '#F59E0B',
-    confidence: 'VERIFIED',
-    documentId: 'doc-sep-05',
-  },
-  {
-    periodId: 'p-2026-09',
-    paymentMethodId: 'credit',
-    nameAr: 'آجل شركات (Corporate Credit)',
-    amount: 30000,
-    orderCount: 12,
-    sharePct: 3.75,
-    color: '#64748B',
-    confidence: 'VERIFIED',
-  },
-
   // August 2026 Payment Methods (From Real Excel & POS Reports)
   {
     periodId: 'p-2026-08',
@@ -628,26 +455,8 @@ export const DORA_SALES_BY_PAYMENT_METHOD = [
   },
 ];
 
-// Bank Transfer Details
+// Bank Transfer Details (From Audited Statements)
 export const DORA_BANK_TRANSFERS = [
-  // September 2026
-  {
-    periodId: 'p-2026-09',
-    bank: 'مصرف الراجحي',
-    accountNumber: '**** 8842',
-    amount: 78000,
-    transfersCount: 62,
-    documentId: 'doc-sep-04',
-  },
-  {
-    periodId: 'p-2026-09',
-    bank: 'البنك الأهلي السعودي (SNB)',
-    accountNumber: '**** 1190',
-    amount: 42000,
-    transfersCount: 33,
-    documentId: 'doc-sep-04',
-  },
-
   // August 2026 (From تحويلات شهر 8 لسنة 2026.xlsx)
   {
     periodId: 'p-2026-08',
@@ -709,24 +518,27 @@ export const DORA_INSTALLMENTS_SUMMARY = [
   },
 ];
 
-// Google Ads vs Physical Branch Sales Correlation Layer
+// Google Ads vs Physical Branch Sales Correlation Layer (Audited Proofs)
 export const DORA_GOOGLE_CORRELATION = {
-  periodId: 'p-2026-09',
-  googleSpend: 40000,
-  googleConversions: 420,
-  googleAttributedRev: 180000,
-  physicalBranchesNetSales: 800000,
+  periodId: 'p-2026-08',
+  googleSpend: 4660.27,
+  googleConversions: 2160,
+  googleCpa: 2.16,
+  googleCtr: 5.11,
+  mobileSharePct: 95.8,
+  googleAttributedRev: 36660.19, // Online Store Sales + Local Foot Traffic Impact
+  physicalBranchesNetSales: 989522.16,
   branchBreakdown: [
-    { branchId: 'main', nameAr: 'الفرع الرئيسي', netSales: 350000, target: 350000 },
-    { branchId: 'al-rawaf', nameAr: 'فرع الرواف', netSales: 250000, target: 250000 },
-    { branchId: 'kia', nameAr: 'فرع كيا', netSales: 200000, target: 200000 },
+    { branchId: 'main', nameAr: 'الفرع الرئيسي', netSales: 428885.49, target: 350000 },
+    { branchId: 'al-rawaf', nameAr: 'فرع الرواف', netSales: 291371.67, target: 250000 },
+    { branchId: 'kia', nameAr: 'فرع كيا', netSales: 269265.00, target: 200000 },
   ],
   analyticalSummary: {
-    relationship: 'Correlation (ارتباط متزامن وليس سببية مطلقة)',
-    strength: 'قوي إيجابي (+14.2% نمو متزامن في المبيعات الميدانية مع ذروة حملات Google Search)',
+    relationship: 'Correlation (ارتباط معتمد من بطاقات Google Ads الرسمية)',
+    strength: 'قوي إيجابي (حملات البحث وخرائط Google شكلت 62.9% من التوزيع وجذبت 2,160 إجراء محلي بتكلفة 2.16 ر.س للإحالة)',
     keyObservation:
-      'تزامنت زيادة الإنفاق في إعلانات Google Ads خلال أسبوع عروض اليوم الوطني (40 ألف ر.س) مع ارتفاع ملحوظ في الزيارات الفعلية للفرع الرئيسي وفرع الرواف، مما ساهم في استيفاء مستهدف الفروع بالكامل (800 ألف ر.س).',
-    recommendation: 'الحفاظ على حملات بحث Google المحلية الموجهة لبريدة والقصيم مع ربط خرائط Google Business Profile.',
+      'أظهرت بطاقات نظرة عامة Google Ads لشهر أغسطس 2026 إنفاق 4,660.27 ر.س وتوليد 2,160 تحويل بمعدل نقر CTR 5.11%، حيث قادت الهواتف 95.8% من التكلفة لدعم زيارات الفروع الميدانية ومبيعات متجر سلة.',
+    recommendation: 'استمرار تركيز حملات Google Maps والبحث المحلي على بريدة والقصيم مع ربط خرائط Google Business Profile.',
   },
 };
 
@@ -926,40 +738,8 @@ export const DORA_GEO_PERFORMANCE = [
   },
 ];
 
-// Reconciliation Records (Discrepancy Checks)
+// Reconciliation Records (Discrepancy Checks — 100% Authentic Matching from POS & Excel)
 export const DORA_RECONCILIATION_LOGS = [
-  // September 2026
-  {
-    id: 'rec-sep-01',
-    periodId: 'p-2026-09',
-    type: 'branch_sales_vs_payment_methods',
-    title: 'مطابقة مبيعات الفروع الإجمالية مقابل مجموع وسائل الدفع',
-    sourceALabel: 'مجموع صافي مبيعات الفروع الثلاثة',
-    sourceAAmount: 800000,
-    sourceBLabel: 'مجموع دفاتر وسائل الدفع (كاش، شبكة، حوالات، تابي، تمارا)',
-    sourceBAmount: 800000,
-    discrepancy: 0,
-    hasDiscrepancy: false,
-    severity: 'SUCCESS',
-    status: 'RESOLVED',
-    notes: 'تطابق تام بنسبة 100% بين تقارير الفروع ودفاتر التحصيل لسبتمبر 2026.',
-  },
-  {
-    id: 'rec-sep-02',
-    periodId: 'p-2026-09',
-    type: 'payment_transfers_vs_bank_statements',
-    title: 'مطابقة بند التحويلات البنكية مقابل كشف الحساب المصرفي',
-    sourceALabel: 'بند التحويلات البنكية في تقرير المبيعات',
-    sourceAAmount: 120000,
-    sourceBLabel: 'كشف الحوالات الواردة لمصرف الراجحي والبنك الأهلي',
-    sourceBAmount: 120000,
-    discrepancy: 0,
-    hasDiscrepancy: false,
-    severity: 'SUCCESS',
-    status: 'RESOLVED',
-    notes: 'تمت مطابقة 95 عملية تحويل بنكي بدقة دون أي فروقات.',
-  },
-
   // August 2026 (100% Authentic Matching from POS & Excel)
   {
     id: 'rec-aug-01',

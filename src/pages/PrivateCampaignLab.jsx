@@ -909,8 +909,8 @@ export default function PrivateCampaignLab() {
       budget: Number(newCamp.budget),
       dailyBudget: Number(newCamp.dailyBudget),
       targetCities: newCamp.targetCities.split(/[,،]/).map((c) => c.trim()).filter(Boolean),
-      aiScore: Math.floor(Math.random() * 15) + 82,
-      aiTip: 'تم إنشاء الحملة بنجاح، راقب تكلفة النقرة CPC خلال الـ 48 ساعة الأولى.',
+      aiScore: newCamp.dailyBudget > 0 && newCamp.targetCities ? 90 : 80,
+      aiTip: 'تم إنشاء مسودة الحملة بنجاح، راقب مؤشرات الأداء فور إطلاق الميزانية.',
       notes: newCamp.notes || 'حملة مخصصة في مساحتك الخاصة.',
     };
 

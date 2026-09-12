@@ -344,32 +344,7 @@ export default function OwnerExecutiveDashboard() {
       };
     }
 
-    if (periodId === 'p-2026-09') {
-      const target = activePeriodObj?.target || 850000;
-      const opexTotal = activePeriodObj?.opex?.total || 90000;
-      const sales = 462800.00;
-      const cogs = 331827.60;
-      const gross = 130972.40;
-      const net = gross - opexTotal;
-      return {
-        netSales: sales,
-        cogsTotal: cogs,
-        grossProfit: gross,
-        monthlyTarget: target,
-        grossMarginPct: 28.30,
-        opexSalaries: activePeriodObj?.opex?.salaries || 60000,
-        opexFacilities: activePeriodObj?.opex?.facilities || 20000,
-        opexContingency: activePeriodObj?.opex?.contingency || 10000,
-        totalMonthlyOpex: opexTotal,
-        netProfit: net,
-        netMarginPct: Number(((net / sales) * 100).toFixed(2)),
-        opexCoverageRatio: Math.round((gross / opexTotal) * 100),
-        isAudited: false,
-        isLiveApi: true,
-      };
-    }
-
-    // Dynamic custom month
+    // Dynamic operational / custom month
     const target = activePeriodObj?.target || 850000;
     const opexTotal = activePeriodObj?.opex?.total || 90000;
     const customSales = Number(localStorage.getItem(`dora_period_sales_${periodId}`) || 0);

@@ -162,10 +162,10 @@ export default function BranchesBI() {
     : 1;
 
   // Compute Aggregates
-  const totalRevenue = branches?.reduce((sum, b) => sum + (b.revenue || 0), 0) || 989522.16;
-  const totalTarget = branches?.reduce((sum, b) => sum + (b.targetRevenue || 0), 0) || 800000;
-  const totalOrders = branches?.reduce((sum, b) => sum + (b.orders || 0), 0) || 2425;
-  const overallAchievement = (totalRevenue / totalTarget) * 100;
+  const totalRevenue = branches && branches.length ? branches.reduce((sum, b) => sum + (Number(b.revenue) || 0), 0) : 0;
+  const totalTarget = branches && branches.length ? branches.reduce((sum, b) => sum + (Number(b.targetRevenue) || 0), 0) : 800000;
+  const totalOrders = branches && branches.length ? branches.reduce((sum, b) => sum + (Number(b.orders) || 0), 0) : 0;
+  const overallAchievement = totalTarget > 0 ? (totalRevenue / totalTarget) * 100 : 0;
   const totalSurplus = totalRevenue - totalTarget;
 
   // Selected branch analytics

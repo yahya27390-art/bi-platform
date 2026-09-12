@@ -67,13 +67,13 @@ export class MockProvider {
       // Orders (factual — from bi_orders)
       totalOrders:        ecm.totalOrders,
       totalOrdersGrowth:  ecm.totalOrdersGrowth,
-      newCustomers:       320 + Math.round(Math.random() * 50),
+      newCustomers:       fin.totalRevenue > 0 ? 345 : 0,
       avgOrderValue:      calcAOV(fin.ecommerceRevenue, ecm.totalOrders),
       conversionRate:     ecm.conversionRate,
 
       // Targets
-      targetRevenue:      MOCK_TARGETS[periodId]?.revenue || 500000,
-      targetAchievementPct: calcTargetAchievement(fin.totalRevenue, MOCK_TARGETS[periodId]?.revenue || 500000),
+      targetRevenue:      MOCK_TARGETS[periodId]?.revenue || 800000,
+      targetAchievementPct: calcTargetAchievement(fin.totalRevenue, MOCK_TARGETS[periodId]?.revenue || 800000),
     };
   }
 

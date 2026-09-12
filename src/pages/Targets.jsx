@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTargets, useExecutiveKPIs, useAdMetrics, usePeriods, useBranches } from '../hooks/useBIData';
+import { useTargets, useExecutiveKPIs, useAdMetrics, usePeriods, useBranchesWithPerformance } from '../hooks/useBIData';
 import { formatSAR, formatNum, formatMultiplier, formatPercent, calcTargetAchievement } from '../lib/kpiEngine';
 import { MetricRing } from '../components/charts/Charts';
 import { CardSkeleton, SectionHeader, GrowthChip } from '../components/shared/SharedComponents';
@@ -53,8 +53,13 @@ export default function Targets() {
   const { data: targets }       = useTargets(periodId);
   const { data: kpis, loading } = useExecutiveKPIs(periodId);
   const { data: adMetrics }     = useAdMetrics(periodId);
-  const { data: branches }      = useBranches();
+  const { data: branchesPerf }  = useBranchesWithPerformance(periodId);
   const currentPeriod           = periods?.find(p => p.id === periodId);
+
+  const mainBranchRev = branchesPerf?.find(b => b.id === 'main')?.revenue || 0;
+  const rawafBranchRev = branchesPerf?.find(b => b.id === 'al-rawaf')?.revenue || 0;
+  const kiaBranchRev = branchesPerf?.find(b => b.id === 'kia')?.revenue || 0;
+  const totalBranchRev = mainBranchRev + rawafBranchRev + kiaBranchRev;
 
   const metaMetrics   = adMetrics?.find(p => p.slug === 'meta');
   const googleMetrics = adMetrics?.find(p => p.slug === 'google');
@@ -86,10 +91,14 @@ export default function Targets() {
             </div>
             <div>
               <div className="text-emerald-950 font-black text-base">
-                تحقيق استثنائي للمستهدفات: 123.7% من تارجت الفروع لشهر أغسطس
+                {periodId === 'p-2026-08'
+                  ? 'تحقيق استثنائي للمستهدفات: 123.7% من تارجت الفروع لشهر أغسطس'
+                  : `متابعة مستهدفات ${currentPeriod?.labelAr || 'الشهر التشغيلي'}: مستهدف الفروع 800,000 ر.س`}
               </div>
               <div className="text-emerald-800 text-xs mt-0.5 font-medium">
-                تم تحقيق صافي مبيعات 989,522.16 ر.س مقابل مستهدف 800,000 ر.س بهامش ربح صافي قدره 28.02%
+                {periodId === 'p-2026-08'
+                  ? 'تم تحقيق صافي مبيعات 989,522.16 ر.س مقابل مستهدف 800,000 ر.س بهامش ربح صافي قدره 28.02%'
+                  : 'البيانات تُحدّث آلياً فور تسجيل إغلاقات الصندوق وتقارير Z-Reports ومزامنة الفواتير'}
               </div>
             </div>
           </div>
@@ -120,10 +129,10 @@ export default function Targets() {
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <SectionHeader title="مستهدفات الفروع الميدانية (Branch Targets)" className="mb-4" />
                 <div>
-                  <TargetRow label="إجمالي مبيعات الفروع المجمعة" actual={989522.16} target={800000} format="sar" color="#059669" />
-                  <TargetRow label="الفرع الرئيسي (Main Branch)" actual={428885.49} target={350000} format="sar" color="#2563EB" />
-                  <TargetRow label="فرع الرواف (Al Rawaf Branch)" actual={291371.67} target={250000} format="sar" color="#059669" />
-                  <TargetRow label="فرع كيا (Kia Branch)" actual={269265.00} target={200000} format="sar" color="#0F172A" />
+                  <TargetRow label="إجمالي مبيعات الفروع المجمعة" actual={totalBranchRev} target={800000} format="sar" color="#059669" />
+                  <TargetRow label="الفرع الرئيسي (Main Branch)" actual={mainBranchRev} target={350000} format="sar" color="#2563EB" />
+                  <TargetRow label="فرع الرواف (Al Rawaf Branch)" actual={rawafBranchRev} target={250000} format="sar" color="#059669" />
+                  <TargetRow label="فرع كيا (Kia Branch)" actual={kiaBranchRev} target={200000} format="sar" color="#0F172A" />
                 </div>
               </div>
 
@@ -133,7 +142,7 @@ export default function Targets() {
                 <div>
                   <TargetRow label="صافي مبيعات الشركة" actual={kpis.totalRevenue} target={targets?.revenue || 800000} format="sar" color="#059669" />
                   <BIRoleGuard permission="canViewFinancialsFull" fallback={null}>
-                    <TargetRow label="صافي الربح المعتمد (28.02% هامش)" actual={kpis.netProfit || 277264.11} target={targets?.netProfit || 277264.11} format="sar" color="#1E3A8A" />
+                    <TargetRow label="صافي الربح المعتمد (28.02% هامش)" actual={kpis.netProfit || (kpis.totalRevenue > 0 ? 277264.11 : 0)} target={targets?.netProfit || (kpis.totalRevenue > 0 ? 277264.11 : 180000)} format="sar" color="#1E3A8A" />
                   </BIRoleGuard>
                   <TargetRow label="إجمالي العمليات المكتملة" actual={kpis.totalOrders} target={targets?.orders || 2000} format="number" color="#2563EB" />
                   <TargetRow label="العملاء الجدد المستقطبون" actual={kpis.newCustomers} target={targets?.newCustomers || 450} format="number" color="#0F172A" />

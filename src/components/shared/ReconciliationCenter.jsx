@@ -100,7 +100,12 @@ export default function ReconciliationCenter({
               <h3 className="text-base sm:text-lg font-black text-[#0F172A]">
                 مركز المطابقة وتدقيق الفروقات
               </h3>
-              {allMatched ? (
+              {currentLogs.length === 0 ? (
+                <span className="text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <Info className="w-3.5 h-3.5 text-slate-500" />
+                  بانتظار إغلاق دفاتر الشهر
+                </span>
+              ) : allMatched ? (
                 <span className="text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                   تطابق تام بنسبة 100%
@@ -137,7 +142,13 @@ export default function ReconciliationCenter({
         </div>
       </div>
 
-      {/* Clean Cards Grid: Title & Big Number Only by Default */}
+      {/* Clean Cards Grid or Empty State */}
+      {currentLogs.length === 0 ? (
+        <div className="p-8 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
+          <p className="text-sm font-bold text-slate-700">لا توجد سجلات مطابقة مسجلة لهذا الشهر حالياً</p>
+          <p className="text-xs text-slate-500 mt-1">تتم المطابقة وتدقيق الفروقات آلياً فور إغلاق دفاتر الصندوق ورفع المستندات الرسمية بنهاية الدورة المحاسبية للشهر.</p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4 items-start">
         {currentLogs.map((log) => {
           const meta = getLogMeta(log);
@@ -247,6 +258,7 @@ export default function ReconciliationCenter({
           );
         })}
       </div>
+      )}
     </div>
   );
 }

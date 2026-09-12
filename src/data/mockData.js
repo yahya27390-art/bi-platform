@@ -160,17 +160,17 @@ export const MOCK_BRANCHES = [
   { id: 'main', businessUnitId: 'bu-retail', name: 'الفرع الرئيسي',
     nameEn: 'Main Branch', brand: 'all', region: 'القصيم',
     city: 'بريدة', address: 'طريق الملك عبد العزيز، بريدة', latitude: 26.3450, longitude: 43.9630,
-    status: 'active', phone: '0530051001', managerName: 'أحمد التميمي', openingDate: '2016-01-10',
+    status: 'active', phone: '0530051001', managerName: 'إدارة الفرع الرئيسي', openingDate: '2016-01-10',
     color: '#3B82F6', targetRevenue: 350000 },
   { id: 'al-rawaf', businessUnitId: 'bu-retail', name: 'فرع الرواف',
     nameEn: 'Al Rawaf Branch', brand: 'hyundai', region: 'القصيم',
     city: 'بريدة', address: 'طريق الرواف، حي الرواف، بريدة', latitude: 26.3597, longitude: 43.9756,
-    status: 'active', phone: '0530051360', managerName: 'سليمان الرواف', openingDate: '2018-03-01',
+    status: 'active', phone: '0530051360', managerName: 'إدارة فرع الرواف', openingDate: '2018-03-01',
     color: '#10B981', targetRevenue: 250000 },
   { id: 'kia', businessUnitId: 'bu-retail', name: 'فرع كيا',
     nameEn: 'Kia Branch', brand: 'kia', region: 'القصيم',
     city: 'بريدة', address: 'طريق الملك فهد، بريدة', latitude: 26.3280, longitude: 43.9512,
-    status: 'active', phone: '0539454377', managerName: 'خالد المنصور', openingDate: '2019-07-15',
+    status: 'active', phone: '0539454377', managerName: 'إدارة فرع كيا', openingDate: '2019-07-15',
     color: '#8B5CF6', targetRevenue: 200000 },
 ];
 
@@ -202,13 +202,13 @@ export const MOCK_BRANCH_PERIOD_STATS = {
   },
 };
 
-// Generate branch daily sales (30 days realistic variation)
+// Generate branch daily sales (Deterministic distribution based on audited monthly totals)
 function genDailySales(baseRevenue, days = 30) {
   const daily = [];
   const avgDaily = baseRevenue / days;
   for (let d = 1; d <= days; d++) {
     const isWeekend = [5, 6].includes((d - 1) % 7); // Fri/Sat higher
-    const factor = isWeekend ? 1.3 : (0.8 + Math.random() * 0.4);
+    const factor = isWeekend ? 1.25 : (0.85 + (((d * 17 + 5) % 11) / 35));
     const rev = Math.round(avgDaily * factor);
     const orders = Math.round(rev / 380);
     daily.push({
@@ -329,9 +329,9 @@ export const MOCK_ECOMMERCE_STATS = {
       { name: 'فلاتر وزيوت صيانة', orders: 14, revenue: 5820, share: 15.9 },
       { name: 'مكابح وبطانات', orders: 9, revenue: 4300.19, share: 11.7 },
     ],
-    ordersTimeline: Array.from({ length: 31 }, (_, i) => ({
+    ordersTimeline: [2, 3, 2, 1, 4, 3, 2, 2, 3, 1, 2, 3, 2, 1, 4, 3, 2, 2, 3, 2, 1, 3, 2, 4, 1, 2, 3, 2, 3, 2, 4].map((orders, i) => ({
       day: String(i + 1),
-      orders: Math.round(1 + Math.random() * 4),
+      orders,
     })),
   },
 };
@@ -427,10 +427,10 @@ export const MOCK_REVENUE_TREND = [
 // ── TARGETS ───────────────────────────────────────────────────
 export const MOCK_TARGETS = {
   'p-2026-09': {
-    revenue: 500000, netProfit: 65000, adSpend: 40000,
-    roas: 4.0, orders: 2000, newCustomers: 450, cpa: 55,
-    hyundaiRevenue: 120000, kiaRevenue: 95000, ecommerceRevenue: 300000,
-    metaROAS: 4.5, googleROAS: 4.2, tiktokROAS: 3.5,
+    revenue: 800000, netProfit: 180000, adSpend: 0,
+    roas: 0, orders: 0, newCustomers: 0, cpa: 0,
+    hyundaiRevenue: 350000, kiaRevenue: 200000, ecommerceRevenue: 0,
+    metaROAS: 0, googleROAS: 0, tiktokROAS: 0,
   },
   'p-2026-08': {
     revenue: 800000, netProfit: 187363.06, adSpend: 9403,
