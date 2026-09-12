@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { formatSAR } from '../../lib/kpiEngine';
 import {
   ShieldCheck, AlertTriangle, CheckCircle2, ArrowRightLeft,
-  FileText, Calendar, Store, RotateCcw, Building2, CreditCard, ChevronDown
+  FileText, Calendar, Store, RotateCcw, Building2, CreditCard, ChevronDown, Info
 } from 'lucide-react';
 import { DORA_RECONCILIATION_LOGS, DORA_PERIODS } from '../../data/doraSchema';
 import { useCurrentPeriod } from '../../context/BIPeriodContext';
