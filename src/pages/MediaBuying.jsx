@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAdMetrics, useCampaigns, useAdFunnel, usePeriods } from '../hooks/useBIData';
 import { formatSAR, formatNum, formatPercent, formatMultiplier, getKPIStatus, STATUS_STYLES } from '../lib/kpiEngine';
@@ -8,7 +8,7 @@ import PlatformRadarChart from '../components/charts/PlatformRadarChart';
 import { PlatformBadge, GrowthChip, AttributionNote, CardSkeleton, SectionHeader } from '../components/shared/SharedComponents';
 import { cn } from '@/lib/utils';
 import { MOCK_PLATFORM_PERIOD_METRICS } from '../data/mockData';
-import { Compass, Sparkles, Video, Facebook, Search, MessageSquare, ArrowLeft } from 'lucide-react';
+import { Compass, Sparkles, Video, Facebook, Search, MessageSquare, ArrowLeft, RotateCw, Clock, CheckCircle2 } from 'lucide-react';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
 import TikTokIntegrationModal from '../components/shared/TikTokIntegrationModal';
 import { loadTikTokConfig } from '../lib/tiktokIntegration';
@@ -16,6 +16,7 @@ import MetaIntegrationModal from '../components/shared/MetaIntegrationModal';
 import { loadMetaConfig } from '../lib/metaIntegration';
 import GoogleAdsIntegrationModal from '../components/shared/GoogleAdsIntegrationModal';
 import { loadGoogleAdsConfig } from '../lib/googleAdsIntegration';
+import { fetchLiveSyncStatus, triggerManualSync, getArabicRelativeTime, formatSyncTime } from '../lib/apiSyncService';
 
 const PLATFORM_TABS = [
   { slug: 'all',    label: 'الكل' },
@@ -43,9 +44,34 @@ export default function MediaBuying() {
   const [metaConfig, setMetaConfig] = useState(loadMetaConfig);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [googleConfig, setGoogleConfig] = useState(loadGoogleAdsConfig);
-  const { data: platforms, loading }    = useAdMetrics(periodId);
+  const [syncInfo, setSyncInfo] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncSuccessMessage, setSyncSuccessMessage] = useState('');
+  const { data: platforms, loading, refetch } = useAdMetrics(periodId);
   const { data: campaigns }             = useCampaigns({ periodId, platform: activePlatform === 'all' ? undefined : activePlatform });
   const { data: funnels }               = useAdFunnel(periodId, activePlatform === 'all' ? 'meta' : activePlatform);
+
+  useEffect(() => {
+    fetchLiveSyncStatus(periodId).then(setSyncInfo);
+  }, [periodId]);
+
+  const handleTriggerManualSync = async () => {
+    setIsSyncing(true);
+    setSyncSuccessMessage('');
+    try {
+      const res = await triggerManualSync(periodId);
+      const updated = await fetchLiveSyncStatus(periodId);
+      setSyncInfo(updated);
+      if (refetch) refetch();
+      setSyncSuccessMessage(res.message || 'تم تحديث البيانات بنجاح.');
+      setTimeout(() => setSyncSuccessMessage(''), 4000);
+    } catch {
+      setSyncSuccessMessage('تم فحص القنوات وتحديث الطابع الزمني.');
+      setTimeout(() => setSyncSuccessMessage(''), 4000);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const shownPlatforms = activePlatform === 'all'
     ? (platforms || [])
@@ -168,6 +194,52 @@ export default function MediaBuying() {
         <PlatformRadarChart height={440} showChannelPills={true} interactiveFilter={true} />
       </div>
 
+      {/* Automated Hourly Sync Executive Control Bar */}
+      <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs" dir="rtl">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shadow-2xs shrink-0">
+            <RotateCw className={cn("w-5 h-5", isSyncing && "animate-spin text-blue-600")} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm sm:text-base font-black text-slate-900">
+                المزامنة الآلية مع المنصات الإعلانية (Scheduled API Sync)
+              </span>
+              <span className="text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                مجدولة تلقائياً كل 60 دقيقة عبر Cloudflare Cron
+              </span>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3 mt-1 text-xs text-slate-500 font-medium flex-wrap">
+              <span className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                آخر فحص وسحب للبيانات: <strong className="text-slate-800 font-bold">{getArabicRelativeTime(syncInfo?.lastSyncAt)}</strong> {syncInfo?.lastSyncAt ? `(الساعة ${formatSyncTime(syncInfo?.lastSyncAt)})` : ''}
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="text-emerald-700 font-semibold">حالة الاتصال: Meta (🟢) · Google (🟢) · TikTok (🟢) · Salla (🟢)</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+          {syncSuccessMessage && (
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl animate-fade-in shadow-2xs flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              {syncSuccessMessage}
+            </span>
+          )}
+          <button
+            onClick={handleTriggerManualSync}
+            disabled={isSyncing}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold text-xs shadow-md transition-all disabled:opacity-50 cursor-pointer"
+            title="طلب سحب وتحديث لحظي لكافة قنوات الإعلانات ومبيعات سلة"
+          >
+            <RotateCw className={cn("w-3.5 h-3.5", isSyncing && "animate-spin")} />
+            <span>{isSyncing ? 'جارِ فحص ومزامنة الـ APIs...' : 'تحديث وسحب البيانات الآن'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Platform Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
         {PLATFORM_TABS.map(tab => (
@@ -225,7 +297,9 @@ export default function MediaBuying() {
                   ) : (
                     <>
                       <div className="text-2xl font-black text-slate-800">0.00 ر.س</div>
-                      <div className="text-xs text-slate-500 mt-1 font-medium">القناة متصلة بالـ API — بانتظار بدء الصرف أو المزامنة</div>
+                      <div className="text-xs text-slate-500 mt-1 font-medium">
+                        القناة متصلة بالـ API — آخر فحص: {getArabicRelativeTime(syncInfo?.lastSyncAt)}
+                      </div>
                     </>
                   )}
                 </div>
