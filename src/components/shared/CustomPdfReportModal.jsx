@@ -226,7 +226,14 @@ export default function CustomPdfReportModal({
 
   // Trigger print-to-pdf
   const handlePrint = () => {
-    window.print();
+    if (mode !== 'preview') {
+      setMode('preview');
+      setTimeout(() => {
+        window.print();
+      }, 150);
+    } else {
+      window.print();
+    }
   };
 
   if (!isOpen) return null;
@@ -244,43 +251,6 @@ export default function CustomPdfReportModal({
         id="executive-report-printable-area"
         className="relative w-full max-w-6xl max-h-[94vh] flex flex-col rounded-3xl border border-slate-700/60 bg-white text-slate-900 shadow-2xl overflow-hidden my-auto print:static print:w-full print:max-w-none print:max-h-none print:bg-white print:border-none print:shadow-none print:rounded-none print:m-0 print:p-0 print:overflow-visible print:block"
       >
-        {/* ── Official Printable Corporate Header (Visible ONLY in Print / PDF Export) ── */}
-        <div className="hidden print:block border-b-2 border-slate-900 pb-3 mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src={doraLogo} alt="درة السيارة" className="h-12 w-auto object-contain" />
-              <div>
-                <h1 className="text-xl font-black text-slate-950">شركة درة السيارة لقطع غيار السيارات</h1>
-                <p className="text-[11px] text-slate-600 font-bold">
-                  سجل تجاري: 1131012345 · متخصصون في قطع غيار هيونداي وكيا المعتمدة · بريدة، القصيم
-                </p>
-              </div>
-            </div>
-            <div className="text-left text-xs font-mono">
-              <div className="font-black text-slate-950">وثيقة تدقيق معتمدة DORA-AUDIT-2026</div>
-              <div className="text-slate-600 font-bold">تاريخ الاعتماد: 21 سبتمبر 2026</div>
-              <div className="text-emerald-800 font-bold">مطابق لتقرير جرد المستودعات (277 صفحة)</div>
-            </div>
-          </div>
-
-          <div className="mt-3 pt-2 border-t border-slate-300 flex items-center justify-between text-xs">
-            <div>
-              <h2 className="text-base font-black text-slate-950">
-                {currentReportMeta.label}
-              </h2>
-              <p className="text-slate-600 mt-0.5">
-                نطاق التقرير: من الصنف رقم <strong className="font-mono">{fromIndex}</strong> إلى الصنف رقم <strong className="font-mono">{Math.min(toIndex, baseReportItems.length)}</strong> ({slicedReportItems.length} صنف معتمد)
-                {branchFilter !== 'all' && ` · المستودع: ${branchFilter === '100' ? 'المركز الرئيسي 100' : branchFilter === '200' ? 'فرع الرواف 200' : 'السليم 2 / كيا 300'}`}
-              </p>
-            </div>
-
-            <div className="text-left font-mono text-xs">
-              <div>إجمالي القطع: <strong className="font-black">{formatNum(slicedTotals.totalUnits)}</strong></div>
-              <div>إجمالي القيمة: <strong className="font-black text-emerald-800">{formatSAR(slicedTotals.totalValuation)}</strong></div>
-            </div>
-          </div>
-        </div>
-
         {/* ── Screen Header Bar (Hidden in Print) ── */}
         <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
           <div className="flex items-center gap-3">
@@ -587,13 +557,13 @@ export default function CustomPdfReportModal({
               </div>
 
               {/* ── Official A4 Document Presentation Sheet ── */}
-              <div className="bg-white border-2 border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5">
+              <div className="bg-white border-2 border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5 print:border-none print:shadow-none print:rounded-none print:p-0 print:space-y-3">
                 
                 {/* Official Letterhead (Header with Logo) */}
-                <div className="border-b-2 border-slate-900 pb-4">
+                <div className="border-b-2 border-slate-900 pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <img src={doraLogo} alt="درة السيارة" className="h-14 w-auto object-contain" />
+                      <img src={doraLogo} alt="درة السيارة" className="h-14 w-auto object-contain print:h-12" />
                       <div>
                         <h1 className="text-lg sm:text-xl font-black text-slate-950">
                           شركة درة السيارة لقطع غيار السيارات
@@ -608,26 +578,26 @@ export default function CustomPdfReportModal({
                     </div>
 
                     <div className="text-left text-xs font-mono space-y-0.5">
-                      <div className="font-black text-slate-950">DORA-INV-REP-{new Date().toISOString().slice(0, 10)}</div>
-                      <div className="text-slate-600">تاريخ الجرد: 21 سبتمبر 2026</div>
-                      <div className="text-emerald-800 font-bold">طباعة: فهد (مدير النظام)</div>
-                      <div className="text-[10px] text-slate-400">الصفحة 1 من 1</div>
+                      <div className="font-black text-slate-950">وثيقة تدقيق معتمدة DORA-AUDIT-2026</div>
+                      <div className="text-slate-600 font-bold">تاريخ الاعتماد: 21 سبتمبر 2026</div>
+                      <div className="text-emerald-800 font-bold">مطابق لتقرير جرد المستودعات (277 صفحة)</div>
+                      <div className="text-[10px] text-slate-500 font-bold">طباعة: فهد (مدير النظام)</div>
                     </div>
                   </div>
 
                   {/* Report Title Bar */}
-                  <div className="mt-4 pt-3 border-t border-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="mt-3 pt-2.5 border-t border-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h2 className="text-base font-black text-slate-950 flex items-center gap-2">
                         <span>{currentReportMeta.label}</span>
                       </h2>
                       <div className="text-xs text-slate-600 mt-0.5">
-                        النطاق المعتمد للطباعة: من صنف رقم <strong className="font-mono">{fromIndex}</strong> إلى صنف رقم <strong className="font-mono">{Math.min(toIndex, baseReportItems.length)}</strong>
-                        {branchFilter !== 'all' && ` (مستودع: ${branchFilter === '100' ? 'المركز الرئيسي 100' : branchFilter === '200' ? 'فرع الرواف 200' : 'السليم 2 / كيا 300'})`}
+                        نطاق التقرير: من الصنف رقم <strong className="font-mono">{fromIndex}</strong> إلى الصنف رقم <strong className="font-mono">{Math.min(toIndex, baseReportItems.length)}</strong> ({slicedReportItems.length} صنف معتمد)
+                        {branchFilter !== 'all' && ` · المستودع: ${branchFilter === '100' ? 'المركز الرئيسي 100' : branchFilter === '200' ? 'فرع الرواف 200' : 'السليم 2 / كيا 300'}`}
                       </div>
                     </div>
 
-                    <div className="text-left font-mono text-xs bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    <div className="text-left font-mono text-xs bg-slate-50 print:bg-transparent p-2 rounded-xl border border-slate-200 print:border-slate-300">
                       <div>عدد الأصناف المشمولة: <strong className="font-bold text-slate-900">{slicedReportItems.length}</strong> صنف</div>
                       <div>إجمالي الرصيد المتوفر: <strong className="font-bold text-slate-900">{formatNum(slicedTotals.totalUnits)}</strong> قطعة</div>
                       <div>إجمالي التقييم المالي: <strong className="font-black text-emerald-800">{formatSAR(slicedTotals.totalValuation)}</strong></div>
@@ -719,7 +689,7 @@ export default function CustomPdfReportModal({
                 </div>
 
                 {/* Official Signatures and Stamp Footer (Visible in Print / PDF) */}
-                <div className="pt-6 border-t-2 border-slate-400 mt-6 grid grid-cols-3 gap-6 text-center text-xs">
+                <div className="pt-6 border-t-2 border-slate-400 mt-6 grid grid-cols-3 gap-6 text-center text-xs print-avoid-break">
                   <div className="space-y-6">
                     <div className="font-bold text-slate-800">أمين ومسؤول المستودعات</div>
                     <div className="text-[11px] text-slate-400 border-b border-dashed border-slate-400 pb-1 w-32 mx-auto">
