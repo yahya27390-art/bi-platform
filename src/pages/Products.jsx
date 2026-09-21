@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { formatNum } from '../lib/kpiEngine';
+import { formatNum, formatSAR } from '../lib/kpiEngine';
 import { cn } from '@/lib/utils';
 import {
   Package,
@@ -28,6 +28,9 @@ import {
   PackageX,
   ArrowUpRight,
   BarChart3,
+  DollarSign,
+  FileText,
+  Building2
 } from 'lucide-react';
 import { REAL_INVENTORY_STATS, REAL_ALL_PARTS } from '../data/realInventoryData';
 import ExecutiveReportsModal from '../components/shared/ExecutiveReportsModal';
@@ -58,16 +61,24 @@ const CATEGORY_OPTIONS = [
 const STATUS_FILTERS = [
   { key: 'all', label: 'كافة الحالات' },
   { key: 'in_stock', label: 'متوفر بالمستودع' },
-  { key: 'low_stock', label: 'مخزون حرج' },
+  { key: 'low_stock', label: 'مخزون حرج (1-5 قطع)' },
   { key: 'out_of_stock', label: 'نفد من المخزن' },
+];
+
+const BRANCH_OPTIONS = [
+  { key: 'all', label: 'كافة الفروع والمستودعات (3 فروع)' },
+  { key: 'main', label: '100 - المركز الرئيسي (15,825 قطعة · 818.1K ر.س)' },
+  { key: 'rawaf', label: '200 - فرع الرواف (12,097 قطعة · 729.2K ر.س)' },
+  { key: 'sulaim', label: '300 - مخزن السليم 2 / كيا (10,740 قطعة · 742.1K ر.س)' },
 ];
 
 export default function Products() {
   const [search, setSearch] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('الكل');
+  const [selectedBranch, setSelectedBranch] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [sortBy, setSortBy] = useState('issued'); // 'issued' | 'balance' | 'received' | 'opening' | 'sku'
+  const [sortBy, setSortBy] = useState('valuation'); // 'valuation' | 'unitCost' | 'balance' | 'issued' | 'sku'
   const [sortDesc, setSortDesc] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
@@ -111,15 +122,32 @@ export default function Products() {
       result = result.filter((p) => p.category === selectedCategory);
     }
 
-    // 4. Status Filter
+    // 4. Branch Filter (100% Real Branch Stock)
+    if (selectedBranch === 'main') {
+      result = result.filter(p => (p.qtyMain || 0) > 0);
+    } else if (selectedBranch === 'rawaf') {
+      result = result.filter(p => (p.qtyRawaf || 0) > 0);
+    } else if (selectedBranch === 'sulaim') {
+      result = result.filter(p => (p.qtySulaim || 0) > 0);
+    }
+
+    // 5. Status Filter
     if (selectedStatus !== 'all') {
       result = result.filter((p) => p.status === selectedStatus);
     }
 
-    // 5. Sorting
+    // 6. Sorting
     result = [...result].sort((a, b) => {
       let valA = a[sortBy];
       let valB = b[sortBy];
+
+      if (sortBy === 'valuation') {
+        valA = a.totalCost || 0;
+        valB = b.totalCost || 0;
+      } else if (sortBy === 'balance') {
+        valA = a.totalQty != null ? a.totalQty : (a.balance || 0);
+        valB = b.totalQty != null ? b.totalQty : (b.balance || 0);
+      }
 
       if (typeof valA === 'string') {
         return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
@@ -128,7 +156,7 @@ export default function Products() {
     });
 
     return result;
-  }, [search, selectedBrand, selectedCategory, selectedStatus, sortBy, sortDesc]);
+  }, [search, selectedBrand, selectedCategory, selectedBranch, selectedStatus, sortBy, sortDesc]);
 
   // Pagination Math
   const totalPages = Math.ceil(filteredParts.length / PAGE_SIZE) || 1;
@@ -140,13 +168,14 @@ export default function Products() {
     setSearch('');
     setSelectedBrand('all');
     setSelectedCategory('الكل');
+    setSelectedBranch('all');
     setSelectedStatus('all');
-    setSortBy('issued');
+    setSortBy('valuation');
     setSortDesc(true);
     setCurrentPage(1);
   };
 
-  // Direct CSV Export of all filtered parts from main table
+  // Direct CSV Export of all filtered parts with Branch quantities & Cost
   const exportFilteredPartsCSV = () => {
     const cleanCsv = (val) => {
       if (val === null || val === undefined) return '';
@@ -158,7 +187,7 @@ export default function Products() {
     };
 
     let csvContent = '\uFEFF';
-    csvContent += 'م,رقم الصنف OEM,اسم قطعة الغيار,الماركة,الفئة,الوحدة,الرصيد الافتتاحي,الوارد الإضافي,المنصرف (المبيعات),الرصيد الفعلي,الحالة\n';
+    csvContent += 'م,رقم الصنف OEM,اسم قطعة الغيار,الماركة,الفئة,الوحدة,سعر التكلفة للقطعة (ر.س),كمية مخزن الرئيسي (100),تكلفة الرئيسي,كمية مخزن الرواف (200),تكلفة الرواف,كمية مخزن السليم 2 (300),تكلفة السليم,إجمالي الكمية المتوفرة,إجمالي القيمة التقديرية (ر.س),الحالة\n';
     
     filteredParts.forEach((p, idx) => {
       const brandArabic =
@@ -169,14 +198,14 @@ export default function Products() {
           : p.brand === 'mobis'
           ? 'موبيس'
           : 'عام';
-      csvContent += `"${cleanCsv(idx + 1)}","${cleanCsv(formatSku(p.sku))}","${cleanCsv(p.name)}","${cleanCsv(brandArabic)}","${cleanCsv(p.category)}","${cleanCsv(p.unit || 'حبه')}","${cleanCsv(p.opening || 0)}","${cleanCsv(p.received || 0)}","${cleanCsv(p.issued || 0)}","${cleanCsv(p.balance || 0)}","${cleanCsv(p.status || '')}"\n`;
+      csvContent += `"${cleanCsv(idx + 1)}","${cleanCsv(formatSku(p.sku))}","${cleanCsv(p.name)}","${cleanCsv(brandArabic)}","${cleanCsv(p.category)}","${cleanCsv(p.unit || 'حبه')}","${cleanCsv(p.unitCost || 0)}","${cleanCsv(p.qtyMain || 0)}","${cleanCsv(p.costMain || 0)}","${cleanCsv(p.qtyRawaf || 0)}","${cleanCsv(p.costRawaf || 0)}","${cleanCsv(p.qtySulaim || 0)}","${cleanCsv(p.costSulaim || 0)}","${cleanCsv(p.totalQty || p.balance || 0)}","${cleanCsv(p.totalCost || 0)}","${cleanCsv(p.status || '')}"\n`;
     });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `DORA_PARTS_FILTERED_${filteredParts.length}_ITEMS_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `DORA_WAREHOUSE_INVENTORY_${filteredParts.length}_ITEMS_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -192,20 +221,32 @@ export default function Products() {
               <Boxes className="w-5 h-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              ذكاء قطع الغيار والمخزون الميداني (Spare Parts Intelligence)
+              مركز قطع الغيار والمخزون الميداني (Spare Parts & Inventory Intelligence)
             </h1>
           </div>
           <p className="text-slate-500 text-xs sm:text-sm mt-1 font-medium mr-9">
-            سجل حركة المخزن والمبيعات حتى شهر سبتمبر 2026 · بيانات حقيقية 100% مدققة لـ 8,693 كود قطعة غيار
+            سجل حركة وأرصدة وتكاليف المخزون المعتمد حتى 21 سبتمبر 2026 · بيانات حقيقية 100% مدققة لـ {formatNum(REAL_INVENTORY_STATS.totalSKUs)} كود قطعة غيار بالفروع الثلاثة
           </p>
         </div>
 
         {/* Top Header Actions */}
         <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start lg:self-center">
+          {/* Live Official PDF Viewer Trigger */}
+          <a
+            href="/evidence/official_warehouse_cost_sep2026.pdf"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-sm transition-all active:scale-95 border border-rose-700 cursor-pointer"
+            title="فتح مستند PDF الرسمي المعتمد (277 صفحة)"
+          >
+            <FileText className="w-4 h-4" />
+            <span>تقرير الـ PDF المعتمد (277 صفحة)</span>
+          </a>
+
           {/* Live File Verification Badge */}
           <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-900 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-2xs">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>مطابقة لسجل حركة المخزن: «حركة مخزن الى شهر 9 2026.xlsx»</span>
+            <span>مطابقة لدفتر المخزون والتكلفة: 21/09/2026</span>
           </div>
 
           {/* Executive Reports Trigger Button */}
@@ -215,12 +256,85 @@ export default function Products() {
             className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#0F172A] hover:bg-blue-600 text-white text-xs font-black shadow-sm transition-all active:scale-95 border border-slate-700 hover:border-blue-500 cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-            <span>مركز التقارير وتصدير الأصناف (مخصص)</span>
+            <span>مركز التقارير والتصدير (مخصص)</span>
           </button>
         </div>
       </div>
 
-      {/* ── 2. Four Authentic KPI Metrics Tiles ── */}
+      {/* ── 2. Warehouse Financial Valuation & Capital Asset Cards ── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <DollarSign className="w-4 h-4 text-emerald-600" />
+            <h2 className="text-sm font-black text-slate-900">
+              التقييم المالي والرأسمالي للمخزون حسب الفروع (21/09/2026)
+            </h2>
+          </div>
+          <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg">
+            التكلفة الدفترية المعتمدة
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* Total Valuation */}
+          <div className="p-4 rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-50/70 via-white to-white shadow-xs space-y-1">
+            <div className="flex items-center justify-between text-xs text-emerald-900 font-bold">
+              <span>إجمالي قيمة المخزون الدفترية</span>
+              <DollarSign className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-emerald-700 font-mono" dir="ltr">
+              {formatSAR(REAL_INVENTORY_STATS.totalValuation || 2289429.94, false)}
+            </div>
+            <div className="text-[11px] text-emerald-800 font-bold">
+              إجمالي {formatNum(REAL_INVENTORY_STATS.totalBalance || 38662)} قطعة بالمستودعات الثلاثة
+            </div>
+          </div>
+
+          {/* Main Warehouse 100 */}
+          <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1 hover:border-blue-300 transition-colors">
+            <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
+              <span>مخزن المركز الرئيسي (100)</span>
+              <Building2 className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="text-lg sm:text-xl font-black text-slate-900 font-mono text-blue-700" dir="ltr">
+              {formatSAR(REAL_INVENTORY_STATS.warehouses?.main?.valuation || 818115.34, false)}
+            </div>
+            <div className="text-[11px] text-slate-500 font-medium">
+              الرصيد: <strong className="text-blue-900 font-mono">{formatNum(REAL_INVENTORY_STATS.warehouses?.main?.qty || 15825)}</strong> قطعة
+            </div>
+          </div>
+
+          {/* Al-Rawaf Warehouse 200 */}
+          <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1 hover:border-indigo-300 transition-colors">
+            <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
+              <span>مخزن فرع الرواف (200)</span>
+              <Building2 className="w-4 h-4 text-indigo-600" />
+            </div>
+            <div className="text-lg sm:text-xl font-black text-slate-900 font-mono text-indigo-700" dir="ltr">
+              {formatSAR(REAL_INVENTORY_STATS.warehouses?.rawaf?.valuation || 729188.10, false)}
+            </div>
+            <div className="text-[11px] text-slate-500 font-medium">
+              الرصيد: <strong className="text-indigo-900 font-mono">{formatNum(REAL_INVENTORY_STATS.warehouses?.rawaf?.qty || 12097)}</strong> قطعة
+            </div>
+          </div>
+
+          {/* Sulaim 2 / Kia Warehouse 300 */}
+          <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1 hover:border-purple-300 transition-colors">
+            <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
+              <span>مخزن السليم 2 / كيا (300)</span>
+              <Building2 className="w-4 h-4 text-purple-600" />
+            </div>
+            <div className="text-lg sm:text-xl font-black text-slate-900 font-mono text-purple-700" dir="ltr">
+              {formatSAR(REAL_INVENTORY_STATS.warehouses?.sulaim?.valuation || 742126.70, false)}
+            </div>
+            <div className="text-[11px] text-slate-500 font-medium">
+              الرصيد: <strong className="text-purple-900 font-mono">{formatNum(REAL_INVENTORY_STATS.warehouses?.sulaim?.qty || 10740)}</strong> قطعة
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2.2 Four Movement & Quantity KPI Tiles ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="p-4 rounded-2xl border border-slate-200/80 bg-white shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
@@ -231,7 +345,7 @@ export default function Products() {
             {formatNum(REAL_INVENTORY_STATS.totalSKUs)}
           </div>
           <div className="text-[11px] text-blue-700 font-bold">
-            كود قطعة غيار (SKU)
+            كود قطعة غيار مسجل
           </div>
         </div>
 
@@ -244,7 +358,7 @@ export default function Products() {
             {formatNum(REAL_INVENTORY_STATS.totalIssued)}
           </div>
           <div className="text-[11px] text-emerald-700 font-bold">
-            قطعة غيار مباعة ({formatNum(REAL_INVENTORY_STATS.itemsWithSales)} صنف نشط)
+            قطعة مباعة ({formatNum(REAL_INVENTORY_STATS.itemsWithSales)} صنف نشط)
           </div>
         </div>
 
@@ -502,6 +616,25 @@ export default function Products() {
             )}
           </div>
 
+          {/* Branch Dropdown */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 whitespace-nowrap">الفرع:</span>
+            <select
+              value={selectedBranch}
+              onChange={(e) => {
+                setSelectedBranch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-blue-500 cursor-pointer shadow-2xs"
+            >
+              {BRANCH_OPTIONS.map((br) => (
+                <option key={br.key} value={br.key}>
+                  {br.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Category Dropdown */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-500 whitespace-nowrap">الفئة:</span>
@@ -541,7 +674,7 @@ export default function Products() {
           </div>
 
           {/* Reset Filters */}
-          {(search || selectedBrand !== 'all' || selectedCategory !== 'الكل' || selectedStatus !== 'all') && (
+          {(search || selectedBrand !== 'all' || selectedCategory !== 'الكل' || selectedBranch !== 'all' || selectedStatus !== 'all') && (
             <button
               type="button"
               onClick={resetFilters}
@@ -613,7 +746,7 @@ export default function Products() {
               <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-black">
                 <th className="py-3.5 px-4">
                   <div className="flex items-center justify-between gap-2">
-                    <span>رقم الصنف (OEM Part No)</span>
+                    <span>رقم الصنف (OEM)</span>
                     <button
                       type="button"
                       onClick={() => setSwapSku(!swapSku)}
@@ -625,71 +758,72 @@ export default function Products() {
                     </button>
                   </div>
                 </th>
-                <th className="py-3.5 px-4 min-w-[220px]">اسم قطعة الغيار</th>
-                <th className="py-3.5 px-4">الفئة</th>
-                <th className="py-3.5 px-4">الوحدة</th>
+                <th className="py-3.5 px-4 min-w-[200px]">اسم قطعة الغيار</th>
+                <th className="py-3.5 px-3">الفئة</th>
+                <th className="py-3.5 px-2">الوحدة</th>
                 <th
                   onClick={() => {
-                    if (sortBy === 'opening') setSortDesc(!sortDesc);
-                    else { setSortBy('opening'); setSortDesc(true); }
+                    if (sortBy === 'unitCost') setSortDesc(!sortDesc);
+                    else { setSortBy('unitCost'); setSortDesc(true); }
                   }}
-                  className="py-3.5 px-3 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap"
+                  className="py-3.5 px-3 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap bg-amber-50/50"
+                  title="ترتيب حسب سعر تكلفة القطعة الواحدة"
                 >
-                  <div className="flex items-center gap-1">
-                    <span>الرصيد الافتتاحي</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  <div className="flex items-center gap-1 text-amber-950 font-black">
+                    <span>سعر التكلفة</span>
+                    <ArrowUpDown className="w-3 h-3 text-amber-600" />
                   </div>
                 </th>
-                <th
-                  onClick={() => {
-                    if (sortBy === 'received') setSortDesc(!sortDesc);
-                    else { setSortBy('received'); setSortDesc(true); }
-                  }}
-                  className="py-3.5 px-3 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap"
-                >
-                  <div className="flex items-center gap-1">
-                    <span>الوارد</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
-                  </div>
+                <th className="py-3.5 px-2.5 text-center whitespace-nowrap text-blue-900 bg-blue-50/30">
+                  <span>الرئيسي (100)</span>
                 </th>
-                <th
-                  onClick={() => {
-                    if (sortBy === 'issued') setSortDesc(!sortDesc);
-                    else { setSortBy('issued'); setSortDesc(true); }
-                  }}
-                  className="py-3.5 px-4 cursor-pointer bg-emerald-50/70 text-emerald-950 hover:bg-emerald-100 transition-colors whitespace-nowrap"
-                >
-                  <div className="flex items-center gap-1">
-                    <span>المنصرف (المبيعات)</span>
-                    <ArrowUpDown className="w-3 h-3 text-emerald-700" />
-                  </div>
+                <th className="py-3.5 px-2.5 text-center whitespace-nowrap text-indigo-900 bg-indigo-50/30">
+                  <span>الرواف (200)</span>
+                </th>
+                <th className="py-3.5 px-2.5 text-center whitespace-nowrap text-purple-900 bg-purple-50/30">
+                  <span>السليم 2 (300)</span>
                 </th>
                 <th
                   onClick={() => {
                     if (sortBy === 'balance') setSortDesc(!sortDesc);
                     else { setSortBy('balance'); setSortDesc(true); }
                   }}
-                  className="py-3.5 px-4 cursor-pointer bg-blue-50/70 text-blue-950 hover:bg-blue-100 transition-colors whitespace-nowrap"
+                  className="py-3.5 px-3 cursor-pointer bg-slate-100 hover:bg-slate-200 transition-colors whitespace-nowrap"
+                  title="ترتيب حسب إجمالي الرصيد بالمستودعات"
                 >
                   <div className="flex items-center gap-1">
-                    <span>الرصيد بالمستودع</span>
-                    <ArrowUpDown className="w-3 h-3 text-blue-700" />
+                    <span>إجمالي الرصيد</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-700" />
                   </div>
                 </th>
-                <th className="py-3.5 px-4 text-center">حالة المخزون</th>
+                <th
+                  onClick={() => {
+                    if (sortBy === 'valuation') setSortDesc(!sortDesc);
+                    else { setSortBy('valuation'); setSortDesc(true); }
+                  }}
+                  className="py-3.5 px-4 cursor-pointer bg-emerald-100/70 text-emerald-950 hover:bg-emerald-200 transition-colors whitespace-nowrap"
+                  title="ترتيب حسب إجمالي قيمة المخزون بالريال"
+                >
+                  <div className="flex items-center gap-1 font-black">
+                    <span>إجمالي القيمة (ر.س)</span>
+                    <ArrowUpDown className="w-3 h-3 text-emerald-700" />
+                  </div>
+                </th>
+                <th className="py-3.5 px-3 text-center">حالة المخزون</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {paginatedParts.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400 text-sm">
+                  <td colSpan={11} className="py-12 text-center text-slate-400 text-sm">
                     لا توجد أصناف تطابق معايير البحث والتصفية المحددة.
                   </td>
                 </tr>
               ) : (
-                paginatedParts.map((p) => {
+                paginatedParts.map((p, idx) => {
+                  const hasStock = (p.totalQty != null ? p.totalQty : (p.balance || 0)) > 0;
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={p.sku + '_' + idx} className="hover:bg-slate-50/80 transition-colors">
                       {/* SKU */}
                       <td className="py-3 px-4">
                         <span
@@ -703,7 +837,7 @@ export default function Products() {
 
                       {/* Name + Brand Badge */}
                       <td className="py-3 px-4">
-                        <div className="font-bold text-slate-900">{p.name}</div>
+                        <div className="font-bold text-slate-900 leading-snug">{p.name}</div>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           {p.brand === 'hyundai' && (
                             <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-100">
@@ -720,43 +854,76 @@ export default function Products() {
                               موبيس أصلي
                             </span>
                           )}
+                          {p.brand === 'general' && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                              عام / سوائل
+                            </span>
+                          )}
                         </div>
                       </td>
 
                       {/* Category */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-3">
                         <span className="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg whitespace-nowrap">
                           {p.category}
                         </span>
                       </td>
 
                       {/* Unit */}
-                      <td className="py-3 px-4 text-slate-500 font-medium">
+                      <td className="py-3 px-2 text-slate-500 font-medium">
                         {p.unit}
                       </td>
 
-                      {/* Opening */}
-                      <td className="py-3 px-3 font-mono font-bold text-slate-600">
-                        {formatNum(p.opening)}
+                      {/* Unit Cost (Last Purchase Cost) */}
+                      <td className="py-3 px-3 font-mono font-black text-amber-900 bg-amber-50/30 whitespace-nowrap" dir="ltr">
+                        {p.unitCost > 0 ? formatSAR(p.unitCost, false, 2) : '—'}
                       </td>
 
-                      {/* Received */}
-                      <td className="py-3 px-3 font-mono font-bold text-slate-700">
-                        {formatNum(p.received)}
+                      {/* Branch 100 Main Qty */}
+                      <td className="py-3 px-2.5 text-center font-mono font-bold">
+                        {(p.qtyMain || 0) > 0 ? (
+                          <span className="inline-block px-2 py-0.5 rounded bg-blue-50 text-blue-900 font-bold">
+                            {p.qtyMain}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300">0</span>
+                        )}
                       </td>
 
-                      {/* Issued (Sold) */}
-                      <td className="py-3 px-4 font-mono font-black text-emerald-700 bg-emerald-50/40 text-sm">
-                        {formatNum(p.issued)}
+                      {/* Branch 200 Rawaf Qty */}
+                      <td className="py-3 px-2.5 text-center font-mono font-bold">
+                        {(p.qtyRawaf || 0) > 0 ? (
+                          <span className="inline-block px-2 py-0.5 rounded bg-indigo-50 text-indigo-900 font-bold">
+                            {p.qtyRawaf}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300">0</span>
+                        )}
                       </td>
 
-                      {/* Balance (In Stock) */}
-                      <td className="py-3 px-4 font-mono font-black text-blue-800 bg-blue-50/40 text-sm">
-                        {formatNum(p.balance)}
+                      {/* Branch 300 Sulaim 2 Qty */}
+                      <td className="py-3 px-2.5 text-center font-mono font-bold">
+                        {(p.qtySulaim || 0) > 0 ? (
+                          <span className="inline-block px-2 py-0.5 rounded bg-purple-50 text-purple-900 font-bold">
+                            {p.qtySulaim}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300">0</span>
+                        )}
+                      </td>
+
+                      {/* Total Quantity */}
+                      <td className="py-3 px-3 font-mono font-black text-slate-950 text-sm text-center bg-slate-50/50">
+                        {formatNum(p.totalQty != null ? p.totalQty : p.balance)}
+                      </td>
+
+                      {/* Total Stock Valuation (Cost) */}
+                      <td className="py-3 px-4 font-mono font-black text-emerald-800 bg-emerald-50/50 text-xs whitespace-nowrap text-left" dir="ltr">
+                        {p.totalCost > 0 ? formatSAR(p.totalCost, false, 2) : '0.00 ر.س'}
                       </td>
 
                       {/* Stock Status Badge */}
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <td className="py-3 px-3 text-center whitespace-nowrap">
                         {p.status === 'in_stock' && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -770,9 +937,9 @@ export default function Products() {
                           </span>
                         )}
                         {p.status === 'out_of_stock' && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800">
-                            <XCircle className="w-3 h-3 text-red-600" />
-                            <span>نافد</span>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                            <XCircle className="w-3 h-3 text-slate-400" />
+                            <span>نافد (0)</span>
                           </span>
                         )}
                       </td>

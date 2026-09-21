@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { useBIAuth } from '@/auth/BIAuthContext';
 import {
   LayoutDashboard, TrendingUp, ShoppingCart, MapPin, Package,
-  DollarSign, Target, Upload, Building2, Sparkles, X, Crown, Lock
+  DollarSign, Target, Upload, Building2, Sparkles, X, Crown, Lock, Boxes
 } from 'lucide-react';
 import doraLogo from '@/assets/dora_logo.png';
 
@@ -25,7 +25,7 @@ const NAV_ITEMS = [
   },
   { label: 'المتجر الإلكتروني', icon: ShoppingCart, path: '/ecommerce' },
   { label: 'الفروع الميدانية', icon: MapPin, path: '/branches' },
-  { label: 'المنتجات', icon: Package, path: '/products' },
+  { label: 'قطع الغيار والمخزون', icon: Boxes, path: '/inventory', altPaths: ['/products'] },
   { label: 'المالية', icon: DollarSign, path: '/financials' },
   { label: 'الأهداف', icon: Target, path: '/targets' },
   { label: 'استيراد البيانات', icon: Upload, path: '/import' },
@@ -54,6 +54,7 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
 
   const isActive = (item) => {
     if (item.exact) return location.pathname === item.path;
+    if (item.altPaths?.some((p) => location.pathname.startsWith(p))) return true;
     return location.pathname.startsWith(item.path);
   };
 

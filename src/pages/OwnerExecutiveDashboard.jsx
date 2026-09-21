@@ -34,7 +34,7 @@ const VIEW_MODE_KEY = 'dora_owner_view_mode';
 // Tab configuration (5 core executive pillars)
 const TABS = [
   { id: 'summary', label: 'المالية', emoji: '💰', icon: BarChart3 },
-  { id: 'inventory', label: 'الأصناف', emoji: '📦', icon: Package },
+  { id: 'inventory', label: 'قطع الغيار والمخزون', emoji: '📦', icon: Package },
   { id: 'branches', label: 'الفروع', emoji: '🏪', icon: MapPin },
   { id: 'campaigns', label: 'الحملات', emoji: '📊', icon: TrendingUp },
   { id: 'store', label: 'المتجر', emoji: '🛒', icon: ShoppingCart },

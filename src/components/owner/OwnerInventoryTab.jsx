@@ -104,43 +104,103 @@ export default function OwnerInventoryTab({ viewMode = 'mobile' }) {
 
       {/* ── Executive Inventory Header ── */}
       <div className="bg-gradient-to-l from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 text-white shadow-md">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-xl text-amber-400">
-            📦
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-2xl text-amber-400 shrink-0">
+              📦
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-black text-base text-white">تقرير تقييم وحركة المخزون بالمستودعات</h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  تقرير رسمي معتمد
+                </span>
+              </div>
+              <p className="text-slate-300 text-xs">
+                {formatNum(REAL_INVENTORY_STATS.totalSKUs)} صنف — جرد المخازن الثلاثة والتكلفة حتى 21/09/2026
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-black text-base text-white">تقرير حركة الأصناف والمخزون</h2>
-            <p className="text-slate-300 text-xs">8,693 صنف — مراجعة المستودع (سبتمبر 2026)</p>
-          </div>
+
+          <a
+            href="/evidence/official_warehouse_cost_sep2026.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-xs font-bold transition-all shrink-0"
+          >
+            <span>عرض دفتر الجرد الرسمي (277 صفحة PDF)</span>
+            <span className="text-[10px] opacity-75">↗</span>
+          </a>
         </div>
 
-        {/* 3 Strategic Indicator Pills */}
-        <div className={`grid ${viewMode === 'desktop' ? 'grid-cols-4' : 'grid-cols-3'} gap-2`}>
+        {/* 4 Strategic Financial & Inventory Indicators */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
           <div className="bg-white/10 rounded-xl p-2.5 text-center border border-white/10">
-            <div className="text-[10px] text-slate-300">إجمالي الأصناف</div>
-            <div className="font-black text-sm font-mono text-white">8,693</div>
-            <div className="text-[9px] text-slate-400">صنف مسجل</div>
+            <div className="text-[10px] text-slate-300">إجمالي قيمة التكلفة</div>
+            <div className="font-black text-sm sm:text-base font-mono text-amber-300">
+              {formatNum(Math.round(REAL_INVENTORY_STATS.totalValuation))} <span className="text-[10px]">ر.س</span>
+            </div>
+            <div className="text-[9px] text-slate-400">إجمالي رأس مال البضاعة</div>
+          </div>
+
+          <div className="bg-white/10 rounded-xl p-2.5 text-center border border-white/10">
+            <div className="text-[10px] text-slate-300">الرصيد الكلي المتوفر</div>
+            <div className="font-black text-sm sm:text-base font-mono text-emerald-300">
+              {formatNum(REAL_INVENTORY_STATS.totalBalance)}
+            </div>
+            <div className="text-[9px] text-slate-400">قطعة بـ 3 مستودعات</div>
           </div>
 
           <div className="bg-amber-500/20 rounded-xl p-2.5 text-center border border-amber-500/30">
             <div className="text-[10px] text-amber-300 font-bold">الأصناف الراكدة</div>
-            <div className="font-black text-sm font-mono text-amber-300">2,082</div>
-            <div className="text-[9px] text-amber-200/80">بدون مبيعات</div>
+            <div className="font-black text-sm sm:text-base font-mono text-amber-300">
+              {formatNum(stagnantParts.length)}
+            </div>
+            <div className="text-[9px] text-amber-200/80">
+              {formatNum(totalStagnantUnits)} قطعة مقيدة
+            </div>
           </div>
 
           <div className="bg-white/10 rounded-xl p-2.5 text-center border border-white/10">
-            <div className="text-[10px] text-slate-300">رصيد المخزن</div>
-            <div className="font-black text-sm font-mono text-emerald-300">39,233</div>
-            <div className="text-[9px] text-slate-400">قطعة متوفرة</div>
+            <div className="text-[10px] text-slate-300">عدد الأصناف المسجلة</div>
+            <div className="font-black text-sm sm:text-base font-mono text-white">
+              {formatNum(REAL_INVENTORY_STATS.totalSKUs)}
+            </div>
+            <div className="text-[9px] text-slate-400">صنف برقم قطع أصلي</div>
+          </div>
+        </div>
+
+        {/* 3 Warehouses Breakdown Pills */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-white/10">
+          <div className="bg-slate-800/80 rounded-xl px-3 py-2 border border-slate-700/60 flex items-center justify-between">
+            <div>
+              <div className="text-[11px] font-bold text-slate-200">المركز الرئيسي (100)</div>
+              <div className="text-[10px] text-slate-400">{formatNum(REAL_INVENTORY_STATS.warehouses.main.qty)} قطعة</div>
+            </div>
+            <div className="text-left font-mono font-bold text-xs text-sky-400">
+              {formatNum(Math.round(REAL_INVENTORY_STATS.warehouses.main.valuation))} ر.س
+            </div>
           </div>
 
-          {viewMode === 'desktop' && (
-            <div className="bg-white/10 rounded-xl p-2.5 text-center border border-white/10">
-              <div className="text-[10px] text-slate-300">إجمالي المنصرف</div>
-              <div className="font-black text-sm font-mono text-blue-300">77,047</div>
-              <div className="text-[9px] text-slate-400">قطعة تم بيعها</div>
+          <div className="bg-slate-800/80 rounded-xl px-3 py-2 border border-slate-700/60 flex items-center justify-between">
+            <div>
+              <div className="text-[11px] font-bold text-slate-200">فرع الرواف (200)</div>
+              <div className="text-[10px] text-slate-400">{formatNum(REAL_INVENTORY_STATS.warehouses.rawaf.qty)} قطعة</div>
             </div>
-          )}
+            <div className="text-left font-mono font-bold text-xs text-indigo-400">
+              {formatNum(Math.round(REAL_INVENTORY_STATS.warehouses.rawaf.valuation))} ر.س
+            </div>
+          </div>
+
+          <div className="bg-slate-800/80 rounded-xl px-3 py-2 border border-slate-700/60 flex items-center justify-between">
+            <div>
+              <div className="text-[11px] font-bold text-slate-200">السليم 2 / كيا (300)</div>
+              <div className="text-[10px] text-slate-400">{formatNum(REAL_INVENTORY_STATS.warehouses.sulaim.qty)} قطعة</div>
+            </div>
+            <div className="text-left font-mono font-bold text-xs text-emerald-400">
+              {formatNum(Math.round(REAL_INVENTORY_STATS.warehouses.sulaim.valuation))} ر.س
+            </div>
+          </div>
         </div>
       </div>
 
@@ -309,18 +369,27 @@ export default function OwnerInventoryTab({ viewMode = 'mobile' }) {
                     </div>
                   </div>
                   <div>
-                    <div className="text-[9px] text-slate-400">المنصرف / مبيعات</div>
-                    <div className="text-xs font-black text-slate-400 font-mono">
-                      0
+                    <div className="text-[9px] text-slate-400">سعر التكلفة للقطعة</div>
+                    <div className="text-xs font-black text-slate-700 font-mono">
+                      {item.unitCost ? `${Number(item.unitCost).toFixed(2)} ر.س` : '—'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[9px] text-slate-400">رصيد البداية</div>
-                    <div className="text-xs font-black text-slate-700 font-mono">
-                      {item.opening}
+                    <div className="text-[9px] text-slate-400">قيمة السيولة المعطلة</div>
+                    <div className="text-xs font-black text-rose-600 font-mono">
+                      {item.totalCost ? `${Number(item.totalCost).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ر.س` : '—'}
                     </div>
                   </div>
                 </div>
+
+                {/* Warehouse Distribution */}
+                {(item.qtyMain > 0 || item.qtyRawaf > 0 || item.qtySulaim > 0) && (
+                  <div className="flex items-center justify-between text-[10px] px-2.5 py-1 bg-slate-100/70 rounded-lg text-slate-600 border border-slate-200/50">
+                    <span>الرئيسي 100: <strong className="font-mono text-sky-700">{item.qtyMain || 0}</strong></span>
+                    <span>الرواف 200: <strong className="font-mono text-indigo-700">{item.qtyRawaf || 0}</strong></span>
+                    <span>السليم/كيا 300: <strong className="font-mono text-emerald-700">{item.qtySulaim || 0}</strong></span>
+                  </div>
+                )}
 
                 {/* Category & Status Footer */}
                 <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5 border-t border-slate-100">

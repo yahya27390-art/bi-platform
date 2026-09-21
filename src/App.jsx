@@ -50,6 +50,7 @@ export default function App() {
         />
         <Route path="/ecommerce" element={<Ecommerce />} />
         <Route path="/branches" element={<BranchesBI />} />
+        <Route path="/inventory" element={<Products />} />
         <Route path="/products" element={<Products />} />
         <Route path="/financials" element={<Financials />} />
         <Route path="/targets" element={<Targets />} />
