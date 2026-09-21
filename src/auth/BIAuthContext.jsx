@@ -56,6 +56,16 @@ export const AUTH_ACCOUNTS = [
     avatar: 'م',
     title: 'مراقب عام (عرض فقط)',
   },
+  {
+    id: 'user-inventory',
+    username: 'inventory',
+    email: 'inventory@doratcars.com',
+    password: 'dora#inventory2026',
+    name: 'مسؤول فحص وتقارير المخزون',
+    role: BI_ROLES.INVENTORY_VIEWER,
+    avatar: 'خ',
+    title: 'مراقب مخزون وقطع غيار (تقارير وبحث)',
+  },
 ];
 
 // Strict Session Inactivity Timeout: 5 minutes (300,000 milliseconds)

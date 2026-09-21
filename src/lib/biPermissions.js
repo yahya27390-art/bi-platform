@@ -4,11 +4,12 @@
 // ============================================================
 
 export const BI_ROLES = {
-  OWNER:       'OWNER',
-  ADMIN:       'ADMIN',
-  ANALYST:     'ANALYST',
-  MEDIA_BUYER: 'MEDIA_BUYER',
-  VIEWER:      'VIEWER',
+  OWNER:            'OWNER',
+  ADMIN:            'ADMIN',
+  ANALYST:          'ANALYST',
+  MEDIA_BUYER:      'MEDIA_BUYER',
+  VIEWER:           'VIEWER',
+  INVENTORY_VIEWER: 'INVENTORY_VIEWER',
 };
 
 export const BI_PERMISSIONS = {
@@ -18,6 +19,8 @@ export const BI_PERMISSIONS = {
     canViewEcommerce:              true,
     canViewBranches:               true,
     canViewProducts:               true,
+    canViewInventoryReports:       true,
+    canViewInventorySearch:        true,
     canViewFinancialsFull:         true,  // Full P&L, Net Profit, OPEX, COGS, Cash flow
     canViewFinancialsSummary:      true,
     canViewTargets:                true,
@@ -37,6 +40,8 @@ export const BI_PERMISSIONS = {
     canViewEcommerce:              true,
     canViewBranches:               true,
     canViewProducts:               true,
+    canViewInventoryReports:       true,
+    canViewInventorySearch:        true,
     canViewFinancialsFull:         true,
     canViewFinancialsSummary:      true,
     canViewTargets:                true,
@@ -56,6 +61,8 @@ export const BI_PERMISSIONS = {
     canViewEcommerce:              true,
     canViewBranches:               true,
     canViewProducts:               true,
+    canViewInventoryReports:       true,
+    canViewInventorySearch:        true,
     canViewFinancialsFull:         false, // Restricted from sensitive Net Profit / OPEX
     canViewFinancialsSummary:      true,  // Gross Margin & Revenue allowed
     canViewTargets:                true,
@@ -75,6 +82,8 @@ export const BI_PERMISSIONS = {
     canViewEcommerce:              true,
     canViewBranches:               false,
     canViewProducts:               true,
+    canViewInventoryReports:       false,
+    canViewInventorySearch:        true,
     canViewFinancialsFull:         false, // Never access net financial figures
     canViewFinancialsSummary:      false,
     canViewTargets:                true,
@@ -94,6 +103,8 @@ export const BI_PERMISSIONS = {
     canViewEcommerce:              true,
     canViewBranches:               true,
     canViewProducts:               true,
+    canViewInventoryReports:       false,
+    canViewInventorySearch:        true,
     canViewFinancialsFull:         false,
     canViewFinancialsSummary:      false,
     canViewTargets:                true,
@@ -106,6 +117,27 @@ export const BI_PERMISSIONS = {
     canExportData:                 false,
     canViewPrivateCampaignLab:     false,
   },
+  INVENTORY_VIEWER: {
+    canViewDashboard:              false,
+    canViewMediaBuying:            false,
+    canViewEcommerce:              false,
+    canViewBranches:               false,
+    canViewProducts:               true,
+    canViewInventoryReports:       true,
+    canViewInventorySearch:        true,
+    canViewFinancialsFull:         false,
+    canViewFinancialsSummary:      false,
+    canViewTargets:                false,
+    canEditTargets:                false,
+    canImportData:                 false,
+    canViewImportHistory:          false,
+    canViewAuditLog:               false,
+    canDeleteImports:              false,
+    canConfigureDataSources:       false,
+    canExportData:                 true,  // Granted for downloading inventory reports
+    canViewPrivateCampaignLab:     false,
+    canAccessOwnerCockpit:         false,
+  },
 };
 
 export function normalizeRole(role) {
@@ -115,6 +147,7 @@ export function normalizeRole(role) {
   if (upper === 'ADMIN' || upper === 'BI_ADMIN') return BI_ROLES.ADMIN;
   if (upper === 'ANALYST' || upper === 'BI_ANALYST' || upper === 'MANAGER') return BI_ROLES.ANALYST;
   if (upper === 'MEDIA_BUYER' || upper === 'BUYER') return BI_ROLES.MEDIA_BUYER;
+  if (upper === 'INVENTORY_VIEWER' || upper === 'INVENTORY' || upper === 'WAREHOUSE') return BI_ROLES.INVENTORY_VIEWER;
   if (upper === 'VIEWER' || upper === 'BI_VIEWER' || upper === 'HR' || upper === 'EMPLOYEE') return BI_ROLES.VIEWER;
   return BI_ROLES.VIEWER;
 }
@@ -155,6 +188,12 @@ export function getBIRoleMeta(role) {
       labelEn: 'Media Buyer',
       badgeClass: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
       description: 'متابعة الحملات الإعلانية ومؤشرات ROAS, CPA ورفع ملفات الإعلانات.',
+    },
+    [BI_ROLES.INVENTORY_VIEWER]: {
+      label: 'مسؤول فحص وتقارير المخزون',
+      labelEn: 'Inventory Viewer',
+      badgeClass: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+      description: 'استعراض والبحث في حركة المخزون وتقارير الفروع وتصدير ملفات الجرد.',
     },
     [BI_ROLES.VIEWER]: {
       label: 'مشاهد تقارير',

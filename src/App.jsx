@@ -6,6 +6,8 @@ import MediaBuying from './pages/MediaBuying';
 import Ecommerce from './pages/Ecommerce';
 import BranchesBI from './pages/BranchesBI';
 import Products from './pages/Products';
+import InventorySearch from './pages/InventorySearch';
+import InventoryReports from './pages/InventoryReports';
 import Financials from './pages/Financials';
 import Targets from './pages/Targets';
 import DataImport from './pages/DataImport';
@@ -21,6 +23,14 @@ import { useBIAuth } from './auth/BIAuthContext';
 export default function App() {
   const { user } = useBIAuth();
   const isOwner = user?.role === 'OWNER';
+  const isInventoryViewer = user?.role === 'INVENTORY_VIEWER';
+
+  // Default home redirect based on role
+  const homeElement = isOwner 
+    ? <Navigate to="/owner" replace /> 
+    : isInventoryViewer 
+    ? <Navigate to="/inventory/search" replace /> 
+    : <BIOverview />;
 
   return (
     <Routes>
@@ -36,9 +46,23 @@ export default function App() {
           </BIProtectedRoute>
         }
       >
-        <Route path="/" element={isOwner ? <Navigate to="/owner" replace /> : <BIOverview />} />
-        <Route path="/media" element={<MediaBuying />} />
-        <Route path="/media/:platform" element={<MediaBuying />} />
+        <Route path="/" element={homeElement} />
+        
+        {/* Inventory Intelligence Module (Search & 5 Specialized Reports) */}
+        <Route path="/inventory" element={<Navigate to="/inventory/search" replace />} />
+        <Route path="/inventory/search" element={<InventorySearch />} />
+        <Route path="/inventory/reports" element={<InventoryReports />} />
+        <Route path="/products" element={<Navigate to="/inventory/search" replace />} />
+
+        {/* Media & Marketing */}
+        <Route 
+          path="/media" 
+          element={isInventoryViewer ? <Navigate to="/inventory/search" replace /> : <MediaBuying />} 
+        />
+        <Route 
+          path="/media/:platform" 
+          element={isInventoryViewer ? <Navigate to="/inventory/search" replace /> : <MediaBuying />} 
+        />
         <Route path="/campaigns" element={<Navigate to="/media" replace />} />
         <Route 
           path="/campaign-lab" 
@@ -48,14 +72,32 @@ export default function App() {
             </BIProtectedRoute>
           } 
         />
-        <Route path="/ecommerce" element={<Ecommerce />} />
-        <Route path="/branches" element={<BranchesBI />} />
-        <Route path="/inventory" element={<Products />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/financials" element={<Financials />} />
-        <Route path="/targets" element={<Targets />} />
-        <Route path="/import" element={<DataImport />} />
-        <Route path="/owner" element={<OwnerExecutiveDashboard />} />
+
+        {/* Commercial & Operations */}
+        <Route 
+          path="/ecommerce" 
+          element={isInventoryViewer ? <Navigate to="/inventory/search" replace /> : <Ecommerce />} 
+        />
+        <Route 
+          path="/branches" 
+          element={isInventoryViewer ? <Navigate to="/inventory/search" replace /> : <BranchesBI />} 
+        />
+        <Route 
+          path="/financials" 
+          element={isInventoryViewer ? <Navigate to="/inventory/search" replace /> : <Financials />} 
+        />
+        <Route 
+          path="/targets" 
+          element={isInventoryViewer ? <Navigate to="/inventory/search" replace /> : <Targets />} 
+        />
+        <Route 
+          path="/import" 
+          element={isInventoryViewer ? <Navigate to="/inventory/search" replace /> : <DataImport />} 
+        />
+        <Route 
+          path="/owner" 
+          element={isInventoryViewer ? <Navigate to="/inventory/search" replace /> : <OwnerExecutiveDashboard />} 
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

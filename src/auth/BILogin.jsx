@@ -206,7 +206,7 @@ export default function BILogin() {
                 انقر على أي حساب لتعبئة بياناته تلقائياً أو استخدم كلمة المرور العامة: <code className="bg-slate-800 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-bold">dora2026</code>
               </p>
               <div className="space-y-1.5">
-                {AUTH_ACCOUNTS.slice(0, 3).map((acc) => (
+                {AUTH_ACCOUNTS.map((acc) => (
                   <button
                     key={acc.id}
                     type="button"
