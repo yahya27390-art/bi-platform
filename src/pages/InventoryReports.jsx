@@ -17,8 +17,10 @@ import {
   Flame,
   Zap,
   Sparkles,
-  ArrowUpDown
+  ArrowUpDown,
+  Printer
 } from 'lucide-react';
+import CustomPdfReportModal from '../components/shared/CustomPdfReportModal';
 import {
   getEnrichedInventory,
   getFastMovingReport,
@@ -39,6 +41,7 @@ export default function InventoryReports() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [copiedSku, setCopiedSku] = useState(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   // Load enriched data
   const allItems = useMemo(() => {
@@ -233,6 +236,15 @@ export default function InventoryReports() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsPdfModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black transition-all shadow-md active:scale-95"
+            >
+              <Printer className="w-4 h-4 text-slate-950" />
+              <span>إنشاء تقرير PDF مخصص (تحديد النطاق)</span>
+            </button>
+
             <button
               type="button"
               onClick={handleExportCurrentReport}
@@ -827,6 +839,16 @@ export default function InventoryReports() {
           </div>
         </div>
       </div>
+
+      {/* ── Custom PDF Report Generator & Live Preview Modal ── */}
+      <CustomPdfReportModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        initialReportType={activeTab}
+        initialBranch={branchFilter}
+        initialFrom={1}
+        initialTo={35}
+      />
     </div>
   );
 }

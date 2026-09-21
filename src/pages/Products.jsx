@@ -23,8 +23,10 @@ import {
   X,
   SlidersHorizontal,
   ArrowUpDown,
-  FileText
+  FileText,
+  Printer
 } from 'lucide-react';
+import CustomPdfReportModal from '../components/shared/CustomPdfReportModal';
 import {
   getEnrichedInventory,
   getFastMovingReport,
@@ -50,6 +52,15 @@ export default function Products() {
   };
 
   const [activeWindow, setActiveWindow] = useState(getInitialWindow);
+
+  // PDF Generator Modal state
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [pdfReportType, setPdfReportType] = useState('all_inventory');
+
+  const openPdfModal = (type = 'all_inventory') => {
+    setPdfReportType(type);
+    setIsPdfModalOpen(true);
+  };
 
   // Quick search query on the Hub
   const [quickSearch, setQuickSearch] = useState('');
@@ -367,14 +378,23 @@ export default function Products() {
             </div>
 
             {/* Direct PDF and Quick Export */}
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => openPdfModal('all_inventory')}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+              >
+                <FileText className="w-4 h-4 text-slate-950" />
+                <span>إنشاء تقرير PDF مخصص (تحديد النطاق)</span>
+              </button>
+
               <a
                 href="/evidence/official_warehouse_cost_sep2026.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-xs font-bold transition-all shadow-xs"
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all shadow-xs"
               >
-                <span>التقرير الرسمي الأصلي (277 صفحة PDF)</span>
+                <span>التقرير الأصلي (277 صفحة PDF)</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
@@ -686,6 +706,36 @@ export default function Products() {
                 <span className="group-hover:-translate-x-1 transition-transform">⬅</span>
               </div>
             </button>
+
+            {/* BUTTON 7: Custom PDF Generator with Range Control */}
+            <button
+              type="button"
+              onClick={() => openPdfModal('all_inventory')}
+              className="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-5 border-2 border-indigo-700 hover:border-cyan-400 text-right shadow-md hover:shadow-xl transition-all group relative overflow-hidden flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 flex items-center justify-center text-2xl group-hover:scale-110 transition-all shadow-xs">
+                    📑
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-cyan-400 text-slate-950">
+                    PDF Generator
+                  </span>
+                </div>
+                <div>
+                  <h3 className="font-black text-base text-white group-hover:text-cyan-300 transition-colors">
+                    إنشاء تقرير PDF مخصص ومعتمد
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                    نظام تحكم في عدد ونطاق القطع (مثلاً من صنف 1 إلى 35)، معاينة حية باللوجو والترويسة، وحفظ فوري بصيغة PDF.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-cyan-300">
+                <span>تحديد النطاق والمعاينة</span>
+                <span className="group-hover:-translate-x-1 transition-transform">⬅</span>
+              </div>
+            </button>
           </div>
         </div>
       </div>
@@ -738,6 +788,15 @@ export default function Products() {
 
         {/* Window Actions */}
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => openPdfModal(activeWindow.startsWith('reports_') ? activeWindow.replace('reports_', '') : activeWindow)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-50 hover:bg-cyan-100 text-cyan-950 border border-cyan-300 text-xs font-black transition-all shadow-xs active:scale-95"
+          >
+            <Printer className="w-4 h-4 text-cyan-700" />
+            <span>طباعة PDF محدد (من 1 إلى X)</span>
+          </button>
+
           <button
             type="button"
             onClick={handleExportCurrent}
@@ -1272,6 +1331,16 @@ export default function Products() {
           </div>
         </div>
       </div>
+
+      {/* ── Custom PDF Report Generator & Live Preview Modal ── */}
+      <CustomPdfReportModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        initialReportType={pdfReportType}
+        initialBranch={branchFilter}
+        initialFrom={1}
+        initialTo={35}
+      />
     </div>
   );
 }
