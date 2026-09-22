@@ -33,6 +33,8 @@ export default function InventorySearch() {
   const [branchFilter, setBranchFilter] = useState('all'); // 'all' | '100' | '200' | '300'
   const [statusFilter, setStatusFilter] = useState('all');
   const [brandFilter, setBrandFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [dieselOnly, setDieselOnly] = useState(false);
   const [sortBy, setSortBy] = useState('totalCost'); // 'totalCost' | 'balance' | 'unitCost' | 'sku'
   const [sortOrder, setSortOrder] = useState('desc');
   const [page, setPage] = useState(1);
@@ -83,6 +85,16 @@ export default function InventorySearch() {
       list = list.filter((p) => p.brand === brandFilter);
     }
 
+    // Category filter
+    if (categoryFilter !== 'all') {
+      list = list.filter((p) => p.category === categoryFilter);
+    }
+
+    // Diesel vehicle engine filter
+    if (dieselOnly) {
+      list = list.filter((p) => p.isDiesel);
+    }
+
     // Sorting
     return [...list].sort((a, b) => {
       let valA = a[sortBy] ?? 0;
@@ -94,7 +106,7 @@ export default function InventorySearch() {
       }
       return sortOrder === 'asc' ? valA - valB : valB - valA;
     });
-  }, [allItems, debouncedSearch, branchFilter, statusFilter, brandFilter, sortBy, sortOrder]);
+  }, [allItems, debouncedSearch, branchFilter, statusFilter, brandFilter, categoryFilter, dieselOnly, sortBy, sortOrder]);
 
   // Pagination slice
   const totalItems = filteredItems.length;
@@ -293,9 +305,52 @@ export default function InventorySearch() {
               <option value="hyundai">هيونداي (Hyundai)</option>
               <option value="kia">كيا (Kia)</option>
               <option value="mobis">موبيس (Mobis)</option>
-              <option value="general">قطع عامة وزيوت</option>
+              <option value="general">قطع عامة وموردين</option>
             </select>
           </div>
+
+          {/* Category Selector */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-bold text-slate-600 whitespace-nowrap">
+              التصنيف:
+            </label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setPage(1);
+              }}
+              className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-500 focus:bg-white max-w-[200px]"
+            >
+              <option value="all">كافة التصنيفات (الكل)</option>
+              {Object.keys(REAL_INVENTORY_STATS.categoryStats || {}).map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat} ({formatNum(REAL_INVENTORY_STATS.categoryStats[cat]?.count || 0)})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Diesel Vehicle Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              setDieselOnly(!dieselOnly);
+              setPage(1);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border whitespace-nowrap ${
+              dieselOnly
+                ? 'bg-amber-600 text-white border-amber-700 shadow-xs'
+                : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
+            }`}
+            title="تصفية القطع المخصصة لمحركات وسيارات الديزل"
+          >
+            <span>⛽</span>
+            <span>سيارات الديزل</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${dieselOnly ? 'bg-white/20 text-white' : 'bg-amber-200/60 text-amber-900'}`}>
+              {dieselOnly ? 'مفعل' : '867'}
+            </span>
+          </button>
         </div>
 
         {/* Status Filter Badges */}
@@ -430,8 +485,15 @@ export default function InventorySearch() {
                         <div className="font-bold text-slate-900 leading-snug truncate" title={item.name}>
                           {item.name}
                         </div>
-                        <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                          {item.category || 'قطع غيار عامة'}
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[10px] font-medium text-slate-500 truncate">
+                            {item.category || 'قطع غيار عامة'}
+                          </span>
+                          {item.isDiesel && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 whitespace-nowrap">
+                              ⛽ ديزل
+                            </span>
+                          )}
                         </div>
                       </td>
 

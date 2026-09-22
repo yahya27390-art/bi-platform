@@ -1176,7 +1176,14 @@ export default function CustomPdfReportModal({
                               {visibleColumns.name && (
                                 <td className="py-2 px-3">
                                   <div className="font-bold text-slate-950 text-xs">{item.name}</div>
-                                  <div className="text-[10px] text-slate-500">{item.category}</div>
+                                  <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
+                                    <span>{item.category}</span>
+                                    {item.isDiesel && (
+                                      <span className="text-[9px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1 py-0.2 rounded">
+                                        ⛽ ديزل
+                                      </span>
+                                    )}
+                                  </div>
                                 </td>
                               )}
                               {visibleColumns.brand && (

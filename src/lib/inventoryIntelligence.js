@@ -114,6 +114,7 @@ export function getEnrichedInventory() {
 
     return {
       ...p,
+      isDiesel: !!p.isDiesel,
       status,
       unitCost,
       balance,
@@ -124,7 +125,7 @@ export function getEnrichedInventory() {
       costMain,
       costRawaf,
       costSulaim,
-      searchStr: `${p.sku || ''} ${p.name || ''} ${p.category || ''} ${p.brand || ''}`.toLowerCase(),
+      searchStr: `${p.sku || ''} ${p.name || ''} ${p.category || ''} ${p.brand || ''} ${p.isDiesel ? 'ديزل diesel' : ''}`.toLowerCase(),
     };
   });
 }
