@@ -20,7 +20,10 @@ import {
   AlertTriangle,
   Package,
   Boxes,
-  ExternalLink
+  ExternalLink,
+  Calculator,
+  Percent,
+  Coins
 } from 'lucide-react';
 import {
   getEnrichedInventory,
@@ -87,6 +90,59 @@ export const REPORT_TYPES = [
   },
 ];
 
+/**
+ * Calculate dynamic suggested retail price based on cost tiers, VAT, and rigid rounding.
+ * Business Rules:
+ * - Cost < 200 SAR: +45% margin
+ * - Cost 200 - 499 SAR: +30% margin
+ * - Cost 500 - 999 SAR: +28% margin
+ * - Cost >= 1000 SAR: +20% margin
+ * - VAT: +15% applied after margin
+ * - Rounding: round to nearest rigid integer / multiple of 5 (e.g., 233 -> 235, 952 -> 950, 1022 -> 1020)
+ */
+export function calculateSuggestedPrice(unitCost, { includeVat = true, roundToNearestFive = true } = {}) {
+  const cost = Number(unitCost) || 0;
+  if (cost <= 0) return { price: 0, rawPrice: 0, marginPct: 0, vatAmount: 0, priceBeforeVat: 0 };
+
+  let marginPct = 0.20;
+  if (cost < 200) {
+    marginPct = 0.45;
+  } else if (cost < 500) {
+    marginPct = 0.30;
+  } else if (cost < 1000) {
+    marginPct = 0.28;
+  } else {
+    marginPct = 0.20;
+  }
+
+  const priceBeforeVat = cost * (1 + marginPct);
+  let finalPrice = priceBeforeVat;
+  let vatAmount = 0;
+
+  if (includeVat) {
+    vatAmount = priceBeforeVat * 0.15;
+    finalPrice = priceBeforeVat + vatAmount;
+  }
+
+  const rawPrice = finalPrice;
+
+  // Round to nearest 5 (أقرب عدد جامد: 233 -> 235, 952 -> 950, 1022 -> 1020)
+  let roundedPrice = finalPrice;
+  if (roundToNearestFive) {
+    roundedPrice = Math.max(5, Math.round(finalPrice / 5) * 5);
+  } else {
+    roundedPrice = Math.round(finalPrice * 100) / 100;
+  }
+
+  return {
+    price: roundedPrice,
+    rawPrice,
+    marginPct: Math.round(marginPct * 100),
+    vatAmount: Math.round(vatAmount * 100) / 100,
+    priceBeforeVat: Math.round(priceBeforeVat * 100) / 100,
+  };
+}
+
 export default function CustomPdfReportModal({
   isOpen,
   onClose,
@@ -101,9 +157,15 @@ export default function CustomPdfReportModal({
   const [branchFilter, setBranchFilter] = useState(initialBranch);
   const [fromIndex, setFromIndex] = useState(initialFrom);
   const [toIndex, setToIndex] = useState(initialTo);
-  const [sortBy, setSortBy] = useState('totalCost'); // 'totalCost' | 'balance' | 'issued' | 'unitCost'
+  const [sortBy, setSortBy] = useState('totalCost'); // 'totalCost' | 'suggestedPrice' | 'balance' | 'issued' | 'unitCost'
   const [filterBrand, setFilterBrand] = useState('all');
   const [filterSearch, setFilterSearch] = useState('');
+
+  // Pricing & Valuation options
+  const [showCostPrices, setShowCostPrices] = useState(true);
+  const [showSuggestedPrice, setShowSuggestedPrice] = useState(true);
+  const [includeVat, setIncludeVat] = useState(true);
+  const [roundToNearestFive, setRoundToNearestFive] = useState(true);
 
   // Sync props when opened
   useEffect(() => {
@@ -183,6 +245,11 @@ export default function CustomPdfReportModal({
 
       // Sort
       list = [...list].sort((a, b) => {
+        if (sortBy === 'suggestedPrice') {
+          const priceA = calculateSuggestedPrice(a.unitCost, { includeVat, roundToNearestFive }).price;
+          const priceB = calculateSuggestedPrice(b.unitCost, { includeVat, roundToNearestFive }).price;
+          return priceB - priceA;
+        }
         let valA = a[sortBy] ?? 0;
         let valB = b[sortBy] ?? 0;
         return valB - valA;
@@ -190,7 +257,7 @@ export default function CustomPdfReportModal({
     }
 
     return list;
-  }, [allItems, reportType, branchFilter, filterBrand, filterSearch, sortBy]);
+  }, [allItems, reportType, branchFilter, filterBrand, filterSearch, sortBy, includeVat, roundToNearestFive]);
 
   // Sliced items according to user range (e.g., from 1 to 35)
   const slicedReportItems = useMemo(() => {
@@ -205,18 +272,47 @@ export default function CustomPdfReportModal({
       return {
         totalUnits: slicedReportItems.reduce((acc, c) => acc + c.totalBalance, 0),
         totalValuation: slicedReportItems.reduce((acc, c) => acc + c.totalValuation, 0),
+        totalSuggestedValuation: 0,
         totalIssued: slicedReportItems.reduce((acc, c) => acc + c.totalIssued, 0),
+        qtyMain: 0,
+        qtyRawaf: 0,
+        qtySulaim: 0,
       };
     }
+
+    let totalUnits = 0;
+    let totalValuation = 0;
+    let totalSuggestedValuation = 0;
+    let totalIssued = 0;
+    let qtyMain = 0;
+    let qtyRawaf = 0;
+    let qtySulaim = 0;
+
+    slicedReportItems.forEach((p) => {
+      const bal = p.balance || 0;
+      totalUnits += bal;
+      totalValuation += p.totalCost || 0;
+      totalIssued += p.issued || 0;
+      qtyMain += p.qtyMain || 0;
+      qtyRawaf += p.qtyRawaf || 0;
+      qtySulaim += p.qtySulaim || 0;
+
+      if (showSuggestedPrice) {
+        const { price } = calculateSuggestedPrice(p.unitCost, { includeVat, roundToNearestFive });
+        totalSuggestedValuation += bal * price;
+      }
+    });
+
     return {
-      totalUnits: slicedReportItems.reduce((acc, p) => acc + p.balance, 0),
-      totalValuation: slicedReportItems.reduce((acc, p) => acc + p.totalCost, 0),
-      totalIssued: slicedReportItems.reduce((acc, p) => acc + p.issued, 0),
-      qtyMain: slicedReportItems.reduce((acc, p) => acc + p.qtyMain, 0),
-      qtyRawaf: slicedReportItems.reduce((acc, p) => acc + p.qtyRawaf, 0),
-      qtySulaim: slicedReportItems.reduce((acc, p) => acc + p.qtySulaim, 0),
+      totalUnits,
+      totalValuation,
+      totalSuggestedValuation,
+      totalIssued,
+      qtyMain,
+      qtyRawaf,
+      qtySulaim,
     };
-  }, [slicedReportItems, reportType]);
+  }, [slicedReportItems, reportType, showSuggestedPrice, includeVat, roundToNearestFive]);
 
   // Quick range helpers
   const applyQuickRange = (from, to) => {
@@ -494,11 +590,148 @@ export default function CustomPdfReportModal({
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-500"
                   >
                     <option value="totalCost">الأعلى قيمة تكلفة إجمالية</option>
+                    <option value="suggestedPrice">الأعلى سعراً مقترحاً للبيع</option>
                     <option value="balance">الأعلى رصيداً متوفراً</option>
                     <option value="unitCost">الأعلى سعر تكلفة للقطعة</option>
                     <option value="issued">الأعلى مبيعاً وحركة</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Step 4: Pricing & Profit Margin Engine (خيارات التسعير وهوامش الربح والضريبة) */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-cyan-50/40 border border-slate-200 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                  <label className="text-xs font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center">4</span>
+                    <span className="flex items-center gap-1.5">
+                      <Calculator className="w-4 h-4 text-cyan-700" />
+                      <span>نظام خيارات التسعير، هوامش الربح، والضريبة:</span>
+                    </span>
+                  </label>
+                  <span className="text-[11px] font-bold text-cyan-900 bg-cyan-100/80 px-2.5 py-1 rounded-lg border border-cyan-200 font-mono">
+                    Saudi Retail Pricing Engine (15% VAT & Margin Tiers)
+                  </span>
+                </div>
+
+                {/* Toggles Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Option 1: Show Purchase Cost Prices */}
+                  <div
+                    onClick={() => setShowCostPrices(!showCostPrices)}
+                    className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-3 select-none ${
+                      showCostPrices ? 'border-sky-500 bg-sky-50/60 shadow-xs' : 'border-slate-200 bg-white hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={showCostPrices}
+                      onChange={() => {}}
+                      className="w-4 h-4 mt-0.5 rounded text-sky-600 focus:ring-sky-500 pointer-events-none"
+                    />
+                    <div className="flex-1">
+                      <div className="font-bold text-xs text-slate-900 flex items-center justify-between">
+                        <span>إظهار أسعار التكلفة والشراء (Cost Prices)</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${showCostPrices ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-500'}`}>
+                          {showCostPrices ? 'معروض في التقرير ✓' : 'مخفي'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                        عرض عمود سعر التكلفة الفعلي وإجمالي رأس المال. إلغاء التحديد يخفي أسعار الشراء لحماية السرية عند تسليم التقرير للمبيعات أو العملاء.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Option 2: Show Suggested Selling Price */}
+                  <div
+                    onClick={() => setShowSuggestedPrice(!showSuggestedPrice)}
+                    className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-3 select-none ${
+                      showSuggestedPrice ? 'border-emerald-500 bg-emerald-50/60 shadow-xs' : 'border-slate-200 bg-white hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={showSuggestedPrice}
+                      onChange={() => {}}
+                      className="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 pointer-events-none"
+                    />
+                    <div className="flex-1">
+                      <div className="font-bold text-xs text-slate-900 flex items-center justify-between">
+                        <span>إظهار السعر المقترح للبيع (Suggested Price)</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${showSuggestedPrice ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                          {showSuggestedPrice ? 'مفعّل بنظام الشرائح ✓' : 'معطل'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                        احتساب سعر البيع تلقائياً بإضافة هوامش ربح متدرجة حسب سعر الشراء (20% إلى 45%)، مع إمكانية إضافة الضريبة والتقريب.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sub-options when Suggested Price is Enabled */}
+                {showSuggestedPrice && (
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200/90 space-y-3.5 animate-in fade-in duration-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Sub-option A: Include 15% VAT */}
+                      <label className="p-3 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-100/60 flex items-start gap-2.5 cursor-pointer select-none transition-all">
+                        <input
+                          type="checkbox"
+                          checked={includeVat}
+                          onChange={(e) => setIncludeVat(e.target.checked)}
+                          className="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                        />
+                        <div className="flex-1">
+                          <span className="text-xs font-black text-slate-900 flex items-center justify-between">
+                            <span>شامل ضريبة القيمة المضافة 15% (VAT)</span>
+                            <span className="text-[10px] font-mono text-emerald-700 font-bold">{includeVat ? '+15%' : 'بدون'}</span>
+                          </span>
+                          <p className="text-[10px] text-slate-500 mt-0.5 leading-normal">
+                            تُحسب الضريبة 15% بعد احتساب هامش الربح وفق النظام الضريبي السعودي.
+                          </p>
+                        </div>
+                      </label>
+
+                      {/* Sub-option B: Round to rigid number (أقرب 5 ريالات) */}
+                      <label className="p-3 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-100/60 flex items-start gap-2.5 cursor-pointer select-none transition-all">
+                        <input
+                          type="checkbox"
+                          checked={roundToNearestFive}
+                          onChange={(e) => setRoundToNearestFive(e.target.checked)}
+                          className="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                        />
+                        <div className="flex-1">
+                          <span className="text-xs font-black text-slate-900 flex items-center justify-between">
+                            <span>التقريب لأقرب عدد جامد (5 ريالات)</span>
+                            <span className="text-[10px] font-mono text-cyan-800 font-bold">{roundToNearestFive ? '233 ← 235' : 'بالكسور'}</span>
+                          </span>
+                          <p className="text-[10px] text-slate-500 mt-0.5 leading-normal">
+                            تلقائياً: 233 ← 235 | 952 ← 950 | 1022 ← 1020 لتسهيل الكاش ونقاط البيع.
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+
+                    {/* Active Margin Tiers Breakdown Badges */}
+                    <div className="pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-2 text-[11px]">
+                      <span className="font-bold text-slate-600 flex items-center gap-1">
+                        <Percent className="w-3.5 h-3.5 text-slate-400" />
+                        <span>شرائح هوامش الربح الذكية المعتمدة:</span>
+                      </span>
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold">
+                        أقل من 200 ر.س: <strong className="font-mono font-black text-emerald-700">+45%</strong>
+                      </span>
+                      <span className="px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-teal-900 font-bold">
+                        من 200 إلى 500 ر.س: <strong className="font-mono font-black text-teal-700">+30%</strong>
+                      </span>
+                      <span className="px-2.5 py-1 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-900 font-bold">
+                        من 500 إلى 1,000 ر.س: <strong className="font-mono font-black text-cyan-700">+28%</strong>
+                      </span>
+                      <span className="px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-900 font-bold">
+                        فوق 1,000 ر.س: <strong className="font-mono font-black text-sky-700">+20%</strong>
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Action Button: Go to Preview */}
@@ -528,27 +761,35 @@ export default function CustomPdfReportModal({
           {mode === 'preview' && (
             <div className="space-y-4">
               {/* Preview Banner info on screen */}
-              <div className="p-3.5 rounded-2xl bg-cyan-50 border border-cyan-200 text-xs text-cyan-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 no-print">
-                <div className="flex items-center gap-2">
+              <div className="p-3.5 rounded-2xl bg-cyan-50 border border-cyan-200 text-xs text-cyan-950 flex flex-col md:flex-row md:items-center justify-between gap-2.5 no-print">
+                <div className="flex flex-wrap items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-cyan-700 shrink-0" />
                   <span>
-                    المعاينة جاهزة: يتم حالياً استعراض الأصناف من رقم <strong>{fromIndex}</strong> إلى رقم <strong>{Math.min(toIndex, baseReportItems.length)}</strong> (إجمالي <strong>{slicedReportItems.length}</strong> قطعة).
+                    المعاينة جاهزة: استعراض الأصناف من رقم <strong>{fromIndex}</strong> إلى رقم <strong>{Math.min(toIndex, baseReportItems.length)}</strong> (<strong>{slicedReportItems.length}</strong> قطعة).
                   </span>
+                  <span className="hidden sm:inline text-slate-300">|</span>
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${showCostPrices ? 'bg-sky-100 text-sky-900' : 'bg-slate-200 text-slate-600'}`}>
+                    {showCostPrices ? 'التكلفة: معروضة' : 'التكلفة: مخفية'}
+                  </span>
+                  {showSuggestedPrice && (
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-900">
+                      السعر المقترح: مفعّل ({includeVat ? 'شامل الضريبة 15%' : 'قبل الضريبة'}{roundToNearestFive ? ' · مقرب لأقرب 5 ر.س' : ''})
+                    </span>
+                  )}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                   <button
                     type="button"
                     onClick={() => setMode('configure')}
-                    className="text-xs font-bold text-cyan-800 hover:underline flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-cyan-300 text-cyan-950 text-xs font-bold transition-all flex items-center gap-1 shadow-2xs"
                   >
-                    <span>تغيير النطاق والعدد</span>
-                    <span>✏️</span>
+                    <Settings2 className="w-3.5 h-3.5 text-cyan-700" />
+                    <span>تعديل الخيارات والأسعار</span>
                   </button>
-                  <span className="text-slate-300">|</span>
                   <button
                     type="button"
                     onClick={handlePrint}
-                    className="px-3 py-1 rounded-lg bg-cyan-600 text-white font-bold text-xs hover:bg-cyan-700 transition-all shadow-xs flex items-center gap-1"
+                    className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition-all shadow-xs flex items-center gap-1"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>طباعة / حفظ PDF</span>
@@ -594,13 +835,27 @@ export default function CustomPdfReportModal({
                       <div className="text-xs text-slate-600 mt-0.5">
                         نطاق التقرير: من الصنف رقم <strong className="font-mono">{fromIndex}</strong> إلى الصنف رقم <strong className="font-mono">{Math.min(toIndex, baseReportItems.length)}</strong> ({slicedReportItems.length} صنف معتمد)
                         {branchFilter !== 'all' && ` · المستودع: ${branchFilter === '100' ? 'المركز الرئيسي 100' : branchFilter === '200' ? 'فرع الرواف 200' : 'السليم 2 / كيا 300'}`}
+                        <span className="text-slate-500 mr-1.5 font-bold">
+                          · {showCostPrices ? 'شامل التكلفة' : 'بدون أسعار تكلفة'}
+                          {showSuggestedPrice && ` · السعر المقترح (${includeVat ? 'شامل الضريبة 15%' : 'قبل الضريبة'}${roundToNearestFive ? ' - مقرب لأقرب 5 ر.س' : ''})`}
+                        </span>
                       </div>
                     </div>
 
-                    <div className="text-left font-mono text-xs bg-slate-50 print:bg-transparent p-2 rounded-xl border border-slate-200 print:border-slate-300">
+                    <div className="text-left font-mono text-xs bg-slate-50 print:bg-transparent p-2.5 rounded-xl border border-slate-200 print:border-slate-300 space-y-0.5">
                       <div>عدد الأصناف المشمولة: <strong className="font-bold text-slate-900">{slicedReportItems.length}</strong> صنف</div>
                       <div>إجمالي الرصيد المتوفر: <strong className="font-bold text-slate-900">{formatNum(slicedTotals.totalUnits)}</strong> قطعة</div>
-                      <div>إجمالي التقييم المالي: <strong className="font-black text-emerald-800">{formatSAR(slicedTotals.totalValuation)}</strong></div>
+                      {showCostPrices && (
+                        <div>إجمالي التكلفة (رأس المال): <strong className="font-black text-slate-900">{formatSAR(slicedTotals.totalValuation)}</strong></div>
+                      )}
+                      {showSuggestedPrice && (
+                        <div>
+                          إجمالي البيع المقترح: <strong className="font-black text-emerald-800">{formatSAR(slicedTotals.totalSuggestedValuation)}</strong>
+                          <span className="text-[9px] text-slate-500 mr-1 font-sans font-normal">
+                            ({includeVat ? 'شامل الضريبة 15%' : 'قبل الضريبة'}{roundToNearestFive ? ' · مقرب 5 ر.س' : ''})
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -618,20 +873,40 @@ export default function CustomPdfReportModal({
                         <th className="py-2.5 px-2 text-center bg-indigo-50">الرواف 200</th>
                         <th className="py-2.5 px-2 text-center bg-emerald-50">السليم 300</th>
                         <th className="py-2.5 px-2 text-center font-black">إجمالي الرصيد</th>
-                        <th className="py-2.5 px-2.5 text-left">التكلفة (ر.س)</th>
-                        <th className="py-2.5 px-3 text-left font-black bg-amber-50">إجمالي القيمة</th>
+                        {showCostPrices && (
+                          <>
+                            <th className="py-2.5 px-2.5 text-left">التكلفة (ر.س)</th>
+                            <th className="py-2.5 px-3 text-left font-black bg-amber-50">إجمالي التكلفة</th>
+                          </>
+                        )}
+                        {showSuggestedPrice && (
+                          <>
+                            <th className="py-2.5 px-2.5 text-left bg-emerald-50 text-emerald-950 font-black">
+                              السعر المقترح {includeVat ? '(شامل 15% ضريبة)' : '(قبل الضريبة)'}
+                            </th>
+                            <th className="py-2.5 px-3 text-left font-black bg-emerald-100/70 text-emerald-950">
+                              إجمالي البيع المقترح
+                            </th>
+                          </>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 text-xs">
                       {slicedReportItems.length === 0 ? (
                         <tr>
-                          <td colSpan={10} className="py-8 text-center text-slate-400">
+                          <td
+                            colSpan={8 + (showCostPrices ? 2 : 0) + (showSuggestedPrice ? 2 : 0)}
+                            className="py-8 text-center text-slate-400"
+                          >
                             لا توجد أصناف في هذا النطاق المحدد
                           </td>
                         </tr>
                       ) : (
                         slicedReportItems.map((item, idx) => {
                           const itemNumber = fromIndex + idx;
+                          const sugg = calculateSuggestedPrice(item.unitCost, { includeVat, roundToNearestFive });
+                          const suggTotal = (item.balance || 0) * sugg.price;
+
                           return (
                             <tr key={item.sku} className="hover:bg-slate-50 transition-colors">
                               <td className="py-2 px-2 text-center font-mono font-bold text-slate-500">
@@ -659,12 +934,35 @@ export default function CustomPdfReportModal({
                               <td className="py-2 px-2 text-center font-mono font-black bg-slate-100">
                                 {formatNum(item.balance)} {item.unit || 'حبه'}
                               </td>
-                              <td className="py-2 px-2.5 text-left font-mono text-slate-700">
-                                {item.unitCost > 0 ? item.unitCost.toFixed(2) : '—'}
-                              </td>
-                              <td className="py-2 px-3 text-left font-mono font-black text-slate-950 bg-amber-50/50">
-                                {item.totalCost > 0 ? item.totalCost.toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
-                              </td>
+                              {showCostPrices && (
+                                <>
+                                  <td className="py-2 px-2.5 text-left font-mono text-slate-700">
+                                    {item.unitCost > 0 ? item.unitCost.toFixed(2) : '—'}
+                                  </td>
+                                  <td className="py-2 px-3 text-left font-mono font-black text-slate-950 bg-amber-50/50">
+                                    {item.totalCost > 0 ? item.totalCost.toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                                  </td>
+                                </>
+                              )}
+                              {showSuggestedPrice && (
+                                <>
+                                  <td className="py-2 px-2.5 text-left font-mono font-black text-emerald-900 bg-emerald-50/30">
+                                    {sugg.price > 0 ? (
+                                      <div className="flex flex-col items-start">
+                                        <span className="font-mono font-black text-xs text-emerald-950">{formatSAR(sugg.price)}</span>
+                                        <span className="text-[9px] text-emerald-700 font-sans font-bold">
+                                          +{sugg.marginPct}% {includeVat ? '+ضريبة' : ''}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      '—'
+                                    )}
+                                  </td>
+                                  <td className="py-2 px-3 text-left font-mono font-black text-emerald-950 bg-emerald-100/40">
+                                    {suggTotal > 0 ? formatSAR(suggTotal) : '0.00'}
+                                  </td>
+                                </>
+                              )}
                             </tr>
                           );
                         })
@@ -679,10 +977,22 @@ export default function CustomPdfReportModal({
                         <td className="py-2.5 px-2 text-center font-mono text-indigo-950">{formatNum(slicedTotals.qtyRawaf)}</td>
                         <td className="py-2.5 px-2 text-center font-mono text-emerald-950">{formatNum(slicedTotals.qtySulaim)}</td>
                         <td className="py-2.5 px-2 text-center font-mono font-black">{formatNum(slicedTotals.totalUnits)}</td>
-                        <td className="py-2.5 px-2.5 text-left font-mono">—</td>
-                        <td className="py-2.5 px-3 text-left font-mono text-emerald-900 font-black">
-                          {formatSAR(slicedTotals.totalValuation)}
-                        </td>
+                        {showCostPrices && (
+                          <>
+                            <td className="py-2.5 px-2.5 text-left font-mono">—</td>
+                            <td className="py-2.5 px-3 text-left font-mono text-amber-900 font-black">
+                              {formatSAR(slicedTotals.totalValuation)}
+                            </td>
+                          </>
+                        )}
+                        {showSuggestedPrice && (
+                          <>
+                            <td className="py-2.5 px-2.5 text-left font-mono">—</td>
+                            <td className="py-2.5 px-3 text-left font-mono text-emerald-900 font-black">
+                              {formatSAR(slicedTotals.totalSuggestedValuation)}
+                            </td>
+                          </>
+                        )}
                       </tr>
                     </tfoot>
                   </table>
