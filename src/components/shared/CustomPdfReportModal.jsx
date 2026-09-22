@@ -23,7 +23,8 @@ import {
   ExternalLink,
   Calculator,
   Percent,
-  Coins
+  Coins,
+  SlidersHorizontal
 } from 'lucide-react';
 import {
   getEnrichedInventory,
@@ -89,6 +90,36 @@ export const REPORT_TYPES = [
     description: 'مقارنة الفئات التسع حسب معدل الدوران، إجمالي رأس مال كل فئة، ونسبة الركود.',
   },
 ];
+
+export const AVAILABLE_COLUMNS = [
+  { id: 'index', label: 'رقم السطر (#)', category: 'basic', defaultChecked: true },
+  { id: 'sku', label: 'كود القطعة (OEM SKU)', category: 'basic', defaultChecked: true },
+  { id: 'name', label: 'اسم الصنف والتصنيف', category: 'basic', defaultChecked: true },
+  { id: 'brand', label: 'الماركة (هيونداي/كيا)', category: 'basic', defaultChecked: true },
+  { id: 'qtyMain', label: 'المركز الرئيسي (100)', category: 'branches', defaultChecked: true },
+  { id: 'qtyRawaf', label: 'فرع الرواف (200)', category: 'branches', defaultChecked: true },
+  { id: 'qtySulaim', label: 'فرع السليم 2 (300)', category: 'branches', defaultChecked: true },
+  { id: 'balance', label: 'إجمالي الرصيد المتوفر', category: 'branches', defaultChecked: true },
+  { id: 'unitCost', label: 'سعر التكلفة (ر.س)', category: 'cost', defaultChecked: true },
+  { id: 'totalCost', label: 'إجمالي التكلفة (رأس المال)', category: 'cost', defaultChecked: true },
+  { id: 'suggestedPrice', label: 'السعر المقترح للبيع', category: 'pricing', defaultChecked: true },
+  { id: 'totalSuggested', label: 'إجمالي البيع المقترح', category: 'pricing', defaultChecked: true },
+];
+
+export const DEFAULT_COLUMNS = {
+  index: true,
+  sku: true,
+  name: true,
+  brand: true,
+  qtyMain: true,
+  qtyRawaf: true,
+  qtySulaim: true,
+  balance: true,
+  unitCost: true,
+  totalCost: true,
+  suggestedPrice: true,
+  totalSuggested: true,
+};
 
 /**
  * Calculate dynamic suggested retail price based on cost tiers, VAT, and rigid rounding.
@@ -166,6 +197,97 @@ export default function CustomPdfReportModal({
   const [showSuggestedPrice, setShowSuggestedPrice] = useState(true);
   const [includeVat, setIncludeVat] = useState(true);
   const [roundToNearestFive, setRoundToNearestFive] = useState(true);
+
+  // Columns Visibility State
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_COLUMNS);
+  const [showColumnDropdown, setShowColumnDropdown] = useState(false);
+
+  // Active columns count
+  const activeColCount = useMemo(() => {
+    return Object.values(visibleColumns).filter(Boolean).length;
+  }, [visibleColumns]);
+
+  const toggleColumn = (colId) => {
+    setVisibleColumns((prev) => {
+      const next = { ...prev, [colId]: !prev[colId] };
+      // Sync cost & suggested price flags
+      setShowCostPrices(Boolean(next.unitCost || next.totalCost));
+      setShowSuggestedPrice(Boolean(next.suggestedPrice || next.totalSuggested));
+      return next;
+    });
+  };
+
+  const setAllColumns = (val) => {
+    const next = {};
+    AVAILABLE_COLUMNS.forEach((c) => (next[c.id] = val));
+    if (val) {
+      setShowCostPrices(true);
+      setShowSuggestedPrice(true);
+    } else {
+      next.sku = true;
+      next.name = true;
+      setShowCostPrices(false);
+      setShowSuggestedPrice(false);
+    }
+    setVisibleColumns(next);
+  };
+
+  const applyColumnPreset = (presetKey) => {
+    if (presetKey === 'all') {
+      setAllColumns(true);
+    } else if (presetKey === 'branches_only') {
+      setVisibleColumns({
+        index: true,
+        sku: true,
+        name: true,
+        brand: true,
+        qtyMain: true,
+        qtyRawaf: true,
+        qtySulaim: true,
+        balance: true,
+        unitCost: false,
+        totalCost: false,
+        suggestedPrice: false,
+        totalSuggested: false,
+      });
+      setShowCostPrices(false);
+      setShowSuggestedPrice(false);
+    } else if (presetKey === 'sales_catalog') {
+      setVisibleColumns({
+        index: true,
+        sku: true,
+        name: true,
+        brand: true,
+        qtyMain: false,
+        qtyRawaf: false,
+        qtySulaim: false,
+        balance: true,
+        unitCost: false,
+        totalCost: false,
+        suggestedPrice: true,
+        totalSuggested: true,
+      });
+      setShowCostPrices(false);
+      setShowSuggestedPrice(true);
+    } else if (presetKey === 'financial_audit') {
+      setVisibleColumns({
+        index: true,
+        sku: true,
+        name: true,
+        brand: true,
+        qtyMain: false,
+        qtyRawaf: false,
+        qtySulaim: false,
+        balance: true,
+        unitCost: true,
+        totalCost: true,
+        suggestedPrice: true,
+        totalSuggested: true,
+      });
+      setShowCostPrices(true);
+      setShowSuggestedPrice(true);
+    }
+  };
 
   // Sync props when opened
   useEffect(() => {
@@ -734,6 +856,87 @@ export default function CustomPdfReportModal({
                 )}
               </div>
 
+              {/* Step 5: Columns Customizer (تحديد وتخصيص أعمدة الجدول) */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                  <label className="text-xs font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center">5</span>
+                    <span className="flex items-center gap-1.5">
+                      <SlidersHorizontal className="w-4 h-4 text-cyan-700" />
+                      <span>تخصيص أعمدة التقرير (اختر كل عامود تريده في الـ PDF بعلامة صح):</span>
+                    </span>
+                  </label>
+                  <span className="text-xs font-mono font-bold text-cyan-900 bg-cyan-100/80 px-2.5 py-1 rounded-lg border border-cyan-200">
+                    الأعمدة المحددة: {activeColCount} من 12
+                  </span>
+                </div>
+
+                {/* Quick Presets for Columns */}
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-[11px] font-bold text-slate-500">خيارات سريعة للأعمدة:</span>
+                  <button
+                    type="button"
+                    onClick={() => applyColumnPreset('all')}
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold border border-slate-300 transition-all shadow-2xs"
+                  >
+                    تحديد الكل (12 عامود)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyColumnPreset('branches_only')}
+                    className="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-900 text-[11px] font-bold border border-sky-200 transition-all shadow-2xs"
+                  >
+                    جرد كمي ومستودعات (بدون أسعار)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyColumnPreset('sales_catalog')}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-[11px] font-bold border border-emerald-200 transition-all shadow-2xs"
+                  >
+                    كتالوج أسعار المبيعات والعملاء (بدون تكلفة)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyColumnPreset('financial_audit')}
+                    className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 text-[11px] font-bold border border-amber-200 transition-all shadow-2xs"
+                  >
+                    تقرير مالي ورقابي (تكلفة + بيع)
+                  </button>
+                </div>
+
+                {/* Checkbox Grid with all 12 columns */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 pt-1">
+                  {AVAILABLE_COLUMNS.map((col) => {
+                    const isChecked = Boolean(visibleColumns[col.id]);
+                    return (
+                      <label
+                        key={col.id}
+                        className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-2.5 select-none ${
+                          isChecked
+                            ? 'border-cyan-600 bg-cyan-50/50 shadow-2xs'
+                            : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 text-slate-400'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleColumn(col.id)}
+                          className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+                        />
+                        <div className="min-w-0 flex-1 text-right">
+                          <div className={`font-bold text-xs truncate ${isChecked ? 'text-slate-900' : 'text-slate-500'}`}>
+                            {col.label}
+                          </div>
+                          <div className="text-[10px] text-slate-400 truncate">
+                            {col.category === 'basic' ? 'بيانات أساسية' : col.category === 'branches' ? 'أرصدة فروع' : col.category === 'cost' ? 'أسعار تكلفة' : 'تسعير وهوامش'}
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Action Button: Go to Preview */}
               <div className="pt-2 flex items-center justify-end gap-3">
                 <button
@@ -780,12 +983,22 @@ export default function CustomPdfReportModal({
                 <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                   <button
                     type="button"
+                    onClick={() => setShowColumnDropdown(!showColumnDropdown)}
+                    className="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-cyan-300 text-cyan-950 text-xs font-bold transition-all flex items-center gap-1 shadow-2xs"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-700" />
+                    <span>تخصيص الأعمدة ({activeColCount}/12)</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setMode('configure')}
                     className="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-cyan-300 text-cyan-950 text-xs font-bold transition-all flex items-center gap-1 shadow-2xs"
                   >
                     <Settings2 className="w-3.5 h-3.5 text-cyan-700" />
-                    <span>تعديل الخيارات والأسعار</span>
+                    <span>خيارات التسعير والنطاق</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={handlePrint}
@@ -796,6 +1009,49 @@ export default function CustomPdfReportModal({
                   </button>
                 </div>
               </div>
+
+              {/* Quick inline Column Checkboxes in Preview Mode */}
+              {showColumnDropdown && (
+                <div className="p-3.5 bg-white rounded-2xl border-2 border-cyan-300 shadow-md space-y-2.5 no-print animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-800 pb-1.5 border-b border-slate-200">
+                    <span className="flex items-center gap-1.5 text-slate-900">
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-600" />
+                      <span>تحكم فوري في أعمدة الجدول (ضع أو أزل علامة الصح لمعاينة النتيجة فورياً):</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowColumnDropdown(false)}
+                      className="text-slate-400 hover:text-slate-600 text-xs flex items-center gap-1"
+                    >
+                      <span>إخفاء</span>
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {AVAILABLE_COLUMNS.map((col) => {
+                      const isChecked = Boolean(visibleColumns[col.id]);
+                      return (
+                        <label
+                          key={col.id}
+                          className={`px-2.5 py-1 rounded-lg border text-xs cursor-pointer flex items-center gap-1.5 transition-all select-none ${
+                            isChecked
+                              ? 'bg-cyan-50 border-cyan-400 text-cyan-950 font-bold shadow-2xs'
+                              : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-700'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleColumn(col.id)}
+                            className="w-3.5 h-3.5 rounded text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+                          />
+                          <span>{col.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* ── Official A4 Document Presentation Sheet ── */}
               <div className="bg-white border-2 border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5 print:border-none print:shadow-none print:rounded-none print:p-0 print:space-y-3">
@@ -836,19 +1092,21 @@ export default function CustomPdfReportModal({
                         نطاق التقرير: من الصنف رقم <strong className="font-mono">{fromIndex}</strong> إلى الصنف رقم <strong className="font-mono">{Math.min(toIndex, baseReportItems.length)}</strong> ({slicedReportItems.length} صنف معتمد)
                         {branchFilter !== 'all' && ` · المستودع: ${branchFilter === '100' ? 'المركز الرئيسي 100' : branchFilter === '200' ? 'فرع الرواف 200' : 'السليم 2 / كيا 300'}`}
                         <span className="text-slate-500 mr-1.5 font-bold">
-                          · {showCostPrices ? 'شامل التكلفة' : 'بدون أسعار تكلفة'}
-                          {showSuggestedPrice && ` · السعر المقترح (${includeVat ? 'شامل الضريبة 15%' : 'قبل الضريبة'}${roundToNearestFive ? ' - مقرب لأقرب 5 ر.س' : ''})`}
+                          · ({activeColCount} أعمدة مفعلة)
+                          {visibleColumns.suggestedPrice && ` · السعر المقترح (${includeVat ? 'شامل 15% ضريبة' : 'قبل الضريبة'}${roundToNearestFive ? ' - مقرب لأقرب 5 ر.س' : ''})`}
                         </span>
                       </div>
                     </div>
 
                     <div className="text-left font-mono text-xs bg-slate-50 print:bg-transparent p-2.5 rounded-xl border border-slate-200 print:border-slate-300 space-y-0.5">
                       <div>عدد الأصناف المشمولة: <strong className="font-bold text-slate-900">{slicedReportItems.length}</strong> صنف</div>
-                      <div>إجمالي الرصيد المتوفر: <strong className="font-bold text-slate-900">{formatNum(slicedTotals.totalUnits)}</strong> قطعة</div>
-                      {showCostPrices && (
+                      {visibleColumns.balance && (
+                        <div>إجمالي الرصيد المتوفر: <strong className="font-bold text-slate-900">{formatNum(slicedTotals.totalUnits)}</strong> قطعة</div>
+                      )}
+                      {visibleColumns.totalCost && (
                         <div>إجمالي التكلفة (رأس المال): <strong className="font-black text-slate-900">{formatSAR(slicedTotals.totalValuation)}</strong></div>
                       )}
-                      {showSuggestedPrice && (
+                      {visibleColumns.totalSuggested && (
                         <div>
                           إجمالي البيع المقترح: <strong className="font-black text-emerald-800">{formatSAR(slicedTotals.totalSuggestedValuation)}</strong>
                           <span className="text-[9px] text-slate-500 mr-1 font-sans font-normal">
@@ -865,29 +1123,25 @@ export default function CustomPdfReportModal({
                   <table className="print-table w-full text-right border-collapse text-xs">
                     <thead>
                       <tr className="bg-slate-100 border-b border-slate-300 text-slate-900 text-[11px] font-black">
-                        <th className="py-2.5 px-2 text-center w-10">#</th>
-                        <th className="py-2.5 px-3">كود القطعة (OEM SKU)</th>
-                        <th className="py-2.5 px-3">اسم الصنف والتصنيف</th>
-                        <th className="py-2.5 px-2 text-center">الماركة</th>
-                        <th className="py-2.5 px-2 text-center bg-sky-50">الرئيسي 100</th>
-                        <th className="py-2.5 px-2 text-center bg-indigo-50">الرواف 200</th>
-                        <th className="py-2.5 px-2 text-center bg-emerald-50">السليم 300</th>
-                        <th className="py-2.5 px-2 text-center font-black">إجمالي الرصيد</th>
-                        {showCostPrices && (
-                          <>
-                            <th className="py-2.5 px-2.5 text-left">التكلفة (ر.س)</th>
-                            <th className="py-2.5 px-3 text-left font-black bg-amber-50">إجمالي التكلفة</th>
-                          </>
+                        {visibleColumns.index && <th className="py-2.5 px-2 text-center w-10">#</th>}
+                        {visibleColumns.sku && <th className="py-2.5 px-3">كود القطعة (OEM SKU)</th>}
+                        {visibleColumns.name && <th className="py-2.5 px-3">اسم الصنف والتصنيف</th>}
+                        {visibleColumns.brand && <th className="py-2.5 px-2 text-center">الماركة</th>}
+                        {visibleColumns.qtyMain && <th className="py-2.5 px-2 text-center bg-sky-50">الرئيسي 100</th>}
+                        {visibleColumns.qtyRawaf && <th className="py-2.5 px-2 text-center bg-indigo-50">الرواف 200</th>}
+                        {visibleColumns.qtySulaim && <th className="py-2.5 px-2 text-center bg-emerald-50">السليم 300</th>}
+                        {visibleColumns.balance && <th className="py-2.5 px-2 text-center font-black">إجمالي الرصيد</th>}
+                        {visibleColumns.unitCost && <th className="py-2.5 px-2.5 text-left">التكلفة (ر.س)</th>}
+                        {visibleColumns.totalCost && <th className="py-2.5 px-3 text-left font-black bg-amber-50">إجمالي التكلفة</th>}
+                        {visibleColumns.suggestedPrice && (
+                          <th className="py-2.5 px-2.5 text-left bg-emerald-50 text-emerald-950 font-black">
+                            السعر المقترح {includeVat ? '(شامل 15% ضريبة)' : '(قبل الضريبة)'}
+                          </th>
                         )}
-                        {showSuggestedPrice && (
-                          <>
-                            <th className="py-2.5 px-2.5 text-left bg-emerald-50 text-emerald-950 font-black">
-                              السعر المقترح {includeVat ? '(شامل 15% ضريبة)' : '(قبل الضريبة)'}
-                            </th>
-                            <th className="py-2.5 px-3 text-left font-black bg-emerald-100/70 text-emerald-950">
-                              إجمالي البيع المقترح
-                            </th>
-                          </>
+                        {visibleColumns.totalSuggested && (
+                          <th className="py-2.5 px-3 text-left font-black bg-emerald-100/70 text-emerald-950">
+                            إجمالي البيع المقترح
+                          </th>
                         )}
                       </tr>
                     </thead>
@@ -895,7 +1149,7 @@ export default function CustomPdfReportModal({
                       {slicedReportItems.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={8 + (showCostPrices ? 2 : 0) + (showSuggestedPrice ? 2 : 0)}
+                            colSpan={Math.max(1, activeColCount)}
                             className="py-8 text-center text-slate-400"
                           >
                             لا توجد أصناف في هذا النطاق المحدد
@@ -909,59 +1163,75 @@ export default function CustomPdfReportModal({
 
                           return (
                             <tr key={item.sku} className="hover:bg-slate-50 transition-colors">
-                              <td className="py-2 px-2 text-center font-mono font-bold text-slate-500">
-                                {itemNumber}
-                              </td>
-                              <td className="py-2 px-3 whitespace-nowrap font-mono font-black text-slate-900">
-                                {item.sku}
-                              </td>
-                              <td className="py-2 px-3">
-                                <div className="font-bold text-slate-950 text-xs">{item.name}</div>
-                                <div className="text-[10px] text-slate-500">{item.category}</div>
-                              </td>
-                              <td className="py-2 px-2 text-center whitespace-nowrap text-[11px] font-bold">
-                                {item.brand === 'hyundai' ? 'هيونداي' : item.brand === 'kia' ? 'كيا' : item.brand === 'mobis' ? 'موبيس' : 'عامة'}
-                              </td>
-                              <td className="py-2 px-2 text-center font-mono font-bold bg-sky-50/40 text-sky-900">
-                                {item.qtyMain || 0}
-                              </td>
-                              <td className="py-2 px-2 text-center font-mono font-bold bg-indigo-50/40 text-indigo-900">
-                                {item.qtyRawaf || 0}
-                              </td>
-                              <td className="py-2 px-2 text-center font-mono font-bold bg-emerald-50/40 text-emerald-900">
-                                {item.qtySulaim || 0}
-                              </td>
-                              <td className="py-2 px-2 text-center font-mono font-black bg-slate-100">
-                                {formatNum(item.balance)} {item.unit || 'حبه'}
-                              </td>
-                              {showCostPrices && (
-                                <>
-                                  <td className="py-2 px-2.5 text-left font-mono text-slate-700">
-                                    {item.unitCost > 0 ? item.unitCost.toFixed(2) : '—'}
-                                  </td>
-                                  <td className="py-2 px-3 text-left font-mono font-black text-slate-950 bg-amber-50/50">
-                                    {item.totalCost > 0 ? item.totalCost.toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
-                                  </td>
-                                </>
+                              {visibleColumns.index && (
+                                <td className="py-2 px-2 text-center font-mono font-bold text-slate-500">
+                                  {itemNumber}
+                                </td>
                               )}
-                              {showSuggestedPrice && (
-                                <>
-                                  <td className="py-2 px-2.5 text-left font-mono font-black text-emerald-900 bg-emerald-50/30">
-                                    {sugg.price > 0 ? (
-                                      <div className="flex flex-col items-start">
-                                        <span className="font-mono font-black text-xs text-emerald-950">{formatSAR(sugg.price)}</span>
-                                        <span className="text-[9px] text-emerald-700 font-sans font-bold">
-                                          +{sugg.marginPct}% {includeVat ? '+ضريبة' : ''}
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      '—'
-                                    )}
-                                  </td>
-                                  <td className="py-2 px-3 text-left font-mono font-black text-emerald-950 bg-emerald-100/40">
-                                    {suggTotal > 0 ? formatSAR(suggTotal) : '0.00'}
-                                  </td>
-                                </>
+                              {visibleColumns.sku && (
+                                <td className="py-2 px-3 whitespace-nowrap font-mono font-black text-slate-900">
+                                  {item.sku}
+                                </td>
+                              )}
+                              {visibleColumns.name && (
+                                <td className="py-2 px-3">
+                                  <div className="font-bold text-slate-950 text-xs">{item.name}</div>
+                                  <div className="text-[10px] text-slate-500">{item.category}</div>
+                                </td>
+                              )}
+                              {visibleColumns.brand && (
+                                <td className="py-2 px-2 text-center whitespace-nowrap text-[11px] font-bold">
+                                  {item.brand === 'hyundai' ? 'هيونداي' : item.brand === 'kia' ? 'كيا' : item.brand === 'mobis' ? 'موبيس' : 'عامة'}
+                                </td>
+                              )}
+                              {visibleColumns.qtyMain && (
+                                <td className="py-2 px-2 text-center font-mono font-bold bg-sky-50/40 text-sky-900">
+                                  {item.qtyMain || 0}
+                                </td>
+                              )}
+                              {visibleColumns.qtyRawaf && (
+                                <td className="py-2 px-2 text-center font-mono font-bold bg-indigo-50/40 text-indigo-900">
+                                  {item.qtyRawaf || 0}
+                                </td>
+                              )}
+                              {visibleColumns.qtySulaim && (
+                                <td className="py-2 px-2 text-center font-mono font-bold bg-emerald-50/40 text-emerald-900">
+                                  {item.qtySulaim || 0}
+                                </td>
+                              )}
+                              {visibleColumns.balance && (
+                                <td className="py-2 px-2 text-center font-mono font-black bg-slate-100">
+                                  {formatNum(item.balance)} {item.unit || 'حبه'}
+                                </td>
+                              )}
+                              {visibleColumns.unitCost && (
+                                <td className="py-2 px-2.5 text-left font-mono text-slate-700">
+                                  {item.unitCost > 0 ? item.unitCost.toFixed(2) : '—'}
+                                </td>
+                              )}
+                              {visibleColumns.totalCost && (
+                                <td className="py-2 px-3 text-left font-mono font-black text-slate-950 bg-amber-50/50">
+                                  {item.totalCost > 0 ? item.totalCost.toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                                </td>
+                              )}
+                              {visibleColumns.suggestedPrice && (
+                                <td className="py-2 px-2.5 text-left font-mono font-black text-emerald-900 bg-emerald-50/30">
+                                  {sugg.price > 0 ? (
+                                    <div className="flex flex-col items-start">
+                                      <span className="font-mono font-black text-xs text-emerald-950">{formatSAR(sugg.price)}</span>
+                                      <span className="text-[9px] text-emerald-700 font-sans font-bold">
+                                        +{sugg.marginPct}% {includeVat ? '+ضريبة' : ''}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    '—'
+                                  )}
+                                </td>
+                              )}
+                              {visibleColumns.totalSuggested && (
+                                <td className="py-2 px-3 text-left font-mono font-black text-emerald-950 bg-emerald-100/40">
+                                  {suggTotal > 0 ? formatSAR(suggTotal) : '0.00'}
+                                </td>
                               )}
                             </tr>
                           );
@@ -970,28 +1240,29 @@ export default function CustomPdfReportModal({
                     </tbody>
                     <tfoot>
                       <tr className="bg-slate-200/80 font-black text-slate-900 border-t-2 border-slate-400 text-xs">
-                        <td colSpan={4} className="py-2.5 px-3 text-right">
-                          إجمالي النطاق المحدد (من #{fromIndex} إلى #{Math.min(toIndex, baseReportItems.length)}):
-                        </td>
-                        <td className="py-2.5 px-2 text-center font-mono text-sky-950">{formatNum(slicedTotals.qtyMain)}</td>
-                        <td className="py-2.5 px-2 text-center font-mono text-indigo-950">{formatNum(slicedTotals.qtyRawaf)}</td>
-                        <td className="py-2.5 px-2 text-center font-mono text-emerald-950">{formatNum(slicedTotals.qtySulaim)}</td>
-                        <td className="py-2.5 px-2 text-center font-mono font-black">{formatNum(slicedTotals.totalUnits)}</td>
-                        {showCostPrices && (
-                          <>
-                            <td className="py-2.5 px-2.5 text-left font-mono">—</td>
-                            <td className="py-2.5 px-3 text-left font-mono text-amber-900 font-black">
-                              {formatSAR(slicedTotals.totalValuation)}
+                        {(() => {
+                          const leadingSpan = [visibleColumns.index, visibleColumns.sku, visibleColumns.name, visibleColumns.brand].filter(Boolean).length;
+                          return leadingSpan > 0 ? (
+                            <td colSpan={leadingSpan} className="py-2.5 px-3 text-right">
+                              إجمالي النطاق المحدد (من #{fromIndex} إلى #{Math.min(toIndex, baseReportItems.length)}):
                             </td>
-                          </>
+                          ) : null;
+                        })()}
+                        {visibleColumns.qtyMain && <td className="py-2.5 px-2 text-center font-mono text-sky-950">{formatNum(slicedTotals.qtyMain)}</td>}
+                        {visibleColumns.qtyRawaf && <td className="py-2.5 px-2 text-center font-mono text-indigo-950">{formatNum(slicedTotals.qtyRawaf)}</td>}
+                        {visibleColumns.qtySulaim && <td className="py-2.5 px-2 text-center font-mono text-emerald-950">{formatNum(slicedTotals.qtySulaim)}</td>}
+                        {visibleColumns.balance && <td className="py-2.5 px-2 text-center font-mono font-black">{formatNum(slicedTotals.totalUnits)}</td>}
+                        {visibleColumns.unitCost && <td className="py-2.5 px-2.5 text-left font-mono">—</td>}
+                        {visibleColumns.totalCost && (
+                          <td className="py-2.5 px-3 text-left font-mono text-amber-900 font-black">
+                            {formatSAR(slicedTotals.totalValuation)}
+                          </td>
                         )}
-                        {showSuggestedPrice && (
-                          <>
-                            <td className="py-2.5 px-2.5 text-left font-mono">—</td>
-                            <td className="py-2.5 px-3 text-left font-mono text-emerald-900 font-black">
-                              {formatSAR(slicedTotals.totalSuggestedValuation)}
-                            </td>
-                          </>
+                        {visibleColumns.suggestedPrice && <td className="py-2.5 px-2.5 text-left font-mono">—</td>}
+                        {visibleColumns.totalSuggested && (
+                          <td className="py-2.5 px-3 text-left font-mono text-emerald-900 font-black">
+                            {formatSAR(slicedTotals.totalSuggestedValuation)}
+                          </td>
                         )}
                       </tr>
                     </tfoot>
