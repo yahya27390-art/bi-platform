@@ -52,7 +52,21 @@ function getStoredCustomQuotations() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+
+    // Filter out any stale custom quotations that were saved with "ارقام الديزل" or "مسك"
+    // because "مسك" is now an official built-in preset with 109 cleaned items!
+    const cleaned = parsed.filter((q) => {
+      const title = String(q.title || '').toLowerCase();
+      const sName = String(q.supplierName || '').toLowerCase();
+      const fName = String(q.fileName || '').toLowerCase();
+      return !(title.includes('مسك') || sName.includes('مسك') || fName.includes('مسك') || title.includes('28.09.2026') || title.includes('الديزل'));
+    });
+
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch (e) {
     console.error('Error loading saved quotations from localStorage:', e);
     return [];
@@ -76,9 +90,9 @@ function saveCustomQuotationsToStorage(quotations) {
 export default function SupplierPriceComparison() {
   // Persistent list of custom uploaded quotations
   const [savedCustomQuotations, setSavedCustomQuotations] = useState(() => getStoredCustomQuotations());
-  // Active Preset: 'badr' | 'husoun' | or custom ID
-  const [activePreset, setActivePreset] = useState('badr');
-  const [quotationResult, setQuotationResult] = useState(() => getBadrAlWadiQuotationAnalysis());
+  // Active Preset: 'misk' | 'badr' | 'husoun' | or custom ID
+  const [activePreset, setActivePreset] = useState('misk');
+  const [quotationResult, setQuotationResult] = useState(() => getMiskQuotationAnalysis());
   const [isQuotationDropdownOpen, setIsQuotationDropdownOpen] = useState(false);
   const quotationDropdownRef = useRef(null);
 
