@@ -333,27 +333,8 @@ export default function BranchNotebookEntry() {
               </div>
             </div>
 
-            {/* Quick Actions & Live Sync Indicator */}
+            {/* Quick Actions */}
             <div className="flex items-center gap-2.5 flex-wrap">
-              <div
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold"
-                title="مزامنة فورية حية بين أجهزة الفروع ومدير المشتريات"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>قاعدة بيانات موحدة (مزامنة حية)</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleUploadLocalData}
-                disabled={isUploading}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-xs font-bold border border-indigo-200 dark:border-indigo-800 transition-all cursor-pointer shadow-sm"
-                title="مزامنة ونقل أي نواقص مسجلة مسبقاً على هذا الجهاز إلى السحابة لتظهر لباقي الأجهزة"
-              >
-                <UploadCloud className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                <span>{isUploading ? 'جارٍ الرفع...' : 'رفع نواقص هذا الجهاز للسحابة ☁️'}</span>
-              </button>
-
               <button
                 type="button"
                 onClick={() => window.print()}

@@ -387,10 +387,6 @@ export default function BranchShortages() {
                   <ClipboardList className="w-3.5 h-3.5" />
                   <span>نظام حصر النواقص والقرار النهائي للطلبات</span>
                 </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-400/30">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>قاعدة بيانات مركزية موحدة ومزامنة حية</span>
-                </div>
               </div>
               <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
                 نواقص الفروع واعتماد طلبيات الموردين
