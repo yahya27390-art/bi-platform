@@ -498,36 +498,69 @@ export async function fetchRemoteShortagesStore() {
       [BRANCH_KEYS.KIA]: []
     };
 
-    batches.forEach((b) => {
-      const bKey = b.branch_key;
-      if (newStore[bKey]) {
-        newStore[bKey].push({
-          id: b.id,
-          branchKey: bKey,
-          batchNumber: b.batch_number,
-          title: b.batch_title || `قائمة نواقص ${BRANCH_META[bKey]?.name || bKey} — دورة طلب رقم #${b.batch_number}`,
-          status: b.status,
-          createdAt: b.created_at,
-          orderedAt: b.ordered_at,
-          orderedByName: b.ordered_by,
-          orderedByUsername: 'manager',
-          supplierNotes: b.supplier_notes || '',
-          items: itemsByBatch[b.id] || []
-        });
-      }
-    });
-
-    // Ensure all 3 branches have at least an active batch
+    // For each branch, guarantee EXACTLY ONE canonical active batch containing ALL active items!
     Object.keys(BRANCH_META).forEach((bKey) => {
-      if (!newStore[bKey] || newStore[bKey].length === 0) {
-        newStore[bKey] = currentLocal[bKey] || [createNewBatch(bKey, 1)];
+      const branchBatchesFromDb = batches.filter((b) => b.branch_key === bKey);
+      const activeBatchesFromDb = branchBatchesFromDb.filter((b) => b.status === 'ACTIVE');
+      const orderedBatchesFromDb = branchBatchesFromDb.filter((b) => b.status === 'ORDERED');
+
+      let canonicalActiveBatch = null;
+
+      if (activeBatchesFromDb.length > 0) {
+        // Use the oldest/first active batch as the canonical one
+        const primary = activeBatchesFromDb[0];
+        
+        // Collect items from ALL active batches of this branch to guarantee 100% data integrity
+        const allActiveItems = [];
+        activeBatchesFromDb.forEach((ab) => {
+          const abItems = itemsByBatch[ab.id] || [];
+          abItems.forEach((item) => {
+            if (!allActiveItems.some((x) => x.id === item.id)) {
+              allActiveItems.push({
+                ...item,
+                batchId: primary.id
+              });
+            }
+          });
+        });
+
+        canonicalActiveBatch = {
+          id: primary.id,
+          branchKey: bKey,
+          batchNumber: primary.batch_number || 1,
+          title: primary.batch_title || `قائمة نواقص ${BRANCH_META[bKey]?.name || bKey} — دورة طلب رقم #${primary.batch_number || 1}`,
+          status: 'ACTIVE',
+          createdAt: primary.created_at,
+          orderedAt: null,
+          orderedByName: null,
+          orderedByUsername: 'manager',
+          supplierNotes: primary.supplier_notes || '',
+          items: allActiveItems
+        };
       } else {
-        const hasActive = newStore[bKey].some((x) => x.status === 'ACTIVE');
-        if (!hasActive) {
-          const nextNum = newStore[bKey].length + 1;
-          newStore[bKey].unshift(createNewBatch(bKey, nextNum));
-        }
+        const nextNum = orderedBatchesFromDb.length + 1;
+        canonicalActiveBatch = createNewBatch(bKey, nextNum);
       }
+
+      // Put the active batch first
+      newStore[bKey] = [canonicalActiveBatch];
+
+      // Append past archived/ordered batches
+      orderedBatchesFromDb.forEach((ob) => {
+        newStore[bKey].push({
+          id: ob.id,
+          branchKey: bKey,
+          batchNumber: ob.batch_number,
+          title: ob.batch_title || `قائمة نواقص ${BRANCH_META[bKey]?.name || bKey} — دورة طلب رقم #${ob.batch_number}`,
+          status: 'ORDERED',
+          createdAt: ob.created_at,
+          orderedAt: ob.ordered_at,
+          orderedByName: ob.ordered_by,
+          orderedByUsername: 'manager',
+          supplierNotes: ob.supplier_notes || '',
+          items: itemsByBatch[ob.id] || []
+        });
+      });
     });
 
     saveBranchShortagesStore(newStore);
@@ -551,42 +584,61 @@ export async function uploadLocalShortagesToCloud() {
 
     for (const branchKey of Object.keys(localStore)) {
       const batches = localStore[branchKey] || [];
-      for (const batch of batches) {
-        if ((batch.items && batch.items.length > 0) || batch.status === 'ACTIVE') {
-          await supabase.from('branch_shortage_batches').upsert([
-            {
-              id: batch.id,
-              branch_key: batch.branchKey || branchKey,
-              batch_number: batch.batchNumber || 1,
-              batch_title: batch.title,
-              status: batch.status || 'ACTIVE',
-              created_at: batch.createdAt || new Date().toISOString(),
-              ordered_at: batch.orderedAt,
-              ordered_by: batch.orderedByName,
-              supplier_notes: batch.supplierNotes || ''
-            }
-          ]);
+      const activeBatch = batches.find((b) => b.status === 'ACTIVE');
 
-          if (batch.items && batch.items.length > 0) {
-            const rows = batch.items.map((item) => ({
-              id: item.id,
-              batch_id: batch.id,
-              branch_key: batch.branchKey || branchKey,
-              part_number: item.partNumber,
-              part_name: item.partName,
-              requested_qty: item.requestedQty || 1,
-              priority: item.priority || 'NORMAL',
-              created_by_name: item.createdByName || 'موظف الفرع',
-              notes: item.notes || '',
-              created_at: item.createdAt || new Date().toISOString(),
-              updated_at: item.updatedAt || new Date().toISOString(),
-              is_new_to_inventory: !!item.isNewToInventory
-            }));
-
-            await supabase.from('branch_shortage_items').upsert(rows);
-            totalItemsUploaded += rows.length;
+      if (activeBatch) {
+        // Ensure active batch exists in remote DB
+        await supabase.from('branch_shortage_batches').upsert([
+          {
+            id: activeBatch.id,
+            branch_key: branchKey,
+            batch_number: activeBatch.batchNumber || 1,
+            batch_title: activeBatch.title,
+            status: 'ACTIVE',
+            created_at: activeBatch.createdAt || new Date().toISOString(),
+            ordered_at: null,
+            ordered_by: null,
+            supplier_notes: activeBatch.supplierNotes || ''
           }
+        ], { onConflict: 'id' });
+
+        if (activeBatch.items && activeBatch.items.length > 0) {
+          const rows = activeBatch.items.map((item) => ({
+            id: item.id,
+            batch_id: activeBatch.id,
+            branch_key: branchKey,
+            part_number: item.partNumber,
+            part_name: item.partName,
+            requested_qty: item.requestedQty || 1,
+            priority: item.priority || 'NORMAL',
+            created_by_name: item.createdByName || 'موظف الفرع',
+            notes: item.notes || '',
+            created_at: item.createdAt || new Date().toISOString(),
+            updated_at: item.updatedAt || new Date().toISOString(),
+            is_new_to_inventory: !!item.isNewToInventory
+          }));
+
+          await supabase.from('branch_shortage_items').upsert(rows, { onConflict: 'id' });
+          totalItemsUploaded += rows.length;
         }
+      }
+
+      // Also upsert archived ORDERED batches if any exist locally
+      const orderedBatches = batches.filter((b) => b.status === 'ORDERED');
+      for (const ob of orderedBatches) {
+        await supabase.from('branch_shortage_batches').upsert([
+          {
+            id: ob.id,
+            branch_key: branchKey,
+            batch_number: ob.batchNumber,
+            batch_title: ob.title,
+            status: 'ORDERED',
+            created_at: ob.createdAt,
+            ordered_at: ob.orderedAt,
+            ordered_by: ob.orderedByName,
+            supplier_notes: ob.supplierNotes || ''
+          }
+        ], { onConflict: 'id' });
       }
     }
 
