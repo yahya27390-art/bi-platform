@@ -4,6 +4,7 @@
 // ============================================================
 
 import { REAL_ALL_PARTS, REAL_INVENTORY_STATS } from '../data/realInventoryData';
+import { getAllInventoryParts } from './customInventoryStore';
 
 /**
  * Item Status Classification:
@@ -11,7 +12,7 @@ import { REAL_ALL_PARTS, REAL_INVENTORY_STATS } from '../data/realInventoryData'
  * - 'special': Exactly 1 in-and-out movement (Korea special bespoke orders)
  * - 'fast': High sales volume (issued >= 10 || (issued > 0 && turnover >= 50%))
  * - 'slow': Active sales but slow velocity
- * - 'out_of_stock': Balance === 0 && issued > 0 (high demand, lost sales)
+ * - 'out_of_stock': Balance === 0 (zero stock on shelves)
  */
 export function classifyInventoryStatus(item) {
   const balance = Number(item.balance || item.totalQty || 0);
@@ -32,8 +33,8 @@ export function classifyInventoryStatus(item) {
     return 'dead';
   }
 
-  // 3. Out of stock high demand
-  if (balance === 0 && issued > 0) {
+  // 3. Out of stock / zero stock across warehouses
+  if (balance === 0) {
     return 'out_of_stock';
   }
 
@@ -100,7 +101,8 @@ export const STATUS_META = {
  * Enriches all parts with precalculated status, branch values, and search strings
  */
 export function getEnrichedInventory() {
-  return REAL_ALL_PARTS.map((p) => {
+  const parts = getAllInventoryParts();
+  return parts.map((p) => {
     const status = classifyInventoryStatus(p);
     const unitCost = Number(p.unitCost || 0);
     const balance = Number(p.balance || p.totalQty || 0);
@@ -115,6 +117,7 @@ export function getEnrichedInventory() {
     return {
       ...p,
       isDiesel: !!p.isDiesel,
+      isCustomAdded: !!p.isCustomAdded,
       status,
       unitCost,
       balance,
@@ -125,7 +128,7 @@ export function getEnrichedInventory() {
       costMain,
       costRawaf,
       costSulaim,
-      searchStr: `${p.sku || ''} ${p.name || ''} ${p.category || ''} ${p.brand || ''} ${p.isDiesel ? 'ديزل diesel' : ''}`.toLowerCase(),
+      searchStr: `${p.sku || ''} ${p.name || ''} ${p.category || ''} ${p.brand || ''} ${p.isDiesel ? 'ديزل diesel' : ''} ${p.isCustomAdded ? 'جديد مضاف' : ''}`.toLowerCase(),
     };
   });
 }

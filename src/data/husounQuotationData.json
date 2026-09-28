@@ -1,0 +1,1575 @@
+{
+  "quotationInfo": {
+    "supplierName": "شركة حصون لقطع غيار السيارات",
+    "quotationTitle": "تحليل عرض سعر شركة حصون",
+    "quotationDate": "2026-09-01",
+    "month": "سبتمبر 2026",
+    "representative": "محمود",
+    "fileName": "عرض عام شهر 9-2026 محمود.xlsx",
+    "category": "قطع غيار سيارات ديزل (هيونداي وكيا)",
+    "totalItemsCount": 223
+  },
+  "items": [
+    {
+      "id": 1,
+      "itemNo": "1",
+      "partNumber": "282012a701",
+      "partName": "تيربو افانتي 2015",
+      "supplierPrice": 2530
+    },
+    {
+      "id": 2,
+      "itemNo": "2",
+      "partNumber": "282314a740",
+      "partName": "تيربو ستاريكس حتى موديل 2018",
+      "supplierPrice": 2530
+    },
+    {
+      "id": 3,
+      "itemNo": "3",
+      "partNumber": "231162U001A",
+      "partName": "عمود كرنك توسان سوبرتاج 2019",
+      "supplierPrice": 2640
+    },
+    {
+      "id": 4,
+      "itemNo": "4",
+      "partNumber": "6F0262FH00",
+      "partName": "عمود كرنك مكينة  2200",
+      "supplierPrice": 2420
+    },
+    {
+      "id": 5,
+      "itemNo": "5",
+      "partNumber": "6R3162RH00",
+      "partName": "عمود كرنك سنتافي 2021",
+      "supplierPrice": 2750
+    },
+    {
+      "id": 6,
+      "itemNo": "6",
+      "partNumber": "338002F600",
+      "partName": "طقم بخاخات مكينة 2000",
+      "supplierPrice": 3740
+    },
+    {
+      "id": 7,
+      "itemNo": "7",
+      "partNumber": "338002F610",
+      "partName": "طقم بخاخات مكينة 2200",
+      "supplierPrice": 3740
+    },
+    {
+      "id": 8,
+      "itemNo": "8",
+      "partNumber": "04300 2N110",
+      "partName": "زيت قير سنتافي 2021 هيدروليك",
+      "supplierPrice": 88
+    },
+    {
+      "id": 9,
+      "itemNo": "9",
+      "partNumber": "04300 2N100",
+      "partName": "زيت قير سنتافي 2021  DCT",
+      "supplierPrice": 88
+    },
+    {
+      "id": 10,
+      "itemNo": "10",
+      "partNumber": "99H89AQ002",
+      "partName": "ماء معالج ADBLUE",
+      "supplierPrice": 66
+    },
+    {
+      "id": 11,
+      "itemNo": "11",
+      "partNumber": "233002F610",
+      "partName": "طرمبة زيت مكينة 2000 بدون حساس",
+      "supplierPrice": 1980
+    },
+    {
+      "id": 12,
+      "itemNo": "12",
+      "partNumber": "213502A523",
+      "partName": "طرمبة زيت مكينة صغير",
+      "supplierPrice": 715
+    },
+    {
+      "id": 13,
+      "itemNo": "13",
+      "partNumber": "331002A600",
+      "partName": "طرمبة ديزل مكينة صغير",
+      "supplierPrice": 3025
+    },
+    {
+      "id": 14,
+      "itemNo": "14",
+      "partNumber": "462202N500",
+      "partName": "طرمبة زيت قير سنتافي 2021",
+      "supplierPrice": 1045
+    },
+    {
+      "id": 15,
+      "itemNo": "15",
+      "partNumber": "213002R000",
+      "partName": "طرمبة زيت مكينة سنتافي 2021",
+      "supplierPrice": 902
+    },
+    {
+      "id": 16,
+      "itemNo": "16",
+      "partNumber": "261002U001",
+      "partName": "طرمبة زيت توسان سوبر تاج 2019",
+      "supplierPrice": 2255
+    },
+    {
+      "id": 17,
+      "itemNo": "17",
+      "partNumber": "233002F700",
+      "partName": "طرمبة زيت مع الحساس كام 2019",
+      "supplierPrice": 1980
+    },
+    {
+      "id": 18,
+      "itemNo": "18",
+      "partNumber": "331002U000",
+      "partName": "طرمبة ديزل توسان سوبرتاج 2019",
+      "supplierPrice": 2640
+    },
+    {
+      "id": 19,
+      "itemNo": "19",
+      "partNumber": "256802F000",
+      "partName": "ماصورة ماء مكينة كبير 2018",
+      "supplierPrice": 77
+    },
+    {
+      "id": 20,
+      "itemNo": "20",
+      "partNumber": "256122F020",
+      "partName": "كوع بلف توسان سوبرتاج 2018",
+      "supplierPrice": 38.5
+    },
+    {
+      "id": 21,
+      "itemNo": "21",
+      "partNumber": "25410D3000",
+      "partName": "خرطوش ماء تحت توسان سوبرتاج 2018 مكينة 2000",
+      "supplierPrice": 88
+    },
+    {
+      "id": 22,
+      "itemNo": "22",
+      "partNumber": "281302w300",
+      "partName": "خرطوش تيربو سنتافي 15~18",
+      "supplierPrice": 209
+    },
+    {
+      "id": 23,
+      "itemNo": "23",
+      "partNumber": "28130S1300",
+      "partName": "خرطوش تيربو سنتافي 2019 ~2020",
+      "supplierPrice": 231
+    },
+    {
+      "id": 24,
+      "itemNo": "24",
+      "partNumber": "28130D3200",
+      "partName": "خرطوش تيربو توسان",
+      "supplierPrice": 209
+    },
+    {
+      "id": 25,
+      "itemNo": "25",
+      "partNumber": "281403V500",
+      "partName": "خرطوش تيربو ازيرا 2015",
+      "supplierPrice": 209
+    },
+    {
+      "id": 26,
+      "itemNo": "26",
+      "partNumber": "28140F2900",
+      "partName": "خرطوش تيربو افانتي",
+      "supplierPrice": 264
+    },
+    {
+      "id": 27,
+      "itemNo": "27",
+      "partNumber": "282602F900",
+      "partName": "خرطوش مبرد التيربو سفلي سنتافي",
+      "supplierPrice": 374
+    },
+    {
+      "id": 28,
+      "itemNo": "28",
+      "partNumber": "281302S000",
+      "partName": "خرطوش تيربو توسان سوبر تاج 2014",
+      "supplierPrice": 242
+    },
+    {
+      "id": 29,
+      "itemNo": "29",
+      "partNumber": "281401R600&R210",
+      "partName": "خرطوش تيربو اكسنت",
+      "supplierPrice": 286
+    },
+    {
+      "id": 30,
+      "itemNo": "30",
+      "partNumber": "281403x900",
+      "partName": "خرطوش تيربو افانتي 2015",
+      "supplierPrice": 264
+    },
+    {
+      "id": 31,
+      "itemNo": "31",
+      "partNumber": "254111R800",
+      "partName": "خرطوش ماء علوي اكسنت",
+      "supplierPrice": 77
+    },
+    {
+      "id": 32,
+      "itemNo": "32",
+      "partNumber": "282522A700",
+      "partName": "خرطوش انتركولر اكسنت",
+      "supplierPrice": 137.5
+    },
+    {
+      "id": 33,
+      "itemNo": "33",
+      "partNumber": "31922D3900",
+      "partName": "فلتر ديزل افانتي توسان سوبرتاج",
+      "supplierPrice": 71.5
+    },
+    {
+      "id": 34,
+      "itemNo": "34",
+      "partNumber": "31920N9800",
+      "partName": "فلتر ديزل سوبرتاج توسان 2021",
+      "supplierPrice": 148.5
+    },
+    {
+      "id": 35,
+      "itemNo": "35",
+      "partNumber": "31922A9000",
+      "partName": "فلتر ديزل سوناتا",
+      "supplierPrice": 88
+    },
+    {
+      "id": 36,
+      "itemNo": "36",
+      "partNumber": "31920cg950",
+      "partName": "فلتر ديزل ستاريا",
+      "supplierPrice": 115.5
+    },
+    {
+      "id": 37,
+      "itemNo": "37",
+      "partNumber": "319202P2900",
+      "partName": "فلتر ديزل سنتافي 2021",
+      "supplierPrice": 115.5
+    },
+    {
+      "id": 38,
+      "itemNo": "38",
+      "partNumber": "31922H8900",
+      "partName": "فلتر ديزل ستونيك",
+      "supplierPrice": 132
+    },
+    {
+      "id": 39,
+      "itemNo": "39",
+      "partNumber": "31922J9880",
+      "partName": "فلتر ديزل كونا",
+      "supplierPrice": 121
+    },
+    {
+      "id": 40,
+      "itemNo": "40",
+      "partNumber": "28113A9200",
+      "partName": "فلتر هواء  سنتافي كرنفال بالسيد سورنتو 2019-2020",
+      "supplierPrice": 55
+    },
+    {
+      "id": 41,
+      "itemNo": "41",
+      "partNumber": "28113C1100",
+      "partName": "فلتر هواء سوناتا",
+      "supplierPrice": 44
+    },
+    {
+      "id": 42,
+      "itemNo": "42",
+      "partNumber": "281133V500",
+      "partName": "فلتر هواء ازيرا 2015",
+      "supplierPrice": 35.2
+    },
+    {
+      "id": 43,
+      "itemNo": "43",
+      "partNumber": "28113F2000",
+      "partName": "فلتر هواء افانتي",
+      "supplierPrice": 33
+    },
+    {
+      "id": 44,
+      "itemNo": "44",
+      "partNumber": "28113R100",
+      "partName": "فلتر هواء اكسنت",
+      "supplierPrice": 35.2
+    },
+    {
+      "id": 45,
+      "itemNo": "45",
+      "partNumber": "28113 A5800",
+      "partName": "فلتر هواء افانتي 2015",
+      "supplierPrice": 38.5
+    },
+    {
+      "id": 46,
+      "itemNo": "46",
+      "partNumber": "28113N9000",
+      "partName": "فلتر هواء توسان  سوبر تاج 2021",
+      "supplierPrice": 44
+    },
+    {
+      "id": 47,
+      "itemNo": "47",
+      "partNumber": "28113H8100",
+      "partName": "فلتر هواء",
+      "supplierPrice": 27.5
+    },
+    {
+      "id": 48,
+      "itemNo": "48",
+      "partNumber": "281642A500",
+      "partName": "حساس منظم الهواء مكينة صغير",
+      "supplierPrice": 264
+    },
+    {
+      "id": 49,
+      "itemNo": "49",
+      "partNumber": "282352A600",
+      "partName": "حساس تيربو مكينة صغير",
+      "supplierPrice": 396
+    },
+    {
+      "id": 50,
+      "itemNo": "50",
+      "partNumber": "281644A900",
+      "partName": "حساس منظم الهواء ستاريكس",
+      "supplierPrice": 264
+    },
+    {
+      "id": 51,
+      "itemNo": "51",
+      "partNumber": "213702A800",
+      "partName": "حساس زيت صدر مكينة صغير",
+      "supplierPrice": 181.5
+    },
+    {
+      "id": 52,
+      "itemNo": "52",
+      "partNumber": "281642F610",
+      "partName": "حساس منظم الهواء مكينة كبير",
+      "supplierPrice": 264
+    },
+    {
+      "id": 53,
+      "itemNo": "53",
+      "partNumber": "282352F700",
+      "partName": "حساس تيربو مكينة 2000",
+      "supplierPrice": 605
+    },
+    {
+      "id": 54,
+      "itemNo": "54",
+      "partNumber": "393002F000",
+      "partName": "حساس ضغط ثلاجة مكينة كبير",
+      "supplierPrice": 77
+    },
+    {
+      "id": 55,
+      "itemNo": "55",
+      "partNumber": "282352U000",
+      "partName": "حساس تيربو توسان 2019",
+      "supplierPrice": 528
+    },
+    {
+      "id": 56,
+      "itemNo": "56",
+      "partNumber": "391802u000",
+      "partName": "حساس كرنك  توسان 2019",
+      "supplierPrice": 99
+    },
+    {
+      "id": 57,
+      "itemNo": "57",
+      "partNumber": "224414A700",
+      "partName": "وجه غطا بلوف ستاريكس",
+      "supplierPrice": 44
+    },
+    {
+      "id": 58,
+      "itemNo": "58",
+      "partNumber": "255104A750",
+      "partName": "بلف حرارة ستاركس",
+      "supplierPrice": 49.5
+    },
+    {
+      "id": 59,
+      "itemNo": "59",
+      "partNumber": "281643NRH0",
+      "partName": "حساس منظم هواء 2021 سنتافي",
+      "supplierPrice": 242
+    },
+    {
+      "id": 60,
+      "itemNo": "60",
+      "partNumber": "255002A100",
+      "partName": "بلف حرارة مكينة صغير",
+      "supplierPrice": 49.5
+    },
+    {
+      "id": 61,
+      "itemNo": "61",
+      "partNumber": "414132D000",
+      "partName": "شوكة القير",
+      "supplierPrice": 275
+    },
+    {
+      "id": 62,
+      "itemNo": "62",
+      "partNumber": "427002D010",
+      "partName": "سويتش حساس القير",
+      "supplierPrice": 115.5
+    },
+    {
+      "id": 63,
+      "itemNo": "63",
+      "partNumber": "243702A000",
+      "partName": "شداد جنزير مكينة صغير",
+      "supplierPrice": 121
+    },
+    {
+      "id": 64,
+      "itemNo": "64",
+      "partNumber": "243702A700",
+      "partName": "شداد جنزير مكينة صغير",
+      "supplierPrice": 121
+    },
+    {
+      "id": 65,
+      "itemNo": "65",
+      "partNumber": "244102A700",
+      "partName": "شداد جنزير مكينة صغير",
+      "supplierPrice": 115.5
+    },
+    {
+      "id": 66,
+      "itemNo": "66",
+      "partNumber": "234A02A930",
+      "partName": "طقم بستم سوناتا",
+      "supplierPrice": 825
+    },
+    {
+      "id": 67,
+      "itemNo": "67",
+      "partNumber": "224102A600",
+      "partName": "غطاء بلوف مع حساس كام مكينة صغير",
+      "supplierPrice": 484
+    },
+    {
+      "id": 68,
+      "itemNo": "68",
+      "partNumber": "314712A690",
+      "partName": "لي راجع",
+      "supplierPrice": 225.5
+    },
+    {
+      "id": 69,
+      "itemNo": "69",
+      "partNumber": "224412A102",
+      "partName": "وجه  غطا بلوف",
+      "supplierPrice": 44
+    },
+    {
+      "id": 70,
+      "itemNo": "70",
+      "partNumber": "283122A780",
+      "partName": "وجه ثلاجة مكينة صغير",
+      "supplierPrice": 44
+    },
+    {
+      "id": 71,
+      "itemNo": "71",
+      "partNumber": "23042A908",
+      "partName": "شمبر مكينة صغير",
+      "supplierPrice": 308
+    },
+    {
+      "id": 72,
+      "itemNo": "72",
+      "partNumber": "215102A321",
+      "partName": "كرتير مكينة صغير",
+      "supplierPrice": 352
+    },
+    {
+      "id": 73,
+      "itemNo": "73",
+      "partNumber": "222314A001",
+      "partName": "تكايات بلوف",
+      "supplierPrice": 49.5
+    },
+    {
+      "id": 74,
+      "itemNo": "74",
+      "partNumber": "285212A702",
+      "partName": "وجه قزوز",
+      "supplierPrice": 38.5
+    },
+    {
+      "id": 75,
+      "itemNo": "75",
+      "partNumber": "338052A000",
+      "partName": "جلد بخاخات مكينة صغير",
+      "supplierPrice": 8.8
+    },
+    {
+      "id": 76,
+      "itemNo": "76",
+      "partNumber": "49500C1800",
+      "partName": "عكس سوناتا يسار",
+      "supplierPrice": 935
+    },
+    {
+      "id": 77,
+      "itemNo": "77",
+      "partNumber": "49501C1850",
+      "partName": "عكس سوناتا يمين",
+      "supplierPrice": 1045
+    },
+    {
+      "id": 78,
+      "itemNo": "78",
+      "partNumber": "256132A750",
+      "partName": "كوع بلف حرارة",
+      "supplierPrice": 60.5
+    },
+    {
+      "id": 79,
+      "itemNo": "79",
+      "partNumber": "251002A300",
+      "partName": "طرمبة ماء مكينة صغير",
+      "supplierPrice": 176
+    },
+    {
+      "id": 80,
+      "itemNo": "80",
+      "partNumber": "234A02A930",
+      "partName": "يستم طقم كامل سوناتا  (4قطع)",
+      "supplierPrice": 825
+    },
+    {
+      "id": 81,
+      "itemNo": "81",
+      "partNumber": "235102A300",
+      "partName": "ذراع بستم افانتي",
+      "supplierPrice": 308
+    },
+    {
+      "id": 82,
+      "itemNo": "82",
+      "partNumber": "209102AU04",
+      "partName": "طقم وجيه كامل",
+      "supplierPrice": 605
+    },
+    {
+      "id": 83,
+      "itemNo": "83",
+      "partNumber": "234A02A920",
+      "partName": "بستم طقم كامل انترا (4قطع)",
+      "supplierPrice": 770
+    },
+    {
+      "id": 84,
+      "itemNo": "84",
+      "partNumber": "338052A000",
+      "partName": "جلد بخاخات",
+      "supplierPrice": 6.6
+    },
+    {
+      "id": 85,
+      "itemNo": "85",
+      "partNumber": "222242A100",
+      "partName": "جلد بلوف مكينة صغير",
+      "supplierPrice": 8.8
+    },
+    {
+      "id": 86,
+      "itemNo": "86",
+      "partNumber": "223112F610",
+      "partName": "وجه راس مكينة 2000",
+      "supplierPrice": 165
+    },
+    {
+      "id": 87,
+      "itemNo": "87",
+      "partNumber": "223112F650",
+      "partName": "وجه راس مكينة 2200",
+      "supplierPrice": 165
+    },
+    {
+      "id": 88,
+      "itemNo": "88",
+      "partNumber": "314712F600",
+      "partName": "لي راجع",
+      "supplierPrice": 236.5
+    },
+    {
+      "id": 89,
+      "itemNo": "89",
+      "partNumber": "215202F004",
+      "partName": "كرتير مكينة صاج اسود",
+      "supplierPrice": 209
+    },
+    {
+      "id": 90,
+      "itemNo": "90",
+      "partNumber": "215102f004",
+      "partName": "كرتير مكينة كبير القاعدة المنيوم",
+      "supplierPrice": 352
+    },
+    {
+      "id": 91,
+      "itemNo": "91",
+      "partNumber": "222242F001",
+      "partName": "جلد بلوف مكينة كبير",
+      "supplierPrice": 8.8
+    },
+    {
+      "id": 92,
+      "itemNo": "92",
+      "partNumber": "338172F600",
+      "partName": "جلد بخاخات مكينة كبير",
+      "supplierPrice": 7.7
+    },
+    {
+      "id": 93,
+      "itemNo": "93",
+      "partNumber": "230402F960",
+      "partName": "شمبر مكينة ألفين استاندر",
+      "supplierPrice": 418
+    },
+    {
+      "id": 94,
+      "itemNo": "94",
+      "partNumber": "230402F973",
+      "partName": "شمبر مكينة ألفين ومئتين استاندر",
+      "supplierPrice": 418
+    },
+    {
+      "id": 95,
+      "itemNo": "95",
+      "partNumber": "230402F961",
+      "partName": "شمبر مكينة كبير مقاس 25",
+      "supplierPrice": 440
+    },
+    {
+      "id": 96,
+      "itemNo": "96",
+      "partNumber": "210302F900",
+      "partName": "هلالات مكينة كبير",
+      "supplierPrice": 33
+    },
+    {
+      "id": 97,
+      "itemNo": "97",
+      "partNumber": "230402F962",
+      "partName": "شمير مكينة كبير مقاس 50",
+      "supplierPrice": 440
+    },
+    {
+      "id": 98,
+      "itemNo": "98",
+      "partNumber": "230602F920&903",
+      "partName": "سبائك ثابت ومتحرك مكينة ألفين (9قطع)",
+      "supplierPrice": 385
+    },
+    {
+      "id": 99,
+      "itemNo": "99",
+      "partNumber": "234102F965",
+      "partName": "بستم مكينة 2000",
+      "supplierPrice": 1100
+    },
+    {
+      "id": 100,
+      "itemNo": "100",
+      "partNumber": "234102F975",
+      "partName": "بستم مكينة 2200 cc",
+      "supplierPrice": 1210
+    },
+    {
+      "id": 101,
+      "itemNo": "101",
+      "partNumber": "235102F100",
+      "partName": "ذراع بستم",
+      "supplierPrice": 429
+    },
+    {
+      "id": 102,
+      "itemNo": "102",
+      "partNumber": "25500 35540",
+      "partName": "بلف حرارة",
+      "supplierPrice": 66
+    },
+    {
+      "id": 103,
+      "itemNo": "103",
+      "partNumber": "241702F000",
+      "partName": "عصافير بلوف",
+      "supplierPrice": 60.5
+    },
+    {
+      "id": 104,
+      "itemNo": "104",
+      "partNumber": "222312F000",
+      "partName": "تكايات بلوف",
+      "supplierPrice": 44
+    },
+    {
+      "id": 105,
+      "itemNo": "105",
+      "partNumber": "230602F930&900",
+      "partName": "سبائك ثابت ومتحرك مكينة ألفين ومئتين(9قطع)",
+      "supplierPrice": 385
+    },
+    {
+      "id": 106,
+      "itemNo": "106",
+      "partNumber": "24351 2R000",
+      "partName": "سير تايمن",
+      "supplierPrice": 198
+    },
+    {
+      "id": 107,
+      "itemNo": "107",
+      "partNumber": "243702u003",
+      "partName": "شداد تايمن",
+      "supplierPrice": 242
+    },
+    {
+      "id": 108,
+      "itemNo": "108",
+      "partNumber": "223112U001",
+      "partName": "وجه راس مكينة صغير 2019",
+      "supplierPrice": 154
+    },
+    {
+      "id": 109,
+      "itemNo": "109",
+      "partNumber": "230412U900",
+      "partName": "بستم طقم كامل 2019مكينة صغير (4قطع)",
+      "supplierPrice": 825
+    },
+    {
+      "id": 110,
+      "itemNo": "110",
+      "partNumber": "243402U001",
+      "partName": "سير طرمبة زيت",
+      "supplierPrice": 93.5
+    },
+    {
+      "id": 111,
+      "itemNo": "111",
+      "partNumber": "231202U000",
+      "partName": "ترس عمود الكرنك",
+      "supplierPrice": 71.5
+    },
+    {
+      "id": 112,
+      "itemNo": "112",
+      "partNumber": "224422U000",
+      "partName": "وجه غطا بلوف",
+      "supplierPrice": 49.5
+    },
+    {
+      "id": 113,
+      "itemNo": "113",
+      "partNumber": "264102U000",
+      "partName": "مبرد زيت",
+      "supplierPrice": 209
+    },
+    {
+      "id": 114,
+      "itemNo": "114",
+      "partNumber": "231212U000",
+      "partName": "بكرة سير",
+      "supplierPrice": 44
+    },
+    {
+      "id": 115,
+      "itemNo": "115",
+      "partNumber": "282352U000",
+      "partName": "حساس تيربو",
+      "supplierPrice": 528
+    },
+    {
+      "id": 116,
+      "itemNo": "116",
+      "partNumber": "222242U000",
+      "partName": "جلد بلوف مكينة صغير توسان 2019",
+      "supplierPrice": 8.8
+    },
+    {
+      "id": 117,
+      "itemNo": "117",
+      "partNumber": "243902U020",
+      "partName": "بكرة تيمن 2019 مكينة صغير",
+      "supplierPrice": 143
+    },
+    {
+      "id": 118,
+      "itemNo": "118",
+      "partNumber": "314712U000",
+      "partName": "لي راجع",
+      "supplierPrice": 209
+    },
+    {
+      "id": 119,
+      "itemNo": "119",
+      "partNumber": "241702U300",
+      "partName": "عصافير بلوف",
+      "supplierPrice": 82.5
+    },
+    {
+      "id": 120,
+      "itemNo": "120",
+      "partNumber": "222314A001",
+      "partName": "تكايات بلوف",
+      "supplierPrice": 49.5
+    },
+    {
+      "id": 121,
+      "itemNo": "121",
+      "partNumber": "235102U000",
+      "partName": "ذراع بستم",
+      "supplierPrice": 198
+    },
+    {
+      "id": 122,
+      "itemNo": "122",
+      "partNumber": "230402U900",
+      "partName": "شمبر مكينىة صغير 2019",
+      "supplierPrice": 297
+    },
+    {
+      "id": 123,
+      "itemNo": "123",
+      "partNumber": "232002R700",
+      "partName": "حذاف سنتافي 2021",
+      "supplierPrice": 2255
+    },
+    {
+      "id": 124,
+      "itemNo": "124",
+      "partNumber": "24351 2R000",
+      "partName": "سير تايمن",
+      "supplierPrice": 242
+    },
+    {
+      "id": 125,
+      "itemNo": "125",
+      "partNumber": "243102R300",
+      "partName": "شداد تايمن",
+      "supplierPrice": 225.5
+    },
+    {
+      "id": 126,
+      "itemNo": "126",
+      "partNumber": "410002N520",
+      "partName": "كلتش + فحمة سنتافي 2021",
+      "supplierPrice": 2420
+    },
+    {
+      "id": 127,
+      "itemNo": "127",
+      "partNumber": "252872R100",
+      "partName": "بكرة سير سنتافي 2021",
+      "supplierPrice": 82.5
+    },
+    {
+      "id": 128,
+      "itemNo": "128",
+      "partNumber": "223112R000",
+      "partName": "وجه راس سنتافي 2021",
+      "supplierPrice": 154
+    },
+    {
+      "id": 129,
+      "itemNo": "129",
+      "partNumber": "211502R000",
+      "partName": "حساس زيت",
+      "supplierPrice": 220
+    },
+    {
+      "id": 130,
+      "itemNo": "130",
+      "partNumber": "947502M454",
+      "partName": "حساس ضغط زيت",
+      "supplierPrice": 126.5
+    },
+    {
+      "id": 131,
+      "itemNo": "131",
+      "partNumber": "283122R000",
+      "partName": "وجه ثلاجة مكينة 2021",
+      "supplierPrice": 49.5
+    },
+    {
+      "id": 132,
+      "itemNo": "132",
+      "partNumber": "230402R960",
+      "partName": "شمبر مكينة كبير 2021",
+      "supplierPrice": 418
+    },
+    {
+      "id": 133,
+      "itemNo": "133",
+      "partNumber": "23041 2R900",
+      "partName": "طقم بستم كامل",
+      "supplierPrice": 1045
+    },
+    {
+      "id": 134,
+      "itemNo": "134",
+      "partNumber": "25287 2R100",
+      "partName": "بكرة سير",
+      "supplierPrice": 99
+    },
+    {
+      "id": 135,
+      "itemNo": "135",
+      "partNumber": "222242R001",
+      "partName": "جلد بلوف",
+      "supplierPrice": 8.8
+    },
+    {
+      "id": 136,
+      "itemNo": "136",
+      "partNumber": "235102R100",
+      "partName": "ذراع بستم سنتافي 2021",
+      "supplierPrice": 198
+    },
+    {
+      "id": 137,
+      "itemNo": "137",
+      "partNumber": "252122U030",
+      "partName": "سير مكينة صغير توسان سوبرتاج 2019",
+      "supplierPrice": 55
+    },
+    {
+      "id": 138,
+      "itemNo": "138",
+      "partNumber": "252124A600",
+      "partName": "سير اتش ون",
+      "supplierPrice": 88
+    },
+    {
+      "id": 139,
+      "itemNo": "139",
+      "partNumber": "252122F020",
+      "partName": "سير مكينة كرنفال",
+      "supplierPrice": 115.5
+    },
+    {
+      "id": 140,
+      "itemNo": "140",
+      "partNumber": "252812A600",
+      "partName": "شداد سير مكينة صغير",
+      "supplierPrice": 214.5
+    },
+    {
+      "id": 141,
+      "itemNo": "141",
+      "partNumber": "252814A600",
+      "partName": "شداد سير اتش ون",
+      "supplierPrice": 242
+    },
+    {
+      "id": 142,
+      "itemNo": "142",
+      "partNumber": "252812R000",
+      "partName": "شداد سير سنتافي 2021",
+      "supplierPrice": 154
+    },
+    {
+      "id": 143,
+      "itemNo": "143",
+      "partNumber": "252872A600",
+      "partName": "بكرة سير مكينة صغير",
+      "supplierPrice": 88
+    },
+    {
+      "id": 144,
+      "itemNo": "144",
+      "partNumber": "213552FRC0",
+      "partName": "صوفة صدر مكينة امامي مكينة كبير",
+      "supplierPrice": 33
+    },
+    {
+      "id": 145,
+      "itemNo": "145",
+      "partNumber": "214432A200",
+      "partName": "صوفة مكينة خلفي مكينة صغير",
+      "supplierPrice": 39.6
+    },
+    {
+      "id": 146,
+      "itemNo": "146",
+      "partNumber": "4311939080",
+      "partName": "صوفة عكس يسار مكينة صغير",
+      "supplierPrice": 22
+    },
+    {
+      "id": 147,
+      "itemNo": "147",
+      "partNumber": "4311939080",
+      "partName": "صوفة عكس يمين  مكينة صغير",
+      "supplierPrice": 22
+    },
+    {
+      "id": 148,
+      "itemNo": "148",
+      "partNumber": "4311939080",
+      "partName": "صوفة عكس يسار كوري مكينة صغير",
+      "supplierPrice": 15.4
+    },
+    {
+      "id": 149,
+      "itemNo": "149",
+      "partNumber": "2132024A100",
+      "partName": "صوفة كرنك امامي ستاريكس",
+      "supplierPrice": 16.5
+    },
+    {
+      "id": 150,
+      "itemNo": "150",
+      "partNumber": "21443 4A800",
+      "partName": "صوفة مكينة خلفي ستاريكس",
+      "supplierPrice": 30.8
+    },
+    {
+      "id": 151,
+      "itemNo": "151",
+      "partNumber": "214432U000&2N000",
+      "partName": "صوفة مكينة خلفي توسان سوبر تاج 2019",
+      "supplierPrice": 27.5
+    },
+    {
+      "id": 152,
+      "itemNo": "152",
+      "partNumber": "213612U000",
+      "partName": "صوفة مكينة امامي توسان سوبر تاج 2019",
+      "supplierPrice": 16.5
+    },
+    {
+      "id": 153,
+      "itemNo": "153",
+      "partNumber": "4311939080",
+      "partName": "صوفة عكس يمين كوري مكينة صغير",
+      "supplierPrice": 15.4
+    },
+    {
+      "id": 154,
+      "itemNo": "154",
+      "partNumber": "213642R000",
+      "partName": "صوفة مكينة امامي سنتافي 2021",
+      "supplierPrice": 24.2
+    },
+    {
+      "id": 155,
+      "itemNo": "155",
+      "partNumber": "214402F600",
+      "partName": "صوفة مكينة كبير خلفي مع الحساس",
+      "supplierPrice": 242
+    },
+    {
+      "id": 156,
+      "itemNo": "156",
+      "partNumber": "263202F100",
+      "partName": "فلتر زيت مكينة كبير",
+      "supplierPrice": 23.1
+    },
+    {
+      "id": 157,
+      "itemNo": "157",
+      "partNumber": "263202A501",
+      "partName": "فلتر زيت مكينة صغير",
+      "supplierPrice": 20.9
+    },
+    {
+      "id": 158,
+      "itemNo": "158",
+      "partNumber": "263202U000",
+      "partName": "فلتر زيت مكينة 2019 صغير",
+      "supplierPrice": 25.3
+    },
+    {
+      "id": 159,
+      "itemNo": "159",
+      "partNumber": "263202R001",
+      "partName": "فلتر زيت مكينة كبير 2021",
+      "supplierPrice": 28.6
+    },
+    {
+      "id": 160,
+      "itemNo": "160",
+      "partNumber": "253301P000(3K000)",
+      "partName": "غطاء رديتر لسيارات الديزل (HANON)",
+      "supplierPrice": 16.5
+    },
+    {
+      "id": 161,
+      "itemNo": "161",
+      "partNumber": "1881411051",
+      "partName": "بواجى",
+      "supplierPrice": 8
+    },
+    {
+      "id": 162,
+      "itemNo": "162",
+      "partNumber": "210202G120",
+      "partName": "سبائك ثابت سوناته",
+      "supplierPrice": 11
+    },
+    {
+      "id": 163,
+      "itemNo": "163",
+      "partNumber": "213102C200",
+      "partName": "طربمه زيت h1",
+      "supplierPrice": 220
+    },
+    {
+      "id": 164,
+      "itemNo": "164",
+      "partNumber": "213502B001",
+      "partName": "طرمبه زيت اكنست",
+      "supplierPrice": 250
+    },
+    {
+      "id": 165,
+      "itemNo": "165",
+      "partNumber": "218100Q000",
+      "partName": "كرسي مكينه يمين انلترا",
+      "supplierPrice": 125
+    },
+    {
+      "id": 166,
+      "itemNo": "166",
+      "partNumber": "218102T000",
+      "partName": "كرسي مكينه يمين سوناته 11_15",
+      "supplierPrice": 130
+    },
+    {
+      "id": 167,
+      "itemNo": "167",
+      "partNumber": "21810A9000",
+      "partName": "كرسي مكينه يمين كارنفال 16_20",
+      "supplierPrice": 145
+    },
+    {
+      "id": 168,
+      "itemNo": "168",
+      "partNumber": "218301G000",
+      "partName": "كرسي مكينه يسار اكنست7/11",
+      "supplierPrice": 120
+    },
+    {
+      "id": 169,
+      "itemNo": "169",
+      "partNumber": "218301H300",
+      "partName": "كرسي قير يسار النترا 7_11",
+      "supplierPrice": 110
+    },
+    {
+      "id": 170,
+      "itemNo": "170",
+      "partNumber": "21830C5400",
+      "partName": "كرسي قير يسار سورينتو 15_20",
+      "supplierPrice": 190
+    },
+    {
+      "id": 171,
+      "itemNo": "171",
+      "partNumber": "21830F2100",
+      "partName": "كرسي قير النترا 16-19",
+      "supplierPrice": 110
+    },
+    {
+      "id": 172,
+      "itemNo": "172",
+      "partNumber": "219101G000",
+      "partName": "كرسي مكينه اماني اكسنت 7_11",
+      "supplierPrice": 78
+    },
+    {
+      "id": 173,
+      "itemNo": "173",
+      "partNumber": "219301G000",
+      "partName": "كرسي مكينه خلفي اكسنت 7_11",
+      "supplierPrice": 85
+    },
+    {
+      "id": 174,
+      "itemNo": "174",
+      "partNumber": "219503S000",
+      "partName": "كرسي مكينه تحت سوناته 11_15",
+      "supplierPrice": 100
+    },
+    {
+      "id": 175,
+      "itemNo": "175",
+      "partNumber": "2304003AA0",
+      "partName": "شمبر مكينه اكسنت 15",
+      "supplierPrice": 57
+    },
+    {
+      "id": 176,
+      "itemNo": "176",
+      "partNumber": "230602E100",
+      "partName": "سبائك متحرك النترا 11_15",
+      "supplierPrice": 19
+    },
+    {
+      "id": 177,
+      "itemNo": "177",
+      "partNumber": "231242E000",
+      "partName": "كرنك النترا 11_16",
+      "supplierPrice": 90
+    },
+    {
+      "id": 178,
+      "itemNo": "178",
+      "partNumber": "231243C201",
+      "partName": "بقره كرنك",
+      "supplierPrice": 100
+    },
+    {
+      "id": 179,
+      "itemNo": "179",
+      "partNumber": "2435503011",
+      "partName": "حساس راس مكينه اكنست 15",
+      "supplierPrice": 80
+    },
+    {
+      "id": 180,
+      "itemNo": "180",
+      "partNumber": "243752E000",
+      "partName": "حساس راس النترا 11_15",
+      "supplierPrice": 120
+    },
+    {
+      "id": 181,
+      "itemNo": "181",
+      "partNumber": "2441025001",
+      "partName": "بلف جنزير سوناته",
+      "supplierPrice": 75
+    },
+    {
+      "id": 182,
+      "itemNo": "182",
+      "partNumber": "244102E000",
+      "partName": "بلف جنزير النترا",
+      "supplierPrice": 85
+    },
+    {
+      "id": 183,
+      "itemNo": "183",
+      "partNumber": "2528104600",
+      "partName": "بقره سير اكسنت 15",
+      "supplierPrice": 130
+    },
+    {
+      "id": 184,
+      "itemNo": "184",
+      "partNumber": "2528725010",
+      "partName": "بقره سير سوناته",
+      "supplierPrice": 50
+    },
+    {
+      "id": 185,
+      "itemNo": "185",
+      "partNumber": "254572E100",
+      "partName": "ماسوره تبريد النترا 11_15",
+      "supplierPrice": 45
+    },
+    {
+      "id": 186,
+      "itemNo": "186",
+      "partNumber": "255002E000",
+      "partName": "بلف حراره النترا 11_15",
+      "supplierPrice": 30
+    },
+    {
+      "id": 187,
+      "itemNo": "187",
+      "partNumber": "273002E000",
+      "partName": "كويل النترا 12_16",
+      "supplierPrice": 62
+    },
+    {
+      "id": 188,
+      "itemNo": "188",
+      "partNumber": "273012B010",
+      "partName": "كويل عام",
+      "supplierPrice": 62
+    },
+    {
+      "id": 189,
+      "itemNo": "189",
+      "partNumber": "28113D3100",
+      "partName": "فلتر هواء توسان _اسبورتاج",
+      "supplierPrice": 30
+    },
+    {
+      "id": 190,
+      "itemNo": "190",
+      "partNumber": "28113F6300",
+      "partName": "فلتر هواء كازينزا_ازيره",
+      "supplierPrice": 45
+    },
+    {
+      "id": 191,
+      "itemNo": "191",
+      "partNumber": "290102B000",
+      "partName": "منظم دعسه اكسنت",
+      "supplierPrice": 45
+    },
+    {
+      "id": 192,
+      "itemNo": "192",
+      "partNumber": "351002B150",
+      "partName": "حساس كرنك اكسنت 6_11",
+      "supplierPrice": 360
+    },
+    {
+      "id": 193,
+      "itemNo": "193",
+      "partNumber": "3918026900",
+      "partName": "حساس شكمان اكسنت",
+      "supplierPrice": 50
+    },
+    {
+      "id": 194,
+      "itemNo": "194",
+      "partNumber": "392102B310",
+      "partName": "حساس شكمان سوناته",
+      "supplierPrice": 155
+    },
+    {
+      "id": 195,
+      "itemNo": "195",
+      "partNumber": "392102G170",
+      "partName": "منظم هواء",
+      "supplierPrice": 135
+    },
+    {
+      "id": 196,
+      "itemNo": "196",
+      "partNumber": "393002B100",
+      "partName": "منظم هواء",
+      "supplierPrice": 70
+    },
+    {
+      "id": 197,
+      "itemNo": "197",
+      "partNumber": "3935025010",
+      "partName": "منظم هواء",
+      "supplierPrice": 48
+    },
+    {
+      "id": 198,
+      "itemNo": "198",
+      "partNumber": "545002V000",
+      "partName": "مقص يسار امامي النترا 12_16",
+      "supplierPrice": 165
+    },
+    {
+      "id": 199,
+      "itemNo": "199",
+      "partNumber": "54500AA100",
+      "partName": "مقص امامي يسار النترا 17_21",
+      "supplierPrice": 165
+    },
+    {
+      "id": 200,
+      "itemNo": "200",
+      "partNumber": "54500C1000",
+      "partName": "مقص امامي يسار سوناته 16_19",
+      "supplierPrice": 225
+    },
+    {
+      "id": 201,
+      "itemNo": "201",
+      "partNumber": "54500F2000",
+      "partName": "مقص امامي يسار النترا 16_18",
+      "supplierPrice": 165
+    },
+    {
+      "id": 202,
+      "itemNo": "202",
+      "partNumber": "545011R000",
+      "partName": "مقص امامي يمين اكسنت 11-17",
+      "supplierPrice": 135
+    },
+    {
+      "id": 203,
+      "itemNo": "203",
+      "partNumber": "54501AA100",
+      "partName": "مقص امامي النترا يمين 12_16",
+      "supplierPrice": 165
+    },
+    {
+      "id": 204,
+      "itemNo": "204",
+      "partNumber": "54501C1000",
+      "partName": "مقص امامي يمين سوناته 16_19",
+      "supplierPrice": 225
+    },
+    {
+      "id": 205,
+      "itemNo": "205",
+      "partNumber": "54501F2000",
+      "partName": "مقص امامي يمين النترا 16_18",
+      "supplierPrice": 165
+    },
+    {
+      "id": 206,
+      "itemNo": "206",
+      "partNumber": "545513R000",
+      "partName": "جلبه مقص صغيره",
+      "supplierPrice": 20
+    },
+    {
+      "id": 207,
+      "itemNo": "207",
+      "partNumber": "545513X000",
+      "partName": "جلبه مقص صغيره النترا 11_16",
+      "supplierPrice": 16
+    },
+    {
+      "id": 208,
+      "itemNo": "208",
+      "partNumber": "54551C5000",
+      "partName": "جلبه مقص صغير سيرنتو 16_20",
+      "supplierPrice": 17
+    },
+    {
+      "id": 209,
+      "itemNo": "209",
+      "partNumber": "54551E6100",
+      "partName": "جلبه مقص صغيره",
+      "supplierPrice": 17
+    },
+    {
+      "id": 210,
+      "itemNo": "210",
+      "partNumber": "545841G000",
+      "partName": "جلبه مقص كبيره اكسنت 7_11",
+      "supplierPrice": 22
+    },
+    {
+      "id": 211,
+      "itemNo": "211",
+      "partNumber": "546103X200",
+      "partName": "كرسي مساعد النترا 11_16",
+      "supplierPrice": 45
+    },
+    {
+      "id": 212,
+      "itemNo": "212",
+      "partNumber": "548302H200",
+      "partName": "مسمار توازن النترا7_11",
+      "supplierPrice": 35
+    },
+    {
+      "id": 213,
+      "itemNo": "213",
+      "partNumber": "548302T000",
+      "partName": "مسمار توازن يسار سوناته 11_16",
+      "supplierPrice": 35
+    },
+    {
+      "id": 214,
+      "itemNo": "214",
+      "partNumber": "548304H200",
+      "partName": "مسمار توازن يسار H1 7_15",
+      "supplierPrice": 45
+    },
+    {
+      "id": 215,
+      "itemNo": "215",
+      "partNumber": "54830C5000",
+      "partName": "مسمار توازن سيرنتو 15_20",
+      "supplierPrice": 47
+    },
+    {
+      "id": 216,
+      "itemNo": "216",
+      "partNumber": "548404H200",
+      "partName": "مسمار توازن يمين H1 7_15",
+      "supplierPrice": 45
+    },
+    {
+      "id": 217,
+      "itemNo": "217",
+      "partNumber": "548402T000",
+      "partName": "مسمار توازن يمين سوناته 11_16",
+      "supplierPrice": 35
+    },
+    {
+      "id": 218,
+      "itemNo": "218",
+      "partNumber": "791103X000",
+      "partName": "مفصله كبوت يسار النترا 11_16",
+      "supplierPrice": 25
+    },
+    {
+      "id": 219,
+      "itemNo": "219",
+      "partNumber": "79120F2000",
+      "partName": "مفصله كبوت يمين النترا 16_18",
+      "supplierPrice": 28
+    },
+    {
+      "id": 220,
+      "itemNo": "220",
+      "partNumber": "851013X100",
+      "partName": "مرايه داخليه عام",
+      "supplierPrice": 65
+    },
+    {
+      "id": 221,
+      "itemNo": "221",
+      "partNumber": "934903S110",
+      "partName": "شريحه بوري النترا _سوناته",
+      "supplierPrice": 75
+    },
+    {
+      "id": 222,
+      "itemNo": 222,
+      "partNumber": "",
+      "partName": "للتواصل",
+      "supplierPrice": 0
+    },
+    {
+      "id": 223,
+      "itemNo": 223,
+      "partNumber": "",
+      "partName": "0564022075",
+      "supplierPrice": 0
+    }
+  ]
+}

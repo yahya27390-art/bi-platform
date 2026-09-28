@@ -49,7 +49,15 @@ export default function BILogin() {
       const loggedUser = await loginWithCredentials(identifier, password);
       let destination = location.state?.from?.pathname;
       if (!destination || destination === '/') {
-        destination = loggedUser?.role === 'OWNER' ? '/owner' : '/';
+        if (loggedUser?.role === 'OWNER') {
+          destination = '/owner';
+        } else if (loggedUser?.role === 'PURCHASING_MANAGER') {
+          destination = '/inventory/branch-shortages';
+        } else if (loggedUser?.role === 'INVENTORY_VIEWER') {
+          destination = '/inventory/supplier-comparison';
+        } else {
+          destination = '/';
+        }
       }
       navigate(destination, { replace: true });
     } catch (err) {

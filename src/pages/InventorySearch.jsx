@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Search,
   SlidersHorizontal,
@@ -16,7 +17,9 @@ import {
   ArrowUpDown,
   ExternalLink,
   Sparkles,
-  Printer
+  Printer,
+  Scale,
+  ClipboardList
 } from 'lucide-react';
 import CustomPdfReportModal from '../components/shared/CustomPdfReportModal';
 import {
@@ -51,10 +54,19 @@ export default function InventorySearch() {
     return () => clearTimeout(handler);
   }, [search]);
 
+  const [invVersion, setInvVersion] = useState(0);
+
+  // Live listen for new dynamically registered items from branch notebooks
+  useEffect(() => {
+    const handleUpdate = () => setInvVersion((v) => v + 1);
+    window.addEventListener('dora-inventory-updated', handleUpdate);
+    return () => window.removeEventListener('dora-inventory-updated', handleUpdate);
+  }, []);
+
   // Load all enriched inventory
   const allItems = useMemo(() => {
     return getEnrichedInventory();
-  }, []);
+  }, [invVersion]);
 
   // Filter items
   const filteredItems = useMemo(() => {
@@ -155,6 +167,41 @@ export default function InventorySearch() {
 
   return (
     <div className="space-y-5 pb-10" dir="rtl">
+      {/* ─── Inventory Modules Navigation ─── */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black bg-cyan-600 text-white shadow-md shadow-cyan-600/25 ring-2 ring-cyan-400/30 shrink-0">
+          <Search className="w-4 h-4 text-white" />
+          <span>البحث وتوفر الفروع</span>
+        </div>
+
+        <Link
+          to="/inventory/reports"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-all shrink-0"
+        >
+          <FileSpreadsheet className="w-4 h-4 text-slate-500" />
+          <span>تقارير المخزون التخصصية</span>
+        </Link>
+
+        <Link
+          to="/inventory/supplier-comparison"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-all shrink-0"
+        >
+          <Scale className="w-4 h-4 text-slate-500" />
+          <span>مقارنة أسعار الموردين</span>
+        </Link>
+
+        <Link
+          to="/inventory/branch-shortages"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-all shrink-0"
+        >
+          <ClipboardList className="w-4 h-4 text-slate-500" />
+          <span>نواقص الفروع والطلبات</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 font-mono font-bold">
+            جديد
+          </span>
+        </Link>
+      </div>
+
       {/* ── Page Header ── */}
       <div className="bg-gradient-to-l from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 text-white shadow-lg border border-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -492,6 +539,11 @@ export default function InventorySearch() {
                           {item.isDiesel && (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 whitespace-nowrap">
                               ⛽ ديزل
+                            </span>
+                          )}
+                          {item.isCustomAdded && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200 whitespace-nowrap" title="صنف مسجل حديثاً عبر نواقص الفروع وبلا رصيد على المخازن">
+                              ✨ مسجل من الفروع (0 رصيد)
                             </span>
                           )}
                         </div>

@@ -129,41 +129,43 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
               </div>
             </div>
 
-            {/* Quick Switch between Owner and Admin */}
-            <div className="py-1 border-b border-slate-100 space-y-1">
-              <div className="text-[10px] font-bold text-slate-400 px-2">تبديل الحساب السريع:</div>
-              {user?.role !== 'OWNER' ? (
-                <button
-                  onClick={() => {
-                    loginAs('user-owner');
-                    setUserMenuOpen(false);
-                    navigate('/owner', { replace: true });
-                  }}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs bg-amber-50 hover:bg-amber-100 text-amber-950 font-bold border border-amber-200 transition-all cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-md bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center">👑</span>
-                    <span>حساب المالك (فهد الجوعي)</span>
-                  </div>
-                  <span className="text-[10px] text-amber-700 font-mono font-normal">واجهة خاصة</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    loginAs('user-admin');
-                    setUserMenuOpen(false);
-                    navigate('/', { replace: true });
-                  }}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs bg-blue-50 hover:bg-blue-100 text-blue-950 font-bold border border-blue-200 transition-all cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-md bg-blue-600 text-white font-black text-xs flex items-center justify-center">ي</span>
-                    <span>حسابي (يحيي محمد باشا)</span>
-                  </div>
-                  <span className="text-[10px] text-blue-700 font-mono font-normal">إيجنت خاص</span>
-                </button>
-              )}
-            </div>
+            {/* Quick Switch between Owner and Admin (Restricted to Executive/Admin only) */}
+            {(user?.role === 'ADMIN' || user?.role === 'OWNER') && (
+              <div className="py-1 border-b border-slate-100 space-y-1">
+                <div className="text-[10px] font-bold text-slate-400 px-2">تبديل الحساب السريع:</div>
+                {user?.role !== 'OWNER' ? (
+                  <button
+                    onClick={() => {
+                      loginAs('user-owner');
+                      setUserMenuOpen(false);
+                      navigate('/owner', { replace: true });
+                    }}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs bg-amber-50 hover:bg-amber-100 text-amber-950 font-bold border border-amber-200 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-md bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center">👑</span>
+                      <span>حساب المالك (فهد الجوعي)</span>
+                    </div>
+                    <span className="text-[10px] text-amber-700 font-mono font-normal">واجهة خاصة</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      loginAs('user-admin');
+                      setUserMenuOpen(false);
+                      navigate('/', { replace: true });
+                    }}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs bg-blue-50 hover:bg-blue-100 text-blue-950 font-bold border border-blue-200 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-md bg-blue-600 text-white font-black text-xs flex items-center justify-center">ي</span>
+                      <span>حسابي (يحيي محمد باشا)</span>
+                    </div>
+                    <span className="text-[10px] text-blue-700 font-mono font-normal">إيجنت خاص</span>
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="pt-1">
               <button

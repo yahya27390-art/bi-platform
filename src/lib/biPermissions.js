@@ -10,6 +10,7 @@ export const BI_ROLES = {
   MEDIA_BUYER:      'MEDIA_BUYER',
   VIEWER:           'VIEWER',
   INVENTORY_VIEWER: 'INVENTORY_VIEWER',
+  PURCHASING_MANAGER: 'PURCHASING_MANAGER',
 };
 
 export const BI_PERMISSIONS = {
@@ -33,6 +34,7 @@ export const BI_PERMISSIONS = {
     canExportData:                 true,
     canViewPrivateCampaignLab:     false, // Strictly private for marketer/admin, hidden from Owner
     canAccessOwnerCockpit:         true,  // Dedicated Owner Executive Cockpit
+    canApproveBranchShortages:     true,  // Can approve and lock branch shortages
   },
   ADMIN: {
     canViewDashboard:              true,
@@ -54,6 +56,7 @@ export const BI_PERMISSIONS = {
     canExportData:                 true,
     canViewPrivateCampaignLab:     true,  // Private Campaign Lab & AI Copilot (Exclusive to Admin)
     canAccessOwnerCockpit:         true,
+    canApproveBranchShortages:     true,
   },
   ANALYST: {
     canViewDashboard:              true,
@@ -75,6 +78,7 @@ export const BI_PERMISSIONS = {
     canExportData:                 true,
     canViewPrivateCampaignLab:     false,
     canAccessOwnerCockpit:         false,
+    canApproveBranchShortages:     false,
   },
   MEDIA_BUYER: {
     canViewDashboard:              true,
@@ -96,6 +100,7 @@ export const BI_PERMISSIONS = {
     canExportData:                 true,
     canViewPrivateCampaignLab:     false, // Strictly private for Admin (يحيي محمد باشا)
     canAccessOwnerCockpit:         false,
+    canApproveBranchShortages:     false,
   },
   VIEWER: {
     canViewDashboard:              true,
@@ -116,6 +121,7 @@ export const BI_PERMISSIONS = {
     canConfigureDataSources:       false,
     canExportData:                 false,
     canViewPrivateCampaignLab:     false,
+    canApproveBranchShortages:     false,
   },
   INVENTORY_VIEWER: {
     canViewDashboard:              false,
@@ -137,6 +143,29 @@ export const BI_PERMISSIONS = {
     canExportData:                 true,  // Granted for downloading inventory reports
     canViewPrivateCampaignLab:     false,
     canAccessOwnerCockpit:         false,
+    canApproveBranchShortages:     false, // Strict: Counter staff CANNOT approve or lock batches
+  },
+  PURCHASING_MANAGER: {
+    canViewDashboard:              false,
+    canViewMediaBuying:            false,
+    canViewEcommerce:              false,
+    canViewBranches:               true,
+    canViewProducts:               true,
+    canViewInventoryReports:       true,
+    canViewInventorySearch:        true,
+    canViewFinancialsFull:         false,
+    canViewFinancialsSummary:      false,
+    canViewTargets:                false,
+    canEditTargets:                false,
+    canImportData:                 false,
+    canViewImportHistory:          false,
+    canViewAuditLog:               false,
+    canDeleteImports:              false,
+    canConfigureDataSources:       false,
+    canExportData:                 true,
+    canViewPrivateCampaignLab:     false,
+    canAccessOwnerCockpit:         false,
+    canApproveBranchShortages:     true,  // Exclusive: Purchasing officer can approve and order
   },
 };
 
@@ -145,6 +174,7 @@ export function normalizeRole(role) {
   const upper = String(role).toUpperCase();
   if (upper === 'OWNER' || upper === 'BI_OWNER') return BI_ROLES.OWNER;
   if (upper === 'ADMIN' || upper === 'BI_ADMIN') return BI_ROLES.ADMIN;
+  if (upper === 'PURCHASING_MANAGER' || upper === 'PURCHASING' || upper === 'PURCHASES' || upper === 'BUYER_INTERNAL') return BI_ROLES.PURCHASING_MANAGER;
   if (upper === 'ANALYST' || upper === 'BI_ANALYST' || upper === 'MANAGER') return BI_ROLES.ANALYST;
   if (upper === 'MEDIA_BUYER' || upper === 'BUYER') return BI_ROLES.MEDIA_BUYER;
   if (upper === 'INVENTORY_VIEWER' || upper === 'INVENTORY' || upper === 'WAREHOUSE') return BI_ROLES.INVENTORY_VIEWER;
@@ -176,6 +206,12 @@ export function getBIRoleMeta(role) {
       labelEn: 'BI Administrator',
       badgeClass: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
       description: 'صلاحيات تشغيلية وتحليلية كاملة وإدارة الاستيراد والأهداف.',
+    },
+    [BI_ROLES.PURCHASING_MANAGER]: {
+      label: 'مسؤول المشتريات والطلبيات',
+      labelEn: 'Purchasing Manager',
+      badgeClass: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+      description: 'صلاحيات اعتماد طلبيات النواقص من الموردين، قفل القوائم، وتصدير إكسل والطباعة.',
     },
     [BI_ROLES.ANALYST]: {
       label: 'محلل أداء استراتيجي',

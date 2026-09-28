@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   FileSpreadsheet,
   TrendingUp,
@@ -18,7 +19,9 @@ import {
   Zap,
   Sparkles,
   ArrowUpDown,
-  Printer
+  Printer,
+  Scale,
+  ClipboardList
 } from 'lucide-react';
 import CustomPdfReportModal from '../components/shared/CustomPdfReportModal';
 import {
@@ -213,6 +216,41 @@ export default function InventoryReports() {
 
   return (
     <div className="space-y-5 pb-10" dir="rtl">
+      {/* ─── Inventory Modules Navigation ─── */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-b border-slate-200 dark:border-slate-800">
+        <Link
+          to="/inventory/search"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-all shrink-0"
+        >
+          <Search className="w-4 h-4 text-slate-500" />
+          <span>البحث وتوفر الفروع</span>
+        </Link>
+
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black bg-indigo-600 text-white shadow-md shadow-indigo-600/25 ring-2 ring-indigo-400/30 shrink-0">
+          <FileSpreadsheet className="w-4 h-4 text-white" />
+          <span>تقارير المخزون التخصصية</span>
+        </div>
+
+        <Link
+          to="/inventory/supplier-comparison"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-all shrink-0"
+        >
+          <Scale className="w-4 h-4 text-slate-500" />
+          <span>مقارنة أسعار الموردين</span>
+        </Link>
+
+        <Link
+          to="/inventory/branch-shortages"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-all shrink-0"
+        >
+          <ClipboardList className="w-4 h-4 text-slate-500" />
+          <span>نواقص الفروع والطلبات</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 font-mono font-bold">
+            جديد
+          </span>
+        </Link>
+      </div>
+
       {/* ── Header ── */}
       <div className="bg-gradient-to-l from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 text-white shadow-lg border border-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

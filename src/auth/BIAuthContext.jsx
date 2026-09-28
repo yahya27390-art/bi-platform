@@ -66,6 +66,56 @@ export const AUTH_ACCOUNTS = [
     avatar: 'خ',
     title: 'مراقب مخزون وقطع غيار (تقارير وبحث)',
   },
+  {
+    id: 'user-saleh',
+    username: 'doracars.saleh',
+    email: 'saleh@doratcars.com',
+    password: 'dora#2026',
+    name: 'صالح المحيميد',
+    role: BI_ROLES.INVENTORY_VIEWER,
+    avatar: 'ص',
+    title: 'مبيعات وبحث قطع الغيار وعروض الأسعار',
+  },
+  {
+    id: 'user-khaled',
+    username: 'doracars.khaled',
+    email: 'khaled@doratcars.com',
+    password: 'dora#2026',
+    name: 'خالد الجوعي',
+    role: BI_ROLES.INVENTORY_VIEWER,
+    avatar: 'خ',
+    title: 'مبيعات وبحث قطع الغيار وعروض الأسعار',
+  },
+  {
+    id: 'user-fahad-staff',
+    username: 'doracars.fahad',
+    email: 'fahad.staff@doratcars.com',
+    password: 'dora#2026',
+    name: 'فهد الجوعي',
+    role: BI_ROLES.INVENTORY_VIEWER,
+    avatar: 'ف',
+    title: 'مبيعات وبحث قطع الغيار وعروض الأسعار',
+  },
+  {
+    id: 'user-abdulaziz',
+    username: 'doracars.abdulaziz',
+    email: 'abdulaziz@doratcars.com',
+    password: 'dora#2026',
+    name: 'عبد العزيز الجوعي',
+    role: BI_ROLES.INVENTORY_VIEWER,
+    avatar: 'ع',
+    title: 'مبيعات وبحث قطع الغيار وعروض الأسعار',
+  },
+  {
+    id: 'user-purchasing',
+    username: 'doracars.purchasing',
+    email: 'purchasing@doratcars.com',
+    password: 'dora#2026',
+    name: 'مسؤول المشتريات والطلبيات',
+    role: BI_ROLES.PURCHASING_MANAGER,
+    avatar: 'م',
+    title: 'إدارة المشتريات واعتماد طلبيات الموردين وتصدير الإكسل',
+  },
 ];
 
 // Strict Session Inactivity Timeout: 5 minutes (300,000 milliseconds)
@@ -217,7 +267,9 @@ export function BIAuthProvider({ children }) {
 
       // Check registered system accounts
       const matched = AUTH_ACCOUNTS.find(
-        acc => acc.username.toLowerCase() === cleanId || acc.email.toLowerCase() === cleanId
+        acc => acc.username.toLowerCase() === cleanId || 
+               acc.email.toLowerCase() === cleanId ||
+               (cleanId === 'purchasing' && acc.username === 'doracars.purchasing')
       );
 
       if (matched) {

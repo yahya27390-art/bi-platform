@@ -4,7 +4,7 @@ import { useBIAuth } from '@/auth/BIAuthContext';
 import {
   LayoutDashboard, TrendingUp, ShoppingCart, MapPin, Package,
   DollarSign, Target, Upload, Building2, Sparkles, X, Crown, Lock, Boxes,
-  Search, FileSpreadsheet
+  Search, FileSpreadsheet, Scale, ClipboardList
 } from 'lucide-react';
 import doraLogo from '@/assets/dora_logo.png';
 
@@ -28,6 +28,8 @@ const NAV_ITEMS = [
   { label: 'الفروع الميدانية', icon: MapPin, path: '/branches' },
   { label: 'البحث وتوفر الفروع', icon: Search, path: '/inventory/search', isInventory: true, altPaths: ['/inventory', '/products'] },
   { label: 'تقارير المخزون التخصصية', icon: FileSpreadsheet, path: '/inventory/reports', isInventory: true },
+  { label: 'مقارنة أسعار الموردين', icon: Scale, path: '/inventory/supplier-comparison', isInventory: true },
+  { label: 'نواقص طلبات الفروع', icon: ClipboardList, path: '/inventory/branch-shortages', isInventory: true },
   { label: 'المالية', icon: DollarSign, path: '/financials' },
   { label: 'الأهداف', icon: Target, path: '/targets' },
   { label: 'استيراد البيانات', icon: Upload, path: '/import' },
@@ -37,13 +39,14 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
   const location = useLocation();
   const { permissions, user } = useBIAuth();
   const isInventoryViewer = user?.role === 'INVENTORY_VIEWER';
+  const isPurchasingManager = user?.role === 'PURCHASING_MANAGER';
 
   // OWNER gets a dedicated full-screen mobile dashboard – no sidebar needed
   if (user?.role === 'OWNER' || location.pathname === '/owner') return null;
 
   const isItemVisible = (item) => {
-    // If user is INVENTORY_VIEWER, ONLY allow inventory items
-    if (isInventoryViewer) {
+    // If user is INVENTORY_VIEWER or PURCHASING_MANAGER, ONLY allow inventory items
+    if (isInventoryViewer || isPurchasingManager) {
       return item.isInventory === true;
     }
     // 1. The AI Agent (/campaign-lab): EXCLUSIVE TO ADMIN (يحيي محمد باشا), strictly hidden from OWNER
@@ -69,7 +72,7 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
     <div className="flex flex-col h-full items-center py-4">
       {/* Brand Icon: Official Dora Logo */}
       <Link
-        to={isInventoryViewer ? "/inventory/search" : "/"}
+        to={isPurchasingManager ? "/inventory/branch-shortages" : isInventoryViewer ? "/inventory/search" : "/"}
         className="w-12 h-12 flex items-center justify-center shrink-0 hover:scale-110 transition-transform mb-4"
         title="درة للسيارات — BI Platform"
       >
