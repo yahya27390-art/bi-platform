@@ -12,6 +12,46 @@ import husounData from '../data/husounQuotationData.json';
 import badrAlWadiData from '../data/badrAlWadiQuotationData.json';
 import miskData from '../data/miskQuotationData.json';
 import * as XLSX from 'xlsx';
+import { saveCostOverrideToDatabase } from './supabaseClient';
+
+export const CUSTOM_COSTS_STORAGE_KEY = 'dora_custom_item_costs';
+
+/**
+ * Retrieves all saved custom unit cost overrides
+ */
+export function getCustomCostOverrides() {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(CUSTOM_COSTS_STORAGE_KEY) : null;
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+/**
+ * Saves or updates our approved last purchase unit cost for a part number
+ * Persists to localStorage AND asynchronously syncs to Supabase database
+ */
+export function saveCustomCostOverride(partNumber, newCost, sku = '', partName = '') {
+  try {
+    const current = getCustomCostOverrides();
+    const cleanKey = normalizePartNumber(partNumber);
+    const numericCost = Math.max(0, Number(newCost) || 0);
+    current[cleanKey] = numericCost;
+    if (sku) {
+      current[normalizePartNumber(sku)] = numericCost;
+    }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(CUSTOM_COSTS_STORAGE_KEY, JSON.stringify(current));
+    }
+    // Asynchronously save to Supabase
+    saveCostOverrideToDatabase(cleanKey, numericCost, sku, partName);
+    return current;
+  } catch (e) {
+    console.error('Error saving custom cost override:', e);
+    return {};
+  }
+}
 
 /**
  * Normalizes any part number / SKU by:
@@ -98,9 +138,10 @@ export function getCatalogLookupMaps() {
  * @param {Array} rawItems Array of { itemNo, partNumber, partName, supplierPrice, ... }
  * @returns {Object} { items, stats, quotationInfo }
  */
-export function compareQuotationItems(rawItems, quotationInfo = null) {
+export function compareQuotationItems(rawItems, quotationInfo = null, customOverrides = null) {
   const { catalogMap, koreanCatalogMap, oemCatalogMap, catalogBaseMap } = getCatalogLookupMaps();
   const info = quotationInfo || badrAlWadiData.quotationInfo;
+  const customCostMap = customOverrides || getCustomCostOverrides();
 
   // STRICT BUSINESS RULE: Exclude any items that are unavailable from the supplier or have no price
   // We compare only what is actually available for purchase from the supplier
@@ -216,10 +257,16 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       if (ourMatch) matchType = 'exact-general';
     }
 
-    if (ourMatch) {
+    // Check custom cost override (set by user)
+    const customCost = customCostMap[cleanKey] ??
+      (ourMatch ? customCostMap[normalizePartNumber(ourMatch.sku)] : undefined);
+    const isCustomCostSet = customCost !== undefined && customCost !== null && !isNaN(customCost);
+
+    if (ourMatch || isCustomCostSet) {
       matchedCount++;
-      const ourCost = Number(ourMatch.unitCost || 0);
-      const totalQty = Number(ourMatch.balance || ourMatch.totalQty || 0);
+      const baseCost = Number(ourMatch?.unitCost || 0);
+      const ourCost = isCustomCostSet ? Number(customCost) : baseCost;
+      const totalQty = Number(ourMatch?.balance || ourMatch?.totalQty || 0);
       const ourBatchCost = ourCost * requestedQty;
 
       matchedSupplierValue += supplierPrice;
@@ -305,17 +352,18 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         productGrade,
         productGradeLabel,
         matched: true,
-        matchType,
-        ourSku: ourMatch.sku,
-        ourName: ourMatch.name,
+        matchType: matchType !== 'none' ? matchType : 'custom-override',
+        ourSku: ourMatch?.sku || rawPartNumber,
+        ourName: ourMatch?.name || partName,
         ourUnitCost: ourCost,
+        isCustomCost: isCustomCostSet,
         ourBatchCost,
         ourTotalQty: totalQty,
-        ourQtyMain: Number(ourMatch.qtyMain || 0),
-        ourQtyRawaf: Number(ourMatch.qtyRawaf || 0),
-        ourQtySulaim: Number(ourMatch.qtySulaim || 0),
-        ourCategory: ourMatch.category || (isSupplierKorean ? 'فحمات كوري' : 'فحمات فرامل'),
-        ourBrand: ourMatch.brand || (isSupplierKorean ? 'korean' : 'mobis'),
+        ourQtyMain: Number(ourMatch?.qtyMain || 0),
+        ourQtyRawaf: Number(ourMatch?.qtyRawaf || 0),
+        ourQtySulaim: Number(ourMatch?.qtySulaim || 0),
+        ourCategory: ourMatch?.category || (isSupplierKorean ? 'فحمات كوري' : 'فحمات فرامل'),
+        ourBrand: ourMatch?.brand || (isSupplierKorean ? 'korean' : 'mobis'),
         diff,
         batchDiff,
         diffPercent,
@@ -326,7 +374,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         verdict,
         verdictLabel,
         verdictColor,
-        status: ourMatch.status || (totalQty > 0 ? 'in_stock' : 'out_of_stock')
+        status: ourMatch?.status || (totalQty > 0 ? 'in_stock' : 'out_of_stock')
       };
     } else {
       notInCatalogCount++;

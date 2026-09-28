@@ -33,7 +33,9 @@ import {
   PackageCheck,
   PackageX,
   Trash2,
-  ClipboardList
+  ClipboardList,
+  Edit3,
+  Save
 } from 'lucide-react';
 import {
   getHusounQuotationAnalysis,
@@ -41,8 +43,13 @@ import {
   getMiskQuotationAnalysis,
   parseUploadedQuotationFile,
   exportComparisonToExcel,
-  normalizePartNumber
+  normalizePartNumber,
+  compareQuotationItems,
+  saveCustomCostOverride,
+  getCustomCostOverrides,
+  CUSTOM_COSTS_STORAGE_KEY
 } from '../lib/supplierPriceComparator';
+import { fetchCostOverridesFromDatabase } from '../lib/supabaseClient';
 import { formatSAR, formatNum } from '../lib/kpiEngine';
 import SupplierPriceReportModal from '../components/shared/SupplierPriceReportModal';
 
@@ -115,7 +122,37 @@ export default function SupplierPriceComparison() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Custom Approved Cost Editing States (تعديل آخر سعر شراء وحفظه بقاعدة البيانات)
+  const [editingCostItemId, setEditingCostItemId] = useState(null);
+  const [editingCostInput, setEditingCostInput] = useState('');
+  const [costFeedbackMsg, setCostFeedbackMsg] = useState(null);
+
   const { items, stats, quotationInfo } = quotationResult;
+
+  // Cloud Sync: Fetch database cost overrides on mount and merge
+  useEffect(() => {
+    async function loadCloudOverrides() {
+      try {
+        const cloudData = await fetchCostOverridesFromDatabase();
+        if (cloudData && Object.keys(cloudData).length > 0) {
+          const local = getCustomCostOverrides();
+          const merged = { ...local, ...cloudData };
+          localStorage.setItem(CUSTOM_COSTS_STORAGE_KEY, JSON.stringify(merged));
+          // Refresh current active quotation
+          if (activePreset === 'misk') {
+            setQuotationResult(getMiskQuotationAnalysis());
+          } else if (activePreset === 'badr') {
+            setQuotationResult(getBadrAlWadiQuotationAnalysis());
+          } else if (activePreset === 'husoun') {
+            setQuotationResult(getHusounQuotationAnalysis());
+          }
+        }
+      } catch (err) {
+        console.warn('Notice: offline or cloud cost sync failed', err);
+      }
+    }
+    loadCloudOverrides();
+  }, []);
 
   // Available Quotations Registry with Exact Dates
   const availableQuotations = useMemo(() => {
@@ -206,6 +243,63 @@ export default function SupplierPriceComparison() {
     setPage(1);
     setUploadError(null);
     setIsQuotationDropdownOpen(false);
+  };
+
+  // Start inline editing of an item's last approved cost
+  const handleStartEditCost = (item) => {
+    setEditingCostItemId(item.id);
+    setEditingCostInput(item.ourUnitCost && item.ourUnitCost > 0 ? String(item.ourUnitCost) : '');
+  };
+
+  // Cancel inline editing
+  const handleCancelEditCost = () => {
+    setEditingCostItemId(null);
+    setEditingCostInput('');
+  };
+
+  // Save approved cost override (persists to localStorage + Supabase, recalculates all functions)
+  const handleSaveCost = (item) => {
+    const num = parseFloat(editingCostInput);
+    if (isNaN(num) || num < 0) {
+      alert('يرجى كتابة سعر تكلفة صحيح بالريال (0 أو أكثر)');
+      return;
+    }
+
+    // Save to localStorage & Supabase
+    saveCustomCostOverride(
+      item.normalizedPartNumber || item.supplierPartNumber,
+      num,
+      item.ourSku || item.supplierPartNumber,
+      item.supplierPartName || item.ourName
+    );
+
+    // Trigger instant recalculation across the active quotation
+    if (activePreset === 'misk') {
+      setQuotationResult(getMiskQuotationAnalysis());
+    } else if (activePreset === 'badr') {
+      setQuotationResult(getBadrAlWadiQuotationAnalysis());
+    } else if (activePreset === 'husoun') {
+      setQuotationResult(getHusounQuotationAnalysis());
+    } else {
+      const custom = savedCustomQuotations.find((q) => q.id === activePreset);
+      if (custom && custom.rawItems) {
+        setQuotationResult(compareQuotationItems(custom.rawItems, custom.quotationInfo));
+      }
+    }
+
+    // Update modal if open
+    if (selectedItemForModal && selectedItemForModal.id === item.id) {
+      setSelectedItemForModal(prev => ({
+        ...prev,
+        ourUnitCost: num,
+        isCustomCost: true
+      }));
+    }
+
+    setEditingCostItemId(null);
+    setEditingCostInput('');
+    setCostFeedbackMsg(`✓ تم بنجاح حفظ سعر الصنف (${item.supplierPartNumber}) = ${num.toFixed(2)} ر.س وتحديث الفروقات والدوال الحسابية فورياً!`);
+    setTimeout(() => setCostFeedbackMsg(null), 4500);
   };
 
   // Switch to Badr Al-Wadi
@@ -709,6 +803,23 @@ export default function SupplierPriceComparison() {
         </div>
       </div>
 
+      {/* Cost Save Success Notification Banner */}
+      {costFeedbackMsg && (
+        <div className="p-3.5 bg-emerald-600 text-white rounded-2xl font-bold text-xs flex items-center justify-between shadow-lg animate-bounce-short">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-100 shrink-0" />
+            <span>{costFeedbackMsg}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCostFeedbackMsg(null)}
+            className="p-1 hover:bg-emerald-700 rounded-lg text-white"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* ─── 4. FILTERING & SEARCH CONTROLS BAR ─── */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-sm space-y-3.5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -1083,27 +1194,88 @@ export default function SupplierPriceComparison() {
                         )}
                       </td>
 
-                      {/* Our Cost */}
-                      <td className="py-3 px-3 text-center font-mono text-xs">
-                        {item.matched ? (
-                          item.ourUnitCost > 0 ? (
-                            <div className="space-y-0.5">
-                              <div className="font-bold text-slate-700 dark:text-slate-300">
-                                {formatSAR(item.ourUnitCost)}
-                              </div>
-                              {item.requestedQty > 1 && (
-                                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
-                                  إجمالي: {formatSAR(item.ourBatchCost)}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-amber-600 font-bold text-[11px]">
-                              0.00 (رصيد 0)
+                      {/* Our Cost with Inline Edit Pencil */}
+                      <td className="py-2.5 px-2 text-center font-mono text-xs">
+                        {editingCostItemId === item.id ? (
+                          <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-blue-50/95 dark:bg-blue-950/80 border border-blue-400 dark:border-blue-600 shadow-md min-w-[130px] animate-fade-in">
+                            <span className="text-[10px] text-blue-900 dark:text-blue-200 font-sans font-bold">
+                              آخر سعر شراء (ر.س):
                             </span>
-                          )
+                            <div className="flex items-center gap-1 w-full justify-center">
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                autoFocus
+                                value={editingCostInput}
+                                onChange={(e) => setEditingCostInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleSaveCost(item);
+                                  if (e.key === 'Escape') handleCancelEditCost();
+                                }}
+                                className="w-20 px-2 py-1 text-center font-mono font-bold text-xs bg-white dark:bg-slate-900 border border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+                                placeholder="0.00"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveCost(item)}
+                                className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] flex items-center gap-0.5 cursor-pointer shadow-xs active:scale-95"
+                                title="حفظ التكلفة وتحديث الدوال فورياً"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                <span>حفظ</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleCancelEditCost}
+                                className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 cursor-pointer"
+                                title="إلغاء التعديل"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
                         ) : (
-                          <span className="text-slate-400">--</span>
+                          <div className="flex items-center justify-center gap-1.5 group/cost">
+                            {item.matched ? (
+                              item.ourUnitCost > 0 ? (
+                                <div className="space-y-0.5">
+                                  <div className="font-bold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1">
+                                    <span>{formatSAR(item.ourUnitCost)}</span>
+                                    {item.isCustomCost && (
+                                      <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 font-sans" title="سعر معتمد يدوياً">
+                                        معدل ✍️
+                                      </span>
+                                    )}
+                                  </div>
+                                  {item.requestedQty > 1 && (
+                                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+                                      إجمالي: {formatSAR(item.ourBatchCost)}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="space-y-0.5">
+                                  <span className="text-amber-600 font-bold text-[11px] block">
+                                    0.00 (رصيد 0)
+                                  </span>
+                                  <span className="text-[9px] text-slate-400 block font-sans">يحتاج تسعيرة</span>
+                                </div>
+                              )
+                            ) : (
+                              <span className="text-slate-400">--</span>
+                            )}
+
+                            {/* Edit Pencil Icon Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleStartEditCost(item)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/60 transition-all cursor-pointer opacity-80 group-hover/cost:opacity-100"
+                              title="تعديل آخر سعر شراء مسجل للصنف وتحديث الدوال فورياً"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                            </button>
+                          </div>
                         )}
                       </td>
 
@@ -1588,12 +1760,64 @@ export default function SupplierPriceComparison() {
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1">
-                  <div className="text-slate-600 dark:text-slate-400 text-[11px] font-bold">تكلفتنا المعتمدة (ر.س)</div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400 text-[11px] font-bold">تكلفتنا المعتمدة (ر.س)</span>
+                    <button
+                      type="button"
+                      onClick={() => handleStartEditCost(selectedItemForModal)}
+                      className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 cursor-pointer font-bold"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      <span>تعديل السعر</span>
+                    </button>
+                  </div>
                   <div className="text-lg font-black font-mono text-slate-900 dark:text-white">
-                    {selectedItemForModal.ourUnitCost !== null ? formatSAR(selectedItemForModal.ourUnitCost) : '--'}
+                    {selectedItemForModal.ourUnitCost !== null && selectedItemForModal.ourUnitCost > 0
+                      ? formatSAR(selectedItemForModal.ourUnitCost)
+                      : '0.00 (يحتاج تسعيرة)'}
                   </div>
                 </div>
               </div>
+
+              {/* Edit Cost Box inside Modal */}
+              {editingCostItemId === selectedItemForModal.id && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-700 rounded-2xl space-y-2 animate-fade-in">
+                  <div className="font-bold text-xs text-blue-900 dark:text-blue-200 flex items-center justify-between">
+                    <span>تعديل وحفظ آخر سعر شراء للصنف ({selectedItemForModal.supplierPartNumber}):</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      autoFocus
+                      value={editingCostInput}
+                      onChange={(e) => setEditingCostInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveCost(selectedItemForModal);
+                        if (e.key === 'Escape') handleCancelEditCost();
+                      }}
+                      className="flex-1 px-3 py-1.5 rounded-xl border border-blue-400 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono font-bold text-sm"
+                      placeholder="أدخل السعر المعتمد بالريال..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleSaveCost(selectedItemForModal)}
+                      className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm flex items-center gap-1 cursor-pointer"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>حفظ السعر</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelEditCost}
+                      className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs cursor-pointer"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Difference & Recommendation */}
               {selectedItemForModal.diff !== null && (
