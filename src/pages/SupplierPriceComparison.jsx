@@ -111,8 +111,8 @@ export default function SupplierPriceComparison() {
         shortName: 'شركة مسك (أرقام الديزل)',
         date: '2026-09-28',
         dateFormatted: '28 سبتمبر 2026',
-        itemsCount: 154,
-        badge: 'ديزل (P/N & قبل الضريبة)',
+        itemsCount: 109,
+        badge: 'ديزل (109 صنف متاح للتسعير)',
         icon: '⚙️',
         isBuiltIn: true
       },
@@ -799,20 +799,6 @@ export default function SupplierPriceComparison() {
             <span>➕ أصناف جديدة غير مسجلة</span>
             <span className="font-mono text-[10px]">({stats.notInCatalogCount})</span>
           </button>
-
-          {stats.unavailableCount > 0 && (
-            <button
-              onClick={() => { setFilterVerdict('unavailable'); setPage(1); }}
-              className={`flex items-center gap-1 px-3.5 py-1.5 rounded-xl font-bold transition-all shrink-0 cursor-pointer ${
-                filterVerdict === 'unavailable'
-                  ? 'bg-slate-700 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
-              }`}
-            >
-              <span>🔒 غير متوفر للتوريد</span>
-              <span className="font-mono text-[10px]">({stats.unavailableCount})</span>
-            </button>
-          )}
         </div>
       </div>
 

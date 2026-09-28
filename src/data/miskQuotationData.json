@@ -7,9 +7,10 @@
     "representative": "شركة مسك",
     "fileName": "ارقام الديزل - عرض سعر 28.09.2026 - مسك.xlsx",
     "category": "قطع غيار سيارات ديزل (هيونداي وكيا)",
-    "totalItemsCount": 154,
+    "totalItemsCount": 109,
     "pricedCount": 109,
-    "unpricedCount": 45
+    "unpricedCount": 0,
+    "note": "تم استبعاد 45 صنفاً غير متوفرة للتوريد بناء على إفادة المورد"
   },
   "items": [
     {
@@ -48,17 +49,6 @@
     {
       "id": 4,
       "itemNo": 4,
-      "partNumber": "21370-2A800",
-      "partName": "SOLENOID VALVE",
-      "requestedQty": 5,
-      "supplierPartNumber": "213702A800",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 5,
-      "itemNo": 5,
       "partNumber": "21440-2F600",
       "partName": "CASE ASSY-OIL SEAL",
       "requestedQty": 5,
@@ -68,8 +58,8 @@
       "isAvailable": true
     },
     {
-      "id": 6,
-      "itemNo": 6,
+      "id": 5,
+      "itemNo": 5,
       "partNumber": "21520-2F004",
       "partName": "PAN ASSY-OIL,LWR",
       "requestedQty": 5,
@@ -79,19 +69,8 @@
       "isAvailable": true
     },
     {
-      "id": 7,
-      "itemNo": 7,
-      "partNumber": "22150-4A700",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "221504A700",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 8,
-      "itemNo": 8,
+      "id": 6,
+      "itemNo": 6,
       "partNumber": "22211-2A100",
       "partName": "VALVE-INTAKE",
       "requestedQty": 16,
@@ -101,8 +80,8 @@
       "isAvailable": true
     },
     {
-      "id": 9,
-      "itemNo": 9,
+      "id": 7,
+      "itemNo": 7,
       "partNumber": "22211-2U000",
       "partName": "VALVE-INTAKE",
       "requestedQty": 16,
@@ -112,8 +91,8 @@
       "isAvailable": true
     },
     {
-      "id": 10,
-      "itemNo": 10,
+      "id": 8,
+      "itemNo": 8,
       "partNumber": "22211-4A061",
       "partName": "VALVE-INTAKE",
       "requestedQty": 16,
@@ -123,8 +102,8 @@
       "isAvailable": true
     },
     {
-      "id": 11,
-      "itemNo": 11,
+      "id": 9,
+      "itemNo": 9,
       "partNumber": "22212-2U000",
       "partName": "VALVE-EXHAUST",
       "requestedQty": 16,
@@ -134,8 +113,8 @@
       "isAvailable": true
     },
     {
-      "id": 12,
-      "itemNo": 12,
+      "id": 10,
+      "itemNo": 10,
       "partNumber": "22212-4A061",
       "partName": "VALVE-EXHAUST",
       "requestedQty": 16,
@@ -145,8 +124,8 @@
       "isAvailable": true
     },
     {
-      "id": 13,
-      "itemNo": 13,
+      "id": 11,
+      "itemNo": 11,
       "partNumber": "22224-4A000",
       "partName": "SEAL-VALVE STEM",
       "requestedQty": 32,
@@ -156,8 +135,8 @@
       "isAvailable": true
     },
     {
-      "id": 14,
-      "itemNo": 14,
+      "id": 12,
+      "itemNo": 12,
       "partNumber": "22311-2F600",
       "partName": "GASKET-CYLINDER HEAD",
       "requestedQty": 10,
@@ -167,8 +146,8 @@
       "isAvailable": true
     },
     {
-      "id": 15,
-      "itemNo": 15,
+      "id": 13,
+      "itemNo": 13,
       "partNumber": "22443-2F600",
       "partName": "GASKET-ROCKER COVER",
       "requestedQty": 5,
@@ -178,8 +157,8 @@
       "isAvailable": true
     },
     {
-      "id": 16,
-      "itemNo": 16,
+      "id": 14,
+      "itemNo": 14,
       "partNumber": "23060-2A904",
       "partName": "BEARING PAIR SET-C/ROD",
       "requestedQty": 12,
@@ -189,8 +168,8 @@
       "isAvailable": true
     },
     {
-      "id": 17,
-      "itemNo": 17,
+      "id": 15,
+      "itemNo": 15,
       "partNumber": "23060-4A940",
       "partName": "BEARING PAIR SET-C/ROD",
       "requestedQty": 8,
@@ -200,8 +179,8 @@
       "isAvailable": true
     },
     {
-      "id": 18,
-      "itemNo": 18,
+      "id": 16,
+      "itemNo": 16,
       "partNumber": "23121-2F001",
       "partName": "CHAIN SPROCKET-CRANKSHAFT",
       "requestedQty": 6,
@@ -211,8 +190,8 @@
       "isAvailable": true
     },
     {
-      "id": 19,
-      "itemNo": 19,
+      "id": 17,
+      "itemNo": 17,
       "partNumber": "24310-2R000",
       "partName": "TENSIONER-T/BELT",
       "requestedQty": 5,
@@ -222,8 +201,8 @@
       "isAvailable": true
     },
     {
-      "id": 20,
-      "itemNo": 20,
+      "id": 18,
+      "itemNo": 18,
       "partNumber": "24335-2F600",
       "partName": "CHAIN SPROCKET-INJECTION PUMP",
       "requestedQty": 5,
@@ -233,8 +212,8 @@
       "isAvailable": true
     },
     {
-      "id": 21,
-      "itemNo": 21,
+      "id": 19,
+      "itemNo": 19,
       "partNumber": "24351-2F000",
       "partName": "CHAIN-TIMING,A",
       "requestedQty": 5,
@@ -244,8 +223,8 @@
       "isAvailable": true
     },
     {
-      "id": 22,
-      "itemNo": 22,
+      "id": 20,
+      "itemNo": 20,
       "partNumber": "24351-2R000",
       "partName": "BELT-TIMING",
       "requestedQty": 60,
@@ -255,8 +234,8 @@
       "isAvailable": true
     },
     {
-      "id": 23,
-      "itemNo": 23,
+      "id": 21,
+      "itemNo": 21,
       "partNumber": "24361-2F000",
       "partName": "CHAIN-TIMING",
       "requestedQty": 5,
@@ -266,8 +245,8 @@
       "isAvailable": true
     },
     {
-      "id": 24,
-      "itemNo": 24,
+      "id": 22,
+      "itemNo": 22,
       "partNumber": "24370-2R000",
       "partName": "IDLER-TIMING BELT",
       "requestedQty": 5,
@@ -277,8 +256,8 @@
       "isAvailable": true
     },
     {
-      "id": 25,
-      "itemNo": 25,
+      "id": 23,
+      "itemNo": 23,
       "partNumber": "24380-2R000",
       "partName": "IDLER-TIMING BELT",
       "requestedQty": 5,
@@ -288,8 +267,8 @@
       "isAvailable": true
     },
     {
-      "id": 26,
-      "itemNo": 26,
+      "id": 24,
+      "itemNo": 24,
       "partNumber": "25100-2F800",
       "partName": "PUMP ASSY-COOLANT",
       "requestedQty": 10,
@@ -299,8 +278,8 @@
       "isAvailable": true
     },
     {
-      "id": 27,
-      "itemNo": 27,
+      "id": 25,
+      "itemNo": 25,
       "partNumber": "25100-4A710",
       "partName": "PUMP ASSY-COOLANT",
       "requestedQty": 5,
@@ -310,8 +289,8 @@
       "isAvailable": true
     },
     {
-      "id": 28,
-      "itemNo": 28,
+      "id": 26,
+      "itemNo": 26,
       "partNumber": "25212-2R001",
       "partName": "RIBBED BELT-V",
       "requestedQty": 100,
@@ -321,8 +300,8 @@
       "isAvailable": true
     },
     {
-      "id": 29,
-      "itemNo": 29,
+      "id": 27,
+      "itemNo": 27,
       "partNumber": "25287-2A010",
       "partName": "PULLEY-IDLER",
       "requestedQty": 20,
@@ -332,8 +311,8 @@
       "isAvailable": true
     },
     {
-      "id": 30,
-      "itemNo": 30,
+      "id": 28,
+      "itemNo": 28,
       "partNumber": "25287-2A010",
       "partName": "PULLEY-IDLER",
       "requestedQty": 30,
@@ -343,8 +322,8 @@
       "isAvailable": true
     },
     {
-      "id": 31,
-      "itemNo": 31,
+      "id": 29,
+      "itemNo": 29,
       "partNumber": "25287-2A600",
       "partName": "PULLEY-IDLER",
       "requestedQty": 10,
@@ -354,8 +333,8 @@
       "isAvailable": true
     },
     {
-      "id": 32,
-      "itemNo": 32,
+      "id": 30,
+      "itemNo": 30,
       "partNumber": "25287-2A600",
       "partName": "PULLEY-IDLER",
       "requestedQty": 20,
@@ -365,8 +344,8 @@
       "isAvailable": true
     },
     {
-      "id": 33,
-      "itemNo": 33,
+      "id": 31,
+      "itemNo": 31,
       "partNumber": "25411-1R300",
       "partName": "HOSE-RADIATOR,UPPER",
       "requestedQty": 5,
@@ -376,8 +355,8 @@
       "isAvailable": true
     },
     {
-      "id": 34,
-      "itemNo": 34,
+      "id": 32,
+      "itemNo": 32,
       "partNumber": "25411-4H000",
       "partName": "HOSE-RADIATOR,UPPER",
       "requestedQty": 10,
@@ -387,8 +366,8 @@
       "isAvailable": true
     },
     {
-      "id": 35,
-      "itemNo": 35,
+      "id": 33,
+      "itemNo": 33,
       "partNumber": "25411-A5850",
       "partName": "HOSE-RADIATOR,UPPER",
       "requestedQty": 10,
@@ -398,19 +377,8 @@
       "isAvailable": true
     },
     {
-      "id": 36,
-      "itemNo": 36,
-      "partNumber": "25411-F2200",
-      "partName": "HOSE-RADIATOR INLET",
-      "requestedQty": 40,
-      "supplierPartNumber": "25411F2200",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 37,
-      "itemNo": 37,
+      "id": 34,
+      "itemNo": 34,
       "partNumber": "25411-F2250",
       "partName": "HOSE-RADIATOR INLET",
       "requestedQty": 20,
@@ -420,8 +388,8 @@
       "isAvailable": true
     },
     {
-      "id": 38,
-      "itemNo": 38,
+      "id": 35,
+      "itemNo": 35,
       "partNumber": "25412-1R300",
       "partName": "HOSE-RADIATOR LOWER",
       "requestedQty": 10,
@@ -431,8 +399,8 @@
       "isAvailable": true
     },
     {
-      "id": 39,
-      "itemNo": 39,
+      "id": 36,
+      "itemNo": 36,
       "partNumber": "25412-4H500",
       "partName": "HOSE-RADIATOR LOWER",
       "requestedQty": 10,
@@ -442,8 +410,8 @@
       "isAvailable": true
     },
     {
-      "id": 40,
-      "itemNo": 40,
+      "id": 37,
+      "itemNo": 37,
       "partNumber": "25412-F2200",
       "partName": "HOSE-RADIATOR LOWER",
       "requestedQty": 10,
@@ -453,8 +421,8 @@
       "isAvailable": true
     },
     {
-      "id": 41,
-      "itemNo": 41,
+      "id": 38,
+      "itemNo": 38,
       "partNumber": "25414-D3000",
       "partName": "HOSE ASSY-RADIATOR,UPR",
       "requestedQty": 10,
@@ -464,52 +432,8 @@
       "isAvailable": true
     },
     {
-      "id": 42,
-      "itemNo": 42,
-      "partNumber": "25414-D3100",
-      "partName": "HOSE ASSY-RADIATOR,UPR",
-      "requestedQty": 10,
-      "supplierPartNumber": "25414D3100",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 43,
-      "itemNo": 43,
-      "partNumber": "25414-F6200",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 10,
-      "supplierPartNumber": "25414F6200",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 44,
-      "itemNo": 44,
-      "partNumber": "25415-C1400",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 10,
-      "supplierPartNumber": "25415C1400",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 45,
-      "itemNo": 45,
-      "partNumber": "25415-F6200",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "25415F6200",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 46,
-      "itemNo": 46,
+      "id": 39,
+      "itemNo": 39,
       "partNumber": "25430-F2200",
       "partName": "TANK ASSY-RESERVOIR",
       "requestedQty": 10,
@@ -519,8 +443,8 @@
       "isAvailable": true
     },
     {
-      "id": 47,
-      "itemNo": 47,
+      "id": 40,
+      "itemNo": 40,
       "partNumber": "25460-2F600",
       "partName": "PIPE ASSY-WATER INLET",
       "requestedQty": 5,
@@ -530,8 +454,8 @@
       "isAvailable": true
     },
     {
-      "id": 48,
-      "itemNo": 48,
+      "id": 41,
+      "itemNo": 41,
       "partNumber": "25470-2F900",
       "partName": "HOSE-WATER INLET",
       "requestedQty": 5,
@@ -541,8 +465,8 @@
       "isAvailable": true
     },
     {
-      "id": 49,
-      "itemNo": 49,
+      "id": 42,
+      "itemNo": 42,
       "partNumber": "25610-2F600",
       "partName": "HOUSING ASSY-THERMOSTAT",
       "requestedQty": 2,
@@ -552,8 +476,8 @@
       "isAvailable": true
     },
     {
-      "id": 50,
-      "itemNo": 50,
+      "id": 43,
+      "itemNo": 43,
       "partNumber": "25612-2F010",
       "partName": "FITTING-WATER INLET",
       "requestedQty": 5,
@@ -563,8 +487,8 @@
       "isAvailable": true
     },
     {
-      "id": 51,
-      "itemNo": 51,
+      "id": 44,
+      "itemNo": 44,
       "partNumber": "25612-2F020",
       "partName": "FITTING-WATER INLET",
       "requestedQty": 5,
@@ -574,8 +498,8 @@
       "isAvailable": true
     },
     {
-      "id": 52,
-      "itemNo": 52,
+      "id": 45,
+      "itemNo": 45,
       "partNumber": "25620-2A860",
       "partName": "PIPE ASSY-WATER RETURN",
       "requestedQty": 10,
@@ -585,19 +509,8 @@
       "isAvailable": true
     },
     {
-      "id": 53,
-      "itemNo": 53,
-      "partNumber": "25620-2A870",
-      "partName": "PIPE ASSY-WATER RETURN",
-      "requestedQty": 5,
-      "supplierPartNumber": "256202A870",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 54,
-      "itemNo": 54,
+      "id": 46,
+      "itemNo": 46,
       "partNumber": "25641-2A100",
       "partName": "HOSE-OIL COOLER RETURN",
       "requestedQty": 10,
@@ -607,8 +520,8 @@
       "isAvailable": true
     },
     {
-      "id": 55,
-      "itemNo": 55,
+      "id": 47,
+      "itemNo": 47,
       "partNumber": "25680-2F000",
       "partName": "PIPE-WATER OUTLET",
       "requestedQty": 5,
@@ -618,8 +531,8 @@
       "isAvailable": true
     },
     {
-      "id": 56,
-      "itemNo": 56,
+      "id": 48,
+      "itemNo": 48,
       "partNumber": "26310-2A520",
       "partName": "FILTER ASSY-OIL",
       "requestedQty": 30,
@@ -629,19 +542,8 @@
       "isAvailable": true
     },
     {
-      "id": 57,
-      "itemNo": 57,
-      "partNumber": "26310-2A610",
-      "partName": "FILTER ASSY-OIL",
-      "requestedQty": 20,
-      "supplierPartNumber": "263102A610",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 58,
-      "itemNo": 58,
+      "id": 49,
+      "itemNo": 49,
       "partNumber": "26310-2F610",
       "partName": "FILTER ASSY-ENGINE OIL",
       "requestedQty": 5,
@@ -651,8 +553,8 @@
       "isAvailable": true
     },
     {
-      "id": 59,
-      "itemNo": 59,
+      "id": 50,
+      "itemNo": 50,
       "partNumber": "26315-2F001",
       "partName": "CAP COMPLETE-OIL FILTER",
       "requestedQty": 30,
@@ -662,30 +564,8 @@
       "isAvailable": true
     },
     {
-      "id": 60,
-      "itemNo": 60,
-      "partNumber": "26315-2FRA0",
-      "partName": "CAP COMPLETE-OIL FILTER",
-      "requestedQty": 5,
-      "supplierPartNumber": "263152FRA0",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 61,
-      "itemNo": 61,
-      "partNumber": "26319-2FRA0",
-      "partName": "SEAL-OIL",
-      "requestedQty": 5,
-      "supplierPartNumber": "263192FRA0",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 62,
-      "itemNo": 62,
+      "id": 51,
+      "itemNo": 51,
       "partNumber": "26320-3V000",
       "partName": "SERVICE KIT-OIL FILTER",
       "requestedQty": 15,
@@ -695,8 +575,8 @@
       "isAvailable": true
     },
     {
-      "id": 63,
-      "itemNo": 63,
+      "id": 52,
+      "itemNo": 52,
       "partNumber": "26324-2A530",
       "partName": "OIL SEAL,RR",
       "requestedQty": 30,
@@ -706,19 +586,8 @@
       "isAvailable": true
     },
     {
-      "id": 64,
-      "itemNo": 64,
-      "partNumber": "26325-2A530",
-      "partName": "SEAL-OIL",
-      "requestedQty": 30,
-      "supplierPartNumber": "263252A530",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 65,
-      "itemNo": 65,
+      "id": 53,
+      "itemNo": 53,
       "partNumber": "26451-4A700",
       "partName": "GASKET-OIL COOLER COVER",
       "requestedQty": 10,
@@ -728,8 +597,8 @@
       "isAvailable": true
     },
     {
-      "id": 66,
-      "itemNo": 66,
+      "id": 54,
+      "itemNo": 54,
       "partNumber": "26611-2F010",
       "partName": "ROD ASSY-OIL LEVEL GAUGE",
       "requestedQty": 5,
@@ -739,8 +608,8 @@
       "isAvailable": true
     },
     {
-      "id": 67,
-      "itemNo": 67,
+      "id": 55,
+      "itemNo": 55,
       "partNumber": "26611-2F700",
       "partName": "ROD ASSY-OIL LEVEL GAUGE",
       "requestedQty": 5,
@@ -750,8 +619,8 @@
       "isAvailable": true
     },
     {
-      "id": 68,
-      "itemNo": 68,
+      "id": 56,
+      "itemNo": 56,
       "partNumber": "26611-2F800",
       "partName": "ROD ASSY-OIL LEVEL GAUGE",
       "requestedQty": 5,
@@ -761,8 +630,8 @@
       "isAvailable": true
     },
     {
-      "id": 69,
-      "itemNo": 69,
+      "id": 57,
+      "itemNo": 57,
       "partNumber": "26611-2F900",
       "partName": "ROD ASSY-OIL LEVEL GAUGE",
       "requestedQty": 3,
@@ -772,8 +641,8 @@
       "isAvailable": true
     },
     {
-      "id": 70,
-      "itemNo": 70,
+      "id": 58,
+      "itemNo": 58,
       "partNumber": "26611-2R000",
       "partName": "ROD ASSY-OIL LEVEL GAUGE",
       "requestedQty": 5,
@@ -783,8 +652,8 @@
       "isAvailable": true
     },
     {
-      "id": 71,
-      "itemNo": 71,
+      "id": 59,
+      "itemNo": 59,
       "partNumber": "28113-A9200",
       "partName": "FILTER-AIR CLEANER",
       "requestedQty": 20,
@@ -794,41 +663,8 @@
       "isAvailable": true
     },
     {
-      "id": 72,
-      "itemNo": 72,
-      "partNumber": "28113-F6300",
-      "partName": "FILTER-AIR CLEANER",
-      "requestedQty": 20,
-      "supplierPartNumber": "28113F6300",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 73,
-      "itemNo": 73,
-      "partNumber": "28130-C1700",
-      "partName": "HOSE ASSY-AIR INTAKE",
-      "requestedQty": 20,
-      "supplierPartNumber": "28130C1700",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 74,
-      "itemNo": 74,
-      "partNumber": "28130-D4700",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 20,
-      "supplierPartNumber": "28130D4700",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 75,
-      "itemNo": 75,
+      "id": 60,
+      "itemNo": 60,
       "partNumber": "28140-1R600",
       "partName": "HOSE ASSY-AIR INTAKE",
       "requestedQty": 20,
@@ -838,8 +674,8 @@
       "isAvailable": true
     },
     {
-      "id": 76,
-      "itemNo": 76,
+      "id": 61,
+      "itemNo": 61,
       "partNumber": "28140-3V500",
       "partName": "HOSE ASSY-AIR INTAKE",
       "requestedQty": 20,
@@ -849,8 +685,8 @@
       "isAvailable": true
     },
     {
-      "id": 77,
-      "itemNo": 77,
+      "id": 62,
+      "itemNo": 62,
       "partNumber": "28140-3X900",
       "partName": "HOSE ASSY-AIR INTAKE",
       "requestedQty": 20,
@@ -860,8 +696,8 @@
       "isAvailable": true
     },
     {
-      "id": 78,
-      "itemNo": 78,
+      "id": 63,
+      "itemNo": 63,
       "partNumber": "28140-F2900",
       "partName": "HOSE ASSY-AIR INTAKE",
       "requestedQty": 20,
@@ -871,19 +707,8 @@
       "isAvailable": true
     },
     {
-      "id": 79,
-      "itemNo": 79,
-      "partNumber": "28140-F6300",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 20,
-      "supplierPartNumber": "28140F6300",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 80,
-      "itemNo": 80,
+      "id": 64,
+      "itemNo": 64,
       "partNumber": "28164-2A500",
       "partName": "SENSOR ASSY-AIR FLOW",
       "requestedQty": 15,
@@ -893,8 +718,8 @@
       "isAvailable": true
     },
     {
-      "id": 81,
-      "itemNo": 81,
+      "id": 65,
+      "itemNo": 65,
       "partNumber": "28164-2F000",
       "partName": "SENSOR ASSY-AIR FLOW",
       "requestedQty": 5,
@@ -904,8 +729,8 @@
       "isAvailable": true
     },
     {
-      "id": 82,
-      "itemNo": 82,
+      "id": 66,
+      "itemNo": 66,
       "partNumber": "28164-2F610",
       "partName": "SENSOR ASSY-AIR FLOW",
       "requestedQty": 5,
@@ -915,8 +740,8 @@
       "isAvailable": true
     },
     {
-      "id": 83,
-      "itemNo": 83,
+      "id": 67,
+      "itemNo": 67,
       "partNumber": "28164-4A900",
       "partName": "SENSOR ASSY-AIR FLOW",
       "requestedQty": 5,
@@ -926,8 +751,8 @@
       "isAvailable": true
     },
     {
-      "id": 84,
-      "itemNo": 84,
+      "id": 68,
+      "itemNo": 68,
       "partNumber": "28201-2A701",
       "partName": "TURBOCHARGER",
       "requestedQty": 2,
@@ -937,8 +762,8 @@
       "isAvailable": true
     },
     {
-      "id": 85,
-      "itemNo": 85,
+      "id": 69,
+      "itemNo": 69,
       "partNumber": "28235-2A600",
       "partName": "ACTUATOR-TURBO CHARGER",
       "requestedQty": 5,
@@ -948,8 +773,8 @@
       "isAvailable": true
     },
     {
-      "id": 86,
-      "itemNo": 86,
+      "id": 70,
+      "itemNo": 70,
       "partNumber": "28240-2F600",
       "partName": "PIPE ASSY-OIL FEED",
       "requestedQty": 10,
@@ -959,8 +784,8 @@
       "isAvailable": true
     },
     {
-      "id": 87,
-      "itemNo": 87,
+      "id": 71,
+      "itemNo": 71,
       "partNumber": "28251-2A540",
       "partName": "PIPE-INTERCOOLER INLET",
       "requestedQty": 10,
@@ -970,8 +795,8 @@
       "isAvailable": true
     },
     {
-      "id": 88,
-      "itemNo": 88,
+      "id": 72,
+      "itemNo": 72,
       "partNumber": "28251-2A680",
       "partName": "PIPE-INTERCOOLER INLET",
       "requestedQty": 10,
@@ -981,8 +806,8 @@
       "isAvailable": true
     },
     {
-      "id": 89,
-      "itemNo": 89,
+      "id": 73,
+      "itemNo": 73,
       "partNumber": "28256-2A680",
       "partName": "PIPE-INTERCOOLER OUTLET",
       "requestedQty": 20,
@@ -992,30 +817,8 @@
       "isAvailable": true
     },
     {
-      "id": 90,
-      "itemNo": 90,
-      "partNumber": "28256-2F500",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 10,
-      "supplierPartNumber": "282562F500",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 91,
-      "itemNo": 91,
-      "partNumber": "28256-2F530",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 10,
-      "supplierPartNumber": "282562F530",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 92,
-      "itemNo": 92,
+      "id": 74,
+      "itemNo": 74,
       "partNumber": "28256-2F650",
       "partName": "PIPE-INTERCOOLER OUTLET",
       "requestedQty": 10,
@@ -1025,8 +828,8 @@
       "isAvailable": true
     },
     {
-      "id": 93,
-      "itemNo": 93,
+      "id": 75,
+      "itemNo": 75,
       "partNumber": "28256-2R101",
       "partName": "HOSE-INTERCOOLER INLET",
       "requestedQty": 5,
@@ -1036,8 +839,8 @@
       "isAvailable": true
     },
     {
-      "id": 94,
-      "itemNo": 94,
+      "id": 76,
+      "itemNo": 76,
       "partNumber": "28260-2F600",
       "partName": "PLASTIC PIPE ASSY-I/C OUTLET",
       "requestedQty": 15,
@@ -1047,8 +850,8 @@
       "isAvailable": true
     },
     {
-      "id": 95,
-      "itemNo": 95,
+      "id": 77,
+      "itemNo": 77,
       "partNumber": "28260-2F900",
       "partName": "PIPE ASSY-INTERCOOLER OUTLET",
       "requestedQty": 30,
@@ -1058,19 +861,8 @@
       "isAvailable": true
     },
     {
-      "id": 96,
-      "itemNo": 96,
-      "partNumber": "28261-2F530",
-      "partName": "HOSE \"A\"",
-      "requestedQty": 5,
-      "supplierPartNumber": "282612F530",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 97,
-      "itemNo": 97,
+      "id": 78,
+      "itemNo": 78,
       "partNumber": "28262-2A680",
       "partName": "HOSE B",
       "requestedQty": 30,
@@ -1080,30 +872,8 @@
       "isAvailable": true
     },
     {
-      "id": 98,
-      "itemNo": 98,
-      "partNumber": "28262-2F500",
-      "partName": "HOSE B",
-      "requestedQty": 5,
-      "supplierPartNumber": "282622F500",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 99,
-      "itemNo": 99,
-      "partNumber": "28262-2F550",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 3,
-      "supplierPartNumber": "282622F550",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 100,
-      "itemNo": 100,
+      "id": 79,
+      "itemNo": 79,
       "partNumber": "28262-2F700",
       "partName": "HOSE B",
       "requestedQty": 10,
@@ -1113,30 +883,8 @@
       "isAvailable": true
     },
     {
-      "id": 101,
-      "itemNo": 101,
-      "partNumber": "28262-2F950",
-      "partName": "HOSE B",
-      "requestedQty": 5,
-      "supplierPartNumber": "282622F950",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 102,
-      "itemNo": 102,
-      "partNumber": "28263-2F500",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "282632F500",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 103,
-      "itemNo": 103,
+      "id": 80,
+      "itemNo": 80,
       "partNumber": "28263-2F650",
       "partName": "HOSE C",
       "requestedQty": 5,
@@ -1146,30 +894,8 @@
       "isAvailable": true
     },
     {
-      "id": 104,
-      "itemNo": 104,
-      "partNumber": "28264-2F500",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "282642F500",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 105,
-      "itemNo": 105,
-      "partNumber": "28264-2F550",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "282642F550",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 106,
-      "itemNo": 106,
+      "id": 81,
+      "itemNo": 81,
       "partNumber": "28264-2F950",
       "partName": "HOSE D",
       "requestedQty": 5,
@@ -1179,8 +905,8 @@
       "isAvailable": true
     },
     {
-      "id": 107,
-      "itemNo": 107,
+      "id": 82,
+      "itemNo": 82,
       "partNumber": "28273-2A680",
       "partName": "HOSE C",
       "requestedQty": 15,
@@ -1190,19 +916,8 @@
       "isAvailable": true
     },
     {
-      "id": 108,
-      "itemNo": 108,
-      "partNumber": "28273-2A701",
-      "partName": "HOSE C",
-      "requestedQty": 10,
-      "supplierPartNumber": "282732A701",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 109,
-      "itemNo": 109,
+      "id": 83,
+      "itemNo": 83,
       "partNumber": "28273-2A730",
       "partName": "HOSE C",
       "requestedQty": 10,
@@ -1212,8 +927,8 @@
       "isAvailable": true
     },
     {
-      "id": 110,
-      "itemNo": 110,
+      "id": 84,
+      "itemNo": 84,
       "partNumber": "28273-2A741",
       "partName": "HOSE C",
       "requestedQty": 10,
@@ -1223,30 +938,8 @@
       "isAvailable": true
     },
     {
-      "id": 111,
-      "itemNo": 111,
-      "partNumber": "28273-2A870",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "282732A870",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 112,
-      "itemNo": 112,
-      "partNumber": "28273-2A880",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "282732A880",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 113,
-      "itemNo": 113,
+      "id": 85,
+      "itemNo": 85,
       "partNumber": "28274-2A420",
       "partName": "HOSE D",
       "requestedQty": 5,
@@ -1256,19 +949,8 @@
       "isAvailable": true
     },
     {
-      "id": 114,
-      "itemNo": 114,
-      "partNumber": "28274-2A440",
-      "partName": "HOSE D",
-      "requestedQty": 5,
-      "supplierPartNumber": "282742A440",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 115,
-      "itemNo": 115,
+      "id": 86,
+      "itemNo": 86,
       "partNumber": "28274-2A680",
       "partName": "HOSE D",
       "requestedQty": 10,
@@ -1278,8 +960,8 @@
       "isAvailable": true
     },
     {
-      "id": 116,
-      "itemNo": 116,
+      "id": 87,
+      "itemNo": 87,
       "partNumber": "28274-2A741",
       "partName": "HOSE D",
       "requestedQty": 10,
@@ -1289,30 +971,8 @@
       "isAvailable": true
     },
     {
-      "id": 117,
-      "itemNo": 117,
-      "partNumber": "28274-2A870",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "282742A870",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 118,
-      "itemNo": 118,
-      "partNumber": "28274-2A880",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "282742A880",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 119,
-      "itemNo": 119,
+      "id": 88,
+      "itemNo": 88,
       "partNumber": "28320-2A600",
       "partName": "DEVICE ASSY-SWIRL",
       "requestedQty": 5,
@@ -1322,8 +982,8 @@
       "isAvailable": true
     },
     {
-      "id": 120,
-      "itemNo": 120,
+      "id": 89,
+      "itemNo": 89,
       "partNumber": "28521-2A702",
       "partName": "GASKET-EXHAUST MANIFOLD",
       "requestedQty": 5,
@@ -1333,8 +993,8 @@
       "isAvailable": true
     },
     {
-      "id": 121,
-      "itemNo": 121,
+      "id": 90,
+      "itemNo": 90,
       "partNumber": "28521-2F600",
       "partName": "GASKET-EXHAUST MANIFOLD",
       "requestedQty": 5,
@@ -1344,30 +1004,8 @@
       "isAvailable": true
     },
     {
-      "id": 122,
-      "itemNo": 122,
-      "partNumber": "36120-2A500",
-      "partName": "SWITCH ASSY-STARTER MAGNETIC",
-      "requestedQty": 5,
-      "supplierPartNumber": "361202A500",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 123,
-      "itemNo": 123,
-      "partNumber": "36120-2A600",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "361202A600",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 124,
-      "itemNo": 124,
+      "id": 91,
+      "itemNo": 91,
       "partNumber": "36120-2A800",
       "partName": "SWITCH ASSY-STARTER MAGNETIC",
       "requestedQty": 5,
@@ -1377,8 +1015,8 @@
       "isAvailable": true
     },
     {
-      "id": 125,
-      "itemNo": 125,
+      "id": 92,
+      "itemNo": 92,
       "partNumber": "36710-2A900",
       "partName": "PLUG-GLOW",
       "requestedQty": 12,
@@ -1388,8 +1026,8 @@
       "isAvailable": true
     },
     {
-      "id": 126,
-      "itemNo": 126,
+      "id": 93,
+      "itemNo": 93,
       "partNumber": "36710-2F300",
       "partName": "PLUG-GLOW",
       "requestedQty": 12,
@@ -1399,8 +1037,8 @@
       "isAvailable": true
     },
     {
-      "id": 127,
-      "itemNo": 127,
+      "id": 94,
+      "itemNo": 94,
       "partNumber": "36710-2U000",
       "partName": "PLUG-GLOW",
       "requestedQty": 12,
@@ -1410,8 +1048,8 @@
       "isAvailable": true
     },
     {
-      "id": 128,
-      "itemNo": 128,
+      "id": 95,
+      "itemNo": 95,
       "partNumber": "37300-2R100",
       "partName": "ALTERNATOR ASSY",
       "requestedQty": 12,
@@ -1421,8 +1059,8 @@
       "isAvailable": true
     },
     {
-      "id": 129,
-      "itemNo": 129,
+      "id": 96,
+      "itemNo": 96,
       "partNumber": "37322-2A120",
       "partName": "PULLEY-GENERATOR",
       "requestedQty": 20,
@@ -1432,8 +1070,8 @@
       "isAvailable": true
     },
     {
-      "id": 130,
-      "itemNo": 130,
+      "id": 97,
+      "itemNo": 97,
       "partNumber": "37322-4A321",
       "partName": "PULLEY-GENERATOR",
       "requestedQty": 15,
@@ -1443,8 +1081,8 @@
       "isAvailable": true
     },
     {
-      "id": 131,
-      "itemNo": 131,
+      "id": 98,
+      "itemNo": 98,
       "partNumber": "37370-2A851",
       "partName": "REGULATOR ASSY-GENERATOR",
       "requestedQty": 5,
@@ -1454,8 +1092,8 @@
       "isAvailable": true
     },
     {
-      "id": 132,
-      "itemNo": 132,
+      "id": 99,
+      "itemNo": 99,
       "partNumber": "37370-2A900",
       "partName": "REGULATOR ASSY-GENERATOR",
       "requestedQty": 5,
@@ -1465,8 +1103,8 @@
       "isAvailable": true
     },
     {
-      "id": 133,
-      "itemNo": 133,
+      "id": 100,
+      "itemNo": 100,
       "partNumber": "39340-2A600",
       "partName": "SENSOR-AIR TEMPERATURE",
       "requestedQty": 5,
@@ -1476,8 +1114,8 @@
       "isAvailable": true
     },
     {
-      "id": 134,
-      "itemNo": 134,
+      "id": 101,
+      "itemNo": 101,
       "partNumber": "39340-2F000",
       "partName": "SENSOR-AIR TEMPERATURE",
       "requestedQty": 5,
@@ -1487,8 +1125,8 @@
       "isAvailable": true
     },
     {
-      "id": 135,
-      "itemNo": 135,
+      "id": 102,
+      "itemNo": 102,
       "partNumber": "92405-D3000",
       "partName": "REFLECTOR/REFLEX ASSY-RR LH",
       "requestedQty": 10,
@@ -1498,8 +1136,8 @@
       "isAvailable": true
     },
     {
-      "id": 136,
-      "itemNo": 136,
+      "id": 103,
+      "itemNo": 103,
       "partNumber": "92406-D3000",
       "partName": "REFLECTOR/REFLEX ASSY-RR RH",
       "requestedQty": 10,
@@ -1509,8 +1147,8 @@
       "isAvailable": true
     },
     {
-      "id": 137,
-      "itemNo": 137,
+      "id": 104,
+      "itemNo": 104,
       "partNumber": "93490-2K310",
       "partName": "CONTACT ASSY-CLOCK SPRING",
       "requestedQty": 10,
@@ -1520,8 +1158,8 @@
       "isAvailable": true
     },
     {
-      "id": 138,
-      "itemNo": 138,
+      "id": 105,
+      "itemNo": 105,
       "partNumber": "93490-2V310",
       "partName": "CONTACT ASSY-CLOCK SPRING",
       "requestedQty": 10,
@@ -1531,19 +1169,8 @@
       "isAvailable": true
     },
     {
-      "id": 139,
-      "itemNo": 139,
-      "partNumber": "93490-2W120",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 10,
-      "supplierPartNumber": "934902W120",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 140,
-      "itemNo": 140,
+      "id": 106,
+      "itemNo": 106,
       "partNumber": "93490-2W310",
       "partName": "CONTACT ASSY-CLOCK SPRING",
       "requestedQty": 5,
@@ -1553,8 +1180,8 @@
       "isAvailable": true
     },
     {
-      "id": 141,
-      "itemNo": 141,
+      "id": 107,
+      "itemNo": 107,
       "partNumber": "93490-2W320",
       "partName": "CONTACT ASSY-CLOCK SPRING",
       "requestedQty": 5,
@@ -1564,41 +1191,8 @@
       "isAvailable": true
     },
     {
-      "id": 142,
-      "itemNo": 142,
-      "partNumber": "93490-3W310",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 3,
-      "supplierPartNumber": "934903W310",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 143,
-      "itemNo": 143,
-      "partNumber": "93490-4Z320",
-      "partName": "CONTACT ASSY-CLOCK SPRING",
-      "requestedQty": 5,
-      "supplierPartNumber": "934904Z320",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 144,
-      "itemNo": 144,
-      "partNumber": "93490-A9321",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "93490A9321",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 145,
-      "itemNo": 145,
+      "id": 108,
+      "itemNo": 108,
       "partNumber": "93490-C2220",
       "partName": "CONTACT ASSY-CLOCK SPRING",
       "requestedQty": 5,
@@ -1608,96 +1202,8 @@
       "isAvailable": true
     },
     {
-      "id": 146,
-      "itemNo": 146,
-      "partNumber": "93490-C2320",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "93490C2320",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 147,
-      "itemNo": 147,
-      "partNumber": "93490-D3220",
-      "partName": "CONTACT ASSY-CLOCK SPRING",
-      "requestedQty": 10,
-      "supplierPartNumber": "93490D3220",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 148,
-      "itemNo": 148,
-      "partNumber": "93490-D3320",
-      "partName": "CONTACT ASSY-CLOCK SPRING",
-      "requestedQty": 10,
-      "supplierPartNumber": "93490D3320",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 149,
-      "itemNo": 149,
-      "partNumber": "93490-F2325",
-      "partName": "CONTACT ASSY-CLOCK SPRING",
-      "requestedQty": 5,
-      "supplierPartNumber": "93490F2325",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 150,
-      "itemNo": 150,
-      "partNumber": "93490-F6240",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 5,
-      "supplierPartNumber": "93490F6240",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 151,
-      "itemNo": 151,
-      "partNumber": "93490-G3140",
-      "partName": "CONTACT ASSY-CLOCK SPRING",
-      "requestedQty": 5,
-      "supplierPartNumber": "93490G3140",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 152,
-      "itemNo": 152,
-      "partNumber": "93490-H8320",
-      "partName": "صنف ديزل (التوريد غير متوفر)",
-      "requestedQty": 3,
-      "supplierPartNumber": "93490H8320",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 153,
-      "itemNo": 153,
-      "partNumber": "93490-S1240",
-      "partName": "CONTACT ASSY-CLOCK SPRING",
-      "requestedQty": 3,
-      "supplierPartNumber": "93490S1240",
-      "supplierPrice": 0,
-      "note": "التوريد غير متوفر",
-      "isAvailable": false
-    },
-    {
-      "id": 154,
-      "itemNo": 154,
+      "id": 109,
+      "itemNo": 109,
       "partNumber": "94751-2F100",
       "partName": "SENDER ASSY-OIL PRESSURE",
       "requestedQty": 10,

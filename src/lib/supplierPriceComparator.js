@@ -102,6 +102,15 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
   const { catalogMap, koreanCatalogMap, oemCatalogMap, catalogBaseMap } = getCatalogLookupMaps();
   const info = quotationInfo || badrAlWadiData.quotationInfo;
 
+  // STRICT BUSINESS RULE: Exclude any items that are unavailable from the supplier or have no price
+  // We compare only what is actually available for purchase from the supplier
+  const validItems = (rawItems || []).filter((item) => {
+    const rawPrice = Number(item.supplierPrice || item['السعر'] || item.price || 0);
+    const itemNote = String(item.note || item['ملاحظة'] || item['ملاحظات'] || '');
+    const isUnavailable = rawPrice <= 0 || itemNote.includes('غير متوفر') || itemNote.includes('غير متوفره') || itemNote.includes('لا يوجد');
+    return !isUnavailable;
+  });
+
   let matchedCount = 0;
   let cheaperCount = 0;
   let expensiveCount = 0;
@@ -109,7 +118,6 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
   let zeroCostCount = 0;
   let notInCatalogCount = 0;
   let inStockCount = 0;
-  let unavailableCount = 0;
 
   let totalSupplierValue = 0;
   let totalOurCostValue = 0;
@@ -127,20 +135,15 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
   let oemCheaperCount = 0;
   let oemSavings = 0;
 
-  const analyzedItems = (rawItems || []).map((item, idx) => {
+  const analyzedItems = validItems.map((item, idx) => {
     const rawPartNumber = String(item.partNumber || item['رقم القطعة'] || item.sku || '').trim();
     const cleanKey = normalizePartNumber(rawPartNumber);
-    const rawPrice = Number(item.supplierPrice || item['السعر'] || item.price || 0);
-    const hasPrice = rawPrice > 0;
-    const supplierPrice = hasPrice ? rawPrice : 0;
+    const supplierPrice = Number(item.supplierPrice || item['السعر'] || item.price || 0);
     const partName = String(item.partName || item['اسم القطعة'] || item.name || '').trim();
-    const itemNo = item.itemNo || item.id || idx + 1;
+    const itemNo = idx + 1;
     const itemNote = String(item.note || item['ملاحظة'] || item['ملاحظات'] || '').trim();
-    const isUnavailable = !hasPrice || itemNote.includes('غير متوفر');
 
-    if (hasPrice) {
-      totalSupplierValue += supplierPrice;
-    }
+    totalSupplierValue += supplierPrice;
 
     // Detect Product Grade (Korean vs OEM vs General)
     const isSupplierKorean =
@@ -196,7 +199,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       const totalQty = Number(ourMatch.balance || ourMatch.totalQty || 0);
 
       if (totalQty > 0) inStockCount++;
-      if (ourCost > 0 && hasPrice) totalOurCostValue += ourCost;
+      if (ourCost > 0) totalOurCostValue += ourCost;
 
       let diff = null;
       let diffPercent = null;
@@ -206,12 +209,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       let verdictLabel = 'سعر متطابق';
       let verdictColor = 'slate';
 
-      if (isUnavailable) {
-        verdict = 'unavailable';
-        verdictLabel = itemNote || 'التوريد غير متوفر';
-        verdictColor = 'slate';
-        unavailableCount++;
-      } else if (ourCost === 0) {
+      if (ourCost === 0) {
         verdict = 'zero_cost';
         verdictLabel = 'تكلفتنا مسجلة 0';
         verdictColor = 'amber';
@@ -239,14 +237,14 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         }
       }
 
-      if (isSupplierKorean && !isUnavailable) {
+      if (isSupplierKorean) {
         koreanTotalCount++;
         koreanMatchedCount++;
         if (supplierPrice < ourCost && ourCost > 0) {
           koreanCheaperCount++;
           koreanSavings += (ourCost - supplierPrice);
         }
-      } else if (isSupplierOEM && !isUnavailable) {
+      } else if (isSupplierOEM) {
         oemTotalCount++;
         oemMatchedCount++;
         if (supplierPrice < ourCost && ourCost > 0) {
@@ -261,8 +259,8 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         supplierPartNumber: rawPartNumber,
         normalizedPartNumber: cleanKey,
         supplierPartName: partName,
-        supplierPrice: hasPrice ? supplierPrice : null,
-        isAvailable: !isUnavailable,
+        supplierPrice,
+        isAvailable: true,
         itemNote,
         productGrade,
         productGradeLabel,
@@ -294,9 +292,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         oemTotalCount++;
       }
 
-      const notFoundLabel = isUnavailable
-        ? (itemNote || 'التوريد غير متوفر')
-        : isSupplierKorean
+      const notFoundLabel = isSupplierKorean
         ? 'غير متوفر كوري بمخزوننا (صنف جديد)'
         : isSupplierOEM
         ? 'غير مسجل كأصلي بالكتالوج'
@@ -308,8 +304,8 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         supplierPartNumber: rawPartNumber,
         normalizedPartNumber: cleanKey,
         supplierPartName: partName,
-        supplierPrice: hasPrice ? supplierPrice : null,
-        isAvailable: !isUnavailable,
+        supplierPrice,
+        isAvailable: true,
         itemNote,
         productGrade,
         productGradeLabel,
@@ -328,9 +324,9 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         diffPercent: null,
         savingsAmount: 0,
         extraAmount: 0,
-        verdict: isUnavailable ? 'unavailable' : 'not_in_catalog',
+        verdict: 'not_in_catalog',
         verdictLabel: notFoundLabel,
-        verdictColor: isUnavailable ? 'slate' : 'purple',
+        verdictColor: 'purple',
         status: 'not_in_catalog'
       };
     }
@@ -563,7 +559,19 @@ export async function parseExcelQuotationFile(file) {
             supplierPrice: isNaN(rawPrice) ? 0 : rawPrice,
             note: rawNote
           };
-        }).filter((item) => item.partNumber);
+        })
+        .filter((item) => {
+          // Strictly exclude items with no price or explicitly marked as unavailable
+          const hasPart = Boolean(item.partNumber);
+          const hasPrice = item.supplierPrice > 0;
+          const isUnavailable = item.note.includes('غير متوفر') || item.note.includes('غير متوفره') || item.note.includes('لا يوجد');
+          return hasPart && hasPrice && !isUnavailable;
+        })
+        .map((item, idx) => ({
+          ...item,
+          id: idx + 1,
+          itemNo: idx + 1
+        }));
 
         resolve(items);
       } catch (err) {
