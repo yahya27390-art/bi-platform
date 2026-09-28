@@ -44,6 +44,7 @@ import {
   normalizePartNumber
 } from '../lib/supplierPriceComparator';
 import { formatSAR, formatNum } from '../lib/kpiEngine';
+import SupplierPriceReportModal from '../components/shared/SupplierPriceReportModal';
 
 const STORAGE_KEY = 'dora_saved_quotations_v1';
 
@@ -111,6 +112,7 @@ export default function SupplierPriceComparison() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [copiedSku, setCopiedSku] = useState(null);
   const [selectedItemForModal, setSelectedItemForModal] = useState(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   const { items, stats, quotationInfo } = quotationResult;
@@ -545,11 +547,12 @@ export default function SupplierPriceComparison() {
             </button>
 
             <button
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all cursor-pointer"
+              onClick={() => setIsReportModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-bold border border-slate-700 shadow-sm transition-all cursor-pointer group"
+              title="معاينة وطباعة تقرير مقارنة الأسعار A4 معتمد أو حفظه كـ PDF"
             >
-              <Printer className="w-3.5 h-3.5 text-slate-400" />
-              <span>طباعة</span>
+              <Printer className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <span>طباعة / تقرير A4</span>
             </button>
           </div>
         </div>
@@ -828,21 +831,33 @@ export default function SupplierPriceComparison() {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-400">عدد الصفوف بالصفحة:</span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300"
+          <div className="flex items-center gap-2.5 text-xs flex-wrap">
+            <button
+              type="button"
+              onClick={() => setIsReportModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-700 text-xs font-bold transition-all shadow-xs cursor-pointer group"
+              title="معاينة وطباعة تقرير مقارنة الأسعار A4 معتمد أو حفظه كـ PDF"
             >
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-              <option value={-1}>عرض الكل ({filteredItems.length})</option>
-            </select>
+              <Printer className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <span>طباعة / تقرير A4 ({filteredItems.length} صنف)</span>
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-400">عدد الصفوف:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300"
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={-1}>عرض الكل ({filteredItems.length})</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -1376,6 +1391,16 @@ export default function SupplierPriceComparison() {
           </div>
         </div>
       )}
+
+      {/* ─── OFFICIAL A4 PRINT & PDF REPORT MODAL ─── */}
+      <SupplierPriceReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        quotationInfo={quotationInfo}
+        items={items}
+        stats={stats}
+        initialFilter={filterVerdict}
+      />
 
     </div>
   );
