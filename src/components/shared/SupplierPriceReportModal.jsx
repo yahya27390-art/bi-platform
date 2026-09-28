@@ -508,9 +508,9 @@ export default function SupplierPriceReportModal({
 
                         {/* 3. Dora Part Number */}
                         <td className="py-1.5 px-1.5 font-mono text-[10.5px] whitespace-nowrap">
-                          {item.matched ? (
+                          {item.matched && item.ourSku ? (
                             <span className="font-bold text-emerald-800">
-                              ✓ {item.ourPartNumber}
+                              ✓ {item.ourSku}
                             </span>
                           ) : (
                             <span className="text-slate-400 font-mono text-[10px]">
@@ -521,17 +521,17 @@ export default function SupplierPriceReportModal({
 
                         {/* 4. Description & Name */}
                         <td className="py-1.5 px-1.5">
-                          <div className="font-bold text-slate-950 text-[10.5px] leading-snug line-clamp-2">
-                            {item.englishName || item.name}
+                          <div className="font-black text-slate-950 text-[11px] leading-snug">
+                            {item.supplierPartName || item.partName || item.name || 'صنف مسعر'}
                           </div>
-                          {item.arabicName && item.arabicName !== item.englishName && (
-                            <div className="text-[9.5px] text-slate-600 line-clamp-1">
-                              {item.arabicName}
+                          {item.matched && item.ourName && (
+                            <div className="text-[10px] text-slate-700 font-bold leading-snug mt-0.5">
+                              مخزن: {item.ourName}
                             </div>
                           )}
-                          <div className="text-[8.5px] text-slate-400 flex items-center gap-1 mt-0.5">
-                            <span>{item.category || item.brand || 'قطع غيار'}</span>
-                            {item.ourCarModel && <span>• {item.ourCarModel}</span>}
+                          <div className="text-[9px] text-slate-500 flex items-center gap-1 mt-0.5">
+                            <span>{item.ourCategory || item.category || 'قطع محركات وسيارات الديزل'}</span>
+                            {(item.ourBrand || item.brand) && <span>• {item.ourBrand || item.brand}</span>}
                           </div>
                         </td>
 
