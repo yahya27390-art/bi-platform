@@ -87,14 +87,14 @@ export const AUTH_ACCOUNTS = [
     title: 'مبيعات وبحث قطع الغيار وعروض الأسعار',
   },
   {
-    id: 'user-fahad-staff',
+    id: 'user-fahad-purchasing',
     username: 'doracars.fahad',
-    email: 'fahad.staff@doratcars.com',
+    email: 'fahad@doratcars.com',
     password: 'dora#2026',
-    name: 'فهد الجوعي',
-    role: BI_ROLES.INVENTORY_VIEWER,
+    name: 'فهد الجوعي (إدارة المشتريات)',
+    role: BI_ROLES.PURCHASING_MANAGER,
     avatar: 'ف',
-    title: 'مبيعات وبحث قطع الغيار وعروض الأسعار',
+    title: 'مدير المشتريات والطلبيات واعتماد نواقص الفروع وتصدير الإكسل',
   },
   {
     id: 'user-abdulaziz',
@@ -269,7 +269,8 @@ export function BIAuthProvider({ children }) {
       const matched = AUTH_ACCOUNTS.find(
         acc => acc.username.toLowerCase() === cleanId || 
                acc.email.toLowerCase() === cleanId ||
-               (cleanId === 'purchasing' && acc.username === 'doracars.purchasing')
+               (cleanId === 'purchasing' && acc.username === 'doracars.purchasing') ||
+               (cleanId === 'fahad' && acc.username === 'doracars.fahad')
       );
 
       if (matched) {
