@@ -10,6 +10,7 @@
 import { REAL_ALL_PARTS } from '../data/realInventoryData';
 import husounData from '../data/husounQuotationData.json';
 import badrAlWadiData from '../data/badrAlWadiQuotationData.json';
+import miskData from '../data/miskQuotationData.json';
 import * as XLSX from 'xlsx';
 
 /**
@@ -355,6 +356,13 @@ export function getHusounQuotationAnalysis() {
 }
 
 /**
+ * Get preloaded official Misk quotation comparison (ارقام الديزل - عرض سعر 28.09.2026 - مسك)
+ */
+export function getMiskQuotationAnalysis() {
+  return compareQuotationItems(miskData.items, miskData.quotationInfo);
+}
+
+/**
  * Parse an uploaded PDF quotation file in the browser
  */
 export async function parsePdfQuotationFile(file) {
@@ -476,17 +484,29 @@ export async function parseExcelQuotationFile(file) {
           throw new Error('الملف فارغ أو لا يحتوي على صفوف بيانات.');
         }
 
-        const firstRow = rawJson[0];
+        // Clean and normalize keys of all rows to eliminate hidden spaces (e.g. ' سعر البيع بالريال قبل الضريبة ')
+        const normalizedJson = rawJson.map((row) => {
+          const cleanRow = {};
+          Object.keys(row).forEach((k) => {
+            cleanRow[k.trim()] = row[k];
+          });
+          return cleanRow;
+        });
+
+        const firstRow = normalizedJson[0];
         const keys = Object.keys(firstRow);
 
         let partKey = keys.find((k) =>
-          /رقم.*قطعة|كود.*صنف|رقم.*الصنف|رقم.*القطعه|part.*no|part.*num|sku|code/i.test(k)
+          /رقم.*قطعة|كود.*صنف|رقم.*الصنف|رقم.*القطعه|^\s*p\s*[\/\\]?\s*n\s*$|part.*no|part.*num|sku|code/i.test(k)
         );
         let nameKey = keys.find((k) =>
-          /اسم.*قطعة|بيان.*الصنف|اسم.*الصنف|وصف|description|name|part.*name/i.test(k)
+          /اسم.*قطعة|بيان.*الصنف|اسم.*الصنف|وصف|^\s*desc\s*$|description|name|part.*name/i.test(k)
         );
         let priceKey = keys.find((k) =>
-          /سعر|تكلفة|قيمة|price|cost|unit.*price|rate/i.test(k)
+          /سعر.*البيع.*قبل.*الضريبة|سعر.*البيع|سعر.*قبل.*الضريبة|سعر|تكلفة|قيمة|price|cost|unit.*price|rate/i.test(k)
+        );
+        let notesKey = keys.find((k) =>
+          /ملاحظة|ملاحظات|notes|remarks|status/i.test(k)
         );
 
         if (!partKey && keys.length >= 2) partKey = keys[1];
@@ -494,20 +514,26 @@ export async function parseExcelQuotationFile(file) {
         if (!priceKey && keys.length >= 4) priceKey = keys[3];
 
         if (!partKey) {
-          throw new Error('لم نتمكن من العثور على عمود «رقم القطعة» في الملف.');
+          throw new Error('لم نتمكن من العثور على عمود «رقم القطعة» أو «P/N» في الملف.');
         }
 
-        const items = rawJson.map((row, idx) => {
+        const items = normalizedJson.map((row, idx) => {
           const rawPart = row[partKey] || '';
-          const rawName = nameKey ? row[nameKey] : '';
+          let rawName = nameKey ? row[nameKey] : '';
           const rawPrice = priceKey ? parseFloat(String(row[priceKey]).replace(/[^0-9.]/g, '')) : 0;
+          const rawNote = notesKey ? String(row[notesKey] || '').trim() : '';
+
+          if ((!rawPrice || rawPrice === 0) && rawNote) {
+            rawName = rawName ? `${rawName} (${rawNote})` : rawNote;
+          }
 
           return {
             id: idx + 1,
             itemNo: row['م'] || row['#'] || idx + 1,
             partNumber: String(rawPart).trim(),
-            partName: String(rawName).trim(),
-            supplierPrice: isNaN(rawPrice) ? 0 : rawPrice
+            partName: String(rawName || 'صنف مسعر').trim(),
+            supplierPrice: isNaN(rawPrice) ? 0 : rawPrice,
+            note: rawNote
           };
         }).filter((item) => item.partNumber);
 

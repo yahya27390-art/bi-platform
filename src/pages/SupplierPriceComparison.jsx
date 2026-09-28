@@ -38,6 +38,7 @@ import {
 import {
   getHusounQuotationAnalysis,
   getBadrAlWadiQuotationAnalysis,
+  getMiskQuotationAnalysis,
   parseUploadedQuotationFile,
   exportComparisonToExcel,
   normalizePartNumber
@@ -104,6 +105,18 @@ export default function SupplierPriceComparison() {
   const availableQuotations = useMemo(() => {
     const builtInList = [
       {
+        id: 'misk',
+        supplierName: 'شركة مسك للتجارة',
+        title: 'أرقام الديزل — عرض سعر 28.09.2026 — شركة مسك',
+        shortName: 'شركة مسك (أرقام الديزل)',
+        date: '2026-09-28',
+        dateFormatted: '28 سبتمبر 2026',
+        itemsCount: 154,
+        badge: 'ديزل (P/N & قبل الضريبة)',
+        icon: '⚙️',
+        isBuiltIn: true
+      },
+      {
         id: 'badr',
         supplierName: 'شركة بدر الوادي للتجارة',
         title: 'عرض فحمات مخفض (961) — شركة بدر الوادي',
@@ -163,6 +176,8 @@ export default function SupplierPriceComparison() {
       setQuotationResult(getBadrAlWadiQuotationAnalysis());
     } else if (id === 'husoun') {
       setQuotationResult(getHusounQuotationAnalysis());
+    } else if (id === 'misk') {
+      setQuotationResult(getMiskQuotationAnalysis());
     } else {
       const custom = savedCustomQuotations.find((q) => q.id === id);
       if (custom && custom.analysisData) {
