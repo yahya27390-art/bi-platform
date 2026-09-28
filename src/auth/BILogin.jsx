@@ -2,24 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useBIAuth } from './BIAuthContext';
 import { 
-  ShieldCheck, 
-  ShieldAlert,
   Lock, 
   User, 
   AlertCircle, 
   Eye, 
   EyeOff, 
   KeyRound, 
-  CheckCircle2, 
-  Sparkles,
   ChevronRight,
   ChevronLeft,
   Boxes,
   Scale,
   ClipboardList,
   Crown,
-  TrendingUp,
-  Layers,
+  ShieldCheck,
+  CheckCircle2,
+  Sparkles,
   ArrowLeft,
   ArrowRight
 } from 'lucide-react';
@@ -30,82 +27,74 @@ import greenArrowLogo from '../assets/green-arrow-logo.png';
 const SYSTEM_SLIDES = [
   {
     id: 'inventory',
-    badge: '📦 إدارة ومطابقة المخزون',
-    badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30',
-    title: 'إدارة ومطابقة المخزون الذكي للفروع الثلاثة',
-    subtitle: '8,901 صنف مسعر ومطابق سحابياً بدقة متناهية',
-    description: 'تغطية شاملة للمركز الرئيسي (100) وفرع الرواف (200) وفرع السليم 2 / كيا (300)، مع حصر السيولة المجمدة (Dead Stock) وتنبيهات نفاد القطع ومطابقة الفواتير بدقة Z-Report.',
+    tag: 'مخزون الفروع الثلاثة',
+    title: 'إدارة ومطابقة المخزون الذكي',
+    highlight: '8,901 صنف مسعر ومطابق لحظياً',
+    description: 'تغطية حية للمركز الرئيسي (100) وفرع الرواف (200) وفرع السليم 2 / كيا (300)، مع حصر السيولة المجمدة وتنبيهات نفاد المخزون ومطابقة Z-Report بدقة 100%.',
     icon: Boxes,
-    gradient: 'from-cyan-500/20 via-blue-500/10 to-transparent',
-    floatingCards: [
-      { text: '🔒 بيانات مشفرة ومطابقة 100%', bg: 'bg-amber-500/20 text-amber-200 border-amber-500/30' },
-      { text: '⚡ جرد حي لـ 8,901 صنف', bg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-      { text: '📈 تقارير حركة المخزون والوفر', bg: 'bg-blue-500/20 text-blue-200 border-blue-500/30' },
+    chips: [
+      { text: '🔒 مطابقة محاسبية دقيقة', color: 'bg-white/15 text-white border-white/20' },
+      { text: '⚡ جرد حي لـ 8,901 صنف', color: 'bg-emerald-400/20 text-emerald-200 border-emerald-400/30' },
+      { text: '📈 تقارير حركة المخزون', color: 'bg-cyan-400/20 text-cyan-200 border-cyan-400/30' }
     ],
     stats: [
       { label: 'الأصناف المسعرة', value: '8,901' },
       { label: 'الفروع المتصلة', value: '3 فروع' },
-      { label: 'دقة المطابقة', value: '100%' },
+      { label: 'نسبة التطابق', value: '100%' },
     ]
   },
   {
     id: 'comparator',
-    badge: '⚖️ ذكاء المشتريات ومقارنة الأسعار',
-    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30',
-    title: 'محرك مقارنة أسعار الموردين وتحقيق الوفر المالي',
-    subtitle: 'فحص عروض الأسعار وكشف أقل تكلفة قبل الشراء',
-    description: 'تحليل آلي فوري لكشوفات الموردين (أرقام الديزل، فحمات بدر الوادي، مسك)، مع احتساب الوفر المالي لكل قطعة وتنبيه الإدارة من الأسعار المرتفعة ومطابقة أصلي وكالة (Mobis) والكوري.',
+    tag: 'ذكاء المشتريات والوفر',
+    title: 'محرك مقارنة أسعار الموردين',
+    highlight: 'كشف صفقات الوفر وحماية الهوامش',
+    description: 'فحص آلي فوري لكشوفات وعروض أسعار الموردين (أرقام الديزل، فحمات بدر الوادي، مسك)، مع احتساب الوفر المالي لكل قطعة وتنبيه الإدارة من الأسعار المرتفعة.',
     icon: Scale,
-    gradient: 'from-emerald-500/20 via-teal-500/10 to-transparent',
-    floatingCards: [
-      { text: '🟢 كشف وفر مالي مباشر للمشتريات', bg: 'bg-emerald-500/20 text-emerald-200 border-emerald-500/30' },
-      { text: '⚠️ تحذير استباقي من الأسعار الأعلى', bg: 'bg-rose-500/20 text-rose-300 border-rose-500/30' },
-      { text: '📄 تقارير A4 معتمدة وتصدير Excel', bg: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30' },
+    chips: [
+      { text: '🟢 كشف وفر مالي مباشر', color: 'bg-emerald-400/20 text-emerald-200 border-emerald-400/30' },
+      { text: '⚠️ تحذير من الأسعار المرتفعة', color: 'bg-rose-400/20 text-rose-200 border-rose-400/30' },
+      { text: '📄 تقارير A4 معتمدة وتصدير إكسل', color: 'bg-white/15 text-white border-white/20' }
     ],
     stats: [
       { label: 'وفر الشراء المتاح', value: 'مباشر' },
-      { label: 'تحليل أرقام الديزل', value: '109 صنف' },
-      { label: 'تصدير الكشوفات', value: 'Excel / PDF' },
+      { label: 'أرقام الديزل', value: '109 صنف' },
+      { label: 'تصدير التقارير', value: 'A4 / Excel' },
     ]
   },
   {
     id: 'shortages',
-    badge: '📋 سحابة نواقص الفروع والطلبيات',
-    badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
-    title: 'منظومة نواقص الفروع وأوامر الشراء الفورية',
-    subtitle: 'من نوتة الفرع اليدوية إلى أمر التوريد بنقرة واحدة',
-    description: 'تسجيل سحابي آمن لنواقص قطع الغيار وطلبات العملاء من كاونتر الفروع، مع مسار اعتماد خاص بمدير المشتريات وتحديث دورة الطلب (معتمد • تم الطلب • تم الاستلام).',
+    tag: 'نواقص الفروع والطلبات',
+    title: 'سحابة نواقص الفروع المؤتمتة',
+    highlight: 'من نوتة الفرع إلى أمر التوريد بنقرة واحدة',
+    description: 'تسجيل سحابي آمن لنواقص قطع الغيار وطلبات العملاء من كاونتر الفروع، مع مسار اعتماد حصري لمدير المشتريات وتتبع دورة الطلب (معتمد • تم الطلب • تم الاستلام).',
     icon: ClipboardList,
-    gradient: 'from-blue-500/20 via-indigo-500/10 to-transparent',
-    floatingCards: [
-      { text: '🚀 ربط لحظي بين الفروع والمشتريات', bg: 'bg-blue-500/20 text-blue-200 border-blue-500/30' },
-      { text: '✓ اعتماد إلكتروني معتمد', bg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-      { text: '📦 إغلاق دورة التوريد والاستلام', bg: 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30' },
+    chips: [
+      { text: '🚀 ربط فوري بين الفروع والمشتريات', color: 'bg-cyan-400/20 text-cyan-200 border-cyan-400/30' },
+      { text: '✓ اعتماد إلكتروني معتمد', color: 'bg-emerald-400/20 text-emerald-200 border-emerald-400/30' },
+      { text: '📦 إغلاق دورة الاستلام', color: 'bg-white/15 text-white border-white/20' }
     ],
     stats: [
       { label: 'سرعة التحويل', value: 'فوري' },
       { label: 'الاعتماد', value: 'سحابي' },
-      { label: 'تتبع الطلبيات', value: 'مباشر' },
+      { label: 'دورة الطلب', value: 'مكتملة' },
     ]
   },
   {
     id: 'owner',
-    badge: '👑 الخزنة التنفيذية والذكاء المالي',
-    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-400/30',
-    title: 'لوحة قيادة المالك والتحليلات المالية العليا (C-Suite)',
-    subtitle: 'رؤية شاملة للسيولة، الأرباح، وهوامش البيع والتجزئة',
-    description: 'منظومة مشفرة مخصصة لقرارات الإدارة العليا، تتابع هوامش الربح، أداء الفروع الميدانية، ومبيعات المتجر الإلكتروني مع مؤشرات مالية استباقية ومطابقة الضريبة المعتمدة 15%.',
+    tag: 'الخزنة التنفيذية C-Suite',
+    title: 'لوحة قيادة المالك والذكاء المالي',
+    highlight: 'رؤية شاملة للسيولة، الأرباح، وهوامش البيع',
+    description: 'منظومة قيادة عليا مشفرة للإدارة والمالك، تتابع هوامش الربح، أداء الفروع الميدانية، ومبيعات المتجر الإلكتروني مع مؤشرات مالية حية ومطابقة ضريبية 15%.',
     icon: Crown,
-    gradient: 'from-purple-500/20 via-pink-500/10 to-transparent',
-    floatingCards: [
-      { text: '💎 خزنة مشفرة للإدارة والمالك', bg: 'bg-purple-500/20 text-purple-200 border-purple-500/30' },
-      { text: '📊 ربحية الفروع والمتجر الإلكتروني', bg: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30' },
-      { text: '💰 تدقيق Z-Report ومطابقة محاسبية', bg: 'bg-emerald-500/20 text-emerald-200 border-emerald-500/30' },
+    chips: [
+      { text: '💎 خزنة مالية مشفرة', color: 'bg-purple-400/20 text-purple-200 border-purple-400/30' },
+      { text: '📊 ربحية الفروع والمتجر', color: 'bg-cyan-400/20 text-cyan-200 border-cyan-400/30' },
+      { text: '💰 تدقيق محاسبي Z-Report', color: 'bg-emerald-400/20 text-emerald-200 border-emerald-400/30' }
     ],
     stats: [
-      { label: 'حماية البيانات', value: 'تشفير كامل' },
-      { label: 'مؤشرات الأداء', value: 'حية 24/7' },
-      { label: 'تقارير الضريبة', value: '15% معتمد' },
+      { label: 'حماية البيانات', value: 'مشفرة' },
+      { label: 'المؤشرات المالية', value: 'حية 24/7' },
+      { label: 'مطابقة الضريبة', value: '15% معتمد' },
     ]
   }
 ];
@@ -133,7 +122,7 @@ export default function BILogin() {
       const reason = sessionStorage.getItem('bi_logout_reason');
       if (reason === 'inactivity_5min') {
         sessionStorage.removeItem('bi_logout_reason');
-        return 'تم إنهاء الجلسة تلقائياً لعدم وجود أي حركة لمدة 5 دقائق حفاظاً على أمان وسرية البيانات. يرجى تسجيل الدخول مجدداً.';
+        return 'تم إنهاء الجلسة تلقائياً لعدم وجود حركة لمدة 5 دقائق حفاظاً على سرية البيانات. يرجى تسجيل الدخول مجدداً.';
       }
     } catch {
       // ignore
@@ -188,103 +177,103 @@ export default function BILogin() {
     }
   };
 
-  const currentSlideData = SYSTEM_SLIDES[activeSlide];
-  const SlideIcon = currentSlideData.icon;
+  const currentSlide = SYSTEM_SLIDES[activeSlide];
+  const SlideIcon = currentSlide.icon;
 
   return (
     <div 
-      className="min-h-screen bg-[#070F1E] flex items-center justify-center p-3 sm:p-6 selection:bg-emerald-500 selection:text-white relative overflow-hidden font-sans" 
+      className="min-h-screen bg-[#EEF2F6] flex items-center justify-center p-3 sm:p-6 md:p-10 font-sans selection:bg-blue-600 selection:text-white relative overflow-hidden" 
       dir="rtl"
     >
-      {/* Dynamic Ambient Background Glows */}
-      <div className="absolute top-1/4 -right-32 w-[32rem] h-[32rem] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 -left-32 w-[32rem] h-[32rem] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-600/[0.04] rounded-full blur-[140px] pointer-events-none" />
+      {/* Soft Ambient Background Highlights */}
+      <div className="absolute top-0 right-1/4 w-[36rem] h-[36rem] bg-blue-300/20 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-[36rem] h-[36rem] bg-cyan-300/20 rounded-full blur-[140px] pointer-events-none" />
 
       {/* ════════════════════════════════════════════════════════════════
-          MASTER SPLIT CONTAINER: RIGHT (SLIDES) + LEFT (LOGIN FORM)
+          MASTER CARD CONTAINER (VIBRANT OCEANIC BLUE + CLEAN WHITE)
          ════════════════════════════════════════════════════════════════ */}
-      <div className="max-w-6xl w-full bg-[#0B1728]/95 border border-white/10 rounded-3xl shadow-2xl overflow-hidden relative z-10 backdrop-blur-2xl grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
+      <div className="max-w-6xl w-full bg-white rounded-3xl sm:rounded-[2.5rem] shadow-[0_20px_70px_-10px_rgba(15,23,42,0.18)] border border-slate-200/80 overflow-hidden relative z-10 grid grid-cols-1 lg:grid-cols-12 min-h-[660px]">
         
         {/* ────────────────────────────────────────────────────────────
-            الجزء الأيمن: محتوى النظام عبر سلايدات عامة وتفاعلية (RIGHT)
+            الجزء الأيمن: ألوان التدرج الأزرق الملكي والفخم مع سلايدات النظام
            ──────────────────────────────────────────────────────────── */}
         <div 
-          className="lg:col-span-7 bg-gradient-to-br from-slate-900/90 via-[#0B1B32]/80 to-slate-950/95 p-6 sm:p-10 lg:p-12 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-l border-white/10"
+          className="lg:col-span-7 bg-gradient-to-br from-[#0c224a] via-[#113b82] to-[#1c5fca] text-white p-7 sm:p-10 lg:p-12 flex flex-col justify-between relative overflow-hidden select-none"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Subtle Ambient Slide Glow */}
-          <div className={`absolute top-0 right-0 w-96 h-96 bg-gradient-to-br ${currentSlideData.gradient} rounded-full blur-3xl pointer-events-none transition-all duration-700`} />
+          {/* Wave / Mountain Abstract Light Overlay (مطابق للشكل المطلوب) */}
+          <div className="absolute inset-0 pointer-events-none opacity-40 mix-blend-overlay">
+            <svg viewBox="0 0 800 600" className="w-full h-full object-cover">
+              <path d="M0,350 C150,220 300,420 500,280 C650,180 750,240 800,200 L800,600 L0,600 Z" fill="rgba(255,255,255,0.15)" />
+              <path d="M0,420 C200,320 350,480 550,360 C700,280 780,330 800,310 L800,600 L0,600 Z" fill="rgba(255,255,255,0.1)" />
+            </svg>
+          </div>
 
-          {/* Top Brand Header on Slides */}
-          <div className="relative z-10 space-y-3">
+          {/* Top Brand Pill & System Badge */}
+          <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-xs font-mono font-bold text-emerald-400 tracking-wider">
-                  DORA CARS BI SYSTEM • 2026
-                </span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold text-white shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>منصة ذكاء الأعمال والتحليلات • درة السيارة</span>
               </div>
 
-              {/* Slide Badge */}
-              <div className={`px-3 py-1 rounded-full text-xs font-bold border transition-all duration-300 ${currentSlideData.badgeColor}`}>
-                {currentSlideData.badge}
+              <div className="px-3 py-1 rounded-full bg-cyan-400/20 text-cyan-200 border border-cyan-400/30 text-xs font-black">
+                {currentSlide.tag}
               </div>
             </div>
 
-            {/* Slide Title & Subtitle */}
-            <div className="space-y-1.5 pt-2">
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-wide leading-tight transition-all duration-300">
-                {currentSlideData.title}
+            {/* Slide Title & Dynamic Text */}
+            <div className="pt-3 space-y-2">
+              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-wide leading-tight drop-shadow-sm">
+                {currentSlide.title}
               </h2>
-              <p className="text-sm font-bold text-cyan-400/90 transition-all duration-300">
-                {currentSlideData.subtitle}
+              <p className="text-base sm:text-lg font-bold text-cyan-200/95">
+                {currentSlide.highlight}
               </p>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1 max-w-xl transition-all duration-300">
-                {currentSlideData.description}
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl opacity-90 pt-1">
+                {currentSlide.description}
               </p>
             </div>
           </div>
 
-          {/* Middle Visual Showcase & Floating Feature Cards */}
-          <div className="relative z-10 py-6 sm:py-8 space-y-4">
-            {/* Interactive Mockup Presentation Card */}
-            <div className="bg-[#091526]/80 border border-white/10 rounded-2xl p-5 shadow-xl backdrop-blur-md space-y-4">
-              <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-inner">
-                    <SlideIcon className="w-5 h-5" />
+          {/* Middle Floating Glassmorphic Cards (مطابق لتصميم الصورة) */}
+          <div className="relative z-10 py-6 sm:py-8 space-y-3.5">
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-5 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center shadow-inner">
+                    <SlideIcon className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-white">منظومة ذكاء الأعمال المعتمدة</div>
-                    <div className="text-[10px] text-slate-400 font-mono">Dora Cars Enterprise Intelligence</div>
+                    <div className="text-xs font-black text-white">منظومة ذكاء الأعمال المعتمدة</div>
+                    <div className="text-[10px] text-cyan-200/80 font-mono">Dora Cars Enterprise Intelligence</div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span className="text-[11px] font-mono text-emerald-400 font-bold">نشط ومتصل</span>
-                </div>
+                <span className="text-[10px] font-mono text-emerald-300 font-bold bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-400/30 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>اتصال سحابي نشط</span>
+                </span>
               </div>
 
-              {/* Floating Feature Badges (Interactive Pills) */}
+              {/* Floating Feature Badges */}
               <div className="flex flex-wrap gap-2">
-                {currentSlideData.floatingCards.map((card, idx) => (
+                {currentSlide.chips.map((chip, idx) => (
                   <div
                     key={idx}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-300 ${card.bg}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border backdrop-blur-md shadow-xs transition-all duration-300 ${chip.color}`}
                   >
-                    {card.text}
+                    {chip.text}
                   </div>
                 ))}
               </div>
 
               {/* Stats Bar */}
-              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/5 font-mono text-center">
-                {currentSlideData.stats.map((st, idx) => (
-                  <div key={idx} className="p-2 rounded-xl bg-white/[0.03] border border-white/5">
-                    <div className="text-[10px] text-slate-400 font-sans">{st.label}</div>
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 font-mono text-center">
+                {currentSlide.stats.map((st, idx) => (
+                  <div key={idx} className="p-2.5 rounded-xl bg-white/10 border border-white/10 backdrop-blur-md">
+                    <div className="text-[10px] text-slate-200 font-sans">{st.label}</div>
                     <div className="font-black text-xs sm:text-sm text-white mt-0.5">{st.value}</div>
                   </div>
                 ))}
@@ -293,30 +282,30 @@ export default function BILogin() {
           </div>
 
           {/* Bottom Slide Controller (Dots & Arrows) */}
-          <div className="relative z-10 flex items-center justify-between pt-2 border-t border-white/10">
-            {/* Slide Indicator Dots */}
+          <div className="relative z-10 flex items-center justify-between pt-3 border-t border-white/15">
+            {/* Dots */}
             <div className="flex items-center gap-2">
               {SYSTEM_SLIDES.map((s, idx) => (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => setActiveSlide(idx)}
-                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
                     activeSlide === idx 
-                      ? 'w-8 bg-gradient-to-r from-emerald-400 to-cyan-400' 
-                      : 'w-2 bg-white/20 hover:bg-white/40'
+                      ? 'w-9 bg-white shadow-md' 
+                      : 'w-2.5 bg-white/30 hover:bg-white/50'
                   }`}
-                  title={s.badge}
+                  title={s.tag}
                 />
               ))}
             </div>
 
-            {/* Prev / Next Navigation Arrows */}
-            <div className="flex items-center gap-1.5">
+            {/* Arrows */}
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={prevSlide}
-                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
                 title="السابق"
               >
                 <ArrowRight className="w-4 h-4" />
@@ -324,7 +313,7 @@ export default function BILogin() {
               <button
                 type="button"
                 onClick={nextSlide}
-                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
                 title="التالي"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -334,43 +323,38 @@ export default function BILogin() {
         </div>
 
         {/* ────────────────────────────────────────────────────────────
-            الجزء الأيسر: نموذج تسجيل الدخول والاعتماد الإداري (LEFT)
+            الجزء الأيسر: تصميم أبيض نقي وفخم مع حقول تسجيل الدخول (CLEAN WHITE)
            ──────────────────────────────────────────────────────────── */}
-        <div className="lg:col-span-5 bg-[#0D1E36]/90 p-6 sm:p-8 lg:p-10 flex flex-col justify-between relative z-10">
+        <div className="lg:col-span-5 bg-white p-7 sm:p-10 lg:p-12 flex flex-col justify-between relative z-10">
           
           <div className="space-y-6">
             {/* Top Official Dora Logo & Header */}
-            <div className="text-center space-y-2.5">
+            <div className="text-center space-y-3">
               <div className="flex justify-center">
-                <div className="p-2.5 rounded-2xl bg-white/5 border border-white/10 shadow-lg relative group">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-sm relative group">
                   <img 
                     src={doraLogo} 
                     alt="درة السيارة" 
-                    className="h-16 w-auto object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300" 
+                    className="h-16 sm:h-20 w-auto object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-300" 
                   />
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#0D1E36]" />
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white" />
                 </div>
               </div>
 
               <div>
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-wide">
-                  تسجيل الدخول للمنصة
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  تسجيل الدخول
                 </h1>
-                <p className="text-xs text-slate-400 mt-1 font-mono">
+                <p className="text-xs font-bold text-slate-500 mt-1">
                   منظومة ذكاء الأعمال والتحليلات الرسمية
                 </p>
-              </div>
-
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] font-semibold">
-                <Lock className="w-3.5 h-3.5" />
-                <span>بوابة الدخول المشفرة والمحمية</span>
               </div>
             </div>
 
             {/* Inactivity Security Notice */}
             {securityNotice && (
-              <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-relaxed animate-fadeIn">
-                <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed animate-fadeIn">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <div>{securityNotice}</div>
               </div>
             )}
@@ -378,16 +362,16 @@ export default function BILogin() {
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="flex items-start gap-2 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs leading-relaxed animate-shake">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
-                  <span>{error}</span>
+                <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs leading-relaxed">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                  <span className="font-bold">{error}</span>
                 </div>
               )}
 
-              {/* Identifier Input */}
+              {/* Username Input Card (Modern Floating Style) */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 px-1 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-slate-400" />
+                <label className="text-xs font-bold text-slate-700 px-1 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-slate-500" />
                   <span>اسم المستخدم أو البريد الإلكتروني</span>
                 </label>
                 <div className="relative">
@@ -396,16 +380,16 @@ export default function BILogin() {
                     required
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="اسم المستخدم أو الإيميل"
-                    className="w-full px-4 py-3 bg-slate-900/90 border border-white/10 rounded-2xl text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-600 font-mono"
+                    placeholder="name@mail.com أو اسم المستخدم"
+                    className="w-full px-4 py-3.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 rounded-2xl text-slate-900 text-sm font-medium transition-all outline-none placeholder:text-slate-400 shadow-2xs"
                   />
                 </div>
               </div>
 
-              {/* Password Input */}
+              {/* Password Input Card */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 px-1 flex items-center gap-1.5">
-                  <KeyRound className="w-3.5 h-3.5 text-slate-400" />
+                <label className="text-xs font-bold text-slate-700 px-1 flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-slate-500" />
                   <span>كلمة المرور (Password)</span>
                 </label>
                 <div className="relative">
@@ -414,13 +398,13 @@ export default function BILogin() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="أدخل كلمة المرور"
-                    className="w-full pr-4 pl-11 py-3 bg-slate-900/90 border border-white/10 rounded-2xl text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-600 font-mono"
+                    placeholder="••••••••••••"
+                    className="w-full pr-4 pl-11 py-3.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 rounded-2xl text-slate-900 text-sm font-medium transition-all outline-none placeholder:text-slate-400 shadow-2xs"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-1 cursor-pointer"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors p-1 cursor-pointer"
                     title={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -428,38 +412,39 @@ export default function BILogin() {
                 </div>
               </div>
 
-              {/* Remember Session Option */}
-              <div className="flex items-center justify-between text-xs px-1 text-slate-400">
-                <label className="flex items-center gap-2 cursor-pointer select-none hover:text-slate-300 transition-colors">
+              {/* Remember Me Option */}
+              <div className="flex items-center justify-between text-xs px-1 text-slate-600 pt-1">
+                <label className="flex items-center gap-2 cursor-pointer select-none hover:text-slate-900 transition-colors">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded text-emerald-500 bg-slate-900 border-white/10 focus:ring-emerald-500 cursor-pointer"
+                    className="w-4 h-4 rounded text-blue-600 bg-white border-slate-300 focus:ring-blue-500 cursor-pointer"
                   />
-                  <span>تذكر بيانات الجلسة</span>
+                  <span className="font-bold">تذكر بيانات الجلسة</span>
                 </label>
 
-                <span className="text-[11px] text-slate-500 font-mono">
-                  🔒 اتصال مشفر TLS
+                <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-emerald-600" />
+                  <span>اتصال مشفر آمن</span>
                 </span>
               </div>
 
-              {/* Submit Button */}
+              {/* Vibrant Sky/Royal Blue Gradient Login Button (مطابق لزر الصورة) */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2 cursor-pointer active:scale-[0.99]"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#0284c7] via-[#2563eb] to-[#1d4ed8] hover:from-[#0369a1] hover:to-[#1e40af] text-white font-black text-sm shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-3 cursor-pointer active:scale-[0.99]"
               >
                 {loading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     <span>جارٍ التحقق والاعتماد...</span>
                   </>
                 ) : (
                   <>
-                    <Lock className="w-4 h-4" />
-                    <span>تسجيل الدخول الآمن للمنصة</span>
+                    <Lock className="w-4 h-4 text-white" />
+                    <span>تسجيل الدخول للمنصة</span>
                   </>
                 )}
               </button>
@@ -467,36 +452,36 @@ export default function BILogin() {
           </div>
 
           {/* ────────────────────────────────────────────────────────────
-              FOOTER: LEGAL LINKS + CREATED BY GREEN ARROW BRANDING
+              تذييل الصفحة: روابط السياسات + شعار GREEN ARROW الفاخر
              ──────────────────────────────────────────────────────────── */}
-          <div className="space-y-3 pt-6 border-t border-white/10 mt-6">
+          <div className="space-y-3.5 pt-6 border-t border-slate-100 mt-6">
             {/* Legal / Policy Links */}
-            <div className="flex items-center justify-center gap-3 text-[10px] text-slate-400">
-              <Link to="/privacy" className="hover:text-emerald-400 transition-colors underline">
+            <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500">
+              <Link to="/privacy" className="hover:text-blue-600 transition-colors underline font-medium">
                 سياسة الخصوصية
               </Link>
               <span>•</span>
-              <Link to="/terms" className="hover:text-emerald-400 transition-colors underline">
+              <Link to="/terms" className="hover:text-blue-600 transition-colors underline font-medium">
                 شروط الاستخدام
               </Link>
               <span>•</span>
-              <Link to="/data-deletion" className="hover:text-rose-400 transition-colors underline">
+              <Link to="/data-deletion" className="hover:text-rose-600 transition-colors underline font-medium">
                 حذف البيانات
               </Link>
             </div>
 
-            {/* Official Green Arrow Creator Signature */}
-            <div className="flex items-center justify-center gap-2.5 pt-2 border-t border-white/5">
+            {/* Official Green Arrow Signature */}
+            <div className="flex items-center justify-center gap-2.5 pt-2 border-t border-slate-100">
               <img 
                 src={greenArrowLogo} 
                 alt="Green Arrow" 
-                className="h-7 w-auto object-contain rounded-md shadow-xs opacity-90 hover:opacity-100 transition-opacity" 
+                className="h-8 w-auto object-contain rounded-lg shadow-xs" 
               />
               <div className="text-right">
-                <div className="text-[11px] font-bold text-slate-300">
-                  تم الإنشاء بواسطة <span className="text-emerald-400 font-black">GREEN ARROW</span>
+                <div className="text-xs font-bold text-slate-800">
+                  تم الإنشاء بواسطة <span className="text-[#059669] font-black">GREEN ARROW</span>
                 </div>
-                <div className="text-[9px] text-slate-500 font-mono">
+                <div className="text-[10px] text-slate-400 font-mono">
                   Performance Ads & Growth Solutions
                 </div>
               </div>
