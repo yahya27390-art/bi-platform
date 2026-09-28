@@ -118,6 +118,37 @@ export default function SupplierPriceReportModal({
       0
     );
 
+    // Breakdown for final summary (New items, Cheaper, Expensive, Matched Net Diff)
+    const notInCatalogItems = scopedItems.filter(i => !i.matched);
+    const notInCatalogCount = notInCatalogItems.length;
+    const notInCatalogUnits = notInCatalogItems.reduce((acc, i) => acc + (i.requestedQty || 1), 0);
+    const notInCatalogVal = notInCatalogItems.reduce((acc, i) => acc + (i.supplierPrice || 0), 0);
+    const notInCatalogBatchVal = notInCatalogItems.reduce(
+      (acc, i) => acc + (i.supplierBatchValue || ((i.supplierPrice || 0) * (i.requestedQty || 1))),
+      0
+    );
+
+    const cheaperItems = scopedItems.filter(i => i.verdict === 'cheaper');
+    const cheaperUnits = cheaperItems.reduce((acc, i) => acc + (i.requestedQty || 1), 0);
+
+    const expensiveItems = scopedItems.filter(i => i.verdict === 'expensive');
+    const expensiveUnits = expensiveItems.reduce((acc, i) => acc + (i.requestedQty || 1), 0);
+
+    const matchedItems = scopedItems.filter(i => i.matched && i.ourUnitCost > 0);
+    const matchedSupplierVal = matchedItems.reduce((acc, i) => acc + (i.supplierPrice || 0), 0);
+    const matchedOurVal = matchedItems.reduce((acc, i) => acc + (i.ourUnitCost || 0), 0);
+    const netMatchedDiff = matchedSupplierVal - matchedOurVal;
+
+    const matchedBatchSupplierVal = matchedItems.reduce(
+      (acc, i) => acc + (i.supplierBatchValue || ((i.supplierPrice || 0) * (i.requestedQty || 1))),
+      0
+    );
+    const matchedBatchOurVal = matchedItems.reduce(
+      (acc, i) => acc + (i.ourBatchCost || ((i.ourUnitCost || 0) * (i.requestedQty || 1))),
+      0
+    );
+    const netMatchedBatchDiff = matchedBatchSupplierVal - matchedBatchOurVal;
+
     return {
       totalCount: scopedItems.length,
       totalUnits,
@@ -129,7 +160,15 @@ export default function SupplierPriceReportModal({
       totalBatchSavings,
       totalBatchExtra,
       cheaperItemsCount,
+      cheaperUnits,
       expensiveItemsCount,
+      expensiveUnits,
+      notInCatalogCount,
+      notInCatalogUnits,
+      notInCatalogVal,
+      notInCatalogBatchVal,
+      netMatchedDiff,
+      netMatchedBatchDiff
     };
   }, [scopedItems]);
 
@@ -658,7 +697,108 @@ export default function SupplierPriceReportModal({
                   })
                 )}
               </tbody>
+
+              {/* Printable Table Footer Totals */}
+              <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-mono text-[10px] font-black text-slate-900">
+                <tr>
+                  <td colSpan={4} className="py-2 px-1.5 text-right font-sans">
+                    إجمالي النطاق المعروض ({scopedItems.length} صنف):
+                  </td>
+                  <td className="py-2 px-1 text-center bg-blue-50/50 text-blue-900">
+                    {formatNum(scopedTotals.totalUnits)}
+                  </td>
+                  <td className="py-2 px-1 text-center bg-blue-50/70 text-blue-900">
+                    <div>{formatSAR(scopedTotals.totalSupplierVal)}</div>
+                    <div className="text-[8.5px] font-normal text-slate-600">دفعة: {formatSAR(scopedTotals.totalBatchSupplierVal)}</div>
+                  </td>
+                  <td className="py-2 px-1 text-center text-slate-800">
+                    <div>{formatSAR(scopedTotals.totalOurVal)}</div>
+                  </td>
+                  <td className="py-2 px-1 text-center">
+                    <div className={scopedTotals.totalBatchSavings >= scopedTotals.totalBatchExtra ? 'text-emerald-800' : 'text-rose-800'}>
+                      {scopedTotals.totalBatchSavings >= scopedTotals.totalBatchExtra
+                        ? `وفر: +${formatSAR(scopedTotals.totalBatchSavings)}`
+                        : `زيادة: +${formatSAR(scopedTotals.totalBatchExtra)}`}
+                    </div>
+                  </td>
+                  <td className="py-2 px-1 text-center font-sans text-slate-500">
+                    —
+                  </td>
+                  <td className="py-2 px-1 text-center font-sans text-[9px] text-slate-700">
+                    {scopedTotals.cheaperItemsCount} وفر • {scopedTotals.expensiveItemsCount} أغلى
+                  </td>
+                </tr>
+              </tfoot>
             </table>
+          </div>
+
+          {/* 3.5 Executive Grand Decision Summary (خلاصة الفروقات المالية المعتمدة للطباعة A4) */}
+          <div className="mt-3 p-3 bg-slate-50 print:bg-slate-50/50 rounded-xl border border-slate-300 print:border-slate-400 space-y-2">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5 text-xs font-black text-slate-900">
+              <span className="flex items-center gap-1.5">
+                <span>📋</span>
+                <span>الخلاصة المالية المعتمدة لنتائج مقارنة أسعار المورد ({quotationInfo.supplierName}):</span>
+              </span>
+              <span className="font-mono text-[11px] text-slate-600 font-bold">
+                إجمالي كميات العرض: {formatNum(scopedTotals.totalUnits)} قطعة ({scopedTotals.totalCount} صنف)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2 text-[10.5px]">
+              {/* 1. Net Price Difference */}
+              <div className="p-2 rounded-lg bg-white border border-slate-200 space-y-0.5">
+                <div className="font-bold text-slate-600">إجمالي فرق الأسعار عن تكلفتنا:</div>
+                <div className={`font-black font-mono text-xs ${
+                  scopedTotals.netMatchedBatchDiff > 0 ? 'text-rose-700' : 'text-emerald-700'
+                }`}>
+                  {scopedTotals.netMatchedBatchDiff > 0
+                    ? `+${formatSAR(scopedTotals.netMatchedBatchDiff)} زيادة`
+                    : `${formatSAR(scopedTotals.netMatchedBatchDiff)} وفر`}
+                </div>
+                <div className="text-[9.5px] text-slate-500 font-mono">
+                  فرق الحبة: {scopedTotals.netMatchedDiff > 0 ? `+${formatSAR(scopedTotals.netMatchedDiff)}` : formatSAR(scopedTotals.netMatchedDiff)}
+                </div>
+              </div>
+
+              {/* 2. Cheaper Items & Savings */}
+              <div className="p-2 rounded-lg bg-emerald-50/80 border border-emerald-200 space-y-0.5">
+                <div className="font-bold text-emerald-900">
+                  أصناف التوفير (الوفر المالي): <span className="font-mono font-black">{scopedTotals.cheaperItemsCount} صنف</span>
+                </div>
+                <div className="font-black font-mono text-xs text-emerald-800">
+                  وفر دفعة: +{formatSAR(scopedTotals.totalBatchSavings)}
+                </div>
+                <div className="text-[9.5px] text-emerald-700 font-mono">
+                  وفر الحبة: +{formatSAR(scopedTotals.totalSavings)} ({formatNum(scopedTotals.cheaperUnits)} قطعة)
+                </div>
+              </div>
+
+              {/* 3. Expensive Items & Extra Cost */}
+              <div className="p-2 rounded-lg bg-rose-50/80 border border-rose-200 space-y-0.5">
+                <div className="font-bold text-rose-900">
+                  أصناف الزيادة (المورد أغلى): <span className="font-mono font-black">{scopedTotals.expensiveItemsCount} صنف</span>
+                </div>
+                <div className="font-black font-mono text-xs text-rose-800">
+                  زيادة دفعة: +{formatSAR(scopedTotals.totalBatchExtra)}
+                </div>
+                <div className="text-[9.5px] text-rose-700 font-mono">
+                  زيادة الحبة: +{formatSAR(scopedTotals.totalExtra)} ({formatNum(scopedTotals.expensiveUnits)} قطعة)
+                </div>
+              </div>
+
+              {/* 4. New / Uncatalogued Items */}
+              <div className="p-2 rounded-lg bg-purple-50/80 border border-purple-200 space-y-0.5">
+                <div className="font-bold text-purple-900">
+                  أصناف جديدة بالكتالوج: <span className="font-mono font-black">{scopedTotals.notInCatalogCount} صنف</span>
+                </div>
+                <div className="font-black font-mono text-xs text-purple-800">
+                  قيمة الدفعة: {formatSAR(scopedTotals.notInCatalogBatchVal)}
+                </div>
+                <div className="text-[9.5px] text-purple-700 font-mono">
+                  سعر الحبة: {formatSAR(scopedTotals.notInCatalogVal)} ({formatNum(scopedTotals.notInCatalogUnits)} قطعة)
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* 4. Official Signatures & Approval Block */}

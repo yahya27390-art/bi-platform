@@ -1251,6 +1251,34 @@ export default function SupplierPriceComparison() {
                 })
               )}
             </tbody>
+
+            {/* Table Bottom Totals Footer */}
+            <tfoot className="bg-slate-100/90 dark:bg-slate-800/90 font-mono font-black border-t-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+              <tr>
+                <td colSpan={3} className="py-3 px-3 text-right font-sans text-xs">
+                  إجمالي أصناف وكميات العرض ({filteredItems.length} صنف):
+                </td>
+                <td className="py-3 px-3 text-center text-blue-700 dark:text-blue-300">
+                  {formatNum(stats.totalOrderUnits || 0)}
+                </td>
+                <td className="py-3 px-3 text-center text-blue-600 dark:text-blue-400">
+                  <div>{formatSAR(stats.totalSupplierValue)}</div>
+                  <div className="text-[10px] text-slate-500 font-bold">دفعة: {formatSAR(stats.totalBatchSupplierValue)}</div>
+                </td>
+                <td className="py-3 px-3 text-center text-slate-700 dark:text-slate-300">
+                  <div>{formatSAR(stats.totalOurCostValue)}</div>
+                  <div className="text-[10px] text-slate-500 font-bold">دفعة: {formatSAR(stats.totalBatchOurCostValue)}</div>
+                </td>
+                <td className="py-3 px-3 text-center">
+                  <div className={stats.netBatchSavings >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
+                    {stats.netBatchSavings >= 0 ? `وفر: +${formatSAR(stats.totalBatchSavings)}` : `زيادة: +${formatSAR(stats.totalBatchExtraRisk)}`}
+                  </div>
+                </td>
+                <td colSpan={3} className="py-3 px-3 text-center font-sans text-[11px] text-slate-500">
+                  {stats.cheaperCount} وفر • {stats.expensiveCount} أغلى • {stats.notInCatalogCount} جديد
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
 
@@ -1281,6 +1309,131 @@ export default function SupplierPriceComparison() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ─── 5.5 FINAL EXECUTIVE COMPARISON SUMMARY & FINANCIAL DECISION (نهاية التقرير والخلاصة التنفيذية الشاملة) ─── */}
+      <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-md space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-xl text-xs font-black bg-blue-600 text-white shadow-sm">
+                الخلاصة المالية النهائية للتقرير
+              </span>
+              <span className="text-xs font-bold text-slate-500">
+                نتائج مطابقة وتدقيق عرض أسعار: <strong className="text-slate-900 dark:text-white font-mono">{quotationInfo.supplierName}</strong>
+              </span>
+            </div>
+            <h3 className="text-lg font-black text-slate-900 dark:text-white mt-1">
+              ملخص الفروقات المالية المعتمدة وقرار الشراء النهائي
+            </h3>
+          </div>
+
+          <div className="text-left font-mono text-xs bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1">
+            <div className="text-slate-500 font-sans font-bold">إجمالي كميات العرض:</div>
+            <div className="text-base font-black text-blue-600 dark:text-blue-400">
+              {formatNum(stats.totalOrderUnits || 0)} قطعة ({stats.totalCount} صنف)
+            </div>
+          </div>
+        </div>
+
+        {/* The 4 Core Financial Decision Panels */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Panel 1: Net Price Difference vs Our Inventory */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/60 dark:from-slate-800/40 dark:to-slate-900 border border-slate-200 dark:border-slate-700/80 space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
+              <span>إجمالي فرق الأسعار عن اللي عندنا</span>
+              <Scale className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+            </div>
+            <div className="space-y-1">
+              <div className="text-xs text-slate-500">للأصناف المطابقة ({stats.matchedCount} صنف):</div>
+              <div className={`text-xl font-black font-mono ${
+                (stats.netMatchedBatchPriceDiff || 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+              }`}>
+                {(stats.netMatchedBatchPriceDiff || 0) > 0 ? `+${formatSAR(stats.netMatchedBatchPriceDiff)} زيادة` : `${formatSAR(stats.netMatchedBatchPriceDiff)} وفر`}
+              </div>
+              <div className="text-[11px] font-mono text-slate-500">
+                فرق الحبة الواحدة: {(stats.netMatchedPriceDiff || 0) > 0 ? `+${formatSAR(stats.netMatchedPriceDiff)}` : formatSAR(stats.netMatchedPriceDiff)}
+              </div>
+            </div>
+            <p className="text-[10.5px] text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-2 leading-tight">
+              صافي الفارق المالي بين فواتير المورد وتكلفتنا المسجلة لنفس الأصناف والكميات.
+            </p>
+          </div>
+
+          {/* Panel 2: Cheaper Items & Total Savings */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-slate-900 border-2 border-emerald-300 dark:border-emerald-700/80 space-y-2">
+            <div className="flex items-center justify-between text-xs font-black text-emerald-800 dark:text-emerald-300">
+              <span>الأصناف التي بها توفير (وفر)</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-600 text-white font-mono font-bold">
+                {stats.cheaperCount} صنف
+              </span>
+            </div>
+            <div className="space-y-1">
+              <div className="text-xs text-emerald-700 dark:text-emerald-300 font-bold">
+                إجمالي كميات التوفير: <strong className="font-mono text-sm">{formatNum(stats.cheaperUnits || stats.cheaperCount)} قطعة</strong>
+              </div>
+              <div className="text-xl font-black font-mono text-emerald-700 dark:text-emerald-400">
+                +{formatSAR(stats.totalBatchSavings || 0)}
+              </div>
+              <div className="text-[11px] font-mono text-emerald-700/80 dark:text-emerald-300/80">
+                وفر الحبة الواحدة: +{formatSAR(stats.totalSavingsOpportunity || 0)}
+              </div>
+            </div>
+            <p className="text-[10.5px] text-emerald-800/80 dark:text-emerald-300/80 border-t border-emerald-200 dark:border-emerald-800/60 pt-2 leading-tight font-medium">
+              ✅ يُوصى بإصدار أمر شراء فوري لهذه الأصناف للاستفادة من فرق التكلفة والخصم.
+            </p>
+          </div>
+
+          {/* Panel 3: Expensive Items & Extra Cost */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-50 to-rose-100/50 dark:from-rose-950/30 dark:to-slate-900 border-2 border-rose-300 dark:border-rose-700/80 space-y-2">
+            <div className="flex items-center justify-between text-xs font-black text-rose-800 dark:text-rose-300">
+              <span>الأصناف التي بها زيادة (أغلى)</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-600 text-white font-mono font-bold">
+                {stats.expensiveCount} صنف
+              </span>
+            </div>
+            <div className="space-y-1">
+              <div className="text-xs text-rose-700 dark:text-rose-300 font-bold">
+                إجمالي كميات الزيادة: <strong className="font-mono text-sm">{formatNum(stats.expensiveUnits || stats.expensiveCount)} قطعة</strong>
+              </div>
+              <div className="text-xl font-black font-mono text-rose-700 dark:text-rose-400">
+                +{formatSAR(stats.totalBatchExtraRisk || 0)}
+              </div>
+              <div className="text-[11px] font-mono text-rose-700/80 dark:text-rose-300/80">
+                زيادة الحبة الواحدة: +{formatSAR(stats.totalExtraRisk || 0)}
+              </div>
+            </div>
+            <p className="text-[10.5px] text-rose-800/80 dark:text-rose-300/80 border-t border-rose-200 dark:border-rose-800/60 pt-2 leading-tight font-medium">
+              ⚠️ يُوصى بتجنب شرائها من المورد لأن أسعارها تفوق تكلفتنا المعتمدة الحالية.
+            </p>
+          </div>
+
+          {/* Panel 4: New / Uncatalogued Items & Total Price */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-slate-900 border-2 border-purple-300 dark:border-purple-700/80 space-y-2">
+            <div className="flex items-center justify-between text-xs font-black text-purple-800 dark:text-purple-300">
+              <span>الأصناف الجديدة بالكتالوج</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-600 text-white font-mono font-bold">
+                {stats.notInCatalogCount} صنف
+              </span>
+            </div>
+            <div className="space-y-1">
+              <div className="text-xs text-purple-700 dark:text-purple-300 font-bold">
+                إجمالي كمياتها: <strong className="font-mono text-sm">{formatNum(stats.notInCatalogUnits || stats.notInCatalogCount)} قطعة</strong>
+              </div>
+              <div className="text-xl font-black font-mono text-purple-700 dark:text-purple-400">
+                {formatSAR(stats.notInCatalogBatchValue || 0)}
+              </div>
+              <div className="text-[11px] font-mono text-purple-700/80 dark:text-purple-300/80">
+                إجمالي سعر الحبة: {formatSAR(stats.notInCatalogTotalValue || 0)}
+              </div>
+            </div>
+            <p className="text-[10.5px] text-purple-800/80 dark:text-purple-300/80 border-t border-purple-200 dark:border-purple-800/60 pt-2 leading-tight font-medium">
+              ➕ أصناف غير مسجلة بمخزوننا، تمثل فرصة لتوسيع الكتالوج وتسعيرها للبيع.
+            </p>
+          </div>
+
+        </div>
       </div>
 
       {/* ─── 6. DYNAMIC UPLOAD MODAL (DRAG & DROP PDF / EXCEL) ─── */}

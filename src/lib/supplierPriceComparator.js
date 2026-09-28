@@ -131,6 +131,15 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
   let totalBatchSavings = 0;
   let totalBatchExtraRisk = 0;
 
+  // Breakdown Counters requested by User
+  let cheaperUnits = 0;
+  let expensiveUnits = 0;
+  let notInCatalogUnits = 0;
+  let notInCatalogTotalValue = 0;
+  let notInCatalogBatchValue = 0;
+  let matchedSupplierValue = 0;
+  let matchedBatchSupplierValue = 0;
+
   // Grade-specific statistics
   let koreanTotalCount = 0;
   let koreanMatchedCount = 0;
@@ -213,6 +222,9 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       const totalQty = Number(ourMatch.balance || ourMatch.totalQty || 0);
       const ourBatchCost = ourCost * requestedQty;
 
+      matchedSupplierValue += supplierPrice;
+      matchedBatchSupplierValue += supplierBatchValue;
+
       if (totalQty > 0) inStockCount++;
       if (ourCost > 0) {
         totalOurCostValue += ourCost;
@@ -241,6 +253,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
           verdictLabel = 'أرخص من تكلفتنا (وفر)';
           verdictColor = 'emerald';
           cheaperCount++;
+          cheaperUnits += requestedQty;
           savingsAmount = ourCost - supplierPrice;
           totalSavingsOpportunity += savingsAmount;
         } else if (supplierPrice > ourCost) {
@@ -248,6 +261,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
           verdictLabel = 'أغلى من تكلفتنا';
           verdictColor = 'rose';
           expensiveCount++;
+          expensiveUnits += requestedQty;
           extraAmount = supplierPrice - ourCost;
           totalExtraRisk += extraAmount;
         } else {
@@ -316,6 +330,10 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       };
     } else {
       notInCatalogCount++;
+      notInCatalogUnits += requestedQty;
+      notInCatalogTotalValue += supplierPrice;
+      notInCatalogBatchValue += supplierBatchValue;
+
       if (isSupplierKorean) {
         koreanTotalCount++;
       } else if (isSupplierOEM) {
@@ -379,14 +397,23 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       matchedCount,
       matchRate: Math.round(matchRate * 10) / 10,
       notInCatalogCount,
+      notInCatalogUnits,
+      notInCatalogTotalValue: Math.round(notInCatalogTotalValue * 100) / 100,
+      notInCatalogBatchValue: Math.round(notInCatalogBatchValue * 100) / 100,
       cheaperCount,
+      cheaperUnits,
       expensiveCount,
+      expensiveUnits,
       equalCount,
       zeroCostCount,
       inStockCount,
       totalOrderUnits,
       totalSupplierValue,
       totalOurCostValue,
+      matchedSupplierValue: Math.round(matchedSupplierValue * 100) / 100,
+      matchedBatchSupplierValue: Math.round(matchedBatchSupplierValue * 100) / 100,
+      netMatchedPriceDiff: Math.round((matchedSupplierValue - totalOurCostValue) * 100) / 100,
+      netMatchedBatchPriceDiff: Math.round((matchedBatchSupplierValue - totalBatchOurCostValue) * 100) / 100,
       totalBatchSupplierValue: Math.round(totalBatchSupplierValue * 100) / 100,
       totalBatchOurCostValue: Math.round(totalBatchOurCostValue * 100) / 100,
       totalBatchSavings: Math.round(totalBatchSavings * 100) / 100,
