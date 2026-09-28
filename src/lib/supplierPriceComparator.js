@@ -109,6 +109,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
   let zeroCostCount = 0;
   let notInCatalogCount = 0;
   let inStockCount = 0;
+  let unavailableCount = 0;
 
   let totalSupplierValue = 0;
   let totalOurCostValue = 0;
@@ -129,11 +130,17 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
   const analyzedItems = (rawItems || []).map((item, idx) => {
     const rawPartNumber = String(item.partNumber || item['رقم القطعة'] || item.sku || '').trim();
     const cleanKey = normalizePartNumber(rawPartNumber);
-    const supplierPrice = Number(item.supplierPrice || item['السعر'] || item.price || 0);
+    const rawPrice = Number(item.supplierPrice || item['السعر'] || item.price || 0);
+    const hasPrice = rawPrice > 0;
+    const supplierPrice = hasPrice ? rawPrice : 0;
     const partName = String(item.partName || item['اسم القطعة'] || item.name || '').trim();
     const itemNo = item.itemNo || item.id || idx + 1;
+    const itemNote = String(item.note || item['ملاحظة'] || item['ملاحظات'] || '').trim();
+    const isUnavailable = !hasPrice || itemNote.includes('غير متوفر');
 
-    totalSupplierValue += supplierPrice;
+    if (hasPrice) {
+      totalSupplierValue += supplierPrice;
+    }
 
     // Detect Product Grade (Korean vs OEM vs General)
     const isSupplierKorean =
@@ -174,7 +181,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       }
       if (ourMatch) matchType = 'oem-to-oem';
     } else {
-      // 3. General item (e.g. Diesel parts in Husoun quotation)
+      // 3. General item (e.g. Diesel parts in Husoun / Misk quotation)
       ourMatch = catalogMap.get(cleanKey);
       if (!ourMatch) {
         const baseKey = cleanKey.replace(/[KM]$/, '');
@@ -189,44 +196,57 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       const totalQty = Number(ourMatch.balance || ourMatch.totalQty || 0);
 
       if (totalQty > 0) inStockCount++;
-      if (ourCost > 0) totalOurCostValue += ourCost;
+      if (ourCost > 0 && hasPrice) totalOurCostValue += ourCost;
 
-      const diff = supplierPrice - ourCost;
-      const diffPercent = ourCost > 0 ? ((supplierPrice - ourCost) / ourCost) * 100 : null;
-
+      let diff = null;
+      let diffPercent = null;
+      let savingsAmount = 0;
+      let extraAmount = 0;
       let verdict = 'equal';
       let verdictLabel = 'سعر متطابق';
       let verdictColor = 'slate';
 
-      if (ourCost === 0) {
+      if (isUnavailable) {
+        verdict = 'unavailable';
+        verdictLabel = itemNote || 'التوريد غير متوفر';
+        verdictColor = 'slate';
+        unavailableCount++;
+      } else if (ourCost === 0) {
         verdict = 'zero_cost';
         verdictLabel = 'تكلفتنا مسجلة 0';
         verdictColor = 'amber';
         zeroCostCount++;
-      } else if (supplierPrice < ourCost) {
-        verdict = 'cheaper';
-        verdictLabel = 'أرخص من تكلفتنا (وفر)';
-        verdictColor = 'emerald';
-        cheaperCount++;
-        totalSavingsOpportunity += (ourCost - supplierPrice);
-      } else if (supplierPrice > ourCost) {
-        verdict = 'expensive';
-        verdictLabel = 'أغلى من تكلفتنا';
-        verdictColor = 'rose';
-        expensiveCount++;
-        totalExtraRisk += (supplierPrice - ourCost);
       } else {
-        equalCount++;
+        diff = supplierPrice - ourCost;
+        diffPercent = ((supplierPrice - ourCost) / ourCost) * 100;
+
+        if (supplierPrice < ourCost) {
+          verdict = 'cheaper';
+          verdictLabel = 'أرخص من تكلفتنا (وفر)';
+          verdictColor = 'emerald';
+          cheaperCount++;
+          savingsAmount = ourCost - supplierPrice;
+          totalSavingsOpportunity += savingsAmount;
+        } else if (supplierPrice > ourCost) {
+          verdict = 'expensive';
+          verdictLabel = 'أغلى من تكلفتنا';
+          verdictColor = 'rose';
+          expensiveCount++;
+          extraAmount = supplierPrice - ourCost;
+          totalExtraRisk += extraAmount;
+        } else {
+          equalCount++;
+        }
       }
 
-      if (isSupplierKorean) {
+      if (isSupplierKorean && !isUnavailable) {
         koreanTotalCount++;
         koreanMatchedCount++;
         if (supplierPrice < ourCost && ourCost > 0) {
           koreanCheaperCount++;
           koreanSavings += (ourCost - supplierPrice);
         }
-      } else if (isSupplierOEM) {
+      } else if (isSupplierOEM && !isUnavailable) {
         oemTotalCount++;
         oemMatchedCount++;
         if (supplierPrice < ourCost && ourCost > 0) {
@@ -241,7 +261,9 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         supplierPartNumber: rawPartNumber,
         normalizedPartNumber: cleanKey,
         supplierPartName: partName,
-        supplierPrice,
+        supplierPrice: hasPrice ? supplierPrice : null,
+        isAvailable: !isUnavailable,
+        itemNote,
         productGrade,
         productGradeLabel,
         matched: true,
@@ -257,8 +279,8 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         ourBrand: ourMatch.brand || (isSupplierKorean ? 'korean' : 'mobis'),
         diff,
         diffPercent,
-        savingsAmount: diff < 0 ? Math.abs(diff) : 0,
-        extraAmount: diff > 0 ? diff : 0,
+        savingsAmount,
+        extraAmount,
         verdict,
         verdictLabel,
         verdictColor,
@@ -271,7 +293,10 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       } else if (isSupplierOEM) {
         oemTotalCount++;
       }
-      const notFoundLabel = isSupplierKorean
+
+      const notFoundLabel = isUnavailable
+        ? (itemNote || 'التوريد غير متوفر')
+        : isSupplierKorean
         ? 'غير متوفر كوري بمخزوننا (صنف جديد)'
         : isSupplierOEM
         ? 'غير مسجل كأصلي بالكتالوج'
@@ -283,7 +308,9 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         supplierPartNumber: rawPartNumber,
         normalizedPartNumber: cleanKey,
         supplierPartName: partName,
-        supplierPrice,
+        supplierPrice: hasPrice ? supplierPrice : null,
+        isAvailable: !isUnavailable,
+        itemNote,
         productGrade,
         productGradeLabel,
         matched: false,
@@ -301,9 +328,9 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         diffPercent: null,
         savingsAmount: 0,
         extraAmount: 0,
-        verdict: 'not_in_catalog',
+        verdict: isUnavailable ? 'unavailable' : 'not_in_catalog',
         verdictLabel: notFoundLabel,
-        verdictColor: 'purple',
+        verdictColor: isUnavailable ? 'slate' : 'purple',
         status: 'not_in_catalog'
       };
     }
@@ -324,6 +351,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       expensiveCount,
       equalCount,
       zeroCostCount,
+      unavailableCount,
       inStockCount,
       totalSupplierValue,
       totalOurCostValue,

@@ -299,8 +299,10 @@ export default function SupplierPriceComparison() {
       list = list.filter((i) => i.verdict === 'expensive');
     } else if (filterVerdict === 'equal') {
       list = list.filter((i) => i.verdict === 'equal');
+    } else if (filterVerdict === 'unavailable') {
+      list = list.filter((i) => i.verdict === 'unavailable' || !i.isAvailable);
     } else if (filterVerdict === 'not_in_catalog') {
-      list = list.filter((i) => !i.matched);
+      list = list.filter((i) => !i.matched && i.verdict !== 'unavailable');
     } else if (filterVerdict === 'in_stock') {
       list = list.filter((i) => i.matched && i.ourTotalQty > 0);
     }
@@ -797,6 +799,20 @@ export default function SupplierPriceComparison() {
             <span>➕ أصناف جديدة غير مسجلة</span>
             <span className="font-mono text-[10px]">({stats.notInCatalogCount})</span>
           </button>
+
+          {stats.unavailableCount > 0 && (
+            <button
+              onClick={() => { setFilterVerdict('unavailable'); setPage(1); }}
+              className={`flex items-center gap-1 px-3.5 py-1.5 rounded-xl font-bold transition-all shrink-0 cursor-pointer ${
+                filterVerdict === 'unavailable'
+                  ? 'bg-slate-700 text-white shadow-sm'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+              }`}
+            >
+              <span>🔒 غير متوفر للتوريد</span>
+              <span className="font-mono text-[10px]">({stats.unavailableCount})</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -858,7 +874,8 @@ export default function SupplierPriceComparison() {
                 paginatedItems.map((item, idx) => {
                   const isCheaper = item.verdict === 'cheaper';
                   const isExpensive = item.verdict === 'expensive';
-                  const isNotInCatalog = !item.matched;
+                  const isUnavailable = item.verdict === 'unavailable' || !item.isAvailable;
+                  const isNotInCatalog = !item.matched && !isUnavailable;
                   const isZeroCost = item.verdict === 'zero_cost';
 
                   return (
@@ -924,11 +941,15 @@ export default function SupplierPriceComparison() {
                             </div>
                           ) : (
                             <div className={`text-[10px] font-bold ${
-                              item.productGrade === 'korean'
+                              isUnavailable
+                                ? 'text-slate-500'
+                                : item.productGrade === 'korean'
                                 ? 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-300/50 inline-block'
                                 : 'text-purple-600 dark:text-purple-400'
                             }`}>
-                              {item.productGrade === 'korean'
+                              {isUnavailable
+                                ? (item.itemNote || 'التوريد غير متوفر')
+                                : item.productGrade === 'korean'
                                 ? '⚠️ غير متوفر كوري بمخزوننا (صنف جديد)'
                                 : 'غير مسجل بالكتالوج'}
                             </div>
@@ -956,8 +977,16 @@ export default function SupplierPriceComparison() {
                       </td>
 
                       {/* Supplier Price */}
-                      <td className="py-3 px-3 text-center font-mono font-black text-xs text-blue-600 dark:text-blue-400">
-                        {formatSAR(item.supplierPrice)}
+                      <td className="py-3 px-3 text-center font-mono text-xs">
+                        {item.supplierPrice !== null && item.supplierPrice > 0 ? (
+                          <span className="font-black text-blue-600 dark:text-blue-400">
+                            {formatSAR(item.supplierPrice)}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700" title="المورد لم يحدد سعراً أو غير متوفر للتوريد">
+                            {item.itemNote || 'التوريد غير متوفر'}
+                          </span>
+                        )}
                       </td>
 
                       {/* Our Cost */}
@@ -1037,6 +1066,11 @@ export default function SupplierPriceComparison() {
                         {isZeroCost && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                             ⚠️ يحتاج تسعيرة
+                          </span>
+                        )}
+                        {isUnavailable && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-300 dark:border-slate-700">
+                            🔒 {item.itemNote || 'التوريد غير متوفر'}
                           </span>
                         )}
                         {isNotInCatalog && (
