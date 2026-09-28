@@ -124,6 +124,13 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
   let totalSavingsOpportunity = 0;
   let totalExtraRisk = 0;
 
+  // Batch & Quantity (QTY) Aggregates
+  let totalOrderUnits = 0;
+  let totalBatchSupplierValue = 0;
+  let totalBatchOurCostValue = 0;
+  let totalBatchSavings = 0;
+  let totalBatchExtraRisk = 0;
+
   // Grade-specific statistics
   let koreanTotalCount = 0;
   let koreanMatchedCount = 0;
@@ -143,7 +150,14 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
     const itemNo = idx + 1;
     const itemNote = String(item.note || item['ملاحظة'] || item['ملاحظات'] || '').trim();
 
+    // Parse Quantity (QTY)
+    const rawQty = item.requestedQty ?? item.qty ?? item['QTY'] ?? item['QTY.'] ?? item['الكمية'] ?? item['كمية'] ?? 1;
+    const requestedQty = Math.max(1, parseInt(String(rawQty).replace(/[^0-9]/g, ''), 10) || 1);
+
+    totalOrderUnits += requestedQty;
     totalSupplierValue += supplierPrice;
+    const supplierBatchValue = supplierPrice * requestedQty;
+    totalBatchSupplierValue += supplierBatchValue;
 
     // Detect Product Grade (Korean vs OEM vs General)
     const isSupplierKorean =
@@ -197,9 +211,13 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       matchedCount++;
       const ourCost = Number(ourMatch.unitCost || 0);
       const totalQty = Number(ourMatch.balance || ourMatch.totalQty || 0);
+      const ourBatchCost = ourCost * requestedQty;
 
       if (totalQty > 0) inStockCount++;
-      if (ourCost > 0) totalOurCostValue += ourCost;
+      if (ourCost > 0) {
+        totalOurCostValue += ourCost;
+        totalBatchOurCostValue += ourBatchCost;
+      }
 
       let diff = null;
       let diffPercent = null;
@@ -237,6 +255,12 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         }
       }
 
+      const batchSavingsAmount = savingsAmount * requestedQty;
+      const batchExtraAmount = extraAmount * requestedQty;
+      const batchDiff = diff !== null ? (diff * requestedQty) : null;
+      totalBatchSavings += batchSavingsAmount;
+      totalBatchExtraRisk += batchExtraAmount;
+
       if (isSupplierKorean) {
         koreanTotalCount++;
         koreanMatchedCount++;
@@ -256,10 +280,12 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       return {
         id: itemNo,
         itemNo,
+        requestedQty,
         supplierPartNumber: rawPartNumber,
         normalizedPartNumber: cleanKey,
         supplierPartName: partName,
         supplierPrice,
+        supplierBatchValue,
         isAvailable: true,
         itemNote,
         productGrade,
@@ -269,6 +295,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         ourSku: ourMatch.sku,
         ourName: ourMatch.name,
         ourUnitCost: ourCost,
+        ourBatchCost,
         ourTotalQty: totalQty,
         ourQtyMain: Number(ourMatch.qtyMain || 0),
         ourQtyRawaf: Number(ourMatch.qtyRawaf || 0),
@@ -276,9 +303,12 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         ourCategory: ourMatch.category || (isSupplierKorean ? 'فحمات كوري' : 'فحمات فرامل'),
         ourBrand: ourMatch.brand || (isSupplierKorean ? 'korean' : 'mobis'),
         diff,
+        batchDiff,
         diffPercent,
         savingsAmount,
+        batchSavingsAmount,
         extraAmount,
+        batchExtraAmount,
         verdict,
         verdictLabel,
         verdictColor,
@@ -301,10 +331,12 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       return {
         id: itemNo,
         itemNo,
+        requestedQty,
         supplierPartNumber: rawPartNumber,
         normalizedPartNumber: cleanKey,
         supplierPartName: partName,
         supplierPrice,
+        supplierBatchValue,
         isAvailable: true,
         itemNote,
         productGrade,
@@ -314,6 +346,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         ourSku: null,
         ourName: notFoundLabel,
         ourUnitCost: null,
+        ourBatchCost: null,
         ourTotalQty: 0,
         ourQtyMain: 0,
         ourQtyRawaf: 0,
@@ -321,9 +354,12 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
         ourCategory: isSupplierKorean ? 'فحمات فرامل كوري' : 'فحمات فرامل أصلي',
         ourBrand: isSupplierKorean ? 'korean' : 'mobis',
         diff: null,
+        batchDiff: null,
         diffPercent: null,
         savingsAmount: 0,
+        batchSavingsAmount: 0,
         extraAmount: 0,
+        batchExtraAmount: 0,
         verdict: 'not_in_catalog',
         verdictLabel: notFoundLabel,
         verdictColor: 'purple',
@@ -348,8 +384,14 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       equalCount,
       zeroCostCount,
       inStockCount,
+      totalOrderUnits,
       totalSupplierValue,
       totalOurCostValue,
+      totalBatchSupplierValue: Math.round(totalBatchSupplierValue * 100) / 100,
+      totalBatchOurCostValue: Math.round(totalBatchOurCostValue * 100) / 100,
+      totalBatchSavings: Math.round(totalBatchSavings * 100) / 100,
+      totalBatchExtraRisk: Math.round(totalBatchExtraRisk * 100) / 100,
+      netBatchSavings: Math.round((totalBatchSavings - totalBatchExtraRisk) * 100) / 100,
       totalSavingsOpportunity: Math.round(totalSavingsOpportunity * 100) / 100,
       totalExtraRisk: Math.round(totalExtraRisk * 100) / 100,
       koreanTotalCount,
@@ -519,6 +561,9 @@ export async function parseExcelQuotationFile(file) {
         const firstRow = normalizedJson[0];
         const keys = Object.keys(firstRow);
 
+        let qtyKey = keys.find((k) =>
+          /^\s*qty\.?\s*$|الكمية|كمية|quantity|count/i.test(k)
+        );
         let partKey = keys.find((k) =>
           /رقم.*قطعة|كود.*صنف|رقم.*الصنف|رقم.*القطعه|^\s*p\s*[\/\\]?\s*n\s*$|part.*no|part.*num|sku|code/i.test(k)
         );
@@ -546,6 +591,9 @@ export async function parseExcelQuotationFile(file) {
           const rawPrice = priceKey ? parseFloat(String(row[priceKey]).replace(/[^0-9.]/g, '')) : 0;
           const rawNote = notesKey ? String(row[notesKey] || '').trim() : '';
 
+          const rawQty = qtyKey ? parseInt(String(row[qtyKey]).replace(/[^0-9]/g, ''), 10) : 1;
+          const requestedQty = isNaN(rawQty) || rawQty <= 0 ? 1 : rawQty;
+
           if ((!rawPrice || rawPrice === 0) && rawNote) {
             rawName = rawName ? `${rawName} (${rawNote})` : rawNote;
           }
@@ -555,6 +603,7 @@ export async function parseExcelQuotationFile(file) {
             itemNo: row['م'] || row['#'] || idx + 1,
             partNumber: String(rawPart).trim(),
             partName: String(rawName || 'صنف مسعر').trim(),
+            requestedQty,
             supplierPrice: isNaN(rawPrice) ? 0 : rawPrice,
             note: rawNote
           };
@@ -623,12 +672,18 @@ export function exportComparisonToExcel(analyzedItems, quotationInfo) {
     'الرقم المعتمد بمخزوننا (درة السيارة)': item.ourSku || '--',
     'اسم القطعة عند المورد': item.supplierPartName,
     'اسم الصنف بمخزوننا': item.ourName,
-    'سعر المورد (ر.س)': item.supplierPrice,
-    'تكلفتنا المعتمدة (ر.س)': item.ourUnitCost !== null ? item.ourUnitCost : '--',
-    'فرق السعر (ر.س)': item.diff !== null ? item.diff : '--',
+    'الكمية المطلوبة (QTY)': item.requestedQty || 1,
+    'سعر المورد للقطعة (ر.س)': item.supplierPrice,
+    'إجمالي قيمة المورد للكمية (ر.س)': item.supplierBatchValue || (item.supplierPrice * (item.requestedQty || 1)),
+    'تكلفتنا المعتمدة للقطعة (ر.س)': item.ourUnitCost !== null ? item.ourUnitCost : '--',
+    'إجمالي تكلفتنا للكمية (ر.س)': item.ourBatchCost !== null ? item.ourBatchCost : '--',
+    'فرق سعر القطعة (ر.س)': item.diff !== null ? item.diff : '--',
+    'إجمالي الوفر أو الزيادة للكمية (ر.س)': item.batchDiff !== null 
+      ? (item.verdict === 'cheaper' ? `وفر ${item.batchSavingsAmount.toFixed(2)}` : item.verdict === 'expensive' ? `زيادة ${item.batchExtraAmount.toFixed(2)}` : '0.00') 
+      : '--',
     'نسبة الفرق %': item.diffPercent !== null ? `${item.diffPercent.toFixed(1)}%` : '--',
-    'التقييم': item.verdictLabel,
-    'إجمالي رصيدنا المتوفر': item.ourTotalQty,
+    'التقييم والتوصية': item.verdictLabel,
+    'إجمالي رصيدنا المتوفر بالمخزن': item.ourTotalQty,
     'فرع المركز الرئيسي': item.ourQtyMain,
     'فرع الرواف': item.ourQtyRawaf,
     'فرع السليم': item.ourQtySulaim,
@@ -637,8 +692,8 @@ export function exportComparisonToExcel(analyzedItems, quotationInfo) {
 
   const worksheet = XLSX.utils.json_to_sheet(rows);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'مقارنة الأسعار');
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'مقارنة الأسعار بالكميات');
 
-  const fileName = `مقارنة_أسعار_${quotationInfo.supplierName || 'المورد'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+  const fileName = `مقارنة_أسعار_شاملة_الكميات_${quotationInfo.supplierName || 'المورد'}_${new Date().toISOString().split('T')[0]}.xlsx`;
   XLSX.writeFile(workbook, fileName);
 }

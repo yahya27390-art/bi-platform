@@ -645,6 +645,70 @@ export default function SupplierPriceComparison() {
         </div>
       </div>
 
+      {/* ─── 3.5 BATCH & QUANTITY (QTY) ORDER VALUE ANALYSIS BANNER ─── */}
+      <div className="bg-gradient-to-l from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-5 border border-blue-800/50 shadow-lg">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-500 text-white uppercase tracking-wider">
+                تحليل الكميات المطلوبة (QTY Analysis)
+              </span>
+              <span className="text-xs text-blue-200 font-bold">
+                إجمالي طلبية العرض: <strong className="font-mono text-white text-sm">{formatNum(stats.totalOrderUnits || 0)} قطعة</strong>
+              </span>
+            </div>
+            <h3 className="text-sm font-black text-white">
+              مقارنة القيمة المالية الإجمالية للطلبية بكامل الكميات المحددة بعرض المورد
+            </h3>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              تم احتساب الفروقات المالية بضرب أسعار المورد وأسعار تكلفتنا في كمية كل صنف (QTY).
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 shrink-0">
+            {/* 1. Total Supplier Batch Value */}
+            <div className="bg-slate-800/80 backdrop-blur-sm border border-slate-700/80 rounded-2xl p-3 text-center">
+              <div className="text-[10px] font-bold text-slate-400">إجمالي فاتورة المورد (QTY)</div>
+              <div className="text-sm sm:text-base font-black font-mono text-blue-400">
+                {formatSAR(stats.totalBatchSupplierValue || 0)}
+              </div>
+              <div className="text-[9px] text-slate-400">لكامل الـ {formatNum(stats.totalOrderUnits || 0)} قطعة</div>
+            </div>
+
+            {/* 2. Total Matched Batch Dora Cost */}
+            <div className="bg-slate-800/80 backdrop-blur-sm border border-slate-700/80 rounded-2xl p-3 text-center">
+              <div className="text-[10px] font-bold text-slate-400">تكلفة درة للمطابق (QTY)</div>
+              <div className="text-sm sm:text-base font-black font-mono text-slate-200">
+                {formatSAR(stats.totalBatchOurCostValue || 0)}
+              </div>
+              <div className="text-[9px] text-slate-400">لـ {formatNum(stats.matchedCount)} صنف مطابق</div>
+            </div>
+
+            {/* 3. Total Batch Savings on Cheaper Items */}
+            <div className="bg-emerald-950/60 border border-emerald-700/60 rounded-2xl p-3 text-center">
+              <div className="text-[10px] font-bold text-emerald-300">وفر صفقات الشراء بالكميات</div>
+              <div className="text-sm sm:text-base font-black font-mono text-emerald-400">
+                +{formatSAR(stats.totalBatchSavings || 0)}
+              </div>
+              <div className="text-[9px] text-emerald-300/80 font-bold">
+                وفر فعلي على {formatNum(stats.cheaperCount)} صنف
+              </div>
+            </div>
+
+            {/* 4. Total Batch Extra Cost Risk */}
+            <div className="bg-rose-950/60 border border-rose-700/60 rounded-2xl p-3 text-center">
+              <div className="text-[10px] font-bold text-rose-300">مخاطر الزيادة بالكميات</div>
+              <div className="text-sm sm:text-base font-black font-mono text-rose-400">
+                +{formatSAR(stats.totalBatchExtraRisk || 0)}
+              </div>
+              <div className="text-[9px] text-rose-300/80 font-bold">
+                تجنب شراء {formatNum(stats.expensiveCount)} صنف
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ─── 4. FILTERING & SEARCH CONTROLS BAR ─── */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-sm space-y-3.5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -868,20 +932,21 @@ export default function SupplierPriceComparison() {
               <tr>
                 <th className="py-3.5 px-3 w-12 text-center">#</th>
                 <th className="py-3.5 px-3 min-w-[190px]">رقم القطعة (المورد vs درة السيارة)</th>
-                <th className="py-3.5 px-3 min-w-[220px]">اسم القطعة والبيان المعتمد</th>
-                <th className="py-3.5 px-3 text-center min-w-[110px]">سعر المورد</th>
-                <th className="py-3.5 px-3 text-center min-w-[110px]">تكلفتنا المعتمدة</th>
-                <th className="py-3.5 px-3 text-center min-w-[130px]">فرق السعر والنسبة</th>
-                <th className="py-3.5 px-3 text-center min-w-[130px]">تقييم الشراء</th>
-                <th className="py-3.5 px-3 text-center min-w-[140px]">أرصدة الفروع بالمخزن</th>
-                <th className="py-3.5 px-3 w-16 text-center">تفاصيل</th>
+                <th className="py-3.5 px-3 min-w-[200px]">اسم القطعة والبيان المعتمد</th>
+                <th className="py-3.5 px-3 text-center min-w-[75px]">الكمية (QTY)</th>
+                <th className="py-3.5 px-3 text-center min-w-[125px]">سعر المورد (حبة / دفعة)</th>
+                <th className="py-3.5 px-3 text-center min-w-[125px]">تكلفتنا (حبة / دفعة)</th>
+                <th className="py-3.5 px-3 text-center min-w-[140px]">فرق السعر والكمية</th>
+                <th className="py-3.5 px-3 text-center min-w-[120px]">تقييم الشراء</th>
+                <th className="py-3.5 px-3 text-center min-w-[130px]">أرصدة المخزن</th>
+                <th className="py-3.5 px-3 w-14 text-center">تفاصيل</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 font-medium">
               {paginatedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-16 text-center text-slate-400 font-bold">
+                  <td colSpan={10} className="py-16 text-center text-slate-400 font-bold">
                     لا توجد أصناف مطابقة لمعايير البحث والفلترة المحددة
                   </td>
                 </tr>
@@ -991,12 +1056,26 @@ export default function SupplierPriceComparison() {
                         </div>
                       </td>
 
+                      {/* Quantity (QTY) */}
+                      <td className="py-3 px-3 text-center font-mono">
+                        <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-black text-xs border border-blue-200 dark:border-blue-800">
+                          {item.requestedQty || 1}
+                        </span>
+                      </td>
+
                       {/* Supplier Price */}
                       <td className="py-3 px-3 text-center font-mono text-xs">
                         {item.supplierPrice !== null && item.supplierPrice > 0 ? (
-                          <span className="font-black text-blue-600 dark:text-blue-400">
-                            {formatSAR(item.supplierPrice)}
-                          </span>
+                          <div className="space-y-0.5">
+                            <div className="font-black text-blue-600 dark:text-blue-400">
+                              {formatSAR(item.supplierPrice)}
+                            </div>
+                            {item.requestedQty > 1 && (
+                              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+                                إجمالي: {formatSAR(item.supplierBatchValue)}
+                              </div>
+                            )}
+                          </div>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700" title="المورد لم يحدد سعراً أو غير متوفر للتوريد">
                             {item.itemNote || 'التوريد غير متوفر'}
@@ -1008,9 +1087,16 @@ export default function SupplierPriceComparison() {
                       <td className="py-3 px-3 text-center font-mono text-xs">
                         {item.matched ? (
                           item.ourUnitCost > 0 ? (
-                            <span className="font-bold text-slate-700 dark:text-slate-300">
-                              {formatSAR(item.ourUnitCost)}
-                            </span>
+                            <div className="space-y-0.5">
+                              <div className="font-bold text-slate-700 dark:text-slate-300">
+                                {formatSAR(item.ourUnitCost)}
+                              </div>
+                              {item.requestedQty > 1 && (
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+                                  إجمالي: {formatSAR(item.ourBatchCost)}
+                                </div>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-amber-600 font-bold text-[11px]">
                               0.00 (رصيد 0)
@@ -1040,6 +1126,21 @@ export default function SupplierPriceComparison() {
                                 {item.diff > 0 ? `+${item.diff.toFixed(2)}` : item.diff.toFixed(2)} ر.س
                               </span>
                             </div>
+                            {item.requestedQty > 1 && item.batchDiff !== null && (
+                              <div
+                                className={`text-[10px] font-black ${
+                                  isCheaper
+                                    ? 'text-emerald-700 dark:text-emerald-400'
+                                    : isExpensive
+                                    ? 'text-rose-700 dark:text-rose-400'
+                                    : 'text-slate-500'
+                                }`}
+                              >
+                                {isCheaper
+                                  ? `وفر الدفعة: ${formatSAR(item.batchSavingsAmount)}`
+                                  : `زيادة الدفعة: +${formatSAR(item.batchExtraAmount)}`}
+                              </div>
+                            )}
                             <div
                               className={`text-[10px] font-bold ${
                                 isCheaper
@@ -1064,14 +1165,28 @@ export default function SupplierPriceComparison() {
                       {/* Decision Verdict Badge */}
                       <td className="py-3 px-3 text-center">
                         {isCheaper && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-black bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300">
-                            🟢 وفر {Math.abs(item.diff).toFixed(0)} ر.س
-                          </span>
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-black bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300">
+                              🟢 وفر {Math.abs(item.diff).toFixed(0)} ر.س
+                            </span>
+                            {item.requestedQty > 1 && (
+                              <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                                وفر كلي: {formatSAR(item.batchSavingsAmount)}
+                              </div>
+                            )}
+                          </div>
                         )}
                         {isExpensive && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300">
-                            🔴 أغلى بنسبة {item.diffPercent?.toFixed(0)}%
-                          </span>
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300">
+                              🔴 أغلى بنسبة {item.diffPercent?.toFixed(0)}%
+                            </span>
+                            {item.requestedQty > 1 && (
+                              <div className="text-[10px] font-bold text-rose-700 dark:text-rose-400">
+                                زيادة كلية: +{formatSAR(item.batchExtraAmount)}
+                              </div>
+                            )}
+                          </div>
                         )}
                         {item.verdict === 'equal' && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">

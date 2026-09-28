@@ -102,12 +102,32 @@ export default function SupplierPriceReportModal({
     const totalExtra = scopedItems.reduce((acc, i) => acc + (i.extraAmount || 0), 0);
     const cheaperItemsCount = scopedItems.filter(i => i.verdict === 'cheaper').length;
     const expensiveItemsCount = scopedItems.filter(i => i.verdict === 'expensive').length;
+
+    // Batch QTY totals
+    const totalUnits = scopedItems.reduce((acc, i) => acc + (i.requestedQty || 1), 0);
+    const totalBatchSupplierVal = scopedItems.reduce(
+      (acc, i) => acc + (i.supplierBatchValue || (i.supplierPrice * (i.requestedQty || 1)) || 0),
+      0
+    );
+    const totalBatchSavings = scopedItems.reduce(
+      (acc, i) => acc + (i.batchSavingsAmount || ((i.savingsAmount || 0) * (i.requestedQty || 1))),
+      0
+    );
+    const totalBatchExtra = scopedItems.reduce(
+      (acc, i) => acc + (i.batchExtraAmount || ((i.extraAmount || 0) * (i.requestedQty || 1))),
+      0
+    );
+
     return {
       totalCount: scopedItems.length,
+      totalUnits,
       totalSupplierVal,
       totalOurVal,
       totalSavings,
       totalExtra,
+      totalBatchSupplierVal,
+      totalBatchSavings,
+      totalBatchExtra,
       cheaperItemsCount,
       expensiveItemsCount,
     };
@@ -404,10 +424,10 @@ export default function SupplierPriceReportModal({
               </div>
 
               <div className="text-left font-mono text-xs bg-slate-50 print:bg-transparent p-2.5 rounded-xl border border-slate-200 print:border-slate-300 space-y-0.5">
-                <div>الأصناف المشمولة: <strong className="font-bold text-slate-900">{scopedTotals.totalCount}</strong> صنف</div>
-                <div>إجمالي قيمة المورد: <strong className="font-black text-slate-900">{formatSAR(scopedTotals.totalSupplierVal)}</strong></div>
+                <div>الأصناف والكميات المشمولة: <strong className="font-bold text-slate-900">{scopedTotals.totalCount}</strong> صنف (<strong className="text-blue-900">{formatNum(scopedTotals.totalUnits)} قطعة QTY</strong>)</div>
+                <div>إجمالي فاتورة المورد للكميات: <strong className="font-black text-slate-900">{formatSAR(scopedTotals.totalBatchSupplierVal)}</strong></div>
                 {scopedTotals.cheaperItemsCount > 0 && (
-                  <div>وفر الشراء المتاح: <strong className="font-black text-emerald-800">{formatSAR(scopedTotals.totalSavings)}</strong> ({scopedTotals.cheaperItemsCount} صنف)</div>
+                  <div>إجمالي وفر الشراء بالكميات: <strong className="font-black text-emerald-800">+{formatSAR(scopedTotals.totalBatchSavings)}</strong> ({scopedTotals.cheaperItemsCount} صنف)</div>
                 )}
               </div>
             </div>
@@ -416,9 +436,11 @@ export default function SupplierPriceReportModal({
           {/* 2. Executive Decision KPI Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
             <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-              <div className="text-[10px] font-bold text-slate-500">أصناف العرض</div>
-              <div className="text-base font-black font-mono text-slate-900">{stats.totalCount || 109}</div>
-              <div className="text-[9px] text-slate-400 font-mono">{formatSAR(stats.totalSupplierValue)}</div>
+              <div className="text-[10px] font-bold text-slate-500">أصناف وكمية العرض</div>
+              <div className="text-base font-black font-mono text-slate-900">
+                {stats.totalCount || 109} <span className="text-xs font-normal text-slate-500">({formatNum(stats.totalOrderUnits || 1292)} ق)</span>
+              </div>
+              <div className="text-[9px] text-slate-400 font-mono">فاتورة: {formatSAR(stats.totalBatchSupplierValue || stats.totalSupplierValue)}</div>
             </div>
 
             <div className="p-2.5 rounded-xl bg-cyan-50/60 border border-cyan-200 text-center">
@@ -430,13 +452,13 @@ export default function SupplierPriceReportModal({
             <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
               <div className="text-[10px] font-bold text-emerald-800">المورد أرخص (وفر)</div>
               <div className="text-base font-black font-mono text-emerald-700">{stats.cheaperCount || 21} صنف</div>
-              <div className="text-[9px] text-emerald-700 font-mono font-bold">وفر {formatSAR(stats.totalSavingsOpportunity)}</div>
+              <div className="text-[9px] text-emerald-700 font-mono font-bold">وفر دفعة: {formatSAR(stats.totalBatchSavings || stats.totalSavingsOpportunity)}</div>
             </div>
 
             <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-center">
               <div className="text-[10px] font-bold text-rose-800">المورد أغلى (تحذير)</div>
               <div className="text-base font-black font-mono text-rose-700">{stats.expensiveCount || 57} صنف</div>
-              <div className="text-[9px] text-rose-700 font-mono font-bold">زيادة {formatSAR(stats.totalExtraCost)}</div>
+              <div className="text-[9px] text-rose-700 font-mono font-bold">زيادة دفعة: {formatSAR(stats.totalBatchExtraRisk || stats.totalExtraCost)}</div>
             </div>
 
             <div className="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-center">
@@ -457,16 +479,16 @@ export default function SupplierPriceReportModal({
             <table className="supplier-compare-print-table w-full text-right border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-100 border-b border-slate-300 text-slate-900 text-[10px] font-black">
-                  <th className="w-[3.5%] text-center py-2 px-1">#</th>
-                  <th className="w-[12%] py-2 px-1.5">رقم القطعة (المورد)</th>
-                  <th className="w-[12%] py-2 px-1.5">كود درة السيارة</th>
-                  <th className="w-[23%] py-2 px-1.5">بيان واسم القطعة والتصنيف</th>
-                  <th className="w-[8.5%] py-2 px-1 text-center bg-blue-50/70">سعر المورد</th>
-                  <th className="w-[8.5%] py-2 px-1 text-center">تكلفتنا المعتمدة</th>
-                  <th className="w-[8.5%] py-2 px-1 text-center">الفارق المالي</th>
-                  <th className="w-[7%] py-2 px-1 text-center">نسبة الفرق</th>
-                  <th className="w-[7%] py-2 px-1 text-center">رصيد المخزن</th>
-                  <th className="w-[10%] py-2 px-1 text-center font-black">توصية القرار</th>
+                  <th className="w-[3%] text-center py-2 px-1">#</th>
+                  <th className="w-[11%] py-2 px-1.5">رقم القطعة (المورد)</th>
+                  <th className="w-[11%] py-2 px-1.5">كود درة السيارة</th>
+                  <th className="w-[21%] py-2 px-1.5">بيان واسم القطعة والتصنيف</th>
+                  <th className="w-[6%] py-2 px-1 text-center bg-blue-50/50">الكمية QTY</th>
+                  <th className="w-[11%] py-2 px-1 text-center bg-blue-50/70">سعر المورد (حبة / دفعة)</th>
+                  <th className="w-[11%] py-2 px-1 text-center">تكلفتنا (حبة / دفعة)</th>
+                  <th className="w-[11%] py-2 px-1 text-center">الفارق المالي والكمية</th>
+                  <th className="w-[6%] py-2 px-1 text-center">رصيد المخزن</th>
+                  <th className="w-[9%] py-2 px-1 text-center font-black">توصية القرار</th>
                 </tr>
               </thead>
 
@@ -483,6 +505,7 @@ export default function SupplierPriceReportModal({
                     const isExpensive = item.verdict === 'expensive';
                     const isNotInCatalog = !item.matched;
                     const isEqual = item.verdict === 'equal';
+                    const itemQty = item.requestedQty || 1;
 
                     return (
                       <tr
@@ -535,41 +558,65 @@ export default function SupplierPriceReportModal({
                           </div>
                         </td>
 
-                        {/* 5. Supplier Price */}
+                        {/* 5. Quantity (QTY) */}
                         <td className="py-1.5 px-1 text-center font-mono font-black text-blue-900 bg-blue-50/30 print:bg-transparent text-[11px]">
-                          {formatSAR(item.supplierPrice)}
+                          {itemQty}
                         </td>
 
-                        {/* 6. Dora Cost */}
+                        {/* 6. Supplier Price */}
+                        <td className="py-1.5 px-1 text-center font-mono font-black text-blue-900 bg-blue-50/30 print:bg-transparent text-[11px]">
+                          <div>{formatSAR(item.supplierPrice)}</div>
+                          {itemQty > 1 && (
+                            <div className="text-[9px] font-normal text-slate-500">
+                              دفعة: {formatSAR(item.supplierBatchValue || (item.supplierPrice * itemQty))}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* 7. Dora Cost */}
                         <td className="py-1.5 px-1 text-center font-mono text-slate-800 text-[11px]">
-                          {item.matched ? formatSAR(item.ourUnitCost) : '—'}
+                          {item.matched ? (
+                            <div>
+                              <div>{formatSAR(item.ourUnitCost)}</div>
+                              {itemQty > 1 && (
+                                <div className="text-[9px] font-normal text-slate-500">
+                                  دفعة: {formatSAR(item.ourBatchCost || (item.ourUnitCost * itemQty))}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            '—'
+                          )}
                         </td>
 
-                        {/* 7. Price Difference Amount */}
+                        {/* 8. Price Difference Amount */}
                         <td className="py-1.5 px-1 text-center font-mono text-[10.5px] font-bold">
                           {isCheaper ? (
-                            <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded print:bg-transparent">
-                              وفر {formatSAR(item.savingsAmount)}
-                            </span>
+                            <div>
+                              <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded print:bg-transparent">
+                                وفر {formatSAR(item.savingsAmount)}
+                              </span>
+                              {itemQty > 1 && (
+                                <div className="text-[9px] text-emerald-800 font-black mt-0.5">
+                                  دفعة: +{formatSAR(item.batchSavingsAmount || (item.savingsAmount * itemQty))}
+                                </div>
+                              )}
+                            </div>
                           ) : isExpensive ? (
-                            <span className="text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded print:bg-transparent">
-                              +{formatSAR(item.extraAmount)}
-                            </span>
+                            <div>
+                              <span className="text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded print:bg-transparent">
+                                +{formatSAR(item.extraAmount)}
+                              </span>
+                              {itemQty > 1 && (
+                                <div className="text-[9px] text-rose-800 font-black mt-0.5">
+                                  دفعة: +{formatSAR(item.batchExtraAmount || (item.extraAmount * itemQty))}
+                                </div>
+                              )}
+                            </div>
                           ) : isEqual ? (
                             <span className="text-slate-500">متطابق</span>
                           ) : (
                             <span className="text-purple-700">صنف جديد</span>
-                          )}
-                        </td>
-
-                        {/* 8. Difference Percentage */}
-                        <td className="py-1.5 px-1 text-center font-mono text-[10px] font-bold">
-                          {isCheaper && item.diffPercent !== null ? (
-                            <span className="text-emerald-700">-{Math.abs(item.diffPercent)}%</span>
-                          ) : isExpensive && item.diffPercent !== null ? (
-                            <span className="text-rose-700">+{item.diffPercent}%</span>
-                          ) : (
-                            <span className="text-slate-400">—</span>
                           )}
                         </td>
 
@@ -588,7 +635,7 @@ export default function SupplierPriceReportModal({
                         <td className="py-1.5 px-1 text-center text-[10px] font-bold">
                           {isCheaper ? (
                             <span className="text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-300 print:border-none print:p-0">
-                              ✅ يُنصح بالشراء
+                              ✅ شراء (وفر)
                             </span>
                           ) : isExpensive ? (
                             <span className="text-rose-800 bg-rose-100/80 px-2 py-0.5 rounded-md border border-rose-300 print:border-none print:p-0">
@@ -596,11 +643,11 @@ export default function SupplierPriceReportModal({
                             </span>
                           ) : isNotInCatalog ? (
                             <span className="text-purple-800 bg-purple-100/80 px-2 py-0.5 rounded-md border border-purple-300 print:border-none print:p-0">
-                              ➕ صنف إضافي
+                              ➕ صنف جديد
                             </span>
                           ) : isEqual ? (
                             <span className="text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md print:p-0">
-                              متساوي التكلفة
+                              متساوي
                             </span>
                           ) : (
                             <span className="text-slate-400">—</span>
