@@ -347,7 +347,6 @@ export function compareQuotationItems(rawItems, quotationInfo = null) {
       expensiveCount,
       equalCount,
       zeroCostCount,
-      unavailableCount,
       inStockCount,
       totalSupplierValue,
       totalOurCostValue,
