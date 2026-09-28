@@ -239,6 +239,10 @@ export function updateShortageItem(branchKey, itemId, updates) {
 
   store[branchKey] = branchBatches;
   saveBranchShortagesStore(store);
+
+  // Sync updated item to Supabase cloud immediately
+  syncItemToCloud(activeBatch.items[itemIndex]).catch((e) => console.warn('Cloud sync update error:', e));
+
   return { store, updatedItem: activeBatch.items[itemIndex] };
 }
 
@@ -275,6 +279,19 @@ export function deleteShortageItem(branchKey, itemId) {
   activeBatch.items = activeBatch.items.filter((i) => i.id !== itemId);
   store[branchKey] = branchBatches;
   saveBranchShortagesStore(store);
+
+  // Delete from Supabase cloud immediately
+  if (isSupabaseConfigured && supabase) {
+    supabase
+      .from('branch_shortage_items')
+      .delete()
+      .eq('id', itemId)
+      .then(({ error }) => {
+        if (error) console.warn('Supabase delete item error:', error);
+      })
+      .catch((e) => console.warn('Supabase delete item error:', e));
+  }
+
   return store;
 }
 
@@ -302,8 +319,9 @@ export function finalizeAndOrderBatch(branchKey, supplierNotes, managerUser) {
   store[branchKey] = branchBatches;
   saveBranchShortagesStore(store);
 
-  // Sync to Cloud Supabase silently in background
+  // Sync both locked ordered batch and new active batch to Cloud Supabase
   syncBatchToCloud(currentBatch).catch((e) => console.warn('Cloud sync batch error:', e));
+  syncBatchToCloud(newActiveBatch).catch((e) => console.warn('Cloud sync new active batch error:', e));
 
   return {
     store,
@@ -504,24 +522,40 @@ export async function fetchRemoteShortagesStore() {
       const activeBatchesFromDb = branchBatchesFromDb.filter((b) => b.status === 'ACTIVE');
       const orderedBatchesFromDb = branchBatchesFromDb.filter((b) => b.status === 'ORDERED');
 
+      const orderedBatchIds = new Set(orderedBatchesFromDb.map((b) => b.id));
+      const branchItems = items.filter((it) => it.branch_key === bKey);
+
       let canonicalActiveBatch = null;
 
       if (activeBatchesFromDb.length > 0) {
-        // Use the oldest/first active batch as the canonical one
-        const primary = activeBatchesFromDb[0];
+        // Sort active batches: prefer oldest/first created
+        const primary = activeBatchesFromDb.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0];
         
-        // Collect items from ALL active batches of this branch to guarantee 100% data integrity
+        // Active items are ANY items for this branch that do NOT belong to an ORDERED batch!
+        // This guarantees 100% data integrity even if an item was recorded with a temporary batch ID or orphaned batch ID!
         const allActiveItems = [];
-        activeBatchesFromDb.forEach((ab) => {
-          const abItems = itemsByBatch[ab.id] || [];
-          abItems.forEach((item) => {
-            if (!allActiveItems.some((x) => x.id === item.id)) {
-              allActiveItems.push({
-                ...item,
-                batchId: primary.id
-              });
-            }
-          });
+        const seenItemIds = new Set();
+
+        branchItems.forEach((it) => {
+          if (!orderedBatchIds.has(it.batch_id) && !seenItemIds.has(it.id)) {
+            seenItemIds.add(it.id);
+            allActiveItems.push({
+              id: it.id,
+              batchId: primary.id,
+              branchKey: it.branch_key,
+              partNumber: it.part_number,
+              normalizedPartNumber: normalizePartNumber(it.part_number),
+              partName: it.part_name,
+              requestedQty: it.requested_qty,
+              priority: it.priority,
+              notes: it.notes || '',
+              createdByName: it.created_by_name || 'موظف الفرع',
+              createdByUsername: 'staff',
+              createdAt: it.created_at,
+              updatedAt: it.updated_at,
+              isNewToInventory: !!it.is_new_to_inventory
+            });
+          }
         });
 
         canonicalActiveBatch = {
@@ -537,9 +571,50 @@ export async function fetchRemoteShortagesStore() {
           supplierNotes: primary.supplier_notes || '',
           items: allActiveItems
         };
+
+        // If duplicate active batches exist in Supabase for this branch, quietly remove them in background
+        if (activeBatchesFromDb.length > 1) {
+          const duplicateIds = activeBatchesFromDb
+            .filter((b) => b.id !== primary.id)
+            .map((b) => b.id);
+          if (duplicateIds.length > 0) {
+            supabase
+              .from('branch_shortage_batches')
+              .delete()
+              .in('id', duplicateIds)
+              .then(() => {})
+              .catch(() => {});
+          }
+        }
       } else {
         const nextNum = orderedBatchesFromDb.length + 1;
         canonicalActiveBatch = createNewBatch(bKey, nextNum);
+
+        const allActiveItems = [];
+        const seenItemIds = new Set();
+        branchItems.forEach((it) => {
+          if (!orderedBatchIds.has(it.batch_id) && !seenItemIds.has(it.id)) {
+            seenItemIds.add(it.id);
+            allActiveItems.push({
+              id: it.id,
+              batchId: canonicalActiveBatch.id,
+              branchKey: it.branch_key,
+              partNumber: it.part_number,
+              normalizedPartNumber: normalizePartNumber(it.part_number),
+              partName: it.part_name,
+              requestedQty: it.requested_qty,
+              priority: it.priority,
+              notes: it.notes || '',
+              createdByName: it.created_by_name || 'موظف الفرع',
+              createdByUsername: 'staff',
+              createdAt: it.created_at,
+              updatedAt: it.updated_at,
+              isNewToInventory: !!it.is_new_to_inventory
+            });
+          }
+        });
+        canonicalActiveBatch.items = allActiveItems;
+        syncBatchToCloud(canonicalActiveBatch).catch(() => {});
       }
 
       // Put the active batch first
@@ -582,30 +657,51 @@ export async function uploadLocalShortagesToCloud() {
     const localStore = getBranchShortagesStore();
     let totalItemsUploaded = 0;
 
+    // Fetch existing active batches from Supabase to prevent duplicate active batches
+    const { data: remoteBatches } = await supabase
+      .from('branch_shortage_batches')
+      .select('id, branch_key, status, batch_number, batch_title')
+      .eq('status', 'ACTIVE');
+
+    const remoteActiveBatchesMap = {};
+    (remoteBatches || []).forEach((rb) => {
+      if (!remoteActiveBatchesMap[rb.branch_key]) {
+        remoteActiveBatchesMap[rb.branch_key] = rb;
+      }
+    });
+
     for (const branchKey of Object.keys(localStore)) {
       const batches = localStore[branchKey] || [];
       const activeBatch = batches.find((b) => b.status === 'ACTIVE');
 
       if (activeBatch) {
-        // Ensure active batch exists in remote DB
-        await supabase.from('branch_shortage_batches').upsert([
-          {
-            id: activeBatch.id,
-            branch_key: branchKey,
-            batch_number: activeBatch.batchNumber || 1,
-            batch_title: activeBatch.title,
-            status: 'ACTIVE',
-            created_at: activeBatch.createdAt || new Date().toISOString(),
-            ordered_at: null,
-            ordered_by: null,
-            supplier_notes: activeBatch.supplierNotes || ''
-          }
-        ], { onConflict: 'id' });
+        let canonicalBatchId = activeBatch.id;
+
+        if (remoteActiveBatchesMap[branchKey]) {
+          // Supabase ALREADY has a canonical active batch for this branch! Attach items to it!
+          canonicalBatchId = remoteActiveBatchesMap[branchKey].id;
+        } else {
+          // Supabase has no active batch for this branch, insert this one
+          await supabase.from('branch_shortage_batches').upsert([
+            {
+              id: activeBatch.id,
+              branch_key: branchKey,
+              batch_number: activeBatch.batchNumber || 1,
+              batch_title: activeBatch.title,
+              status: 'ACTIVE',
+              created_at: activeBatch.createdAt || new Date().toISOString(),
+              ordered_at: null,
+              ordered_by: null,
+              supplier_notes: activeBatch.supplierNotes || ''
+            }
+          ], { onConflict: 'id' });
+          remoteActiveBatchesMap[branchKey] = activeBatch;
+        }
 
         if (activeBatch.items && activeBatch.items.length > 0) {
           const rows = activeBatch.items.map((item) => ({
             id: item.id,
-            batch_id: activeBatch.id,
+            batch_id: canonicalBatchId,
             branch_key: branchKey,
             part_number: item.partNumber,
             part_name: item.partName,
