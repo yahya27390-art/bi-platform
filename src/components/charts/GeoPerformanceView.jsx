@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { DORA_GEO_PERFORMANCE } from '../../data/doraSchema';
 import ga4Snapshot from '../../data/ga4LiveSnapshot.json';
+import { useCurrentPeriod } from '../../context/BIPeriodContext';
 
 // Authentic Saudi Arabia Cities with Real Latitude and Longitude Coordinates
 const SAUDI_CITIES_GEO = [
@@ -367,7 +368,46 @@ function MapController({ targetCity, recenterTrigger }) {
   return null;
 }
 
-export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
+export default function GeoPerformanceView({ geoData: propGeoData = DORA_GEO_PERFORMANCE, periodId: propPeriodId }) {
+  const { periodId: ctxPeriodId } = useCurrentPeriod ? useCurrentPeriod() : { periodId: 'p-2026-08' };
+  const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-08';
+  const isSeptember = currentPeriodId === 'p-2026-09';
+
+  const citiesList = useMemo(() => {
+    return SAUDI_CITIES_GEO.map((c) => {
+      if (c.id === 'buraydah') {
+        return isSeptember
+          ? {
+              ...c,
+              sales: 889704.14,
+              onlineSales: 37702.50,
+              physicalSales: 852001.64,
+              tag: 'المركز الرئيسي للفروع (3 فروع نشطة - سبتمبر)',
+              notes: 'المركز الرئيسي لدرة للسيارات لشهر سبتمبر: الفرع الرئيسي (317.8K) + فرع الرواف (292.3K) + فرع كيا (241.9K) بالإضافة لطلبات متجر سلة المعتمدة (37.7K)',
+            }
+          : c;
+      }
+      return c;
+    });
+  }, [isSeptember]);
+
+  const geoData = useMemo(() => {
+    const base = propGeoData || DORA_GEO_PERFORMANCE;
+    if (!isSeptember) return base;
+    return base.map((item) => {
+      if (item.id === 'buraydah' || item.cityAr === 'بريدة') {
+        return {
+          ...item,
+          totalSales: 889704.14,
+          sales: 889704.14,
+          physicalSales: 852001.64,
+          onlineSales: 37702.50,
+        };
+      }
+      return item;
+    });
+  }, [propGeoData, isSeptember]);
+
   const [tileMode, setTileMode] = useState('google_roadmap'); // 'google_roadmap' | 'google_satellite' | 'carto_dark'
   const [selectedCityId, setSelectedCityId] = useState('buraydah');
   const [recenterCount, setRecenterCount] = useState(0);
@@ -375,16 +415,16 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
 
   // Active City
   const activeCity = useMemo(() => {
-    return SAUDI_CITIES_GEO.find((c) => c.id === selectedCityId) || SAUDI_CITIES_GEO[0];
-  }, [selectedCityId]);
+    return citiesList.find((c) => c.id === selectedCityId) || citiesList[0];
+  }, [selectedCityId, citiesList]);
 
   // Buraydah HQ position for commercial distribution flow polylines
-  const buraydahHQ = SAUDI_CITIES_GEO[0];
+  const buraydahHQ = citiesList[0];
 
   // Distribution flow targets
   const flowTargets = useMemo(() => {
-    return SAUDI_CITIES_GEO.filter((c) => c.id !== 'buraydah' && c.sales > 0);
-  }, []);
+    return citiesList.filter((c) => c.id !== 'buraydah' && c.sales > 0);
+  }, [citiesList]);
 
   // Aggregate totals
   const totalVerifiedRevenue = geoData.reduce((acc, curr) => acc + (curr.totalSales || curr.sales || 0), 0);
@@ -509,7 +549,7 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
               <Compass className="w-3.5 h-3.5 text-blue-600" />
               <span>الانتقال السريع:</span>
             </span>
-            {SAUDI_CITIES_GEO.slice(0, 7).map((c) => {
+            {citiesList.slice(0, 7).map((c) => {
               const isSelected = selectedCityId === c.id;
               return (
                 <button
@@ -608,7 +648,7 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
             ))}
 
             {/* Real GPS Animated Markers for All Cities */}
-            {SAUDI_CITIES_GEO.map((city) => {
+            {citiesList.map((city) => {
               const isSelected = selectedCityId === city.id;
               const pinIcon = createAnimatedMapPin(city, isSelected);
 
@@ -810,7 +850,7 @@ export default function GeoPerformanceView({ geoData = DORA_GEO_PERFORMANCE }) {
                 <tr
                   key={idx}
                   onClick={() => {
-                    const matchedCoord = SAUDI_CITIES_GEO.find((c) => c.cityAr === item.cityAr);
+                    const matchedCoord = citiesList.find((c) => c.cityAr === item.cityAr);
                     if (matchedCoord) setSelectedCityId(matchedCoord.id);
                   }}
                   className={`transition-colors cursor-pointer group ${

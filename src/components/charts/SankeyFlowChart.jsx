@@ -24,64 +24,144 @@ import {
   Building,
   ShieldAlert,
 } from 'lucide-react';
+import { useCurrentPeriod } from '../../context/BIPeriodContext';
 import doraLogo from '../../assets/dora_logo.png';
 
-// Authentic Audited Financial Flow Nodes & Links (August 2026 Audit)
-const SANKEY_DATA = {
-  nodes: [
-    // Level 0: Inflow Sources (Branches)
-    { id: 'branch_main', name: 'الفرع الرئيسي', value: 428885.49, pct: '43.3%', color: '#3B82F6', type: 'inflow', desc: 'مبيعات المعرض الرئيسي المعتمدة بنظام Z-Report' },
-    { id: 'branch_rawaf', name: 'فرع الرواف', value: 291371.67, pct: '29.5%', color: '#06B6D4', type: 'inflow', desc: 'مبيعات فرع الرواف الموثقة عبر الشبكة ونقاط البيع' },
-    { id: 'branch_kia', name: 'فرع كيا', value: 269265.00, pct: '27.2%', color: '#6366F1', type: 'inflow', desc: 'مبيعات فرع كيا المعتمدة في تقارير الصندوق' },
-
-    // Level 1: Central Consolidated Revenue Hub
-    { id: 'hub_central', name: 'إجمالي صافي المبيعات', value: 989522.16, pct: '100%', color: '#0F172A', type: 'hub', desc: 'إجمالي المبيعات الصافية المجمعة لكامل فروع الشركة' },
-
-    // Level 2: Primary Capital Allocation
-    { id: 'cogs', name: 'تكلفة البضاعة (COGS)', value: 712159.10, pct: '71.97%', color: '#94A3B8', type: 'cost', desc: 'تكلفة استيراد وشراء مخزون قطع غيار سيارات هيونداي وكيا وتجهيز المستودعات' },
-    { id: 'gross_profit', name: 'مجمل أرباح الأعمال', value: 277363.06, pct: '28.03%', color: '#10B981', type: 'profit', desc: 'هامش الربح الإجمالي المحقق قبل خصم المصاريف التشغيلية' },
-
-    // Level 3: Reinvestment & Utilization of Gross Profit
-    { id: 'ads', name: 'الإنفاق الإعلاني والتسويق', value: 9403.00, pct: '0.95%', color: '#F59E0B', type: 'ads', desc: 'إعلانات جوجل وميتا وتيك توك بعائد استثنائي 105.2× MER' },
-    { id: 'opex', name: 'المصاريف التشغيلية للفروع', value: 90000.00, pct: '9.10%', color: '#64748B', type: 'opex', desc: 'رواتب (60K) + إيجار وشحن وكهرباء (20K) + احتياطي تحوط (10K)' },
-    { id: 'net_profit', name: 'صافي الفائض والربح النقدي', value: 177960.06, pct: '17.98%', color: '#059669', type: 'surplus', desc: 'صافي الأرباح النقدية الخالصة غير المقيدة في خزينة الشركة' },
-
-    // Level 4: Granular Sub-Channels
-    { id: 'ads_google', name: 'إعلانات Google Ads', value: 4660.27, pct: '49.6%', color: '#3B82F6', type: 'sub_ads', desc: 'زيارات Google Maps ومبيعات متجر سلة الإلكتروني' },
-    { id: 'ads_meta', name: 'إعلانات Meta Ads', value: 3221.60, pct: '34.3%', color: '#0668E1', type: 'sub_ads', desc: 'محادثات واتساب ومبيعات التحويلات البنكية وتمارا وتابي' },
-    { id: 'ads_tiktok', name: 'إعلانات TikTok Ads', value: 1521.13, pct: '16.1%', color: '#FE2C55', type: 'sub_ads', desc: 'فيديوهات تفاعلية وطلبات استفسارات العملاء الميدانية' },
-    { id: 'opex_salaries', name: 'رواتب وكوادر الفروع', value: 60000.00, pct: '6.06%', color: '#64748B', type: 'sub_opex', desc: 'رواتب الموظفين والكوادر لكامل فروع الشركة شهرياً' },
-    { id: 'opex_utilities', name: 'إيجار وشحن وكهرباء', value: 20000.00, pct: '2.02%', color: '#475569', type: 'sub_opex', desc: 'إيجار المعارض والكهرباء والخدمات ونقليات الشحن' },
-    { id: 'opex_buffer', name: 'احتياطي تحوط ونثريات', value: 10000.00, pct: '1.01%', color: '#94A3B8', type: 'sub_opex', desc: 'مخصص أمان لتغطية أي زيادة أو نقصان وتذبذب الأسعار' },
-  ],
-  links: [
-    // Inflows into Central Hub
-    { source: 'الفرع الرئيسي', target: 'إجمالي صافي المبيعات', value: 428885.49 },
-    { source: 'فرع الرواف', target: 'إجمالي صافي المبيعات', value: 291371.67 },
-    { source: 'فرع كيا', target: 'إجمالي صافي المبيعات', value: 269265.00 },
-
-    // Central Hub into Capital Allocation
-    { source: 'إجمالي صافي المبيعات', target: 'تكلفة البضاعة (COGS)', value: 712159.10 },
-    { source: 'إجمالي صافي المبيعات', target: 'مجمل أرباح الأعمال', value: 277363.06 },
-
-    // Gross Profit Allocation
-    { source: 'مجمل أرباح الأعمال', target: 'الإنفاق الإعلاني والتسويق', value: 9403.00 },
-    { source: 'مجمل أرباح الأعمال', target: 'المصاريف التشغيلية للفروع', value: 90000.00 },
-    { source: 'مجمل أرباح الأعمال', target: 'صافي الفائض والربح النقدي', value: 177960.06 },
-
-    // Ad Spend Breakdown
-    { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Google Ads', value: 4660.27 },
-    { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Meta Ads', value: 3221.60 },
-    { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات TikTok Ads', value: 1521.13 },
-
-    // OPEX Breakdown (60K Salaries + 20K Rent/Utilities/Shipping + 10K Buffer = 90K)
-    { source: 'المصاريف التشغيلية للفروع', target: 'رواتب وكوادر الفروع (60K)', value: 60000.00 },
-    { source: 'المصاريف التشغيلية للفروع', target: 'إيجار وشحن وكهرباء (20K)', value: 20000.00 },
-    { source: 'المصاريف التشغيلية للفروع', target: 'احتياطي تذبذب ونثريات (10K)', value: 10000.00 },
-  ],
+// Authentic Audited Financial Flow Configs (August & September 2026)
+const SANKEY_CONFIGS = {
+  'p-2026-08': {
+    periodLabel: 'أغسطس 2026',
+    totalRevenue: 989522.16,
+    inflowText: '+989.5K ر.س',
+    surplusText: '+177.9K ر.س',
+    cogs: 712159.10,
+    cogsPct: '71.97%',
+    grossProfit: 277363.06,
+    grossProfitPct: '28.03%',
+    adSpend: 9403.00,
+    adSpendShare: '3.4% من الربح',
+    adChannelsText: 'جوجل (4.7K) • ميتا (3.2K) • تيك توك (1.5K)',
+    merText: '105.2× MER',
+    opex: 90000.00,
+    opexShare: '32.4% من الربح',
+    netProfit: 177960.06,
+    netProfitPct: '17.98% صافي',
+    netProfitShareText: 'أرباح نقدية خالصة بالخزينة (64.2% من مجمل الربح)',
+    verificationText: 'صافي الإيراد: 989,522.16 ر.س = تكلفة البضاعة (712.2K) + أرباح الأعمال (277.4K)',
+    simCogsPct: 71.97,
+    simSalariesPct: 6.06,
+    simUtilitiesPct: 2.02,
+    simBufferPct: 1.01,
+    simNetProfitPct: 17.99,
+    branches: [
+      { id: 'branch_main', name: 'الفرع الرئيسي', value: 428885.49, pct: '43.3%', color: '#3B82F6', barWidth: '43.3%' },
+      { id: 'branch_rawaf', name: 'فرع الرواف', value: 291371.67, pct: '29.5%', color: '#06B6D4', barWidth: '29.5%' },
+      { id: 'branch_kia', name: 'فرع كيا', value: 269265.00, pct: '27.2%', color: '#6366F1', barWidth: '27.2%' },
+    ],
+    nodes: [
+      { id: 'branch_main', name: 'الفرع الرئيسي', value: 428885.49, pct: '43.3%', color: '#3B82F6', type: 'inflow', desc: 'مبيعات المعرض الرئيسي المعتمدة بنظام Z-Report' },
+      { id: 'branch_rawaf', name: 'فرع الرواف', value: 291371.67, pct: '29.5%', color: '#06B6D4', type: 'inflow', desc: 'مبيعات فرع الرواف الموثقة عبر الشبكة ونقاط البيع' },
+      { id: 'branch_kia', name: 'فرع كيا', value: 269265.00, pct: '27.2%', color: '#6366F1', type: 'inflow', desc: 'مبيعات فرع كيا المعتمدة في تقارير الصندوق' },
+      { id: 'hub_central', name: 'إجمالي صافي المبيعات', value: 989522.16, pct: '100%', color: '#0F172A', type: 'hub', desc: 'إجمالي المبيعات الصافية المجمعة لكامل فروع الشركة' },
+      { id: 'cogs', name: 'تكلفة البضاعة (COGS)', value: 712159.10, pct: '71.97%', color: '#94A3B8', type: 'cost', desc: 'تكلفة استيراد وشراء مخزون قطع غيار سيارات هيونداي وكيا' },
+      { id: 'gross_profit', name: 'مجمل أرباح الأعمال', value: 277363.06, pct: '28.03%', color: '#10B981', type: 'profit', desc: 'هامش الربح الإجمالي المحقق قبل خصم المصاريف التشغيلية' },
+      { id: 'ads', name: 'الإنفاق الإعلاني والتسويق', value: 9403.00, pct: '0.95%', color: '#F59E0B', type: 'ads', desc: 'إعلانات جوجل وميتا وتيك توك بعائد استثنائي 105.2× MER' },
+      { id: 'opex', name: 'المصاريف التشغيلية للفروع', value: 90000.00, pct: '9.10%', color: '#64748B', type: 'opex', desc: 'رواتب (60K) + إيجار وشحن وكهرباء (20K) + احتياطي تحوط (10K)' },
+      { id: 'net_profit', name: 'صافي الفائض والربح النقدي', value: 177960.06, pct: '17.98%', color: '#059669', type: 'surplus', desc: 'صافي الأرباح النقدية الخالصة غير المقيدة في خزينة الشركة' },
+      { id: 'ads_google', name: 'إعلانات Google Ads', value: 4660.27, pct: '49.6%', color: '#3B82F6', type: 'sub_ads', desc: 'زيارات Google Maps ومبيعات متجر سلة الإلكتروني' },
+      { id: 'ads_meta', name: 'إعلانات Meta Ads', value: 3221.60, pct: '34.3%', color: '#0668E1', type: 'sub_ads', desc: 'محادثات واتساب ومبيعات التحويلات البنكية وتمارا وتابي' },
+      { id: 'ads_tiktok', name: 'إعلانات TikTok Ads', value: 1521.13, pct: '16.1%', color: '#FE2C55', type: 'sub_ads', desc: 'فيديوهات تفاعلية وطلبات استفسارات العملاء الميدانية' },
+      { id: 'opex_salaries', name: 'رواتب وكوادر الفروع (60K)', value: 60000.00, pct: '6.06%', color: '#64748B', type: 'sub_opex', desc: 'رواتب الموظفين والكوادر لكامل فروع الشركة شهرياً' },
+      { id: 'opex_utilities', name: 'إيجار وشحن وكهرباء (20K)', value: 20000.00, pct: '2.02%', color: '#475569', type: 'sub_opex', desc: 'إيجار المعارض والكهرباء والخدمات ونقليات الشحن' },
+      { id: 'opex_buffer', name: 'احتياطي تذبذب ونثريات (10K)', value: 10000.00, pct: '1.01%', color: '#94A3B8', type: 'sub_opex', desc: 'مخصص أمان لتغطية أي زيادة أو نقصان وتذبذب الأسعار' },
+    ],
+    links: [
+      { source: 'الفرع الرئيسي', target: 'إجمالي صافي المبيعات', value: 428885.49 },
+      { source: 'فرع الرواف', target: 'إجمالي صافي المبيعات', value: 291371.67 },
+      { source: 'فرع كيا', target: 'إجمالي صافي المبيعات', value: 269265.00 },
+      { source: 'إجمالي صافي المبيعات', target: 'تكلفة البضاعة (COGS)', value: 712159.10 },
+      { source: 'إجمالي صافي المبيعات', target: 'مجمل أرباح الأعمال', value: 277363.06 },
+      { source: 'مجمل أرباح الأعمال', target: 'الإنفاق الإعلاني والتسويق', value: 9403.00 },
+      { source: 'مجمل أرباح الأعمال', target: 'المصاريف التشغيلية للفروع', value: 90000.00 },
+      { source: 'مجمل أرباح الأعمال', target: 'صافي الفائض والربح النقدي', value: 177960.06 },
+      { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Google Ads', value: 4660.27 },
+      { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Meta Ads', value: 3221.60 },
+      { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات TikTok Ads', value: 1521.13 },
+      { source: 'المصاريف التشغيلية للفروع', target: 'رواتب وكوادر الفروع (60K)', value: 60000.00 },
+      { source: 'المصاريف التشغيلية للفروع', target: 'إيجار وشحن وكهرباء (20K)', value: 20000.00 },
+      { source: 'المصاريف التشغيلية للفروع', target: 'احتياطي تذبذب ونثريات (10K)', value: 10000.00 },
+    ],
+  },
+  'p-2026-09': {
+    periodLabel: 'سبتمبر 2026',
+    totalRevenue: 852001.64,
+    inflowText: '+852.0K ر.س',
+    surplusText: '+140.5K ر.س',
+    cogs: 613185.58,
+    cogsPct: '71.97%',
+    grossProfit: 238816.06,
+    grossProfitPct: '28.03%',
+    adSpend: 8323.02,
+    adSpendShare: '3.5% من الربح',
+    adChannelsText: 'جوجل (4.48K) • ميتا (2.73K) • تيك توك (1.12K)',
+    merText: '106.9× MER',
+    opex: 90000.00,
+    opexShare: '37.7% من الربح',
+    netProfit: 140493.04,
+    netProfitPct: '16.49% صافي',
+    netProfitShareText: 'أرباح نقدية بالخزينة (58.8% من مجمل الربح بعد التسويق والتشغيل)',
+    verificationText: 'صافي الإيراد: 852,001.64 ر.س = تكلفة البضاعة (613.2K) + أرباح الأعمال (238.8K)',
+    simCogsPct: 71.97,
+    simSalariesPct: 7.04,
+    simUtilitiesPct: 2.35,
+    simBufferPct: 1.17,
+    simNetProfitPct: 16.49,
+    branches: [
+      { id: 'branch_main', name: 'الفرع الرئيسي', value: 317816.51, pct: '37.3%', color: '#3B82F6', barWidth: '37.3%' },
+      { id: 'branch_rawaf', name: 'فرع الرواف', value: 292288.13, pct: '34.3%', color: '#06B6D4', barWidth: '34.3%' },
+      { id: 'branch_kia', name: 'فرع كيا', value: 241897.00, pct: '28.4%', color: '#6366F1', barWidth: '28.4%' },
+    ],
+    nodes: [
+      { id: 'branch_main', name: 'الفرع الرئيسي', value: 317816.51, pct: '37.3%', color: '#3B82F6', type: 'inflow', desc: 'مبيعات المعرض الرئيسي لشهر سبتمبر المعتمدة بنظام Z-Report' },
+      { id: 'branch_rawaf', name: 'فرع الرواف', value: 292288.13, pct: '34.3%', color: '#06B6D4', type: 'inflow', desc: 'مبيعات فرع الرواف الموثقة عبر الشبكة ونقاط البيع' },
+      { id: 'branch_kia', name: 'فرع كيا', value: 241897.00, pct: '28.4%', color: '#6366F1', type: 'inflow', desc: 'مبيعات فرع كيا المعتمدة في تقارير الصندوق' },
+      { id: 'hub_central', name: 'إجمالي صافي المبيعات', value: 852001.64, pct: '100%', color: '#0F172A', type: 'hub', desc: 'إجمالي المبيعات الميدانية الصافية المجمعة لفروع الشركة' },
+      { id: 'cogs', name: 'تكلفة البضاعة (COGS)', value: 613185.58, pct: '71.97%', color: '#94A3B8', type: 'cost', desc: 'تكلفة استيراد وشراء مخزون قطع غيار سيارات هيونداي وكيا' },
+      { id: 'gross_profit', name: 'مجمل أرباح الأعمال', value: 238816.06, pct: '28.03%', color: '#10B981', type: 'profit', desc: 'هامش الربح الإجمالي المحقق قبل خصم المصاريف التشغيلية' },
+      { id: 'ads', name: 'الإنفاق الإعلاني والتسويق', value: 8323.02, pct: '0.98%', color: '#F59E0B', type: 'ads', desc: 'إعلانات جوجل وميتا وتيك توك بعائد استثنائي 106.9× MER' },
+      { id: 'opex', name: 'المصاريف التشغيلية للفروع', value: 90000.00, pct: '10.56%', color: '#64748B', type: 'opex', desc: 'رواتب (60K) + إيجار وشحن وكهرباء (20K) + احتياطي تحوط (10K)' },
+      { id: 'net_profit', name: 'صافي الفائض والربح النقدي', value: 140493.04, pct: '16.49%', color: '#059669', type: 'surplus', desc: 'صافي الأرباح النقدية الخالصة غير المقيدة في خزينة الشركة' },
+      { id: 'ads_google', name: 'إعلانات Google Ads', value: 4480.11, pct: '53.8%', color: '#3B82F6', type: 'sub_ads', desc: '2,503 إحالة وزيارات خرائط Google ومبيعات الفروع' },
+      { id: 'ads_meta', name: 'إعلانات Meta Ads', value: 2725.77, pct: '32.8%', color: '#0668E1', type: 'sub_ads', desc: '1,477 محادثة واتساب بتكلفة 1.85 ر.س للمحادثة' },
+      { id: 'ads_tiktok', name: 'إعلانات TikTok Ads', value: 1117.14, pct: '13.4%', color: '#FE2C55', type: 'sub_ads', desc: '13,915 نقرة بتكلفة نقرة 0.08 ر.س ومعدل تفاعل 2.88%' },
+      { id: 'opex_salaries', name: 'رواتب وكوادر الفروع (60K)', value: 60000.00, pct: '7.04%', color: '#64748B', type: 'sub_opex', desc: 'رواتب الموظفين والكوادر لكامل فروع الشركة شهرياً' },
+      { id: 'opex_utilities', name: 'إيجار وشحن وكهرباء (20K)', value: 20000.00, pct: '2.35%', color: '#475569', type: 'sub_opex', desc: 'إيجار المعارض والكهرباء والخدمات ونقليات الشحن' },
+      { id: 'opex_buffer', name: 'احتياطي تذبذب ونثريات (10K)', value: 10000.00, pct: '1.17%', color: '#94A3B8', type: 'sub_opex', desc: 'مخصص أمان لتغطية أي زيادة أو نقصان وتذبذب الأسعار' },
+    ],
+    links: [
+      { source: 'الفرع الرئيسي', target: 'إجمالي صافي المبيعات', value: 317816.51 },
+      { source: 'فرع الرواف', target: 'إجمالي صافي المبيعات', value: 292288.13 },
+      { source: 'فرع كيا', target: 'إجمالي صافي المبيعات', value: 241897.00 },
+      { source: 'إجمالي صافي المبيعات', target: 'تكلفة البضاعة (COGS)', value: 613185.58 },
+      { source: 'إجمالي صافي المبيعات', target: 'مجمل أرباح الأعمال', value: 238816.06 },
+      { source: 'مجمل أرباح الأعمال', target: 'الإنفاق الإعلاني والتسويق', value: 8323.02 },
+      { source: 'مجمل أرباح الأعمال', target: 'المصاريف التشغيلية للفروع', value: 90000.00 },
+      { source: 'مجمل أرباح الأعمال', target: 'صافي الفائض والربح النقدي', value: 140493.04 },
+      { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Google Ads', value: 4480.11 },
+      { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Meta Ads', value: 2725.77 },
+      { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات TikTok Ads', value: 1117.14 },
+      { source: 'المصاريف التشغيلية للفروع', target: 'رواتب وكوادر الفروع (60K)', value: 60000.00 },
+      { source: 'المصاريف التشغيلية للفروع', target: 'إيجار وشحن وكهرباء (20K)', value: 20000.00 },
+      { source: 'المصاريف التشغيلية للفروع', target: 'احتياطي تذبذب ونثريات (10K)', value: 10000.00 },
+    ],
+  },
 };
 
-export default function SankeyFlowChart({ height = 520 }) {
+export default function SankeyFlowChart({ height = 520, periodId: propPeriodId }) {
+  const { periodId: ctxPeriodId } = useCurrentPeriod();
+  const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-09';
+  const cfg = currentPeriodId === 'p-2026-08' ? SANKEY_CONFIGS['p-2026-08'] : SANKEY_CONFIGS['p-2026-09'];
+
   const [viewMode, setViewMode] = useState('kinetic'); // 'kinetic' | 'sankey' | 'simulator'
   const [colorTheme, setColorTheme] = useState('dark'); // 'dark' | 'light'
   const [hoveredNode, setHoveredNode] = useState(null);
@@ -93,7 +173,7 @@ export default function SankeyFlowChart({ height = 520 }) {
 
   // Find active node details if selected
   const activeNodeData = activeFocus
-    ? SANKEY_DATA.nodes.find((n) => n.id === activeFocus)
+    ? cfg.nodes.find((n) => n.id === activeFocus)
     : null;
 
   // ECharts Option for Sankey View
@@ -109,7 +189,7 @@ export default function SankeyFlowChart({ height = 520 }) {
       textStyle: { color: '#FFFFFF', fontFamily: 'Cairo', fontSize: 12 },
       formatter: (params) => {
         if (params.dataType === 'edge') {
-          const pctOfRev = ((params.data.value / 989522.16) * 100).toFixed(1);
+          const pctOfRev = ((params.data.value / cfg.totalRevenue) * 100).toFixed(1);
           return `<div dir="rtl" style="text-align:right; font-family: Cairo, sans-serif;">
             <div style="font-size:11px; color:#94A3B8; margin-bottom:4px;">
               تدفق مالي: <strong>${params.data.source}</strong> ⬅️ <strong>${params.data.target}</strong>
@@ -122,7 +202,7 @@ export default function SankeyFlowChart({ height = 520 }) {
             </div>
           </div>`;
         }
-        const node = SANKEY_DATA.nodes.find((n) => n.name === params.name);
+        const node = cfg.nodes.find((n) => n.name === params.name);
         return `<div dir="rtl" style="text-align:right; font-family: Cairo, sans-serif;">
           <div style="font-size:13px; font-weight:800; color:#FFFFFF;">
             ${params.name}
@@ -159,8 +239,8 @@ export default function SankeyFlowChart({ height = 520 }) {
           { depth: 2, itemStyle: { color: '#059669' }, lineStyle: { color: 'gradient', opacity: 0.5 } },
           { depth: 3, itemStyle: { color: '#D97706' }, lineStyle: { color: 'gradient', opacity: 0.5 } },
         ],
-        data: SANKEY_DATA.nodes,
-        links: SANKEY_DATA.links,
+        data: cfg.nodes,
+        links: cfg.links,
         label: {
           color: colorTheme === 'dark' ? '#F8FAFC' : '#0F172A',
           fontFamily: 'Cairo',
@@ -348,95 +428,38 @@ export default function SankeyFlowChart({ height = 520 }) {
                   <span>روافد الدخل الميداني</span>
                 </div>
 
-                {/* Branch 1: Main Branch */}
-                <div
-                  onMouseEnter={() => setHoveredNode('branch_main')}
-                  onMouseLeave={() => setHoveredNode(null)}
-                  onClick={() => setSelectedNode(selectedNode === 'branch_main' ? null : 'branch_main')}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer relative group ${
-                    activeFocus === 'branch_main'
-                      ? 'border-blue-400 bg-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.3)] scale-[1.02]'
-                      : isDark
-                      ? 'border-white/10 bg-white/[0.04] hover:border-blue-400/50 hover:bg-white/[0.08]'
-                      : 'border-blue-200 bg-white hover:border-blue-400 hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-black flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                      <span>الفرع الرئيسي</span>
-                    </span>
-                    <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 font-mono">
-                      43.3%
-                    </span>
+                {/* Branch Tributaries */}
+                {cfg.branches.map((b) => (
+                  <div
+                    key={b.id}
+                    onMouseEnter={() => setHoveredNode(b.id)}
+                    onMouseLeave={() => setHoveredNode(null)}
+                    onClick={() => setSelectedNode(selectedNode === b.id ? null : b.id)}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer relative group ${
+                      activeFocus === b.id
+                        ? 'border-blue-400 bg-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.3)] scale-[1.02]'
+                        : isDark
+                        ? 'border-white/10 bg-white/[0.04] hover:border-blue-400/50 hover:bg-white/[0.08]'
+                        : 'border-blue-200 bg-white hover:border-blue-400 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-black flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: b.color }} />
+                        <span>{b.name}</span>
+                      </span>
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 font-mono">
+                        {b.pct}
+                      </span>
+                    </div>
+                    <div className="text-lg font-black font-mono mt-1" style={{ color: b.color }} dir="ltr">
+                      {formatSAR(b.value, true)}
+                    </div>
+                    <div className="w-full bg-slate-900/60 h-1 rounded-full overflow-hidden mt-1.5">
+                      <div className="h-full rounded-full" style={{ width: b.barWidth, backgroundColor: b.color }} />
+                    </div>
                   </div>
-                  <div className="text-lg font-black font-mono mt-1 text-blue-400" dir="ltr">
-                    {formatSAR(428885.49, true)}
-                  </div>
-                  <div className="w-full bg-blue-950/60 h-1 rounded-full overflow-hidden mt-1.5">
-                    <div className="h-full bg-blue-500 rounded-full" style={{ width: '43.3%' }} />
-                  </div>
-                </div>
-
-                {/* Branch 2: Rawaf Branch */}
-                <div
-                  onMouseEnter={() => setHoveredNode('branch_rawaf')}
-                  onMouseLeave={() => setHoveredNode(null)}
-                  onClick={() => setSelectedNode(selectedNode === 'branch_rawaf' ? null : 'branch_rawaf')}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer relative group ${
-                    activeFocus === 'branch_rawaf'
-                      ? 'border-cyan-400 bg-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.3)] scale-[1.02]'
-                      : isDark
-                      ? 'border-white/10 bg-white/[0.04] hover:border-cyan-400/50 hover:bg-white/[0.08]'
-                      : 'border-cyan-200 bg-white hover:border-cyan-400 hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-black flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                      <span>فرع الرواف</span>
-                    </span>
-                    <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 font-mono">
-                      29.5%
-                    </span>
-                  </div>
-                  <div className="text-lg font-black font-mono mt-1 text-cyan-400" dir="ltr">
-                    {formatSAR(291371.67, true)}
-                  </div>
-                  <div className="w-full bg-cyan-950/60 h-1 rounded-full overflow-hidden mt-1.5">
-                    <div className="h-full bg-cyan-500 rounded-full" style={{ width: '29.5%' }} />
-                  </div>
-                </div>
-
-                {/* Branch 3: Kia Branch */}
-                <div
-                  onMouseEnter={() => setHoveredNode('branch_kia')}
-                  onMouseLeave={() => setHoveredNode(null)}
-                  onClick={() => setSelectedNode(selectedNode === 'branch_kia' ? null : 'branch_kia')}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer relative group ${
-                    activeFocus === 'branch_kia'
-                      ? 'border-indigo-400 bg-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.3)] scale-[1.02]'
-                      : isDark
-                      ? 'border-white/10 bg-white/[0.04] hover:border-indigo-400/50 hover:bg-white/[0.08]'
-                      : 'border-indigo-200 bg-white hover:border-indigo-400 hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-black flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                      <span>فرع كيا</span>
-                    </span>
-                    <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 font-mono">
-                      27.2%
-                    </span>
-                  </div>
-                  <div className="text-lg font-black font-mono mt-1 text-indigo-400" dir="ltr">
-                    {formatSAR(269265.00, true)}
-                  </div>
-                  <div className="w-full bg-indigo-950/60 h-1 rounded-full overflow-hidden mt-1.5">
-                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: '27.2%' }} />
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* ── CONDUIT BRIDGE 1: 3 Inflow Curves Converging into Center ── */}
@@ -526,22 +549,22 @@ export default function SankeyFlowChart({ height = 520 }) {
                       إجمالي صافي المبيعات المعتمدة
                     </span>
                     <div className="text-2xl sm:text-3xl font-black text-white font-mono mt-0.5" dir="ltr">
-                      {formatSAR(989522.16, false)}
+                      {formatSAR(cfg.totalRevenue, false)}
                     </div>
                     <div className="text-[10px] text-cyan-300 font-bold mt-1 inline-flex items-center gap-1 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
                       <ShieldCheck className="w-3 h-3 text-cyan-400" />
-                      <span>100% مطابقة محاسبية لدفاتر Z-Reports</span>
+                      <span>100% مطابقة محاسبية لدفاتر Z-Reports ({cfg.periodLabel})</span>
                     </div>
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-white/10 grid grid-cols-2 gap-2 text-center text-[10px]">
                     <div className="p-1.5 rounded-xl bg-white/[0.04]">
                       <span className="text-slate-400 block">تدفق وارد (فروع)</span>
-                      <span className="font-bold text-blue-400 font-mono">+989.5K ر.س</span>
+                      <span className="font-bold text-blue-400 font-mono">{cfg.inflowText}</span>
                     </div>
                     <div className="p-1.5 rounded-xl bg-white/[0.04]">
                       <span className="text-slate-400 block">فائض الأرباح الخالص</span>
-                      <span className="font-bold text-emerald-400 font-mono">+177.9K ر.س</span>
+                      <span className="font-bold text-emerald-400 font-mono">{cfg.surplusText}</span>
                     </div>
                   </div>
                 </div>
@@ -604,17 +627,17 @@ export default function SankeyFlowChart({ height = 520 }) {
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-black text-slate-300">تكلفة البضاعة (COGS)</span>
                     <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-slate-700/50 text-slate-200 font-mono">
-                      71.97%
+                      {cfg.cogsPct}
                     </span>
                   </div>
                   <div className="text-xl font-black font-mono mt-1 text-slate-200" dir="ltr">
-                    {formatSAR(712159.10, true)}
+                    {formatSAR(cfg.cogs, true)}
                   </div>
                   <p className="text-[10px] text-slate-400 leading-snug mt-1">
                     أصل رأسمالي متجدد لتوريد وشراء مخزون قطع غيار هيونداي وكيا
                   </p>
                   <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
-                    <div className="h-full bg-slate-400 rounded-full" style={{ width: '71.97%' }} />
+                    <div className="h-full bg-slate-400 rounded-full" style={{ width: cfg.cogsPct }} />
                   </div>
                 </div>
 
@@ -634,17 +657,17 @@ export default function SankeyFlowChart({ height = 520 }) {
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-black text-emerald-400">مجمل أرباح الأعمال</span>
                     <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-500/30 text-emerald-300 font-mono">
-                      28.03%
+                      {cfg.grossProfitPct}
                     </span>
                   </div>
                   <div className="text-xl font-black font-mono mt-1 text-emerald-400" dir="ltr">
-                    {formatSAR(277363.06, true)}
+                    {formatSAR(cfg.grossProfit, true)}
                   </div>
                   <p className="text-[10px] text-emerald-300/80 leading-snug mt-1">
                     القيمة المضافة الصافية بعد تغطية تكلفة الشراء المباشرة
                   </p>
                   <div className="w-full bg-emerald-950/80 h-1.5 rounded-full overflow-hidden mt-2">
-                    <div className="h-full bg-emerald-400 rounded-full" style={{ width: '28.03%' }} />
+                    <div className="h-full bg-emerald-400 rounded-full" style={{ width: cfg.grossProfitPct }} />
                   </div>
                 </div>
               </div>
@@ -721,15 +744,15 @@ export default function SankeyFlowChart({ height = 520 }) {
                       <span>الإنفاق الإعلاني (Ads)</span>
                     </span>
                     <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">
-                      3.4% من الربح
+                      {cfg.adSpendShare}
                     </span>
                   </div>
                   <div className="text-base font-black font-mono mt-0.5 text-amber-400" dir="ltr">
-                    {formatSAR(9403.00, true)}
+                    {formatSAR(cfg.adSpend, true)}
                   </div>
                   <div className="text-[10px] text-slate-400 flex items-center justify-between mt-1">
-                    <span>جوجل (4.7K) • ميتا (3.2K) • تيك توك (1.5K)</span>
-                    <span className="text-emerald-400 font-bold font-mono">105.2× MER</span>
+                    <span>{cfg.adChannelsText}</span>
+                    <span className="text-emerald-400 font-bold font-mono">{cfg.merText}</span>
                   </div>
                 </div>
 
@@ -749,11 +772,11 @@ export default function SankeyFlowChart({ height = 520 }) {
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-black text-slate-300">التشغيل والرواتب (OPEX)</span>
                     <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-700/50 text-slate-200 font-mono">
-                      32.4% من الربح
+                      {cfg.opexShare}
                     </span>
                   </div>
                   <div className="text-base font-black font-mono mt-0.5 text-slate-200" dir="ltr">
-                    {formatSAR(90000.00, true)}
+                    {formatSAR(cfg.opex, true)}
                   </div>
                   <div className="text-[10px] text-slate-400 space-y-0.5 mt-1 border-t border-white/5 pt-1">
                     <div className="flex items-center justify-between">
@@ -771,7 +794,7 @@ export default function SankeyFlowChart({ height = 520 }) {
                   </div>
                 </div>
 
-                {/* 3. Net Cash Profit / FCF (177,960.06 SAR) */}
+                {/* 3. Net Cash Profit / FCF */}
                 <div
                   onMouseEnter={() => setHoveredNode('net_profit')}
                   onMouseLeave={() => setHoveredNode(null)}
@@ -790,15 +813,15 @@ export default function SankeyFlowChart({ height = 520 }) {
                       <span>صافي الفائض والربح النقدي</span>
                     </span>
                     <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 font-mono">
-                      17.98% صافي
+                      {cfg.netProfitPct}
                     </span>
                   </div>
                   <div className="text-xl font-black font-mono mt-1 text-emerald-300" dir="ltr">
-                    {formatSAR(177960.06, true)}
+                    {formatSAR(cfg.netProfit, true)}
                   </div>
                   <div className="text-[10px] text-emerald-200/90 font-bold mt-1 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                    <span>أرباح نقدية خالصة بالخزينة (64.2% من مجمل الربح)</span>
+                    <span>{cfg.netProfitShareText}</span>
                   </div>
                 </div>
               </div>
@@ -808,9 +831,9 @@ export default function SankeyFlowChart({ height = 520 }) {
             <div className="lg:hidden space-y-4">
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.04] text-center space-y-2">
                 <img src={doraLogo} alt="درة" className="w-12 h-12 object-contain mx-auto" />
-                <span className="text-xs text-slate-400 font-bold block">إجمالي مبيعات درة للسيارات المعتمدة</span>
+                <span className="text-xs text-slate-400 font-bold block">إجمالي مبيعات درة للسيارات المعتمدة ({cfg.periodLabel})</span>
                 <div className="text-2xl font-black text-white font-mono" dir="ltr">
-                  {formatSAR(989522.16, false)}
+                  {formatSAR(cfg.totalRevenue, false)}
                 </div>
                 <div className="text-[11px] text-cyan-300 font-bold">100% مطابقة لمحاضر Z-Reports</div>
               </div>
@@ -818,26 +841,26 @@ export default function SankeyFlowChart({ height = 520 }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="p-3 rounded-2xl border border-white/10 bg-white/[0.04]">
                   <span className="text-xs font-black text-slate-300 block">تكلفة البضاعة (COGS):</span>
-                  <span className="text-base font-black text-slate-200 font-mono" dir="ltr">{formatSAR(712159.10, true)}</span>
-                  <span className="text-[10px] text-slate-400 block mt-0.5">71.97% من المبيعات</span>
+                  <span className="text-base font-black text-slate-200 font-mono" dir="ltr">{formatSAR(cfg.cogs, true)}</span>
+                  <span className="text-[10px] text-slate-400 block mt-0.5">{cfg.cogsPct} من المبيعات</span>
                 </div>
 
                 <div className="p-3 rounded-2xl border border-emerald-500/30 bg-emerald-950/20">
                   <span className="text-xs font-black text-emerald-400 block">مجمل أرباح الأعمال:</span>
-                  <span className="text-base font-black text-emerald-300 font-mono" dir="ltr">{formatSAR(277363.06, true)}</span>
-                  <span className="text-[10px] text-emerald-400 block mt-0.5">28.03% هامش إجمالي</span>
+                  <span className="text-base font-black text-emerald-300 font-mono" dir="ltr">{formatSAR(cfg.grossProfit, true)}</span>
+                  <span className="text-[10px] text-emerald-400 block mt-0.5">{cfg.grossProfitPct} هامش إجمالي</span>
                 </div>
 
                 <div className="p-3 rounded-2xl border border-white/10 bg-white/[0.04]">
                   <span className="text-xs font-black text-slate-300 block">التشغيل والرواتب (OPEX):</span>
-                  <span className="text-base font-black text-slate-200 font-mono" dir="ltr">{formatSAR(90000.00, true)}</span>
+                  <span className="text-base font-black text-slate-200 font-mono" dir="ltr">{formatSAR(cfg.opex, true)}</span>
                   <span className="text-[10px] text-slate-400 block mt-0.5">رواتب (60K) + تشغيل (20K) + تحوط (10K)</span>
                 </div>
 
                 <div className="p-3 rounded-2xl border border-emerald-400/40 bg-emerald-950/40">
                   <span className="text-xs font-black text-emerald-300 block">صافي الفائض والربح الخالص:</span>
-                  <span className="text-lg font-black text-emerald-300 font-mono" dir="ltr">{formatSAR(177960.06, true)}</span>
-                  <span className="text-[10px] text-emerald-400 font-bold block mt-0.5">17.98% صافي أرباح بالخزينة</span>
+                  <span className="text-lg font-black text-emerald-300 font-mono" dir="ltr">{formatSAR(cfg.netProfit, true)}</span>
+                  <span className="text-[10px] text-emerald-400 font-bold block mt-0.5">{cfg.netProfitPct} بالخزينة</span>
                 </div>
               </div>
             </div>
@@ -898,12 +921,11 @@ export default function SankeyFlowChart({ height = 520 }) {
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>
-                كافة مسارات التدفق المالي مدققة ومطابقة رياضياً بنسبة 100% مع فواتير نقاط البيع (Z-Reports) ودفاتر المشتريات
-                المعتمدة
+                كافة مسارات التدفق المالي مدققة ومطابقة رياضياً بنسبة 100% مع فواتير نقاط البيع (Z-Reports) ودفاتر المشتريات المعتمدة ({cfg.periodLabel})
               </span>
             </div>
             <div className="font-mono text-[10px]">
-              <span>صافي الإيراد: 989,522.16 ر.س = تكلفة البضاعة (712.2K) + أرباح الأعمال (277.4K)</span>
+              <span>{cfg.verificationText}</span>
             </div>
           </div>
         </div>
@@ -919,7 +941,7 @@ export default function SankeyFlowChart({ height = 520 }) {
           <div className="flex items-center justify-between text-xs px-2 pb-2 border-b border-white/10">
             <span className="flex items-center gap-1.5 font-bold">
               <Info className="w-3.5 h-3.5 text-blue-400" />
-              <span>انقر أو مرر الفأرة فوق أي مسار شريطي لإظهار القيمة ونسبة التدفق بدقة</span>
+              <span>انقر أو مرر الفأرة فوق أي مسار شريطي لإظهار القيمة ونسبة التدفق بدقة ({cfg.periodLabel})</span>
             </span>
             <span className="font-mono text-[11px] bg-white/5 px-2.5 py-1 rounded-lg">
               Dynamic Gradient Flow Engine
@@ -946,7 +968,7 @@ export default function SankeyFlowChart({ height = 520 }) {
           <div>
             <h4 className="text-base sm:text-lg font-black flex items-center gap-2">
               <Coins className="w-5 h-5 text-amber-400" />
-              <span>محاكي رحلة الإيراد: أين يذهب كل 100 ريال من مبيعات درة للسيارات؟</span>
+              <span>محاكي رحلة الإيراد: أين يذهب كل 100 ريال من مبيعات درة للسيارات؟ ({cfg.periodLabel})</span>
             </h4>
             <p className={`text-xs mt-1 font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               تفكيك هيكلي واقعي معتمد: رواتب (60K) + تشغيل وشحن وكهرباء وإيجار (20K) + احتياطي تحوط (10K)
@@ -984,10 +1006,10 @@ export default function SankeyFlowChart({ height = 520 }) {
             <div className={`p-3.5 rounded-2xl border space-y-1 ${isDark ? 'bg-white/[0.04] border-white/10' : 'bg-white border-slate-200'}`}>
               <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold">
                 <span>1. تكلفة البضاعة</span>
-                <span className="text-slate-200">71.97%</span>
+                <span className="text-slate-200">{cfg.simCogsPct}%</span>
               </div>
               <div className="text-lg font-black font-mono text-slate-200" dir="ltr">
-                {((simulatorSAR * 71.97) / 100).toFixed(2)} ر.س
+                {((simulatorSAR * cfg.simCogsPct) / 100).toFixed(2)} ر.س
               </div>
               <span className="text-[9px] text-slate-400 block">توريد وشراء قطع الغيار</span>
             </div>
@@ -995,10 +1017,10 @@ export default function SankeyFlowChart({ height = 520 }) {
             <div className={`p-3.5 rounded-2xl border space-y-1 ${isDark ? 'bg-white/[0.04] border-white/10' : 'bg-white border-slate-200'}`}>
               <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold">
                 <span>2. الرواتب الشهرية</span>
-                <span className="text-slate-200">6.06%</span>
+                <span className="text-slate-200">{cfg.simSalariesPct}%</span>
               </div>
               <div className="text-lg font-black font-mono text-slate-200" dir="ltr">
-                {((simulatorSAR * 6.06) / 100).toFixed(2)} ر.س
+                {((simulatorSAR * cfg.simSalariesPct) / 100).toFixed(2)} ر.س
               </div>
               <span className="text-[9px] text-slate-400 block">60,000 ر.س لكامل الفروع</span>
             </div>
@@ -1006,10 +1028,10 @@ export default function SankeyFlowChart({ height = 520 }) {
             <div className={`p-3.5 rounded-2xl border space-y-1 ${isDark ? 'bg-white/[0.04] border-white/10' : 'bg-white border-slate-200'}`}>
               <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold">
                 <span>3. كهرباء وشحن وإيجار</span>
-                <span className="text-slate-200">2.02%</span>
+                <span className="text-slate-200">{cfg.simUtilitiesPct}%</span>
               </div>
               <div className="text-lg font-black font-mono text-slate-200" dir="ltr">
-                {((simulatorSAR * 2.02) / 100).toFixed(2)} ر.س
+                {((simulatorSAR * cfg.simUtilitiesPct) / 100).toFixed(2)} ر.س
               </div>
               <span className="text-[9px] text-slate-400 block">20,000 ر.س تشغيل وإيجارات</span>
             </div>
@@ -1017,10 +1039,10 @@ export default function SankeyFlowChart({ height = 520 }) {
             <div className={`p-3.5 rounded-2xl border space-y-1 ${isDark ? 'bg-white/[0.04] border-white/10' : 'bg-white border-slate-200'}`}>
               <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold">
                 <span>4. احتياطي تحوط</span>
-                <span className="text-slate-200">1.01%</span>
+                <span className="text-slate-200">{cfg.simBufferPct}%</span>
               </div>
               <div className="text-lg font-black font-mono text-slate-200" dir="ltr">
-                {((simulatorSAR * 1.01) / 100).toFixed(2)} ر.س
+                {((simulatorSAR * cfg.simBufferPct) / 100).toFixed(2)} ر.س
               </div>
               <span className="text-[9px] text-slate-400 block">10,000 ر.س نثريات وتذبذب</span>
             </div>
@@ -1028,12 +1050,12 @@ export default function SankeyFlowChart({ height = 520 }) {
             <div className="p-3.5 rounded-2xl border border-emerald-400/50 bg-emerald-950/40 space-y-1 shadow-lg">
               <div className="flex items-center justify-between text-[11px] text-emerald-300 font-bold">
                 <span>5. صافي الربح الخالص</span>
-                <span className="text-emerald-400 font-black">17.99%</span>
+                <span className="text-emerald-400 font-black">{cfg.simNetProfitPct}%</span>
               </div>
               <div className="text-lg font-black font-mono text-emerald-300" dir="ltr">
-                {((simulatorSAR * 17.99) / 100).toFixed(2)} ر.س
+                {((simulatorSAR * cfg.simNetProfitPct) / 100).toFixed(2)} ر.س
               </div>
-              <span className="text-[9px] text-emerald-300 block font-bold">أرباح بالخزينة (177.9K فائض)</span>
+              <span className="text-[9px] text-emerald-300 block font-bold">أرباح بالخزينة ({cfg.surplusText} فائض)</span>
             </div>
           </div>
         </div>
