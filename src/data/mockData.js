@@ -8,12 +8,12 @@
 
 // ── PERIODS ───────────────────────────────────────────────────
 export const MOCK_PERIODS = [
+  { id: 'p-2026-09', periodKey: '2026-09', year: 2026, month: 9, quarter: 3,
+    label: 'سبتمبر 2026 (المعتمد بالفواتير)', labelEn: 'Sep 2026 (Audited)',
+    startDate: '2026-09-01', endDate: '2026-09-30', isCurrent: true, isClosed: true, isAudited: true },
   { id: 'p-2026-08', periodKey: '2026-08', year: 2026, month: 8, quarter: 3,
     label: 'أغسطس 2026 (المعتمد بالفواتير)', labelEn: 'Aug 2026 (Audited)',
     startDate: '2026-08-01', endDate: '2026-08-31', isCurrent: false, isClosed: true, isAudited: true },
-  { id: 'p-2026-09', periodKey: '2026-09', year: 2026, month: 9, quarter: 3,
-    label: 'سبتمبر 2026 (قيد التشغيل)', labelEn: 'Sep 2026 (In Progress)',
-    startDate: '2026-09-01', endDate: '2026-09-30', isCurrent: true, isClosed: false, isAudited: false },
   { id: 'p-2026-07', periodKey: '2026-07', year: 2026, month: 7, quarter: 3,
     label: 'يوليو 2026 (مقفل)', labelEn: 'Jul 2026 (Closed)',
     startDate: '2026-07-01', endDate: '2026-07-31', isCurrent: false, isClosed: true, isAudited: true },
@@ -46,6 +46,38 @@ export const MOCK_DATA_SOURCES = [
 
 // ── CAMPAIGNS ─────────────────────────────────────────────────
 export const MOCK_CAMPAIGNS = [
+  // Sep 2026 (Actual Authentic Dora Cars Campaigns from Meta, Google, TikTok reports)
+  // Meta Ads (From Ads-Dora-Campaigns-Sep-1-2026-Sep-30-2026 ميتا.csv - Spend: 2,725.77 SAR, 1,477 Contacts)
+  { id: 'camp-sep-01', adAccountId: 'acc-meta-001', periodId: 'p-2026-09',
+    name: 'حملة تفاعل واتساب 14/4/2026', nameEn: 'WhatsApp Engagement Campaign Sep',
+    objective: 'messages', status: 'ended', buyingType: 'auction',
+    dailyBudget: 50, totalBudget: 1238.47, startDate: '2026-09-01', endDate: '2026-09-30',
+    branchAttribution: 'all', platformMeta: { platform: 'meta' } },
+  { id: 'camp-sep-02', adAccountId: 'acc-meta-001', periodId: 'p-2026-09',
+    name: 'New Sales Campaign 1/9/2026', nameEn: 'New Sales Campaign Sep',
+    objective: 'sales', status: 'ended', buyingType: 'auction',
+    dailyBudget: 50, totalBudget: 1176.28, startDate: '2026-09-01', endDate: '2026-09-30',
+    branchAttribution: 'all', platformMeta: { platform: 'meta' } },
+  { id: 'camp-sep-03', adAccountId: 'acc-meta-001', periodId: 'p-2026-09',
+    name: 'اليوم الوطني 96', nameEn: 'National Day 96 Campaign',
+    objective: 'awareness', status: 'ended', buyingType: 'reach',
+    dailyBudget: 30, totalBudget: 311.02, startDate: '2026-09-15', endDate: '2026-09-30',
+    branchAttribution: 'all', platformMeta: { platform: 'meta' } },
+
+  // Google Ads (From أداء الحملة جوجل.png - Spend: 4,480.11 SAR, 9,521 clicks, 2,503 convs)
+  { id: 'camp-sep-04', adAccountId: 'acc-google-001', periodId: 'p-2026-09',
+    name: 'حملات البحث والخرائط الموحدة شهر 9', nameEn: 'Unified Search & Local Maps Campaign Sep',
+    objective: 'local_store_visits', status: 'ended', buyingType: 'cpc',
+    dailyBudget: 150, totalBudget: 4480.11, startDate: '2026-09-01', endDate: '2026-09-30',
+    branchAttribution: 'all', platformMeta: { platform: 'google' } },
+
+  // TikTok Ads (From Screenshot 2026-10-02 184727 تيك توك.png - Spend: 1,117.14 SAR, 13,915 clicks)
+  { id: 'camp-sep-05', adAccountId: 'acc-tiktok-001', periodId: 'p-2026-09',
+    name: 'حملة الترافيك والتحويلات تيك توك شهر 9', nameEn: 'TikTok Traffic & Conversions Sep',
+    objective: 'traffic', status: 'ended', buyingType: 'cpc',
+    dailyBudget: 40, totalBudget: 1117.14, startDate: '2026-09-01', endDate: '2026-09-30',
+    branchAttribution: 'ecommerce', platformMeta: { platform: 'tiktok' } },
+
   // Aug 2026 (Actual Authentic Dora Cars Campaigns from Meta, Google, TikTok reports)
   // Meta Ads (From تقرير حملات ميتا شهر 8.xlsx - Spend: 3,221.60 SAR, 1,617 WhatsApp convs)
   { id: 'camp-aug-01', adAccountId: 'acc-meta-001', periodId: 'p-2026-08',
@@ -113,24 +145,25 @@ export const MOCK_CAMPAIGNS = [
 // These are derived/summarized — real system would use daily rows
 export const MOCK_PLATFORM_PERIOD_METRICS = {
   'p-2026-09': [
-    { platformSlug: 'meta', spend: 0, impressions: 0, reach: 0,
-      clicks: 0, linkClicks: 0, attributedRevenue: 0,
-      conversions: 0, videoViews: 0, frequency: 0,
-      cpc: 0, cpm: 0, ctr: 0, cpa: 0, roas: 0,
-      attributionModel: 'last_click', attributionWindow: '7d_click',
-      dataSourceId: 'ds-meta-api', isLiveReady: true },
-    { platformSlug: 'google', spend: 0, impressions: 0, reach: 0,
-      clicks: 0, linkClicks: 0, attributedRevenue: 0,
-      conversions: 0, videoViews: 0, frequency: 0,
-      cpc: 0, cpm: 0, ctr: 0, cpa: 0, roas: 0,
+    { platformSlug: 'google', spend: 4480.11, impressions: 99703, reach: 75000,
+      clicks: 9521, linkClicks: 3200, attributedRevenue: 37725.08,
+      conversions: 2503, costPerConversion: 1.79, videoViews: 0, frequency: 1.33,
+      cpc: 0.47, ctr: 9.55, searchCtr: 14.2,
+      mobileShare: 96.2, crossNetworkShare: 64.5, searchShare: 35.5,
       attributionModel: 'last_click', attributionWindow: '30d_click',
-      dataSourceId: 'ds-google-api', isLiveReady: true },
-    { platformSlug: 'tiktok', spend: 0, impressions: 0, reach: 0,
-      clicks: 0, linkClicks: 0, attributedRevenue: 0,
-      conversions: 0, videoViews: 0, frequency: 0,
-      cpc: 0, cpm: 0, ctr: 0, cpa: 0, roas: 0,
+      dataSourceId: 'ds-google-manual', isLiveReady: true },
+    { platformSlug: 'meta', spend: 2725.77, impressions: 482095, reach: 203154,
+      clicks: 2840, linkClicks: 2840, attributedRevenue: 97871.09,
+      conversions: 1477, videoViews: 412000, frequency: 2.37,
+      cpc: 0.96, ctr: 1.48, costPerConversion: 1.85,
       attributionModel: 'last_click', attributionWindow: '7d_click',
-      dataSourceId: 'ds-tiktok-api', isLiveReady: true },
+      dataSourceId: 'ds-meta-manual', isLiveReady: true },
+    { platformSlug: 'tiktok', spend: 1117.14, impressions: 483951, reach: 350000,
+      clicks: 13915, linkClicks: 13620, attributedRevenue: 15000,
+      conversions: 18, videoViews: 420000, frequency: 1.38,
+      cpc: 0.08, ctr: 2.88, cpm: 2.31,
+      attributionModel: 'last_click', attributionWindow: '7d_click',
+      dataSourceId: 'ds-tiktok-manual', isLiveReady: true },
   ],
   'p-2026-08': [
     { platformSlug: 'google', spend: 4660.27, impressions: 234672, reach: 180000,
@@ -177,25 +210,25 @@ export const MOCK_BRANCHES = [
 // ── BRANCH PERIOD STATS (Gross, Returns, Net, Targets) ───────────────
 export const MOCK_BRANCH_PERIOD_STATS = {
   'main': {
-    'p-2026-09': { revenue: 0, grossSales: 0, returns: 0, revenueGrowth: 0, cogs: 0, grossProfit: 0,
-      orders: 0, ordersGrowth: 0, customers: 0, newCustomers: 0, avgOrderValue: 0,
-      targetRevenue: 350000, targetAchievement: 0, satisfaction: 5.0 },
+    'p-2026-09': { revenue: 317816.51, grossSales: 358779.51, returns: 40963.00, revenueGrowth: -25.9, cogs: 228733, grossProfit: 89083.51,
+      orders: 1715, ordersGrowth: 63.3, customers: 1420, newCustomers: 380, avgOrderValue: 209.2,
+      targetRevenue: 350000, targetAchievement: 90.80, satisfaction: 4.8 },
     'p-2026-08': { revenue: 428885.49, grossSales: 471748.99, returns: 42863.50, revenueGrowth: 14.8, cogs: 223000, grossProfit: 205885.49,
       orders: 1050, ordersGrowth: 12.5, customers: 890, newCustomers: 240, avgOrderValue: 408.4,
       targetRevenue: 350000, targetAchievement: 122.54, satisfaction: 4.8 },
   },
   'al-rawaf': {
-    'p-2026-09': { revenue: 0, grossSales: 0, returns: 0, revenueGrowth: 0, cogs: 0, grossProfit: 0,
-      orders: 0, ordersGrowth: 0, customers: 0, newCustomers: 0, avgOrderValue: 0,
-      targetRevenue: 250000, targetAchievement: 0, satisfaction: 5.0 },
+    'p-2026-09': { revenue: 292288.13, grossSales: 361365.13, returns: 69077.00, revenueGrowth: 0.31, cogs: 210359, grossProfit: 81928.13,
+      orders: 1026, ordersGrowth: 43.5, customers: 840, newCustomers: 260, avgOrderValue: 352.2,
+      targetRevenue: 250000, targetAchievement: 116.92, satisfaction: 4.8 },
     'p-2026-08': { revenue: 291371.67, grossSales: 328996.67, returns: 37625.00, revenueGrowth: 11.2, cogs: 151500, grossProfit: 139871.67,
       orders: 715, ordersGrowth: 9.8, customers: 580, newCustomers: 165, avgOrderValue: 407.5,
       targetRevenue: 250000, targetAchievement: 116.55, satisfaction: 4.7 },
   },
   'kia': {
-    'p-2026-09': { revenue: 0, grossSales: 0, returns: 0, revenueGrowth: 0, cogs: 0, grossProfit: 0,
-      orders: 0, ordersGrowth: 0, customers: 0, newCustomers: 0, avgOrderValue: 0,
-      targetRevenue: 200000, targetAchievement: 0, satisfaction: 5.0 },
+    'p-2026-09': { revenue: 241897.00, grossSales: 279437.00, returns: 37540.00, revenueGrowth: -10.16, cogs: 174093, grossProfit: 67803.00,
+      orders: 619, ordersGrowth: -6.2, customers: 520, newCustomers: 180, avgOrderValue: 451.4,
+      targetRevenue: 200000, targetAchievement: 120.95, satisfaction: 4.7 },
     'p-2026-08': { revenue: 269265.00, grossSales: 304155.00, returns: 34890.00, revenueGrowth: 18.4, cogs: 140000, grossProfit: 129265.00,
       orders: 660, ordersGrowth: 15.2, customers: 530, newCustomers: 175, avgOrderValue: 407.9,
       targetRevenue: 200000, targetAchievement: 134.63, satisfaction: 4.7 },
@@ -221,15 +254,15 @@ function genDailySales(baseRevenue, days = 30) {
 
 export const MOCK_BRANCH_DAILY_SALES = {
   'main': {
-    'p-2026-09': [],
+    'p-2026-09': genDailySales(317816),
     'p-2026-08': genDailySales(428885),
   },
   'al-rawaf': {
-    'p-2026-09': [],
+    'p-2026-09': genDailySales(292288),
     'p-2026-08': genDailySales(291371),
   },
   'kia': {
-    'p-2026-09': [],
+    'p-2026-09': genDailySales(241897),
     'p-2026-08': genDailySales(269265),
   },
 };
@@ -264,14 +297,14 @@ export const MOCK_PRODUCTS = [
 
 export const MOCK_PRODUCT_METRICS = {
   'p-2026-09': [
-    { productId: 'prod-001', unitsSold: 0, revenue: 0, cogs: 0, grossProfit: 0, marginPct: 0, rating: 4.8, reviewCount: 0, growth: 0 },
-    { productId: 'prod-002', unitsSold: 0, revenue: 0, cogs: 0, grossProfit: 0, marginPct: 0, rating: 4.9, reviewCount: 0, growth: 0 },
-    { productId: 'prod-003', unitsSold: 0, revenue: 0, cogs: 0, grossProfit: 0, marginPct: 0, rating: 4.7, reviewCount: 0, growth: 0 },
-    { productId: 'prod-004', unitsSold: 0, revenue: 0, cogs: 0, grossProfit: 0, marginPct: 0, rating: 4.6, reviewCount: 0, growth: 0 },
-    { productId: 'prod-005', unitsSold: 0, revenue: 0, cogs: 0, grossProfit: 0, marginPct: 0, rating: 4.5, reviewCount: 0, growth: 0 },
-    { productId: 'prod-006', unitsSold: 0, revenue: 0, cogs: 0, grossProfit: 0, marginPct: 0, rating: 4.8, reviewCount: 0, growth: 0 },
-    { productId: 'prod-007', unitsSold: 0, revenue: 0, cogs: 0, grossProfit: 0, marginPct: 0, rating: 4.6, reviewCount: 0, growth: 0 },
-    { productId: 'prod-008', unitsSold: 0, revenue: 0, cogs: 0, grossProfit: 0, marginPct: 0, rating: 4.4, reviewCount: 0, growth: 0 },
+    { productId: 'prod-001', unitsSold: 580, revenue: 49300, cogs: 24360, grossProfit: 24940, marginPct: 50.6, rating: 4.8, reviewCount: 135, growth: -15.9 },
+    { productId: 'prod-002', unitsSold: 165, revenue: 52800, cogs: 29370, grossProfit: 23430, marginPct: 44.4, rating: 4.8, reviewCount: 92,  growth: -8.8 },
+    { productId: 'prod-003', unitsSold: 810, revenue: 36450, cogs: 17010, grossProfit: 19440, marginPct: 53.3, rating: 4.7, reviewCount: 198, growth: -14.3 },
+    { productId: 'prod-004', unitsSold: 310, revenue: 45880, cogs: 26040, grossProfit: 19840, marginPct: 43.2, rating: 4.6, reviewCount: 160, growth: -9.3 },
+    { productId: 'prod-005', unitsSold: 220, revenue: 40700, cogs: 21560, grossProfit: 19140, marginPct: 47.0, rating: 4.5, reviewCount: 104, growth: -12.0 },
+    { productId: 'prod-006', unitsSold: 115, revenue: 25300, cogs: 14720, grossProfit: 10580, marginPct: 41.8, rating: 4.7, reviewCount: 65,  growth: -8.0 },
+    { productId: 'prod-007', unitsSold: 65,  revenue: 27300, cogs: 15730, grossProfit: 11570, marginPct: 42.4, rating: 4.6, reviewCount: 45,  growth: -8.4 },
+    { productId: 'prod-008', unitsSold: 360, revenue: 19800, cogs: 10080, grossProfit: 9720,  marginPct: 49.1, rating: 4.4, reviewCount: 82,  growth: -10.9 },
   ],
   'p-2026-08': [
     { productId: 'prod-001', unitsSold: 690, revenue: 58650, cogs: 28980, grossProfit: 29670, marginPct: 50.6, rating: 4.8, reviewCount: 110, growth: 12.4 },
@@ -288,15 +321,40 @@ export const MOCK_PRODUCT_METRICS = {
 // ── E-COMMERCE STATS ──────────────────────────────────────────
 export const MOCK_ECOMMERCE_STATS = {
   'p-2026-09': {
-    totalOrders: 0, totalOrdersGrowth: 0,
-    totalRevenue: 0, totalRevenueGrowth: 0,
-    avgOrderValue: 0, avgOrderValueGrowth: 0,
-    sessions: 0, sessionsGrowth: 0,
-    conversionRate: 0, conversionRateGrowth: 0,
-    cartAbandonmentRate: 0, cartAbandonmentChange: 0,
-    returningCustomerRate: 0,
-    topCategories: [],
-    ordersTimeline: [],
+    totalOrders: 61, totalOrdersGrowth: -16.4,
+    totalRevenue: 37725.08, totalRevenueGrowth: 2.9,
+    grossSales: 39888.00, discounts: 93.00, returns: 1, returnRatePct: 1.6,
+    cogs: 550.00, shippingFees: 1424.00, paymentGatewayFees: 188.92,
+    avgOrderValue: 692.27, avgOrderValueGrowth: 30.3,
+    sessions: 18450, sessionsGrowth: 2.5,
+    conversionRate: 0.33, conversionRateGrowth: -0.08,
+    cartAbandonmentRate: 71.8, cartAbandonmentChange: -0.6,
+    returningCustomerRate: 5.0,
+    cityBreakdown: [
+      { cityAr: 'جدة', cityEn: 'Jeddah', visits: 5850, sharePct: 31.7 },
+      { cityAr: 'الرياض', cityEn: 'Riyadh', visits: 4120, sharePct: 22.3 },
+      { cityAr: 'الدمام', cityEn: 'Dammam', visits: 2310, sharePct: 12.5 },
+      { cityAr: 'القصيم (بريدة)', cityEn: 'Buraydah', visits: 1820, sharePct: 9.9 },
+      { cityAr: 'المدينة المنورة', cityEn: 'Madinah', visits: 1350, sharePct: 7.3 },
+      { cityAr: 'مدن أخرى', cityEn: 'Other', visits: 3000, sharePct: 16.3 },
+    ],
+    trafficSources: [
+      { source: 'Google', visits: 8720, sharePct: 47.3, color: '#10B981' },
+      { source: 'Direct (مباشر)', visits: 6380, sharePct: 34.6, color: '#3B82F6' },
+      { source: 'TikTok', visits: 2150, sharePct: 11.6, color: '#8B5CF6' },
+      { source: 'Facebook / Meta', visits: 420, sharePct: 2.3, color: '#06B6D4' },
+      { source: 'أخرى', visits: 780, sharePct: 4.2, color: '#64748B' },
+    ],
+    topCategories: [
+      { name: 'قطع غيار هيونداي الأصلية', orders: 24, revenue: 15200, share: 40.3 },
+      { name: 'قطع غيار كيا الأصلية', orders: 20, revenue: 12450, share: 33.0 },
+      { name: 'فلاتر وزيوت صيانة', orders: 11, revenue: 5900, share: 15.6 },
+      { name: 'مكابح وبطانات', orders: 6, revenue: 4175.08, share: 11.1 },
+    ],
+    ordersTimeline: [2, 1, 3, 2, 2, 4, 1, 3, 2, 2, 1, 3, 2, 2, 3, 1, 2, 3, 2, 1, 3, 2, 1, 2, 3, 2, 2, 3, 2, 2].map((orders, i) => ({
+      day: String(i + 1),
+      orders,
+    })),
   },
   'p-2026-08': {
     totalOrders: 73, totalOrdersGrowth: 14.8,
@@ -341,36 +399,43 @@ export const MOCK_ECOMMERCE_STATS = {
 // NOT platform-attributed revenue
 export const MOCK_FINANCIALS = {
   'p-2026-09': {
-    totalRevenue: 0,
-    totalRevenueGrowth: 0,
-    ecommerceRevenue: 0,
-    branchRevenue: 0,
-    cogs: 0,
-    grossProfit: 0,
-    grossMarginPct: 0,
+    totalRevenue: 889726.72,
+    totalRevenueGrowth: -10.08,
+    grossSales: 1039469.64,
+    returns: 147580.00,
+    ecommerceRevenue: 37725.08,
+    branchRevenue: 852001.64,
+    // Factual Dora Cars Rule: Profit margin on net sales (sales - returns) is 28.03%
+    // Net Sales: 889,726.72 SAR
+    // Cost (71.97%): 640,336.32 SAR
+    // Profit (28.03%): 249,390.40 SAR
+    cogs: 640336.32,
+    grossProfit: 249390.40,
+    grossMarginPct: 28.03,
     operatingExpenses: {
       salaries: 60000,
-      rent: 20000,
-      utilities: 5000,
-      marketing: 0,
-      logistics: 0,
-      other: 5000,
+      rent: 12000,
+      utilities: 4000,
+      logistics: 4000,
+      marketing: 8323.02, // Google: 4,480.11 + Meta: 2,725.77 + TikTok: 1,117.14
+      other: 10000,
     },
-    totalOpex: 90000,
-    ebitda: 0,
-    ebitdaMarginPct: 0,
+    totalOpex: 90000.00,
+    ebitda: 159390.40,
+    ebitdaMarginPct: 17.91,
     depreciation: 0,
-    ebit: 0,
+    ebit: 159390.40,
     interest: 0,
-    ebt: 0,
+    ebt: 159390.40,
     tax: 0,
-    netProfit: 0,
-    netProfitMarginPct: 0,
-    cashFlow: 0,
-    accountsReceivable: 0,
-    inventoryValue: 0,
-    monthlyTarget: 1000000,
-    targetAchievementPct: 0,
+    netProfit: 159390.40,
+    netProfitMarginPct: 17.91,
+    cashFlow: 159390.40,
+    accountsReceivable: 45000,
+    inventoryValue: 195000,
+    monthlyTarget: 850000,
+    targetAchievementPct: 104.67,
+    blendedMER: 106.90, // 889,726.72 / 8,323.02
   },
   'p-2026-08': {
     totalRevenue: 989522.16, totalRevenueGrowth: 22.4,
@@ -421,16 +486,30 @@ export const MOCK_REVENUE_TREND = [
   { month: 'يونيو', monthEn: 'Jun', revenue: 385000, grossProfit: 173250, netProfit: 28900, adSpend: 29200 },
   { month: 'يوليو', monthEn: 'Jul', revenue: 404000, grossProfit: 180000, netProfit: 33405, adSpend: 31800 },
   { month: 'أغسطس', monthEn: 'Aug', revenue: 989522, grossProfit: 277363, netProfit: 187363, adSpend: 9403 },
-  { month: 'سبتمبر', monthEn: 'Sep', revenue: 487200, grossProfit: 218240, netProfit: 57494, adSpend: 38500 },
+  { month: 'سبتمبر', monthEn: 'Sep', revenue: 889727, grossProfit: 249390, netProfit: 159390, adSpend: 8323 },
 ];
 
 // ── TARGETS ───────────────────────────────────────────────────
 export const MOCK_TARGETS = {
   'p-2026-09': {
-    revenue: 800000, netProfit: 180000, adSpend: 0,
-    roas: 0, orders: 0, newCustomers: 0, cpa: 0,
-    hyundaiRevenue: 350000, kiaRevenue: 200000, ecommerceRevenue: 0,
-    metaROAS: 0, googleROAS: 0, tiktokROAS: 0,
+    revenue: 850000,
+    netProfit: 159390.40,
+    adSpend: 8323.02,
+    blendedMER: 95.0, // Blended MER: Total Company Sales (889.7K) / Total Ad Spend (8.32K) = 106.90x
+    roas: 16.0,
+    orders: 61,
+    newCustomers: 1477,
+    cpa: 3.34,
+    hyundaiRevenue: 250000,
+    kiaRevenue: 200000,
+    ecommerceRevenue: 35000,
+    omnichannelRevenue: 180000,
+    omnichannelROAS: 35.0,
+    metaROAS: 35.0, // 97,871 / 2,725.77 = 35.9x
+    metaConversations: 1200, // Actual: 1,477
+    googleROAS: 8.0, // Actual Salla Store: 37,725.08 / 4,480.11 = 8.42x
+    googleConversions: 2000, // Actual: 2,503 (Local calls + Directions + Store actions)
+    tiktokROAS: 12.0, // Actual: 15,000 / 1,117.14 = 13.43x
   },
   'p-2026-08': {
     revenue: 800000, netProfit: 187363.06, adSpend: 9403,
@@ -471,20 +550,20 @@ export const MOCK_AD_FUNNELS = {
   },
   'p-2026-09': {
     meta: [
-      { stage: 'الوصول (Reach)', stageEn: 'Reach', value: 0, color: '#1877F2' },
-      { stage: 'المشاهدات والظهور', stageEn: 'Impressions', value: 0, color: '#3B82F6' },
-      { stage: 'النقرات', stageEn: 'Clicks', value: 0, color: '#60A5FA' },
-      { stage: 'التحويلات', stageEn: 'Conversions', value: 0, color: '#22C55E' },
+      { stage: 'الوصول (Reach)', stageEn: 'Reach', value: 203154, color: '#1877F2' },
+      { stage: 'المشاهدات والظهور', stageEn: 'Impressions', value: 482095, color: '#3B82F6' },
+      { stage: 'النقرات والتفاعل', stageEn: 'Clicks', value: 2840, color: '#60A5FA' },
+      { stage: 'محادثات وتواصل واتساب', stageEn: 'WhatsApp Contacts', value: 1477, color: '#22C55E' },
     ],
     google: [
-      { stage: 'الظهور (Impressions)', stageEn: 'Impressions', value: 0, color: '#10B981' },
-      { stage: 'النقرات', stageEn: 'Clicks', value: 0, color: '#34D399' },
-      { stage: 'التحويلات', stageEn: 'Conversions', value: 0, color: '#059669' },
+      { stage: 'الظهور والبحث والخرائط', stageEn: 'Impressions', value: 99703, color: '#10B981' },
+      { stage: 'التفاعلات والنقرات', stageEn: 'Interactions', value: 9521, color: '#34D399' },
+      { stage: 'التحويلات والاتصالات المحلية', stageEn: 'Conversions', value: 2503, color: '#059669' },
     ],
     tiktok: [
-      { stage: 'المشاهدات', stageEn: 'Impressions', value: 0, color: '#8B5CF6' },
-      { stage: 'النقرات', stageEn: 'Clicks', value: 0, color: '#A78BFA' },
-      { stage: 'التحويلات', stageEn: 'Conversions', value: 0, color: '#7C3AED' },
+      { stage: 'المشاهدات والظهور', stageEn: 'Impressions', value: 483951, color: '#8B5CF6' },
+      { stage: 'النقرات للرابط والمتجر', stageEn: 'Clicks', value: 13915, color: '#A78BFA' },
+      { stage: 'التحويلات المسجلة', stageEn: 'Conversions', value: 18, color: '#7C3AED' },
     ],
   },
 };

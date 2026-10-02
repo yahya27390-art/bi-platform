@@ -16,9 +16,9 @@ export function BIPeriodProvider({ children }) {
     }
   });
 
-  // Default to August 2026 (The verified, fully documented month with 15 authentic proof documents)
+  // Default to September 2026 (The verified, fully audited month with authentic proof documents)
   const [periodId, setPeriodId] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY_ACTIVE) || 'p-2026-08';
+    return localStorage.getItem(STORAGE_KEY_ACTIVE) || 'p-2026-09';
   });
 
   const handleSetPeriod = useCallback((newPeriodId) => {
@@ -32,10 +32,10 @@ export function BIPeriodProvider({ children }) {
   const periods = React.useMemo(() => {
     const basePeriods = MOCK_PERIODS.map(p => ({
       ...p,
-      labelAr: p.id === 'p-2026-08' ? 'أغسطس 2026 (المعتمد بالفواتير)' : p.label,
-      isAudited: p.id === 'p-2026-08',
-      isLiveApi: p.id === 'p-2026-09',
-      status: p.id === 'p-2026-08' ? 'audited' : (p.id === 'p-2026-09' ? 'in_progress' : 'closed'),
+      labelAr: p.id === 'p-2026-08' ? 'أغسطس 2026 (المعتمد بالفواتير)' : (p.id === 'p-2026-09' ? 'سبتمبر 2026 (المعتمد بالفواتير)' : p.label),
+      isAudited: p.id === 'p-2026-08' || p.id === 'p-2026-09',
+      isLiveApi: false,
+      status: (p.id === 'p-2026-08' || p.id === 'p-2026-09') ? 'audited' : 'closed',
       target: p.id === 'p-2026-08' ? 800000 : (p.id === 'p-2026-09' ? 850000 : 750000),
       opex: {
         salaries: 60000,
