@@ -2,7 +2,17 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import { formatSAR } from '@/lib/kpiEngine';
 
-export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit, grossProfit, opexTotal, cogsTotal }) {
+export default function ExecutiveIncomeStatementTab({
+  mask,
+  netSales,
+  netProfit,
+  grossProfit,
+  opexTotal,
+  cogsTotal,
+  periodId = 'p-2026-09',
+  periodLabel = 'سبتمبر 2026'
+}) {
+  const isSep = periodId === 'p-2026-09';
   // P&L Waterfall Chart Option (Safe formatter & confined tooltip)
   const waterfallOption = {
     backgroundColor: 'transparent',
@@ -105,7 +115,12 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
         label: {
           show: false
         },
-        data: [
+        data: isSep ? [
+          { value: 317816.51, name: 'الفرع الرئيسي', itemStyle: { color: '#0F2744' } },
+          { value: 292288.13, name: 'فرع الرواف هيونداي', itemStyle: { color: '#0284C7' } },
+          { value: 241897.00, name: 'فرع كيا المعتمد', itemStyle: { color: '#F97316' } },
+          { value: 37725.08, name: 'متجر سلة أونلاين', itemStyle: { color: '#10B981' } }
+        ] : [
           { value: 428885.49, name: 'الفرع الرئيسي', itemStyle: { color: '#0F2744' } },
           { value: 291371.67, name: 'فرع الرواف هيونداي', itemStyle: { color: '#0284C7' } },
           { value: 269265.00, name: 'فرع كيا المعتمد', itemStyle: { color: '#F97316' } },
@@ -268,7 +283,7 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
             <ReactECharts option={donutOption} style={{ height: '100%', width: '100%' }} />
           </div>
           <div className="text-[11px] text-slate-600 text-center border-t border-slate-100 pt-2.5 font-bold">
-            الفرع الرئيسي يتصدر بنسبة 43.3% من المبيعات
+            {isSep ? 'الفرع الرئيسي يتصدر بنسبة 35.7% يليه فرع الرواف بنسبة 32.9%' : 'الفرع الرئيسي يتصدر بنسبة 43.3% من المبيعات'}
           </div>
         </div>
       </div>
@@ -294,7 +309,7 @@ export default function ExecutiveIncomeStatementTab({ mask, netSales, netProfit,
         <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
           <div className="border-b border-slate-100 pb-3 mb-4">
             <h3 className="text-sm font-black text-[#0F2744]">
-              تحليل هوامش الربحية - أغسطس 2026 المعتمد (Profitability Margins)
+              تحليل هوامش الربحية — {periodLabel} (Profitability Margins)
             </h3>
             <p className="text-[11px] text-slate-400 font-medium">
               مقارنة نسب الأرباح الفعلية المحققة من إجمالي المبيعات

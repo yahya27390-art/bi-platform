@@ -3,6 +3,126 @@ import ReactECharts from 'echarts-for-react';
 import { RefreshCw, CheckCircle2, AlertCircle, ShieldCheck, Zap, Radio } from 'lucide-react';
 import { loadMetaConfig, validateTokenAndPermissions, formatMetaForAgentPrompt } from '@/lib/metaIntegration';
 
+// ─── Real September 2026 Advertising Data (Official Audited Proofs) ─────────────
+const PLATFORMS_SEP = [
+  {
+    key: 'meta',
+    name: 'Meta Ads',
+    nameAr: 'ميتا (واتساب + انستغرام)',
+    emoji: '📘',
+    color: '#1877F2',
+    bg: 'from-blue-600 to-blue-800',
+    cardBg: '#EFF6FF',
+    borderColor: '#BFDBFE',
+    spend: 2725.77,
+    primaryMetricLabel: 'محادثات وتواصل مباشر',
+    primaryMetricValue: '1,477',
+    primaryMetricSub: 'تكلفة: 1.85 ر.س / محادثة',
+    roas: 35.9,
+    roasLabel: '×35.9 ROAS',
+    roasColor: '#15803D',
+    stats: [
+      { label: 'الانطباعات', value: '482,095' },
+      { label: 'الوصول', value: '203,154' },
+      { label: 'النقرات والتفاعل', value: '2,840' },
+      { label: 'تكلفة النقرة', value: '0.96 ر.س' },
+      { label: 'معدل النقر CTR', value: '1.48%' },
+      { label: 'التكرار Frequency', value: '2.37' },
+    ],
+    campaigns: [
+      {
+        name: 'حملة تفاعل واتساب 14/4/2026',
+        status: 'ACTIVE',
+        spend: 1238.47,
+        kpi: '1,077 محادثة',
+        cpa: '1.15 ر.س',
+        reach: '102,693',
+        roas: '×35.9',
+        badge: 'الأعلى تفاعلاً',
+        badgeColor: '#15803D',
+      },
+      {
+        name: 'New Sales Campaign 1/9/2026',
+        status: 'ACTIVE',
+        spend: 1176.28,
+        kpi: '359 محادثة بيعية',
+        cpa: '3.27 ر.س',
+        reach: '51,221',
+        roas: '×30.0',
+        badge: 'مبيعات مباشرة',
+        badgeColor: '#0284C7',
+      },
+      {
+        name: 'اليوم الوطني 96',
+        status: 'ACTIVE',
+        spend: 311.02,
+        kpi: '41 تفاعل مباشر',
+        cpa: '7.58 ر.س',
+        reach: '49,240',
+        roas: '—',
+        badge: 'اليوم الوطني',
+        badgeColor: '#16A34A',
+      },
+    ],
+  },
+  {
+    key: 'google',
+    name: 'Google Ads',
+    nameAr: 'جوجل (بحث + خرائط)',
+    emoji: '🔍',
+    color: '#34A853',
+    bg: 'from-green-600 to-green-800',
+    cardBg: '#F0FDF4',
+    borderColor: '#BBF7D0',
+    spend: 4480.11,
+    primaryMetricLabel: 'التحويلات والإحالات',
+    primaryMetricValue: '2,503',
+    primaryMetricSub: 'متوسط التكلفة: 1.79 ر.س / تحويل',
+    roas: 8.4,
+    roasLabel: '×8.4 ROAS',
+    roasColor: '#15803D',
+    stats: [
+      { label: 'الظهور والانطباعات', value: '99,703' },
+      { label: 'النقرات والتفاعل', value: '9,521' },
+      { label: 'معدل النقر CTR', value: '9.55%' },
+      { label: 'متوسط CPC', value: '0.47 ر.س' },
+      { label: 'حصة الموبايل', value: '96.2%' },
+      { label: 'إجمالي التحويلات', value: '2,503' },
+    ],
+    campaigns: [
+      { name: 'حملات البحث والخرائط الموحدة شهر 9', status: 'ACTIVE', spend: 4480.11, kpi: '2,503 تحويل', cpa: '1.79 ر.س', reach: '75,000', roas: '×8.4', badge: 'بحث وخرائط', badgeColor: '#1D4ED8' },
+    ],
+  },
+  {
+    key: 'tiktok',
+    name: 'TikTok Ads',
+    nameAr: 'تيك توك (تحويلات + ترافيك)',
+    emoji: '🎵',
+    color: '#010101',
+    bg: 'from-slate-700 to-slate-900',
+    cardBg: '#F8FAFC',
+    borderColor: '#CBD5E1',
+    spend: 1117.14,
+    primaryMetricLabel: 'النقرات والترافيك',
+    primaryMetricValue: '13,915',
+    primaryMetricSub: 'تكلفة النقرة: 0.08 ر.س',
+    roas: 13.4,
+    roasLabel: '×13.4 ROAS',
+    roasColor: '#15803D',
+    stats: [
+      { label: 'الانطباعات والظهور', value: '483,951' },
+      { label: 'النقرات للرابط', value: '13,915' },
+      { label: 'معدل النقر CTR', value: '2.88%' },
+      { label: 'تكلفة CPM', value: '2.31 ر.س' },
+      { label: 'الوصول التقديري', value: '350,000' },
+      { label: 'التحويلات المسجلة', value: '18' },
+    ],
+    campaigns: [
+      { name: 'حملة الترافيك والتحويلات شهر 9', status: 'ACTIVE', spend: 1117.14, kpi: '13,915 نقرة', cpa: '0.08 ر.س', reach: '350,000', roas: '×13.4', badge: 'ترافيك عالي', badgeColor: '#7C3AED' },
+    ],
+  },
+];
+
 // ─── Real August 2026 Advertising Data (Official Audited Proofs) ─────────────
 const PLATFORMS_AUG = [
   {
@@ -270,9 +390,9 @@ function SpendBar({ platform, totalSpend }) {
   );
 }
 
-export default function OwnerCampaignTab({ viewMode = 'mobile', periodId = 'p-2026-08' }) {
-  const isAuditedAugust = periodId === 'p-2026-08';
-  const platforms = isAuditedAugust ? PLATFORMS_AUG : PLATFORMS_LIVE;
+export default function OwnerCampaignTab({ viewMode = 'mobile', periodId = 'p-2026-09' }) {
+  const isAudited = periodId === 'p-2026-08' || periodId === 'p-2026-09';
+  const platforms = periodId === 'p-2026-09' ? PLATFORMS_SEP : (periodId === 'p-2026-08' ? PLATFORMS_AUG : PLATFORMS_LIVE);
 
   const [activePlatform, setActivePlatform] = useState('meta');
   const [metaSyncing, setMetaSyncing] = useState(false);

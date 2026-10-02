@@ -2,8 +2,19 @@ import React, { useState } from 'react';
 import { loadSallaConfig } from '../../lib/sallaIntegration';
 import { useCurrentPeriod } from '../../context/BIPeriodContext';
 
-// ── Real Salla Store Data (August 2026 Official Accounts) ─────────────────────
-const STORE_STATS = {
+// ── September 2026 Salla Official Audited Accounts ───────────────────────────
+const STORE_STATS_SEP = {
+  totalOrders: 61,
+  totalRevenue: 37725,
+  avgOrderValue: 692,
+  abandonedCartsCount: 42,
+  abandonedCartsValue: 22150,
+  conversionRate: 2.8,
+  cartAbandonmentRate: 59.8,
+};
+
+// ── August 2026 Salla Official Audited Accounts ───────────────────────────────
+const STORE_STATS_AUG = {
   totalOrders: 69,
   totalRevenue: 41783,
   avgOrderValue: 528,
@@ -12,9 +23,6 @@ const STORE_STATS = {
   conversionRate: 3.2,
   cartAbandonmentRate: 62.4,
 };
-
-// Derived metrics
-const recoveryPotential = STORE_STATS.abandonedCartsValue * 0.25; // 25% recovery estimate
 
 function StatCard({ emoji, label, value, subValue, bg, textColor }) {
   return (
@@ -27,9 +35,11 @@ function StatCard({ emoji, label, value, subValue, bg, textColor }) {
   );
 }
 
-export default function OwnerStoreTab({ viewMode = 'mobile' }) {
+export default function OwnerStoreTab({ viewMode = 'mobile', periodId: propPeriodId }) {
   const [activeView, setActiveView] = useState('overview'); // 'overview' | 'products' | 'orders'
-  const { activePeriodObj } = useCurrentPeriod();
+  const { periodId: ctxPeriodId, activePeriodObj } = useCurrentPeriod();
+  const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-09';
+  const STORE_STATS = currentPeriodId === 'p-2026-08' ? STORE_STATS_AUG : STORE_STATS_SEP;
   const sallaConfig = loadSallaConfig();
   const liveOrders = (sallaConfig?.syncedStats?.recentOrders || []).filter(
     ord => ord && !ord.customer && !ord.id?.startsWith('ORD-89')

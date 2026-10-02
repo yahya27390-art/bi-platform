@@ -268,6 +268,8 @@ function SummaryTab({ privacyMode, viewMode = 'mobile', periodMetrics, activePer
               grossProfit={grossProfit}
               opexTotal={totalMonthlyOpex}
               cogsTotal={cogsTotal}
+              periodId={activePeriodObj?.id || 'p-2026-09'}
+              periodLabel={activePeriodObj?.labelAr || 'سبتمبر 2026'}
             />
           </div>
         )}
@@ -325,6 +327,25 @@ export default function OwnerExecutiveDashboard() {
 
   // Compute dynamic period metrics based on selected period
   const periodMetrics = useMemo(() => {
+    if (periodId === 'p-2026-09') {
+      return {
+        netSales: 889726.72,
+        cogsTotal: 640336.32,
+        grossProfit: 249390.40,
+        monthlyTarget: 850000,
+        grossMarginPct: 28.03,
+        opexSalaries: 60000,
+        opexFacilities: 20000,
+        opexContingency: 10000,
+        totalMonthlyOpex: 90000,
+        netProfit: 159390.40,
+        netMarginPct: 17.91,
+        opexCoverageRatio: 277,
+        isAudited: true,
+        isLiveApi: false,
+      };
+    }
+
     if (periodId === 'p-2026-08') {
       return {
         netSales: 989522.16,

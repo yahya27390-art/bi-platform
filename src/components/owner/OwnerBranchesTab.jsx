@@ -1,14 +1,76 @@
 import React, { useState } from 'react';
 import { useCurrentPeriod } from '../../context/BIPeriodContext';
 
-// ── Real Branch Data (August 2026 Official Audited Accounting Reports) ─────────
-// Figures strictly verified against Official POS reports & Returns reports:
-// • الفرع الرئيسي: إجمالي 471,748.99 | مردود 42,863.50 | صافي 428,885.49 ر.س
-// • فرع الرواف (هيونداي): إجمالي 328,996.67 | مردود 37,625.00 | صافي 291,371.67 ر.س
-// • فرع كيا المعتمد: إجمالي 304,155.00 | مردود 34,890.00 | صافي 269,265.00 ر.س
-// • متجر سلة أونلاين: إجمالي 41,783.00 | مردود 225.00 | صافي 41,558.00 ر.س
-// إجمالي مردودات الفروع الميدانية: 115,378.50 ر.س (مطابق 100% لتقرير المردودات العام لشهر 8)
-const BRANCHES = [
+// ── September 2026 Official Audited Accounting Reports ─────────────────────────
+const BRANCHES_SEP = [
+  {
+    id: 'main',
+    name: 'الفرع الرئيسي',
+    subtitle: 'بريدة — طريق الملك عبد العزيز',
+    emoji: '🏪',
+    gradient: 'from-[#0A192F] to-[#0F2744]',
+    accentColor: '#0284C7',
+    grossSales: 358779.51,
+    returns: 40963.00,
+    sales: 317816.51,
+    target: 350000,
+    tag: 'الرئيسي',
+    tagColor: '#0A192F',
+    city: 'بريدة',
+    products: 'قطع غيار شاملة',
+  },
+  {
+    id: 'hyundai',
+    name: 'فرع الرواف',
+    subtitle: 'هيونداي — حي الرواف',
+    emoji: '🏬',
+    gradient: 'from-[#0369A1] to-[#0284C7]',
+    accentColor: '#38BDF8',
+    grossSales: 361365.13,
+    returns: 69077.00,
+    sales: 292288.13,
+    target: 250000,
+    tag: 'هيونداي',
+    tagColor: '#0369A1',
+    city: 'بريدة',
+    products: 'قطع هيونداي معتمدة',
+  },
+  {
+    id: 'kia',
+    name: 'فرع كيا المعتمد',
+    subtitle: 'كيا — طريق الملك فهد',
+    emoji: '🏪',
+    gradient: 'from-[#C2410C] to-[#EA580C]',
+    accentColor: '#FB923C',
+    grossSales: 279437.00,
+    returns: 37540.00,
+    sales: 241897.00,
+    target: 200000,
+    tag: 'كيا',
+    tagColor: '#C2410C',
+    city: 'بريدة',
+    products: 'قطع كيا أصلية',
+  },
+  {
+    id: 'online',
+    name: 'متجر سلة أونلاين',
+    subtitle: 'doracars.com — سلة',
+    emoji: '🛒',
+    gradient: 'from-[#065F46] to-[#047857]',
+    accentColor: '#34D399',
+    grossSales: 39888.00,
+    returns: 2162.92,
+    sales: 37725.08,
+    target: 35000,
+    tag: 'أونلاين',
+    tagColor: '#065F46',
+    city: 'المملكة كاملة',
+    products: 'منتجات متجر سلة',
+  },
+];
+
+// ── August 2026 Official Audited Accounting Reports ───────────────────────────
+const BRANCHES_AUG = [
   {
     id: 'main',
     name: 'الفرع الرئيسي',
@@ -152,7 +214,7 @@ function BranchCard({ branch, isSelected, onSelect }) {
 
         {/* Sales Figure */}
         <div className="mt-3 pt-3 border-t border-white/15">
-          <div className="text-white/60 text-[10px]">صافي المبيعات الفعلية — أغسطس 2026</div>
+          <div className="text-white/60 text-[10px]">صافي المبيعات الفعلية — {periodLabel}</div>
           <div className="text-white font-black text-xl mt-0.5">
             {branch.sales.toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm font-bold text-white/70">ر.س</span>
           </div>
@@ -183,14 +245,18 @@ function BranchCard({ branch, isSelected, onSelect }) {
   );
 }
 
-export default function OwnerBranchesTab({ viewMode = 'mobile' }) {
+export default function OwnerBranchesTab({ viewMode = 'mobile', periodId: propPeriodId }) {
   const [selectedId, setSelectedId] = useState(null);
-  const { activePeriodObj } = useCurrentPeriod();
+  const { periodId: ctxPeriodId, activePeriodObj } = useCurrentPeriod();
+  const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-09';
+  const periodLabel = activePeriodObj?.labelAr || activePeriodObj?.label || (currentPeriodId === 'p-2026-08' ? 'أغسطس 2026' : 'سبتمبر 2026');
 
-  const totalGross = BRANCHES.reduce((s, b) => s + b.grossSales, 0);
-  const totalSales = BRANCHES.reduce((s, b) => s + b.sales, 0); // صافي المبيعات
-  const totalReturns = BRANCHES.reduce((s, b) => s + b.returns, 0);
-  const totalTarget = activePeriodObj?.target || BRANCHES.reduce((s, b) => s + b.target, 0);
+  const branches = currentPeriodId === 'p-2026-08' ? BRANCHES_AUG : BRANCHES_SEP;
+
+  const totalGross = branches.reduce((s, b) => s + b.grossSales, 0);
+  const totalSales = branches.reduce((s, b) => s + b.sales, 0); // صافي المبيعات
+  const totalReturns = branches.reduce((s, b) => s + b.returns, 0);
+  const totalTarget = activePeriodObj?.target || branches.reduce((s, b) => s + b.target, 0);
   const totalPct = ((totalSales / totalTarget) * 100).toFixed(1);
 
   return (
@@ -203,7 +269,7 @@ export default function OwnerBranchesTab({ viewMode = 'mobile' }) {
           <div>
             <h2 className="font-black text-base">الفروع والتارجت</h2>
             <p className="text-slate-300 text-xs">
-              {activePeriodObj?.label || 'أغسطس 2026'} — {activePeriodObj?.isAudited ? '4 فروع معتمدة ومطابقة محاسبياً' : 'ربط ومتابعة المبيعات الحية'}
+              {periodLabel} — {activePeriodObj?.isAudited ? '4 فروع معتمدة ومطابقة محاسبياً' : 'ربط ومتابعة المبيعات الحية'}
             </p>
           </div>
         </div>
@@ -246,10 +312,11 @@ export default function OwnerBranchesTab({ viewMode = 'mobile' }) {
 
       {/* ── Branch Cards ── */}
       <div className={viewMode === 'desktop' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}>
-        {BRANCHES.map(branch => (
+        {branches.map(branch => (
           <BranchCard
             key={branch.id}
             branch={branch}
+            periodLabel={periodLabel}
             isSelected={selectedId === branch.id}
             onSelect={(id) => setSelectedId(id === selectedId ? null : id)}
           />
@@ -259,7 +326,7 @@ export default function OwnerBranchesTab({ viewMode = 'mobile' }) {
       {/* ── Branch Ranking ── */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
         <div className="text-xs font-bold text-slate-500 mb-3">🏆 ترتيب الفروع حسب الإنجاز</div>
-        {[...BRANCHES]
+        {[...branches]
           .sort((a, b) => (b.sales / b.target) - (a.sales / a.target))
           .map((b, i) => {
             const pct = ((b.sales / b.target) * 100).toFixed(1);
