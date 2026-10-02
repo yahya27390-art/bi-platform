@@ -64,7 +64,7 @@ export default function OwnerStoreTab({ viewMode = 'mobile', periodId: propPerio
           <div>
             <h2 className="font-black text-base">متجر سلة أونلاين</h2>
             <p className="text-emerald-200 text-xs">
-              doracars.com — {activePeriodObj?.label || 'أغسطس 2026'} ({activePeriodObj?.isAudited ? 'مبيعات معتمدة' : 'ربط ومزامنة حية'})
+              doracars.com — {activePeriodObj?.labelAr || activePeriodObj?.label || (currentPeriodId === 'p-2026-08' ? 'أغسطس 2026' : 'سبتمبر 2026')} ({activePeriodObj?.isAudited ? 'مبيعات معتمدة' : 'ربط ومزامنة حية'})
             </p>
           </div>
           <div className="mr-auto flex items-center gap-1.5">

@@ -392,6 +392,8 @@ function SpendBar({ platform, totalSpend }) {
 
 export default function OwnerCampaignTab({ viewMode = 'mobile', periodId = 'p-2026-09' }) {
   const isAudited = periodId === 'p-2026-08' || periodId === 'p-2026-09';
+  const isAuditedAugust = periodId === 'p-2026-08';
+  const periodLabel = periodId === 'p-2026-08' ? 'أغسطس 2026' : (periodId === 'p-2026-09' ? 'سبتمبر 2026' : 'الشهر الحالي');
   const platforms = periodId === 'p-2026-09' ? PLATFORMS_SEP : (periodId === 'p-2026-08' ? PLATFORMS_AUG : PLATFORMS_LIVE);
 
   const [activePlatform, setActivePlatform] = useState('meta');
@@ -461,8 +463,8 @@ export default function OwnerCampaignTab({ viewMode = 'mobile', periodId = 'p-20
   return (
     <div className="space-y-4 pb-2" dir="rtl">
 
-      {/* ── Live API Status Strip (When not on historical August) ── */}
-      {!isAuditedAugust && (
+      {/* ── Live API Status Strip (When not on historical audited months) ── */}
+      {!isAudited && (
         <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 border border-blue-500/30 rounded-2xl p-3.5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
@@ -502,11 +504,11 @@ export default function OwnerCampaignTab({ viewMode = 'mobile', periodId = 'p-20
             <div>
               <h2 className="font-black text-base leading-tight">أداء الحملات الإعلانية ومصادر التسويق</h2>
               <p className="text-blue-200 text-xs">
-                {isAuditedAugust ? 'أغسطس 2026 — بيانات الفواتير الرسمية المعتمدة' : 'الشهر التشغيلي الحالي — مربوط حياً بواجهات الـ API'}
+                {isAudited ? `${periodLabel} — بيانات الفواتير الرسمية المعتمدة` : 'الشهر التشغيلي الحالي — مربوط حياً بواجهات الـ API'}
               </p>
             </div>
           </div>
-          {isAuditedAugust ? (
+          {isAudited ? (
             <span className="px-2.5 py-1 rounded-xl bg-white/10 text-emerald-300 text-[10px] font-bold border border-white/20">
               معتمد 100% ✓
             </span>
@@ -538,7 +540,7 @@ export default function OwnerCampaignTab({ viewMode = 'mobile', periodId = 'p-20
       {/* ── ROAS Bar Chart ── */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
         <div className="text-xs font-bold text-slate-500 mb-2">
-          مقارنة العائد الإعلاني (ROAS) — {isAuditedAugust ? 'أغسطس 2026' : 'الشهر الحالي'}
+          مقارنة العائد الإعلاني (ROAS) — {isAudited ? periodLabel : 'الشهر الحالي'}
         </div>
         <div dir="ltr">
           <ReactECharts option={roasChartOption} style={{ height: 140, width: '100%' }} opts={{ renderer: 'canvas' }} />
