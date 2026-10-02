@@ -39,7 +39,9 @@ export default function OwnerStoreTab({ viewMode = 'mobile', periodId: propPerio
   const [activeView, setActiveView] = useState('overview'); // 'overview' | 'products' | 'orders'
   const { periodId: ctxPeriodId, activePeriodObj } = useCurrentPeriod();
   const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-09';
+  const periodLabel = activePeriodObj?.labelAr || activePeriodObj?.label || (currentPeriodId === 'p-2026-08' ? 'أغسطس 2026' : 'سبتمبر 2026');
   const STORE_STATS = currentPeriodId === 'p-2026-08' ? STORE_STATS_AUG : STORE_STATS_SEP;
+  const recoveryPotential = STORE_STATS.abandonedCartsValue * 0.25;
   const sallaConfig = loadSallaConfig();
   const liveOrders = (sallaConfig?.syncedStats?.recentOrders || []).filter(
     ord => ord && !ord.customer && !ord.id?.startsWith('ORD-89')
@@ -140,7 +142,7 @@ export default function OwnerStoreTab({ viewMode = 'mobile', periodId: propPerio
               emoji="✅"
               label="طلبات مكتملة"
               value={String(STORE_STATS.totalOrders)}
-              subValue="أغسطس 2026"
+              subValue={periodLabel}
               bg="bg-green-50"
               textColor="text-green-700"
             />
@@ -266,12 +268,12 @@ export default function OwnerStoreTab({ viewMode = 'mobile', periodId: propPerio
               <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto text-right">
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <div className="text-[10px] text-slate-400">إيرادات المتجر الرسمية</div>
-                  <div className="text-sm font-black text-teal-700 font-mono">41,783 ر.س</div>
-                  <div className="text-[9px] text-slate-400">أغسطس 2026</div>
+                  <div className="text-sm font-black text-teal-700 font-mono">{STORE_STATS.totalRevenue.toLocaleString('ar-SA')} ر.س</div>
+                  <div className="text-[9px] text-slate-400">{periodLabel}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <div className="text-[10px] text-slate-400">الطلبات المسجلة</div>
-                  <div className="text-sm font-black text-slate-800 font-mono">69 طلباً</div>
+                  <div className="text-sm font-black text-slate-800 font-mono">{STORE_STATS.totalOrders} طلباً</div>
                   <div className="text-[9px] text-emerald-600 font-bold">مكتملة ومحققة</div>
                 </div>
               </div>
@@ -327,21 +329,21 @@ export default function OwnerStoreTab({ viewMode = 'mobile', periodId: propPerio
 
               <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 max-w-md mx-auto space-y-2 text-right">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-emerald-900">البيانات المالية الفعلية (أغسطس 2026)</span>
+                  <span className="text-xs font-bold text-emerald-900">البيانات المالية الفعلية ({periodLabel})</span>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-800 font-bold">معتمدة رسمياً</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center pt-1">
                   <div>
                     <div className="text-[10px] text-emerald-700">المبيعات الإجمالية</div>
-                    <div className="font-black text-xs text-emerald-950 font-mono">41,783 ر.س</div>
+                    <div className="font-black text-xs text-emerald-950 font-mono">{STORE_STATS.totalRevenue.toLocaleString('ar-SA')} ر.س</div>
                   </div>
                   <div>
                     <div className="text-[10px] text-emerald-700">عدد الطلبات</div>
-                    <div className="font-black text-xs text-emerald-950 font-mono">69 طلب</div>
+                    <div className="font-black text-xs text-emerald-950 font-mono">{STORE_STATS.totalOrders} طلب</div>
                   </div>
                   <div>
                     <div className="text-[10px] text-emerald-700">متوسط السلة</div>
-                    <div className="font-black text-xs text-emerald-950 font-mono">528 ر.س</div>
+                    <div className="font-black text-xs text-emerald-950 font-mono">{STORE_STATS.avgOrderValue.toLocaleString('ar-SA')} ر.س</div>
                   </div>
                 </div>
               </div>
