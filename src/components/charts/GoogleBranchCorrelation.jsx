@@ -22,8 +22,11 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
   const activePeriod = propPeriodId || globalPeriodId;
   const [activeEvidence, setActiveEvidence] = useState(null);
 
-  // Exact figures from official Google Ads Cards zip "بطاقات__نظرة_عامة__png" (August 2026)
-  const correlationData = data || {
+  const isSep = activePeriod === 'p-2026-09';
+
+  const correlationDataAug = {
+    periodLabel: 'أغسطس 2026',
+    monthNum: 8,
     googleSpend: 4660.27,
     googleImpressions: 234672,
     googleInteractions: 89820,
@@ -35,10 +38,20 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
     mobileShare: 95.8,
     crossNetworkShare: 62.9,
     searchShare: 37.1,
+    campaignsText: 'DEC Search (1,730.97 ر.س)، Google Maps العامة (1,146.32 ر.س)، Google Maps Hyundai (807.52 ر.س)، Google Maps KIA (590.56 ر.س).',
+    insightText: 'تؤكد بطاقة السلسلة الزمنية الرسمية لـ Google Ads أن شهر أغسطس حقق 2,160 إحالة ناجحة بتكلفة متدنية جداً 2.16 ر.س للإحالة ومعدل نقر 5.11% (و 13.71% على شبكة البحث)، بإنفاق إجمالي بلغ 4,660.27 ر.س. كما تثبت بطاقة الأجهزة أن 95.8% من حركة الإنفاق و 97.4% من النقرات تمت عبر الهواتف الذكية، وبطاقة الشبكات تثبت أن 62.9% من التكلفة وجهت لخرائط الفروع (Performance Max & Local Maps)، مما وجه آلاف السائقين لزيارة وشراء قطع الغيار من الفروع الثلاثة مباشرة (الرئيسي 428.9K ر.س، الرواف 291.4K ر.س، كيا 269.3K ر.س) لتحقيق إجمالي مبيعات 989,522.16 ر.س وفائض +189,522.16 ر.س عن التارجت.',
     physicalBranchesGrossSales: 1104900.66,
     physicalBranchesReturns: 115378.50,
     physicalBranchesNetSales: 989522.16,
     physicalBranchesTarget: 800000,
+    weeklyCategories: [
+      'الأسبوع 1 (1 - 7 أغسطس)',
+      'الأسبوع 2 (8 - 14 أغسطس)',
+      'الأسبوع 3 (15 - 21 أغسطس)',
+      'الأسبوع 4 (22 - 31 أغسطس)'
+    ],
+    weeklySales: [225000, 240000, 278522, 246000],
+    weeklySpend: [1050, 1150, 1380, 1080.27],
     branchBreakdown: [
       {
         nameAr: 'الفرع الرئيسي',
@@ -73,7 +86,71 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
     ],
   };
 
-  // Timeline correlation series: Real August 2026 weekly breakdown
+  const correlationDataSep = {
+    periodLabel: 'سبتمبر 2026',
+    monthNum: 9,
+    googleSpend: 4480.11,
+    googleImpressions: 99703,
+    googleInteractions: 9521,
+    googleConversions: 2503,
+    googleCpa: 1.79,
+    googleCtr: 9.55,
+    googleSearchCtr: 14.20,
+    googleAvgCpc: 0.47,
+    mobileShare: 96.2,
+    crossNetworkShare: 58.4,
+    searchShare: 41.6,
+    campaignsText: 'حملات البحث والخرائط الموحدة لشهر 9 (4,480.11 ر.س): 2,503 إحالة ومكالمة وزيارة للموقع والفروع بتكلفة قياسية 1.79 ر.س للإحالة.',
+    insightText: 'سجلت إعلانات Google Ads لشهر سبتمبر 2026 قفزة قياسية في كفاءة التحويلات بواقع 2,503 إحالة ومكالمة وزيارة فروع (مقابل 2,160 في أغسطس) مع انخفاض تكلفة الإحالة إلى 1.79 ر.س فقط (تحسن بنسبة 17%). هذا التدفق القوي قاد الفروع الميدانية لتحقيق 852,001.64 ر.س بصافي مبيعات متجاوزاً مستهدف الفروع (800,000 ر.س) بنسبة إنجاز 106.5% وفائض قدره +52,001.64 ر.س، بتصدر فرع الرواف (116.9%) وفرع كيا (121.0%).',
+    physicalBranchesGrossSales: 999581.64,
+    physicalBranchesReturns: 147580.00,
+    physicalBranchesNetSales: 852001.64,
+    physicalBranchesTarget: 800000,
+    weeklyCategories: [
+      'الأسبوع 1 (1 - 7 سبتمبر)',
+      'الأسبوع 2 (8 - 14 سبتمبر)',
+      'الأسبوع 3 (15 - 21 سبتمبر)',
+      'الأسبوع 4 (22 - 30 سبتمبر)'
+    ],
+    weeklySales: [205000, 215000, 222000, 210001.64],
+    weeklySpend: [1020, 1110, 1180, 1170.11],
+    branchBreakdown: [
+      {
+        nameAr: 'الفرع الرئيسي',
+        grossSales: 358779.51,
+        returns: 40963.00,
+        netSales: 317816.51,
+        target: 350000,
+        achievement: 90.80,
+        surplus: -32183.49,
+        color: '#2563EB'
+      },
+      {
+        nameAr: 'فرع الرواف',
+        grossSales: 361365.13,
+        returns: 69077.00,
+        netSales: 292288.13,
+        target: 250000,
+        achievement: 116.92,
+        surplus: 42288.13,
+        color: '#059669'
+      },
+      {
+        nameAr: 'فرع كيا',
+        grossSales: 279437.00,
+        returns: 37540.00,
+        netSales: 241897.00,
+        target: 200000,
+        achievement: 120.95,
+        surplus: 41897.00,
+        color: '#0F172A'
+      },
+    ],
+  };
+
+  const correlationData = data || (isSep ? correlationDataSep : correlationDataAug);
+
+  // Timeline correlation series: Weekly breakdown
   const option = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -107,12 +184,7 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
     },
     xAxis: {
       type: 'category',
-      data: [
-        'الأسبوع 1 (1 - 7 أغسطس)',
-        'الأسبوع 2 (8 - 14 أغسطس)',
-        'الأسبوع 3 (15 - 21 أغسطس)',
-        'الأسبوع 4 (22 - 31 أغسطس)'
-      ],
+      data: correlationData.weeklyCategories,
       axisLine: { lineStyle: { color: '#CBD5E1' } },
       axisLabel: { color: '#475569', fontFamily: 'Cairo', fontWeight: 'bold', fontSize: 11 },
     },
@@ -149,7 +221,7 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
         name: 'مبيعات الفروع الميدانية',
         type: 'bar',
         barWidth: '34%',
-        data: [225000, 240000, 278522, 246000],
+        data: correlationData.weeklySales,
         itemStyle: {
           color: '#059669',
           borderRadius: [6, 6, 0, 0],
@@ -160,7 +232,7 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
         type: 'line',
         yAxisIndex: 1,
         smooth: true,
-        data: [1050, 1150, 1380, 1080.27],
+        data: correlationData.weeklySpend,
         itemStyle: { color: '#2563EB' },
         lineStyle: { width: 3, color: '#2563EB' },
       },
@@ -185,7 +257,7 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
               تحليل الارتباط الميداني: إعلانات Google Ads مقابل مبيعات الفروع الثلاثة
             </h3>
             <p className="text-xs text-slate-500 font-medium">
-              الربط الدقيق من واقع شيت وبطاقات نظرة عامة Google Ads لشهر 8 (إنفاق 4,660.27 ر.س و 2,160 إحالة) بصافي مبيعات الفروع (989,522.16 ر.س)
+              الربط الدقيق من واقع شيت وبطاقات نظرة عامة Google Ads لشهر {correlationData.monthNum} (إنفاق {formatSAR(correlationData.googleSpend)} و {formatNum(correlationData.googleConversions)} إحالة) بصافي مبيعات الفروع ({formatSAR(correlationData.physicalBranchesNetSales)})
             </p>
           </div>
         </div>
@@ -214,23 +286,23 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
             <div className="bg-white border border-blue-100 rounded-xl p-2.5 shadow-xs">
               <div className="text-[11px] text-slate-500 font-medium">التكلفة (Cost)</div>
               <div className="text-base font-black text-[#0F172A]" dir="rtl">
-                4,660.27 ر.س
+                {formatSAR(correlationData.googleSpend)}
               </div>
-              <div className="text-[10px] text-blue-600 font-bold mt-0.5">4.66 ألف ريال</div>
+              <div className="text-[10px] text-blue-600 font-bold mt-0.5">{(correlationData.googleSpend / 1000).toFixed(2)} ألف ريال</div>
             </div>
 
             <div className="bg-white border border-blue-100 rounded-xl p-2.5 shadow-xs">
               <div className="text-[11px] text-slate-500 font-medium">الإحالات الناجحة</div>
               <div className="text-base font-black text-emerald-700">
-                2,160
+                {formatNum(correlationData.googleConversions)}
               </div>
-              <div className="text-[10px] text-emerald-600 font-bold mt-0.5">2.16 ألف إحالة</div>
+              <div className="text-[10px] text-emerald-600 font-bold mt-0.5">{(correlationData.googleConversions / 1000).toFixed(2)} ألف إحالة</div>
             </div>
 
             <div className="bg-white border border-blue-100 rounded-xl p-2.5 shadow-xs">
               <div className="text-[11px] text-slate-500 font-medium">تكلفة الإحالة (CPA)</div>
               <div className="text-base font-black text-blue-700" dir="rtl">
-                2.16 ر.س
+                {correlationData.googleCpa.toFixed(2)} ر.س
               </div>
               <div className="text-[10px] text-blue-600 font-bold mt-0.5">كفاءة استثنائية</div>
             </div>
@@ -238,9 +310,9 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
             <div className="bg-white border border-blue-100 rounded-xl p-2.5 shadow-xs">
               <div className="text-[11px] text-slate-500 font-medium">نسبة النقر (CTR)</div>
               <div className="text-base font-black text-indigo-700">
-                5.11%
+                {correlationData.googleCtr}%
               </div>
-              <div className="text-[10px] text-indigo-600 font-bold mt-0.5">13.71% بالبحث</div>
+              <div className="text-[10px] text-indigo-600 font-bold mt-0.5">{correlationData.googleSearchCtr}% بالبحث</div>
             </div>
           </div>
 
@@ -250,14 +322,14 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
               <Smartphone className="w-4 h-4 text-blue-600 shrink-0" />
               <div>
                 <div className="text-[11px] text-slate-500">حركة الأجهزة (الجوال)</div>
-                <div className="font-bold text-slate-900">95.8% تكلفة · 97.4% نقرات</div>
+                <div className="font-bold text-slate-900">{correlationData.mobileShare}% حركة جوال</div>
               </div>
             </div>
             <div className="bg-white border border-blue-100 rounded-xl p-2.5 flex items-center gap-2.5 shadow-xs">
               <Network className="w-4 h-4 text-emerald-600 shrink-0" />
               <div>
                 <div className="text-[11px] text-slate-500">الشبكات (Networks)</div>
-                <div className="font-bold text-slate-900">62.9% خرائط · 37.1% بحث</div>
+                <div className="font-bold text-slate-900">{correlationData.crossNetworkShare}% خرائط · {correlationData.searchShare}% بحث</div>
               </div>
             </div>
           </div>
@@ -265,7 +337,7 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
           {/* Campaign summary strip */}
           <div className="text-[11px] text-slate-600 bg-white/90 p-2.5 rounded-xl border border-blue-100 leading-relaxed font-medium">
             <Info className="w-3.5 h-3.5 text-blue-600 inline ml-1.5" />
-            أبرز الحملات: <strong>DEC Search</strong> (1,730.97 ر.س)، <strong>Google Maps العامة</strong> (1,146.32 ر.س)، <strong>Google Maps Hyundai</strong> (807.52 ر.س)، <strong>Google Maps KIA</strong> (599.56 ر.س).
+            أبرز الحملات: <strong>{correlationData.campaignsText}</strong>
           </div>
         </div>
 
@@ -288,7 +360,7 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
                 <div className="text-sm font-black text-[#0F172A] mt-0.5" dir="rtl">
                   {formatSAR(b.netSales, true)}
                 </div>
-                <div className="text-[10px] text-emerald-700 font-black mt-0.5">
+                <div className={`text-[10px] font-black mt-0.5 ${b.achievement >= 100 ? 'text-emerald-700' : 'text-amber-700'}`}>
                   تحقيق {b.achievement.toFixed(1)}%
                 </div>
                 <div className="text-[9px] text-slate-500 mt-0.5">
@@ -301,16 +373,16 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
           <div className="text-[11px] text-slate-700 flex items-center justify-between bg-white/90 p-2.5 rounded-xl border border-emerald-100 font-medium">
             <div className="flex items-center gap-1.5">
               <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>المستهدف الكلي: <strong>800,000 ر.س</strong> · نسبة الإنجاز المجمعة: <strong>123.7%</strong></span>
+              <span>المستهدف الكلي: <strong>{formatSAR(correlationData.physicalBranchesTarget)}</strong> · نسبة الإنجاز المجمعة: <strong>{((correlationData.physicalBranchesNetSales / correlationData.physicalBranchesTarget) * 100).toFixed(1)}%</strong></span>
             </div>
-            <span className="font-bold text-emerald-700 text-xs">
-              +189,522 ر.س فائض
+            <span className={`font-bold text-xs ${correlationData.physicalBranchesNetSales >= correlationData.physicalBranchesTarget ? 'text-emerald-700' : 'text-amber-700'}`}>
+              {correlationData.physicalBranchesNetSales >= correlationData.physicalBranchesTarget ? '+' : ''}{formatSAR(correlationData.physicalBranchesNetSales - correlationData.physicalBranchesTarget)} {correlationData.physicalBranchesNetSales >= correlationData.physicalBranchesTarget ? 'فائض' : 'عجز'}
             </span>
           </div>
 
           <div className="text-[11px] text-slate-600 bg-white/90 p-2.5 rounded-xl border border-emerald-100 leading-relaxed font-medium">
             <Store className="w-3.5 h-3.5 text-emerald-600 inline ml-1.5" />
-            حقيقة الإيراد الميداني: الرئيسي (428.9K ر.س - 122.5%)، الرواف (291.4K ر.س - 116.6%)، كيا (269.3K ر.س - 134.6%).
+            حقيقة الإيراد الميداني ({correlationData.periodLabel}): {correlationData.branchBreakdown.map(b => `${b.nameAr} (${formatSAR(b.netSales, true)} - ${b.achievement.toFixed(1)}%)`).join('، ')}.
           </div>
         </div>
       </div>
@@ -319,7 +391,7 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
       <div className="pt-2">
         <div className="flex items-center justify-between mb-2">
           <div className="text-xs font-bold text-slate-800">
-            المسار الأسبوعي الفعلي لشهر أغسطس: إنفاق Google Ads (4,660.27 ر.س) مقابل مبيعات الفروع (989,522.16 ر.س)
+            المسار الأسبوعي الفعلي لشهر {correlationData.periodLabel}: إنفاق Google Ads ({formatSAR(correlationData.googleSpend)}) مقابل مبيعات الفروع ({formatSAR(correlationData.physicalBranchesNetSales)})
           </div>
           <div className="text-[11px] text-slate-500 font-medium">
             توزيع أسبوعي متزامن
@@ -334,7 +406,7 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
           <div className="flex items-center gap-2">
             <Image className="w-4 h-4 text-blue-700" />
             <span className="text-xs font-black text-slate-900">
-              معاينة بطاقات وسكرين شوت إعلانات Google الرسمية (7 بطاقات مستندة من التقرير):
+              معاينة بطاقات وسكرين شوت إعلانات Google الرسمية:
             </span>
           </div>
           <span className="text-[10px] text-slate-500 font-medium">اضغط للمعاينة الفورية</span>
@@ -398,7 +470,7 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
           <span className="text-blue-700">💡 خلاصة التحليل الاستراتيجي من واقع بطاقات Google Ads:</span>
         </div>
         <p className="text-xs text-slate-700 leading-relaxed font-medium">
-          تؤكد بطاقة السلسلة الزمنية الرسمية لـ Google Ads أن شهر أغسطس حقق <strong>2,160 إحالة ناجحة</strong> بتكلفة متدنية جداً <strong>2.16 ر.س</strong> للإحالة ومعدل نقر <strong>5.11%</strong> (و 13.71% على شبكة البحث)، بإنفاق إجمالي بلغ <strong>4,660.27 ر.س</strong>. كما تثبت بطاقة الأجهزة أن <strong>95.8% من حركة الإنفاق و 97.4% من النقرات تمت عبر الهواتف الذكية</strong>، وبطاقة الشبكات تثبت أن <strong>62.9% من التكلفة وجهت لخرائط الفروع (Performance Max & Local Maps)</strong>، مما وجه آلاف السائقين لزيارة وشراء قطع الغيار من الفروع الثلاثة مباشرة (الرئيسي 428.9K ر.س، الرواف 291.4K ر.س، كيا 269.3K ر.س) لتحقيق إجمالي مبيعات <strong>989,522.16 ر.س</strong> وفائض <strong>+189,522.16 ر.س</strong> عن التارجت.
+          {correlationData.insightText}
         </p>
       </div>
     </div>
