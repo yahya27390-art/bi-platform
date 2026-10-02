@@ -174,7 +174,7 @@ function TargetProgressBar({ sales, target, accentColor }) {
   );
 }
 
-function BranchCard({ branch, isSelected, onSelect }) {
+function BranchCard({ branch, isSelected, onSelect, periodLabel = 'الفترة الحالية' }) {
   const achievementPct = ((branch.sales / branch.target) * 100).toFixed(1);
   const isAchieved = branch.sales >= branch.target;
 
