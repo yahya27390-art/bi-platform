@@ -438,19 +438,19 @@ export default function BIOverview() {
               />
               <KPICard
                 title="تكلفة البضاعة"
-                displayValue={formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.cogs || (isSeptember ? 640317.00 : 712159.10)) : 0, false)}
+                displayValue={formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.cogs || (isSeptember ? 618338.14 : 712159.10)) : 0, false)}
                 growth={null}
                 icon="📦"
                 color="slate"
-                sparklineData={displayedKpis.totalRevenue > 0 ? (isSeptember ? [510000, 540000, 580000, 600000, 620000, 640317] : [580000, 610000, 650000, 675000, 695000, 712159]) : [0, 0, 0, 0, 0, 0]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? (isSeptember ? [490000, 520000, 560000, 580000, 600000, 618338] : [580000, 610000, 650000, 675000, 695000, 712159]) : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 details={{
                   concept: 'تكلفة شراء وتجهيز البضاعة (COGS) المستخرجة من قيود المخزون',
                   formula: 'تمثل تكلفة المشتريات المرتبطة بالمبيعات المنجزة',
-                  audit: displayedKpis.totalRevenue > 0 ? 'مطابق لدفاتر المشتريات المحاسبية المعتمدة' : 'بانتظار قيود المخزون للمدة الحالية',
+                  audit: displayedKpis.totalRevenue > 0 ? 'مطابق لدفاتر المشتريات وتقارير هوامش الربح المعتمدة' : 'بانتظار قيود المخزون للمدة الحالية',
                   breakdown: displayedKpis.totalRevenue > 0 ? (isSeptember ? [
-                    { label: 'تكلفة البضاعة والمشتريات المباشرة (71.97%)', value: '640,317.00 ر.س', pct: 71.97, color: '#64748B' },
-                    { label: 'مجمل ربح النشاط المتبقي (28.03%)', value: '249,387.14 ر.س', pct: 28.03, color: '#10B981' },
+                    { label: 'تكلفة البضاعة والمشتريات المباشرة (69.50%)', value: '618,338.14 ر.س', pct: 69.50, color: '#64748B' },
+                    { label: 'مجمل ربح النشاط المتبقي (30.50%)', value: '271,388.58 ر.س', pct: 30.50, color: '#10B981' },
                   ] : [
                     { label: 'تكلفة البضاعة والمشتريات المباشرة', value: '712,159.10 ر.س', pct: 71.97, color: '#64748B' },
                     { label: 'مجمل ربح النشاط المتبقي', value: '277,363.06 ر.س', pct: 28.03, color: '#10B981' },
@@ -461,21 +461,21 @@ export default function BIOverview() {
               />
               <KPICard
                 title="أرباح الأعمال"
-                displayValue={canViewNetProfit ? formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.grossProfit || (isSeptember ? 249387.14 : 277363.06)) : 0, false) : 'محمي 🔒'}
-                growth={canViewNetProfit && displayedKpis.totalRevenue > 0 ? (isSeptember ? 28.03 : 22.4) : null}
+                displayValue={canViewNetProfit ? formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.grossProfit || (isSeptember ? 271388.58 : 277363.06)) : 0, false) : 'محمي 🔒'}
+                growth={canViewNetProfit && displayedKpis.totalRevenue > 0 ? (isSeptember ? 30.50 : 28.03) : null}
                 icon="💰"
                 color="emerald"
-                sparklineData={displayedKpis.totalRevenue > 0 ? (isSeptember ? [190000, 205000, 220000, 230000, 240000, 249387] : [210000, 225000, 240000, 255000, 268000, 277363]) : [0, 0, 0, 0, 0, 0]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? (isSeptember ? [210000, 225000, 240000, 252000, 262000, 271389] : [210000, 225000, 240000, 255000, 268000, 277363]) : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 details={{
                   concept: canViewNetProfit
                     ? 'مجمل الربح التشغيلي المعتمد للنشاط التجاري بعد استبعاد كلفة البضاعة'
                     : 'يتطلب صلاحية المالك أو الإدارة المالية العليا',
                   formula: 'صافي المبيعات - تكلفة البضاعة المباعة',
-                  audit: displayedKpis.totalRevenue > 0 ? (isSeptember ? 'معتمد بالقوائم المالية لشركة درة لشهر سبتمبر 2026' : 'معتمد بالقوائم المالية لشركة درة لشهر أغسطس 2026') : 'بانتظار إغلاق دفاتر الشهر',
+                  audit: displayedKpis.totalRevenue > 0 ? (isSeptember ? 'معتمد بتقرير هامش الربح المحاسبي لشهر سبتمبر 2026 (30.50%)' : 'معتمد بالقوائم المالية لشركة درة لشهر أغسطس 2026 (28.03%)') : 'بانتظار إغلاق دفاتر الشهر',
                   breakdown: displayedKpis.totalRevenue > 0 ? (isSeptember ? [
-                    { label: 'هامش الربح التشغيلي', value: '28.03%', pct: 28.03, color: '#10B981' },
-                    { label: 'القيمة المالية الصافية المحققة', value: '249,387.14 ر.س', pct: 100, color: '#059669' },
+                    { label: 'هامش الربح التشغيلي', value: '30.50%', pct: 30.50, color: '#10B981' },
+                    { label: 'القيمة المالية الصافية المحققة', value: '271,388.58 ر.س', pct: 100, color: '#059669' },
                   ] : [
                     { label: 'هامش الربح التشغيلي', value: '28.03%', pct: 28.03, color: '#10B981' },
                     { label: 'القيمة المالية الصافية المحققة', value: '277,363.06 ر.س', pct: 100, color: '#059669' },
@@ -1050,7 +1050,7 @@ export default function BIOverview() {
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
                     {isSeptember ? (
-                      <>71.97% تكلفة البضاعة (613.2K)، محققاً <strong className="text-emerald-700">28.03% هامش ربح معتمد</strong> بقيمة <strong className="text-[#0F172A]">238,816.06 ر.س</strong>، وفائض نقدي بالخزينة 140,493 ر.س بعد خصم المصاريف.</>
+                      <>69.50% تكلفة البضاعة (592.1K)، محققاً <strong className="text-emerald-700">30.50% هامش ربح معتمد</strong> بقيمة <strong className="text-[#0F172A]">259,881.54 ر.س</strong>، وفائض نقدي بالخزينة 161,559 ر.س بعد خصم المصاريف.</>
                     ) : (
                       <>71.97% تكلفة البضاعة والمشتريات (712.2K ر.س)، محققاً <strong className="text-emerald-700">28.03% هامش ربح معتمد</strong> على صافي المبيعات بقيمة <strong className="text-[#0F172A]">277,363.06 ر.س</strong>.</>
                     )}

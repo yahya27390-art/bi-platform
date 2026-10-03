@@ -177,7 +177,11 @@ export default function ExecutiveIncomeStatementTab({
     ]
   };
 
-  // Profitability Margins Breakdown for August 2026
+  const grossMarginPct = netSales > 0 ? Number(((grossProfit / netSales) * 100).toFixed(2)) : 0;
+  const opexPct = netSales > 0 ? Number(((opexTotal / netSales) * 100).toFixed(2)) : 0;
+  const netMarginPct = netSales > 0 ? Number(((netProfit / netSales) * 100).toFixed(2)) : 0;
+
+  // Profitability Margins Breakdown for Active Period
   const marginTrendOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -202,17 +206,17 @@ export default function ExecutiveIncomeStatementTab({
       type: 'value',
       axisLabel: { formatter: '{value}%', fontFamily: 'Cairo', color: '#64748B' },
       splitLine: { lineStyle: { color: '#F1F5F9' } },
-      max: 35
+      max: Math.max(35, Math.ceil(grossMarginPct + 5))
     },
     series: [
       {
-        name: 'أغسطس 2026 (الفعلي)',
+        name: `${periodLabel} (الفعلي)`,
         type: 'bar',
         barWidth: 46,
         data: [
-          { value: 28.03, itemStyle: { color: '#0F2744', borderRadius: [6, 6, 0, 0] } },
-          { value: 9.10, itemStyle: { color: '#F97316', borderRadius: [6, 6, 0, 0] } },
-          { value: 18.93, itemStyle: { color: '#10B981', borderRadius: [6, 6, 0, 0] } }
+          { value: grossMarginPct, itemStyle: { color: '#0F2744', borderRadius: [6, 6, 0, 0] } },
+          { value: opexPct, itemStyle: { color: '#F97316', borderRadius: [6, 6, 0, 0] } },
+          { value: netMarginPct, itemStyle: { color: '#10B981', borderRadius: [6, 6, 0, 0] } }
         ],
         label: {
           show: true,
@@ -236,15 +240,15 @@ export default function ExecutiveIncomeStatementTab({
             قائمة الدخل والتحليل المالي التفصيلي (INCOME STATEMENT ANALYSIS)
           </h2>
           <p className="text-xs text-slate-500 font-bold mt-1">
-            Performance Overview and Structural Breakdown • أرقام حقيقية معتمدة لشهر أغسطس 2026
+            Performance Overview and Structural Breakdown • أرقام حقيقية معتمدة لشهر {periodLabel}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-xs font-mono font-bold">
-            مجمل الربح: {mask(formatSAR(grossProfit))} (28.03%)
+            مجمل الربح: {mask(formatSAR(grossProfit))} ({grossMarginPct}%)
           </span>
           <span className="px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono font-bold">
-            صافي الربح الفعلي: {mask(formatSAR(netProfit))} (18.93%)
+            صافي الربح الفعلي: {mask(formatSAR(netProfit))} ({netMarginPct}%)
           </span>
         </div>
       </div>

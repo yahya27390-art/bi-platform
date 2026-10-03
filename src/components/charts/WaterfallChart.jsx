@@ -1,8 +1,19 @@
 import React from 'react';
 import ReactECharts from 'echarts-for-react';
+import { useCurrentPeriod } from '../../context/BIPeriodContext';
 
-export default function WaterfallChart({ height = 330 }) {
-  const categories = [
+export default function WaterfallChart({ height = 330, periodId: propPeriodId }) {
+  const { periodId: ctxPeriodId } = useCurrentPeriod();
+  const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-09';
+  const isSep = currentPeriodId === 'p-2026-09';
+
+  const categories = isSep ? [
+    'صافي المبيعات (Net)',
+    'تكلفة البضاعة (69.50%)',
+    'مجمل الربح (30.50%)',
+    'المصاريف التشغيلية (OPEX)',
+    'صافي الربح الفعلي (20.39%)'
+  ] : [
     'صافي المبيعات (Net)',
     'تكلفة البضاعة (71.97%)',
     'مجمل الربح (28.03%)',
@@ -10,15 +21,14 @@ export default function WaterfallChart({ height = 330 }) {
     'صافي الربح الفعلي (18.93%)'
   ];
 
-  // Waterfall calculation based on August 2026 Dora Cars audited data:
-  // Net Revenue: 989,522.16 SAR
-  // COGS: -712,159.10 SAR (71.97%)
-  // Gross Profit: 277,363.06 SAR (28.03% of net sales)
-  // OPEX: -90,000.00 SAR
-  // Net Profit: 187,363.06 SAR (18.93% of net sales)
-  const baseData = [0, 277363, 0, 187363, 0];
-  const positiveData = [989522, '-', 277363, '-', 187363];
-  const negativeData = ['-', 712159, '-', 90000, '-'];
+  // Waterfall calculation based on audited Dora Cars data:
+  // September 2026 (Margin 30.50% from official profit margin report):
+  // Net Revenue: 889,726.72 SAR | COGS: 618,338.14 SAR | Gross: 271,388.58 SAR | OPEX: 90,000 SAR | Net: 181,388.58 SAR
+  // August 2026 (Margin 28.03%):
+  // Net Revenue: 989,522.16 SAR | COGS: 712,159.10 SAR | Gross: 277,363.06 SAR | OPEX: 90,000 SAR | Net: 187,363.06 SAR
+  const baseData = isSep ? [0, 271389, 0, 181389, 0] : [0, 277363, 0, 187363, 0];
+  const positiveData = isSep ? [889727, '-', 271389, '-', 181389] : [989522, '-', 277363, '-', 187363];
+  const negativeData = isSep ? ['-', 618338, '-', 90000, '-'] : ['-', 712159, '-', 90000, '-'];
 
   const option = {
     backgroundColor: 'transparent',

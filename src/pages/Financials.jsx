@@ -86,7 +86,7 @@ export default function Financials() {
                     <span className="text-slate-700 font-bold">{formatSAR(fin.ecommerceRevenue)}</span>
                   </div>
                   <div className="flex justify-between py-3">
-                    <span className="text-slate-700 font-semibold">تكلفة البضاعة المباعة (COGS 71.97%)</span>
+                    <span className="text-slate-700 font-semibold">تكلفة البضاعة المباعة (COGS {(100 - (fin.grossMarginPct || 28.03)).toFixed(2)}%)</span>
                     <span className="text-red-600 font-bold">({formatSAR(fin.cogs)})</span>
                   </div>
                   <div className="flex justify-between py-3 bg-emerald-50/70 px-3 rounded-lg border border-emerald-100">

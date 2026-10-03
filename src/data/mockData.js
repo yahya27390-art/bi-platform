@@ -405,13 +405,15 @@ export const MOCK_FINANCIALS = {
     returns: 147580.00,
     ecommerceRevenue: 37725.08,
     branchRevenue: 852001.64,
-    // Factual Dora Cars Rule: Profit margin on net sales (sales - returns) is 28.03%
-    // Net Sales: 889,726.72 SAR
-    // Cost (71.97%): 640,336.32 SAR
-    // Profit (28.03%): 249,390.40 SAR
-    cogs: 640336.32,
-    grossProfit: 249390.40,
-    grossMarginPct: 28.03,
+    // Factual Dora Cars Rule: Profit margin on net sales from official margin report (Screenshot 2026-10-02 184035.png)
+    // Official Report: Net Sales = 740,870.99 SAR, COGS = 514,887.07 SAR, Gross Profit = 225,983.92 SAR
+    // Profit Margin = 30.50% | Cost Ratio (COGS) = 69.50%
+    // Applied to total net sales (889,726.72 SAR):
+    // COGS (69.4975%): 618,338.14 SAR
+    // Gross Profit (30.5025%): 271,388.58 SAR
+    cogs: 618338.14,
+    grossProfit: 271388.58,
+    grossMarginPct: 30.50,
     operatingExpenses: {
       salaries: 60000,
       rent: 12000,
@@ -421,16 +423,16 @@ export const MOCK_FINANCIALS = {
       other: 10000,
     },
     totalOpex: 90000.00,
-    ebitda: 159390.40,
-    ebitdaMarginPct: 17.91,
+    ebitda: 181388.58,
+    ebitdaMarginPct: 20.39,
     depreciation: 0,
-    ebit: 159390.40,
+    ebit: 181388.58,
     interest: 0,
-    ebt: 159390.40,
+    ebt: 181388.58,
     tax: 0,
-    netProfit: 159390.40,
-    netProfitMarginPct: 17.91,
-    cashFlow: 159390.40,
+    netProfit: 181388.58,
+    netProfitMarginPct: 20.39,
+    cashFlow: 181388.58,
     accountsReceivable: 45000,
     inventoryValue: 195000,
     monthlyTarget: 850000,
@@ -486,14 +488,14 @@ export const MOCK_REVENUE_TREND = [
   { month: 'يونيو', monthEn: 'Jun', revenue: 385000, grossProfit: 173250, netProfit: 28900, adSpend: 29200 },
   { month: 'يوليو', monthEn: 'Jul', revenue: 404000, grossProfit: 180000, netProfit: 33405, adSpend: 31800 },
   { month: 'أغسطس', monthEn: 'Aug', revenue: 989522, grossProfit: 277363, netProfit: 187363, adSpend: 9403 },
-  { month: 'سبتمبر', monthEn: 'Sep', revenue: 889727, grossProfit: 249390, netProfit: 159390, adSpend: 8323 },
+  { month: 'سبتمبر', monthEn: 'Sep', revenue: 889727, grossProfit: 271389, netProfit: 181389, adSpend: 8323 },
 ];
 
 // ── TARGETS ───────────────────────────────────────────────────
 export const MOCK_TARGETS = {
   'p-2026-09': {
     revenue: 850000,
-    netProfit: 159390.40,
+    netProfit: 181388.58,
     adSpend: 8323.02,
     blendedMER: 95.0, // Blended MER: Total Company Sales (889.7K) / Total Ad Spend (8.32K) = 106.90x
     roas: 16.0,

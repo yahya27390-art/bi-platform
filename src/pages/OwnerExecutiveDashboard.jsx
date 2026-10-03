@@ -330,17 +330,17 @@ export default function OwnerExecutiveDashboard() {
     if (periodId === 'p-2026-09') {
       return {
         netSales: 889726.72,
-        cogsTotal: 640336.32,
-        grossProfit: 249390.40,
+        cogsTotal: 618338.14,
+        grossProfit: 271388.58,
         monthlyTarget: 850000,
-        grossMarginPct: 28.03,
+        grossMarginPct: 30.50,
         opexSalaries: 60000,
         opexFacilities: 20000,
         opexContingency: 10000,
         totalMonthlyOpex: 90000,
-        netProfit: 159390.40,
-        netMarginPct: 17.91,
-        opexCoverageRatio: 277,
+        netProfit: 181388.58,
+        netMarginPct: 20.39,
+        opexCoverageRatio: 302,
         isAudited: true,
         isLiveApi: false,
       };
