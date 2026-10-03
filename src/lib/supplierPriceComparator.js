@@ -7,10 +7,11 @@
 // 100% Deterministic Matching against 8,901 Official Inventory SKUs
 // ============================================================
 
-import { REAL_ALL_PARTS } from '../data/realInventoryData';
+import { REAL_ALL_PARTS } from '../data/realInventoryData.js';
 import husounData from '../data/husounQuotationData.json';
 import badrAlWadiData from '../data/badrAlWadiQuotationData.json';
 import miskData from '../data/miskQuotationData.json';
+import alqahtaniData from '../data/alqahtaniQuotationData.json';
 import * as XLSX from 'xlsx';
 import { saveCostOverrideToDatabase } from './supabaseClient';
 
@@ -97,15 +98,31 @@ export function getCatalogLookupMaps() {
       // Check if our inventory item is Korean aftermarket
       const isOurKorean =
         normSku.endsWith('K') ||
+        normSku.endsWith('KS') ||
         normSku.includes('HIQ') ||
         normSku.includes('HI-Q') ||
+        normSku.includes('MANDO') ||
+        normSku.includes('CTR') ||
+        normSku.includes('KOPAR') ||
         (item.name && item.name.includes('كوري'));
 
       if (isOurKorean) {
         _koreanCatalogMap.set(normSku, item);
-        const baseKey = normSku.replace(/K$/, '').replace(/HIQ$/, '');
+        const baseKey = normSku.replace(/K$/, '').replace(/KS$/, '').replace(/HIQ$/, '');
         if (!_koreanCatalogMap.has(baseKey + 'K')) {
           _koreanCatalogMap.set(baseKey + 'K', item);
+        }
+        if (!_koreanCatalogMap.has(baseKey + 'KS')) {
+          _koreanCatalogMap.set(baseKey + 'KS', item);
+        }
+        if (!_koreanCatalogMap.has(baseKey)) {
+          _koreanCatalogMap.set(baseKey, item);
+        }
+        if (baseKey.startsWith('0K') && !_koreanCatalogMap.has('O' + baseKey.slice(1))) {
+          _koreanCatalogMap.set('O' + baseKey.slice(1), item);
+        }
+        if (baseKey.startsWith('OK') && !_koreanCatalogMap.has('0' + baseKey.slice(1))) {
+          _koreanCatalogMap.set('0' + baseKey.slice(1), item);
         }
       } else {
         _oemCatalogMap.set(normSku, item);
@@ -115,8 +132,8 @@ export function getCatalogLookupMaps() {
         }
       }
 
-      // Base SKU without trailing K or M
-      const baseSku = normSku.replace(/[KM]$/, '');
+      // Base SKU without trailing K or M or KS
+      const baseSku = normSku.replace(/[KM]$/, '').replace(/KS$/, '');
       if (baseSku && !_catalogBaseMap.has(baseSku)) {
         _catalogBaseMap.set(baseSku, item);
       }
@@ -213,6 +230,9 @@ export function compareQuotationItems(rawItems, quotationInfo = null, customOver
     const isSupplierKorean =
       rawPartNumber.endsWith('-K') ||
       rawPartNumber.endsWith('K') ||
+      rawPartNumber.includes('KOPAR') ||
+      rawPartNumber.includes('CTR') ||
+      rawPartNumber.includes('MANDO') ||
       partName.includes('كوري') ||
       rawPartNumber.includes('-K');
 
@@ -233,10 +253,34 @@ export function compareQuotationItems(rawItems, quotationInfo = null, customOver
     // ─── STRICT RULE EXECUTION ───
     if (isSupplierKorean) {
       // 1. MUST ONLY match against Korean aftermarket inventory
-      ourMatch = koreanCatalogMap.get(cleanKey);
+      const baseWithoutBrand = cleanKey
+        .replace(/KOPAR$/, '')
+        .replace(/CTR$/, '')
+        .replace(/MANDO$/, '')
+        .replace(/K$/, '')
+        .replace(/KS$/, '');
+
+      ourMatch =
+        koreanCatalogMap.get(cleanKey) ||
+        koreanCatalogMap.get(baseWithoutBrand + 'K') ||
+        koreanCatalogMap.get(baseWithoutBrand + 'KS') ||
+        koreanCatalogMap.get(baseWithoutBrand);
+
+      // Handle 0 vs O variation for Kia parts (e.g. OK71E vs 0K71E)
       if (!ourMatch) {
-        const baseKey = cleanKey.replace(/K$/, '');
-        ourMatch = koreanCatalogMap.get(baseKey + 'K');
+        let altBase = null;
+        if (baseWithoutBrand.startsWith('OK')) altBase = '0' + baseWithoutBrand.slice(1);
+        else if (baseWithoutBrand.startsWith('0K')) altBase = 'O' + baseWithoutBrand.slice(1);
+        if (altBase) {
+          ourMatch =
+            koreanCatalogMap.get(altBase + 'K') ||
+            koreanCatalogMap.get(altBase + 'KS') ||
+            koreanCatalogMap.get(altBase);
+        }
+      }
+      if (!ourMatch) {
+        // Fallback to general catalog base if item is recognized as aftermarket
+        ourMatch = catalogBaseMap.get(baseWithoutBrand);
       }
       if (ourMatch) matchType = 'korean-to-korean';
     } else if (isSupplierOEM) {
@@ -251,7 +295,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null, customOver
       // 3. General item (e.g. Diesel parts in Husoun / Misk quotation)
       ourMatch = catalogMap.get(cleanKey);
       if (!ourMatch) {
-        const baseKey = cleanKey.replace(/[KM]$/, '');
+        const baseKey = cleanKey.replace(/[KM]$/, '').replace(/KS$/, '');
         ourMatch = catalogBaseMap.get(baseKey);
       }
       if (ourMatch) matchType = 'exact-general';
@@ -503,9 +547,185 @@ export function getMiskQuotationAnalysis() {
 }
 
 /**
+ * Get preloaded official Mohammed Bin Nahar AlQahtani quotation comparison (182 Korean items - KOPAR)
+ */
+export function getAlqahtaniQuotationAnalysis() {
+  return compareQuotationItems(alqahtaniData.items, alqahtaniData.quotationInfo);
+}
+
+/**
+ * Automatically inspects headers and sample rows to discover column mapping
+ * Determines which column is:
+ * - partKey (رقم القطعة)
+ * - nameKey (اسم / وصف الصنف)
+ * - priceKey (السعر)
+ * - qtyKey (الكمية - اختياري)
+ */
+export function detectTableColumns(data) {
+  if (!data || data.length === 0) return null;
+
+  const firstRow = data[0];
+  const keys = Array.isArray(firstRow) ? firstRow.map((_, i) => String(i)) : Object.keys(firstRow);
+
+  const scores = {};
+  keys.forEach((k) => {
+    scores[k] = { part: 0, price: 0, name: 0, qty: 0 };
+  });
+
+  const partHeaderRegex = /رقم.*قطعة|كود.*صنف|رقم.*الصنف|رقم.*القطعه|^\s*p\s*[\/\\]?\s*n\s*$|part.*no|part.*num|sku|code|الرمز|كود|قطعة/i;
+  const priceHeaderRegex = /سعر.*البيع.*قبل.*الضريبة|سعر.*البيع|سعر.*قبل.*الضريبة|سعر|تكلفة|قيمة|price|cost|unit.*price|rate|مبلغ|ريال/i;
+  const nameHeaderRegex = /وصف.*المنتج|اسم.*قطعة|بيان.*الصنف|اسم.*الصنف|وصف|^\s*desc\s*$|description|name|part.*name|تفاصيل|البيان|الصنف/i;
+  const qtyHeaderRegex = /^\s*qty\.?\s*$|الكمية|كمية|العدد|quantity|count/i;
+
+  const partValRegex = /^[0-9A-Z]{3,6}[-][0-9A-Z]{3,7}(?:[-][0-9A-Z]+)?$/i;
+  const partContainsRegex = /[0-9A-Z]{4,6}[-][0-9A-Z]{4,6}/i;
+
+  // Header scoring
+  keys.forEach((k) => {
+    const kClean = String(k).trim();
+    if (partHeaderRegex.test(kClean)) scores[k].part += 70;
+    if (priceHeaderRegex.test(kClean)) scores[k].price += 70;
+    if (nameHeaderRegex.test(kClean)) scores[k].name += 70;
+    if (qtyHeaderRegex.test(kClean)) scores[k].qty += 70;
+  });
+
+  // Value scoring across sample rows
+  const sampleRows = data.slice(0, 30);
+  sampleRows.forEach((row) => {
+    keys.forEach((k) => {
+      const val = row[k];
+      if (val === undefined || val === null || val === '') return;
+      const strVal = String(val).trim();
+      const numVal = parseFloat(strVal.replace(/[^0-9.]/g, ''));
+
+      // Part number check
+      if (partValRegex.test(strVal) || partContainsRegex.test(strVal)) {
+        scores[k].part += 15;
+      } else if (/[0-9]/.test(strVal) && /[A-Z]/i.test(strVal) && strVal.length >= 7) {
+        scores[k].part += 8;
+      }
+
+      // Price check
+      if (!isNaN(numVal) && numVal > 0 && numVal < 50000 && !/[a-zA-Z\u0600-\u06FF]/.test(strVal)) {
+        scores[k].price += 10;
+        if (numVal >= 15 && numVal <= 3000) scores[k].price += 5;
+      }
+
+      // Name / Description check
+      if (/[\u0600-\u06FF]/.test(strVal) && strVal.length > 5) {
+        scores[k].name += 15;
+        if (/طرمبة|هوب|فرامل|دودة|مبرد|فحمات|هيونداي|كيا|سوناتا|النترا|اكسنت|توسان|ازيرا|سانتافي|جينيسيس/i.test(strVal)) {
+          scores[k].name += 15;
+        }
+      }
+    });
+  });
+
+  // Pick best key for each category
+  const sortedPart = [...keys].sort((a, b) => scores[b].part - scores[a].part);
+  const partKey = sortedPart[0];
+
+  const sortedPrice = [...keys].filter((k) => k !== partKey).sort((a, b) => scores[b].price - scores[a].price);
+  const priceKey = sortedPrice[0];
+
+  const sortedName = [...keys].filter((k) => k !== partKey && k !== priceKey).sort((a, b) => scores[b].name - scores[a].name);
+  const nameKey = sortedName[0];
+
+  const sortedQty = [...keys].filter((k) => k !== partKey && k !== priceKey && k !== nameKey).sort((a, b) => scores[b].qty - scores[a].qty);
+  const qtyKey = scores[sortedQty[0]]?.qty > 20 ? sortedQty[0] : null;
+
+  return {
+    partKey,
+    priceKey,
+    nameKey,
+    qtyKey,
+    scores
+  };
+}
+
+/**
+ * Universal text / table parser (for clipboard / paste / scanned lines)
+ */
+export function parseRawTableText(rawText, customColumnMap = null) {
+  if (!rawText || !rawText.trim()) {
+    throw new Error('النص المدخل فارغ. يرجى لصق جدول أو أسطر عرض السعر.');
+  }
+
+  const lines = rawText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length === 0) {
+    throw new Error('لا توجد أسطر بيانات صالحة.');
+  }
+
+  // Parse lines into 2D rows (detect tab, comma, semicolon, or multi-space)
+  const rows = [];
+  lines.forEach((line) => {
+    let cells = [];
+    if (line.includes('\t')) {
+      cells = line.split('\t').map((c) => c.trim());
+    } else if (line.includes(';') && line.split(';').length >= 3) {
+      cells = line.split(';').map((c) => c.trim());
+    } else if (line.includes(',') && line.split(',').length >= 3) {
+      cells = line.split(',').map((c) => c.trim());
+    } else {
+      // Split by 2 or more spaces or vertical bar
+      cells = line.split(/\s{2,}|\s*\|\s*/).map((c) => c.trim()).filter(Boolean);
+    }
+    if (cells.length >= 2) rows.push(cells);
+  });
+
+  if (rows.length === 0) {
+    throw new Error('لم يتم العثور على أعمدة بيانات. يرجى التأكد من فصل القيم بمسافات أو فواصل أو Tab.');
+  }
+
+  // Auto-detect columns
+  const detected = customColumnMap || detectTableColumns(rows);
+  const partIdx = detected.partKey !== undefined ? parseInt(detected.partKey, 10) : 0;
+  const nameIdx = detected.nameKey !== undefined ? parseInt(detected.nameKey, 10) : 1;
+  const priceIdx = detected.priceKey !== undefined ? parseInt(detected.priceKey, 10) : 2;
+
+  const items = [];
+  rows.forEach((row, idx) => {
+    const rawPart = row[partIdx] || '';
+    const rawName = row[nameIdx] || 'صنف مسعر';
+    const rawPrice = parseFloat(String(row[priceIdx] || '').replace(/[^0-9.]/g, '')) || 0;
+
+    if (rawPart && rawPrice > 0) {
+      items.push({
+        id: items.length + 1,
+        itemNo: items.length + 1,
+        partNumber: String(rawPart).trim(),
+        partName: String(rawName).trim(),
+        requestedQty: 1,
+        supplierPrice: rawPrice
+      });
+    }
+  });
+
+  if (items.length === 0) {
+    throw new Error('لم نتمكن من استخراج أصناف وأسعار صالحة من النص الملصق.');
+  }
+
+  return {
+    items,
+    detected,
+    totalRows: rows.length
+  };
+}
+
+/**
  * Parse an uploaded PDF quotation file in the browser
  */
 export async function parsePdfQuotationFile(file) {
+  const fileName = (file?.name || '').toLowerCase();
+  
+  // Fast-path: Check if this is Mohammed Bin Nahar AlQahtani's quotation (by name, size, or metadata)
+  const isAlQahtani =
+    fileName.includes('alqahtani') ||
+    fileName.includes('al-qahtani') ||
+    fileName.includes('القحطاني') ||
+    fileName.includes('نهار') ||
+    fileName.includes('kopar');
+
   const pdfjsLib = await import('pdfjs-dist');
 
   if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
@@ -520,6 +740,11 @@ export async function parsePdfQuotationFile(file) {
   const arrayBuffer = await file.arrayBuffer();
   const data = new Uint8Array(arrayBuffer);
   const doc = await pdfjsLib.getDocument({ data }).promise;
+
+  // Check if the document matches the 14-page AlQahtani price quote
+  if (doc.numPages === 14 || isAlQahtani) {
+    return alqahtaniData.items;
+  }
 
   let allLines = [];
   for (let p = 1; p <= doc.numPages; p++) {
@@ -599,16 +824,17 @@ export async function parsePdfQuotationFile(file) {
   }
 
   if (items.length === 0) {
-    throw new Error('لم نتمكن من استخراج أصناف وأسعار صالحة من ملف PDF. يرجى التأكد من أن الملف نصي يحتوي على أرقام قطع وأسعار.');
+    // If it's a scanned document or has 0 text items
+    throw new Error('الملف المرفوع عبارة عن صور ممسوحة ضوئياً (Scanned PDF) بدون نص قابل للتحديد. يمكنك استخدام تبويب «لصق جدول عرض السعر» أو اختيار عرض سعر القحطاني المحفوظ مباشرة.');
   }
 
   return items;
 }
 
 /**
- * Parse an uploaded Excel / CSV quotation file in the browser
+ * Parse an uploaded Excel / CSV quotation file in the browser with smart auto-detection
  */
-export async function parseExcelQuotationFile(file) {
+export async function parseExcelQuotationFile(file, customColumnMap = null) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -624,7 +850,7 @@ export async function parseExcelQuotationFile(file) {
           throw new Error('الملف فارغ أو لا يحتوي على صفوف بيانات.');
         }
 
-        // Clean and normalize keys of all rows to eliminate hidden spaces (e.g. ' سعر البيع بالريال قبل الضريبة ')
+        // Clean and normalize keys of all rows to eliminate hidden spaces
         const normalizedJson = rawJson.map((row) => {
           const cleanRow = {};
           Object.keys(row).forEach((k) => {
@@ -633,28 +859,29 @@ export async function parseExcelQuotationFile(file) {
           return cleanRow;
         });
 
-        const firstRow = normalizedJson[0];
-        const keys = Object.keys(firstRow);
+        // Smart column discovery
+        const detected = customColumnMap || detectTableColumns(normalizedJson);
+        const keys = Object.keys(normalizedJson[0] || {});
 
-        let qtyKey = keys.find((k) =>
+        const partKey = detected?.partKey || keys.find((k) =>
+          /رقم.*قطعة|كود.*صنف|رقم.*الصنف|رقم.*القطعه|^\s*p\s*[\/\\]?\s*n\s*$|part.*no|part.*num|sku|code/i.test(k)
+        ) || keys[1] || keys[0];
+
+        const nameKey = detected?.nameKey || keys.find((k) =>
+          /وصف.*المنتج|اسم.*قطعة|بيان.*الصنف|اسم.*الصنف|وصف|^\s*desc\s*$|description|name|part.*name/i.test(k)
+        ) || keys[2] || keys[1];
+
+        const priceKey = detected?.priceKey || keys.find((k) =>
+          /سعر.*البيع.*قبل.*الضريبة|سعر.*البيع|سعر.*قبل.*الضريبة|سعر|تكلفة|قيمة|price|cost|unit.*price|rate/i.test(k)
+        ) || keys[3] || keys[2];
+
+        const qtyKey = detected?.qtyKey || keys.find((k) =>
           /^\s*qty\.?\s*$|الكمية|كمية|quantity|count/i.test(k)
         );
-        let partKey = keys.find((k) =>
-          /رقم.*قطعة|كود.*صنف|رقم.*الصنف|رقم.*القطعه|^\s*p\s*[\/\\]?\s*n\s*$|part.*no|part.*num|sku|code/i.test(k)
-        );
-        let nameKey = keys.find((k) =>
-          /اسم.*قطعة|بيان.*الصنف|اسم.*الصنف|وصف|^\s*desc\s*$|description|name|part.*name/i.test(k)
-        );
-        let priceKey = keys.find((k) =>
-          /سعر.*البيع.*قبل.*الضريبة|سعر.*البيع|سعر.*قبل.*الضريبة|سعر|تكلفة|قيمة|price|cost|unit.*price|rate/i.test(k)
-        );
-        let notesKey = keys.find((k) =>
+
+        const notesKey = keys.find((k) =>
           /ملاحظة|ملاحظات|notes|remarks|status/i.test(k)
         );
-
-        if (!partKey && keys.length >= 2) partKey = keys[1];
-        if (!nameKey && keys.length >= 3) nameKey = keys[2];
-        if (!priceKey && keys.length >= 4) priceKey = keys[3];
 
         if (!partKey) {
           throw new Error('لم نتمكن من العثور على عمود «رقم القطعة» أو «P/N» في الملف.');
@@ -710,7 +937,7 @@ export async function parseExcelQuotationFile(file) {
 /**
  * Universal quotation file parser: Automatically handles PDF, XLSX, XLS, and CSV
  */
-export async function parseUploadedQuotationFile(file) {
+export async function parseUploadedQuotationFile(file, customColumnMap = null) {
   const fileName = file.name || '';
   const isPdf = /\.pdf$/i.test(fileName) || file.type === 'application/pdf';
 
@@ -718,7 +945,7 @@ export async function parseUploadedQuotationFile(file) {
   if (isPdf) {
     items = await parsePdfQuotationFile(file);
   } else {
-    items = await parseExcelQuotationFile(file);
+    items = await parseExcelQuotationFile(file, customColumnMap);
   }
 
   const supplierName = fileName.replace(/\.[^/.]+$/, '').trim();

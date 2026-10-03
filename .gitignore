@@ -30,3 +30,4 @@ dist-ssr
 # Local Archives & extraction
 *.rar
 august_data_samples/
+scratch/

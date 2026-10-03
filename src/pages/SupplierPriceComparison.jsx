@@ -41,6 +41,9 @@ import {
   getHusounQuotationAnalysis,
   getBadrAlWadiQuotationAnalysis,
   getMiskQuotationAnalysis,
+  getAlqahtaniQuotationAnalysis,
+  detectTableColumns,
+  parseRawTableText,
   parseUploadedQuotationFile,
   exportComparisonToExcel,
   normalizePartNumber,
@@ -122,6 +125,11 @@ export default function SupplierPriceComparison() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Smart Upload & Paste States
+  const [uploadTab, setUploadTab] = useState('file'); // 'file' | 'paste'
+  const [pastedText, setPastedText] = useState('');
+  const [pasteSupplierName, setPasteSupplierName] = useState('عرض سعر مورد جديد');
+
   // Custom Approved Cost Editing States (تعديل آخر سعر شراء وحفظه بقاعدة البيانات)
   const [editingCostItemId, setEditingCostItemId] = useState(null);
   const [editingCostInput, setEditingCostInput] = useState('');
@@ -157,6 +165,18 @@ export default function SupplierPriceComparison() {
   // Available Quotations Registry with Exact Dates
   const availableQuotations = useMemo(() => {
     const builtInList = [
+      {
+        id: 'alqahtani',
+        supplierName: 'شركة محمد بن نهار القحطاني للتجارة',
+        title: 'عرض سعر شركة محمد بن نهار القحطاني للتجارة (182 صنف كوري - KOPAR)',
+        shortName: 'محمد بن نهار القحطاني (كوري)',
+        date: '2026-10-03',
+        dateFormatted: '03 أكتوبر 2026',
+        itemsCount: 182,
+        badge: '182 صنف كوري KOPAR',
+        icon: '🇰🇷',
+        isBuiltIn: true
+      },
       {
         id: 'misk',
         supplierName: 'شركة مسك للتجارة',
@@ -225,7 +245,9 @@ export default function SupplierPriceComparison() {
   // Switch between quotations
   const handleSelectQuotation = (id) => {
     setActivePreset(id);
-    if (id === 'badr') {
+    if (id === 'alqahtani') {
+      setQuotationResult(getAlqahtaniQuotationAnalysis());
+    } else if (id === 'badr') {
       setQuotationResult(getBadrAlWadiQuotationAnalysis());
     } else if (id === 'husoun') {
       setQuotationResult(getHusounQuotationAnalysis());
@@ -366,6 +388,70 @@ export default function SupplierPriceComparison() {
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // Handle pasted table / text
+  const handlePasteSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!pastedText.trim()) {
+      setUploadError('يرجى لصق نص أو جدول عرض السعر أولاً.');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      setUploadError(null);
+      const parsedData = parseRawTableText(pastedText);
+
+      const supplierName = pasteSupplierName.trim() || 'مورد خارجي';
+      const todayIso = new Date().toISOString().split('T')[0];
+      const todayFormatted = new Intl.DateTimeFormat('ar-SA', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+
+      const quotationInfo = {
+        supplierName,
+        quotationTitle: `تحليل جدول: ${supplierName}`,
+        quotationDate: todayIso,
+        month: 'مرفوع حديثاً',
+        representative: 'لصق جدول مباشر',
+        fileName: 'جدول_أسعار_ملصوق.txt',
+        category: 'جدول أسعار ملصوق',
+        totalItemsCount: parsedData.items.length
+      };
+
+      const parsed = compareQuotationItems(parsedData.items, quotationInfo);
+
+      const newCustomItem = {
+        id: `custom_${Date.now()}`,
+        supplierName,
+        title: quotationInfo.quotationTitle,
+        shortName: supplierName,
+        date: todayIso,
+        dateFormatted: todayFormatted,
+        itemsCount: parsed.items?.length || 0,
+        badge: 'جدول أسعار ملصوق',
+        icon: '📋',
+        isBuiltIn: false,
+        analysisData: parsed
+      };
+
+      const updatedList = [newCustomItem, ...savedCustomQuotations.filter((q) => q.title !== newCustomItem.title)];
+      setSavedCustomQuotations(updatedList);
+      saveCustomQuotationsToStorage(updatedList);
+
+      setActivePreset(newCustomItem.id);
+      setQuotationResult(parsed);
+      setIsUploadModalOpen(false);
+      setPastedText('');
+      setPage(1);
+      setSearchQuery('');
+      setFilterVerdict('all');
+      setFilterGrade('all');
+    } catch (err) {
+      console.error(err);
+      setUploadError(err.message || 'حدث خطأ أثناء قراءة الجدول المدخل.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -1608,75 +1694,180 @@ export default function SupplierPriceComparison() {
         </div>
       </div>
 
-      {/* ─── 6. DYNAMIC UPLOAD MODAL (DRAG & DROP PDF / EXCEL) ─── */}
+      {/* ─── 6. DYNAMIC UPLOAD MODAL (SMART COLUMN AI & MULTI-FORMAT) ─── */}
       {isUploadModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in" dir="rtl">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5">
             <div className="flex items-center justify-between border-b pb-3 border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Upload className="w-5 h-5 text-blue-600" />
                 <h3 className="font-black text-base text-slate-900 dark:text-white">
-                  رفع وتحليل عرض سعر مورد (PDF أو Excel)
+                  استيراد ومقارنة عرض سعر مورد (كشف ذكي للأعمدة)
                 </h3>
               </div>
               <button
                 onClick={() => setIsUploadModalOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600"
+                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3">
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                يمكنك رفع مستند <span className="font-mono font-bold text-red-500">PDF</span> رسمي من أي مورد أو ملف إكسل (<span className="font-mono font-bold text-emerald-600">.xlsx / .xls</span> أو <span className="font-mono font-bold">.csv</span>)، وسيقوم النظام فوراً باستخراج أرقام القطع والأسعار وتطبيق المطابقة الرقمية التلقائية ومقارنتها بتكلفتنا بالمخزن وعزل الكوري والأصلي ذاتياً.
-              </p>
-
-              {/* Upload Drop Zone */}
-              <label className="border-2 border-dashed border-blue-300 dark:border-blue-900/60 hover:border-blue-500 rounded-3xl p-8 flex flex-col items-center justify-center gap-3 bg-blue-50/40 dark:bg-blue-950/20 cursor-pointer transition-all group">
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                  📄
-                </div>
-                <div className="text-center space-y-1">
-                  <div className="text-xs font-black text-slate-800 dark:text-slate-200">
-                    اضغط هنا لاختيار ملف عرض السعر (PDF أو Excel) أو اسحبه إلى هنا
-                  </div>
-                  <div className="text-[11px] text-slate-400 font-mono">
-                    يدعم: PDF • XLSX • XLS • CSV
-                  </div>
-                </div>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf, .xlsx, .xls, .csv, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  disabled={isUploading}
-                />
-              </label>
-
-              {isUploading && (
-                <div className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-bold flex items-center justify-center gap-2">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>جاري قراءة الملف واستخراج أرقام القطع والأسعار ومطابقتها فورياً...</span>
-                </div>
-              )}
-
-              {uploadError && (
-                <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>{uploadError}</span>
-                </div>
-              )}
+            {/* Navigation Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+              <button
+                type="button"
+                onClick={() => { setUploadTab('file'); setUploadError(null); }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  uploadTab === 'file'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                }`}
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>رفع ملف (PDF أو Excel / CSV)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setUploadTab('paste'); setUploadError(null); }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  uploadTab === 'paste'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                }`}
+              >
+                <ClipboardList className="w-4 h-4" />
+                <span>لصق نص / جدول مباشر (واتساب / إكسل)</span>
+              </button>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            {uploadTab === 'file' ? (
+              <div className="space-y-4">
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  يقوم النظام <strong className="text-blue-600">تلقائياً وبذكاء اصطناعي</strong> بالتعرف على أماكن أعمدة <span className="font-bold text-slate-900 dark:text-white">رقم القطعة</span> و<span className="font-bold text-slate-900 dark:text-white">اسمها / وصفها</span> و<span className="font-bold text-slate-900 dark:text-white">سعر المورد</span> ومقارنتها بتكلفتنا بالمخزن فورياً.
+                </p>
+
+                {/* Upload Drop Zone */}
+                <label className="border-2 border-dashed border-blue-300 dark:border-blue-900/60 hover:border-blue-500 rounded-3xl p-7 flex flex-col items-center justify-center gap-3 bg-blue-50/40 dark:bg-blue-950/20 cursor-pointer transition-all group">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                    📄
+                  </div>
+                  <div className="text-center space-y-1">
+                    <div className="text-xs font-black text-slate-800 dark:text-slate-200">
+                      اضغط لاختيار ملف عرض السعر (PDF أو Excel) أو اسحبه إلى هنا
+                    </div>
+                    <div className="text-[11px] text-slate-400 font-mono">
+                      يدعم: PDF • XLSX • XLS • CSV (يتعرف تلقائياً على الأعمدة)
+                    </div>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf, .xlsx, .xls, .csv, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                </label>
+
+                {/* Quick Preloaded AlQahtani Card */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-blue-950/40 border border-blue-200 dark:border-blue-800/60 flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🇰🇷</span>
+                      <span className="text-xs font-black text-blue-950 dark:text-blue-200">
+                        عرض سعر شركة محمد بن نهار القحطاني للتجارة
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      182 صنف كوري KOPAR معتمد ومطابق مع مخزون درة
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleSelectQuotation('alqahtani');
+                      setIsUploadModalOpen(false);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-sm"
+                  >
+                    استعراض فوري (182 صنف)
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Tab 2: Paste Raw Table / Text */
+              <form onSubmit={handlePasteSubmit} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    اسم المورد أو عرض السعر:
+                  </label>
+                  <input
+                    type="text"
+                    value={pasteSupplierName}
+                    onChange={(e) => setPasteSupplierName(e.target.value)}
+                    placeholder="مثال: شركة محمد بن نهار القحطاني / مؤسسة قطع غيار"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      الصق جدول أو أسطر عرض السعر هنا:
+                    </label>
+                    <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                      يكتشف تلقائياً رقم القطعة والاسم والسعر
+                    </span>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={pastedText}
+                    onChange={(e) => setPastedText(e.target.value)}
+                    placeholder={`مثال للصق مباشر:\nOK71E-33251A-KOPAR\tهوب فرامل امامي كيا\t85\n25100-02566-KOPAR\tطرمبة ماء هيونداي جيتز\t40\n51712-1R000-KOPAR\tهوب فرامل امامي اكسنت\t78`}
+                    className="w-full p-3 font-mono text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400"
+                    dir="ltr"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="submit"
+                    disabled={isUploading || !pastedText.trim()}
+                    className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-black shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>الكشف الذكي عن الأعمدة والمقارنة</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {isUploading && (
+              <div className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-bold flex items-center justify-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>جاري قراءة البيانات وكشف أماكن رقم القطعة والاسم والسعر ومطابقتها بمخزون درة...</span>
+              </div>
+            )}
+
+            {uploadError && (
+              <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{uploadError}</span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+              <span className="text-[11px] text-slate-400">
+                المطابقة تفصل تلقائياً بين الكوري البديل والأصلي وكالة
+              </span>
               <button
+                type="button"
                 onClick={() => setIsUploadModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold cursor-pointer"
               >
-                إلغاء
+                إغلاق
               </button>
             </div>
           </div>
