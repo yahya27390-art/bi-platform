@@ -42,6 +42,7 @@ import {
   getBadrAlWadiQuotationAnalysis,
   getMiskQuotationAnalysis,
   getAlqahtaniQuotationAnalysis,
+  getMobisQuotationAnalysis,
   detectTableColumns,
   parseRawTableText,
   parseUploadedQuotationFile,
@@ -166,6 +167,18 @@ export default function SupplierPriceComparison() {
   const availableQuotations = useMemo(() => {
     const builtInList = [
       {
+        id: 'mobis',
+        supplierName: 'موبس الأصلي (هيونداي / كيا)',
+        title: 'عرض أسعار موبس أصلي هيونداي كيا 2026/10/01 (4,803 صنف أصلي)',
+        shortName: 'موبس أصلي (هيونداي وكيا)',
+        date: '2026-10-01',
+        dateFormatted: '01 أكتوبر 2026',
+        itemsCount: 4803,
+        badge: '4,803 صنف وكالة Mobis',
+        icon: '🛡️',
+        isBuiltIn: true
+      },
+      {
         id: 'alqahtani',
         supplierName: 'شركة محمد بن نهار القحطاني للتجارة',
         title: 'عرض سعر شركة محمد بن نهار القحطاني للتجارة (182 صنف كوري - KOPAR)',
@@ -245,7 +258,9 @@ export default function SupplierPriceComparison() {
   // Switch between quotations
   const handleSelectQuotation = (id) => {
     setActivePreset(id);
-    if (id === 'alqahtani') {
+    if (id === 'mobis') {
+      setQuotationResult(getMobisQuotationAnalysis());
+    } else if (id === 'alqahtani') {
       setQuotationResult(getAlqahtaniQuotationAnalysis());
     } else if (id === 'badr') {
       setQuotationResult(getBadrAlWadiQuotationAnalysis());
@@ -1770,6 +1785,31 @@ export default function SupplierPriceComparison() {
                     disabled={isUploading}
                   />
                 </label>
+
+                {/* Quick Preloaded Mobis Genuine OEM Card */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🛡️</span>
+                      <span className="text-xs font-black text-emerald-950 dark:text-emerald-200">
+                        عرض أسعار موبس أصلي هيونداي / كيا (2026/10/01)
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      4,803 صنف وكالة OEM أصلي كوريا مع تحليل مقارنة فوري ومطابقة دقيقة
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleSelectQuotation('mobis');
+                      setIsUploadModalOpen(false);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-sm"
+                  >
+                    استعراض فوري (4,803 صنف)
+                  </button>
+                </div>
 
                 {/* Quick Preloaded AlQahtani Card */}
                 <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-blue-950/40 border border-blue-200 dark:border-blue-800/60 flex items-center justify-between gap-3">

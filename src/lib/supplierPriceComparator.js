@@ -12,6 +12,7 @@ import husounData from '../data/husounQuotationData.json';
 import badrAlWadiData from '../data/badrAlWadiQuotationData.json';
 import miskData from '../data/miskQuotationData.json';
 import alqahtaniData from '../data/alqahtaniQuotationData.json';
+import mobisData from '../data/mobisQuotationData.json';
 import * as XLSX from 'xlsx';
 import { saveCostOverrideToDatabase } from './supabaseClient';
 
@@ -554,6 +555,13 @@ export function getAlqahtaniQuotationAnalysis() {
 }
 
 /**
+ * Get preloaded official Mobis Hyundai / Kia quotation comparison (4,803 Genuine Mobis OEM items)
+ */
+export function getMobisQuotationAnalysis() {
+  return compareQuotationItems(mobisData.items, mobisData.quotationInfo);
+}
+
+/**
  * Automatically inspects headers and sample rows to discover column mapping
  * Determines which column is:
  * - partKey (رقم القطعة)
@@ -844,10 +852,32 @@ export async function parseExcelQuotationFile(file, customColumnMap = null) {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const rawJson = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+        // 1. Smart Header Row Detection: scan first 20 rows to detect where actual table headers start
+        const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+        if (!rawRows || rawRows.length === 0) {
+          throw new Error('الملف فارغ أو لا يحتوي على صفوف بيانات.');
+        }
+
+        const partHeaderRegex = /رقم.*قطعة|كود.*صنف|رقم.*الصنف|رقم.*القطعه|^\s*p\s*[\/\\]?\s*n\s*$|part.*no|part.*num|sku|code|الرمز|كود|قطعة/i;
+        const priceHeaderRegex = /سعر.*البيع.*قبل.*الضريبة|سعر.*البيع|سعر.*قبل.*الضريبة|سعر|تكلفة|قيمة|price|cost|unit.*price|rate|مبلغ|ريال/i;
+
+        let headerRowIndex = 0;
+        for (let i = 0; i < Math.min(20, rawRows.length); i++) {
+          const row = rawRows[i];
+          if (!Array.isArray(row)) continue;
+          const hasPartHeader = row.some((cell) => partHeaderRegex.test(String(cell)));
+          const hasPriceHeader = row.some((cell) => priceHeaderRegex.test(String(cell)));
+          if (hasPartHeader || (hasPriceHeader && row.length >= 2)) {
+            headerRowIndex = i;
+            break;
+          }
+        }
+
+        const rawJson = XLSX.utils.sheet_to_json(worksheet, { range: headerRowIndex, defval: '' });
 
         if (!rawJson || rawJson.length === 0) {
-          throw new Error('الملف فارغ أو لا يحتوي على صفوف بيانات.');
+          throw new Error('الملف فارغ أو لا يحتوي على صفوف بيانات بعد رأس الجدول.');
         }
 
         // Clean and normalize keys of all rows to eliminate hidden spaces
@@ -900,10 +930,13 @@ export async function parseExcelQuotationFile(file, customColumnMap = null) {
             rawName = rawName ? `${rawName} (${rawNote})` : rawNote;
           }
 
+          // Clean part number: trim and strip trailing dots/periods
+          const cleanPart = String(rawPart).trim().replace(/\.+$/, '');
+
           return {
             id: idx + 1,
             itemNo: row['م'] || row['#'] || idx + 1,
-            partNumber: String(rawPart).trim(),
+            partNumber: cleanPart,
             partName: String(rawName || 'صنف مسعر').trim(),
             requestedQty,
             supplierPrice: isNaN(rawPrice) ? 0 : rawPrice,
