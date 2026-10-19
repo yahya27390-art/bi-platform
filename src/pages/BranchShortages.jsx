@@ -380,7 +380,7 @@ export default function BranchShortages() {
   };
 
   // Confirm Finalize / Order with post-action: 'EXCEL' | 'PRINT' | 'CLOSE_ONLY'
-  const handleConfirmOrder = (postAction = 'EXCEL') => {
+  const handleConfirmOrder = async (postAction = 'EXCEL') => {
     if (!currentBatch || currentBatch.status === 'ORDERED') return;
     setIsSubmittingOrder(true);
 
@@ -393,7 +393,7 @@ export default function BranchShortages() {
 
       if (isSelectedOnly) {
         const selectedIdsArray = Array.from(selectedItemIds);
-        res = finalizeAndOrderSelectedItems(activeBranch, selectedIdsArray, supplierNotes, user);
+        res = await finalizeAndOrderSelectedItems(activeBranch, selectedIdsArray, supplierNotes, user);
         if (res) {
           batchToExport = res.orderedBatch;
           setStore({ ...res.store });
@@ -403,7 +403,7 @@ export default function BranchShortages() {
         }
       } else {
         batchToExport = { ...currentBatch };
-        res = finalizeAndOrderBatch(activeBranch, supplierNotes, user);
+        res = await finalizeAndOrderBatch(activeBranch, supplierNotes, user);
         if (res) {
           batchToExport = res.orderedBatch;
           setStore({ ...res.store });

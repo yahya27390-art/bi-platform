@@ -82,6 +82,37 @@ export const PRIORITY_LEVELS = {
 };
 
 const STORAGE_KEY = 'dora_branch_shortages_store_v1';
+const ORDERED_ITEMS_KEY = 'dora_ordered_item_ids_v1';
+
+/**
+ * Permanent tombstone tracker for ordered items
+ * Guarantees once an item is approved/ordered, it can NEVER revert to active!
+ */
+export function getOrderedItemIds() {
+  try {
+    const raw = localStorage.getItem(ORDERED_ITEMS_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return new Set(arr);
+    }
+  } catch (e) {
+    // Ignore read errors
+  }
+  return new Set();
+}
+
+export function recordOrderedItemIds(ids) {
+  if (!ids || !ids.length) return;
+  try {
+    const currentSet = getOrderedItemIds();
+    ids.forEach((id) => {
+      if (id) currentSet.add(id);
+    });
+    localStorage.setItem(ORDERED_ITEMS_KEY, JSON.stringify(Array.from(currentSet)));
+  } catch (e) {
+    // Ignore write errors
+  }
+}
 
 // Initial seed helper
 function createNewBatch(branchKey, batchNumber = 1) {
@@ -296,7 +327,7 @@ export function deleteShortageItem(branchKey, itemId) {
 }
 
 // ─── PURCHASING MANAGER DECISION: MARK AS ORDERED & SPAWN NEW BATCH ───
-export function finalizeAndOrderBatch(branchKey, supplierNotes, managerUser) {
+export async function finalizeAndOrderBatch(branchKey, supplierNotes, managerUser) {
   const store = getBranchShortagesStore();
   const branchBatches = store[branchKey] || [];
   const activeBatchIndex = branchBatches.findIndex((b) => b.status === 'ACTIVE');
@@ -304,6 +335,11 @@ export function finalizeAndOrderBatch(branchKey, supplierNotes, managerUser) {
   if (activeBatchIndex === -1) return null;
 
   const currentBatch = branchBatches[activeBatchIndex];
+  const orderedItemIds = (currentBatch.items || []).map((i) => i.id);
+
+  // Permanently record all item IDs so they can NEVER revert to active
+  recordOrderedItemIds(orderedItemIds);
+
   // 1. Lock the active batch
   currentBatch.status = 'ORDERED';
   currentBatch.orderedAt = new Date().toISOString();
@@ -320,8 +356,12 @@ export function finalizeAndOrderBatch(branchKey, supplierNotes, managerUser) {
   saveBranchShortagesStore(store);
 
   // Sync both locked ordered batch and new active batch to Cloud Supabase
-  syncBatchToCloud(currentBatch).catch((e) => console.warn('Cloud sync batch error:', e));
-  syncBatchToCloud(newActiveBatch).catch((e) => console.warn('Cloud sync new active batch error:', e));
+  try {
+    await syncBatchToCloud(currentBatch);
+    await syncBatchToCloud(newActiveBatch);
+  } catch (e) {
+    console.warn('Cloud sync batch error:', e);
+  }
 
   return {
     store,
@@ -335,7 +375,7 @@ export function finalizeAndOrderBatch(branchKey, supplierNotes, managerUser) {
  * Mark ONLY selected items as ORDERED, moving them into an ordered batch
  * while keeping all unselected items ACTIVE in the current shortage list!
  */
-export function finalizeAndOrderSelectedItems(branchKey, selectedItemIds, supplierNotes, managerUser) {
+export async function finalizeAndOrderSelectedItems(branchKey, selectedItemIds, supplierNotes, managerUser) {
   if (!selectedItemIds || selectedItemIds.length === 0) return null;
 
   const store = getBranchShortagesStore();
@@ -352,9 +392,12 @@ export function finalizeAndOrderSelectedItems(branchKey, selectedItemIds, suppli
 
   if (itemsToOrder.length === 0) return null;
 
+  // Permanently record ordered item IDs into tombstone blacklist
+  recordOrderedItemIds(Array.from(selectedSet));
+
   // If ALL items in the batch are selected, do a full batch finalization
   if (remainingItems.length === 0) {
-    return finalizeAndOrderBatch(branchKey, supplierNotes, managerUser);
+    return await finalizeAndOrderBatch(branchKey, supplierNotes, managerUser);
   }
 
   const timestamp = new Date().toISOString();
@@ -392,22 +435,21 @@ export function finalizeAndOrderSelectedItems(branchKey, selectedItemIds, suppli
   store[branchKey] = branchBatches;
   saveBranchShortagesStore(store);
 
-  // 4. Cloud synchronization
-  syncBatchToCloud(orderedBatch).catch((e) => console.warn('Cloud sync ordered batch error:', e));
-  syncBatchToCloud(activeBatch).catch((e) => console.warn('Cloud sync active batch error:', e));
-
-  if (isSupabaseConfigured && supabase) {
-    supabase
-      .from('branch_shortage_items')
-      .update({
-        batch_id: orderedBatchId,
-        updated_at: timestamp
-      })
-      .in('id', Array.from(selectedSet))
-      .then(({ error }) => {
-        if (error) console.warn('Supabase update ordered items error:', error);
-      })
-      .catch((e) => console.warn('Supabase update ordered items error:', e));
+  // 4. Cloud synchronization in strict sequential order
+  try {
+    await syncBatchToCloud(orderedBatch);
+    if (isSupabaseConfigured && supabase) {
+      await supabase
+        .from('branch_shortage_items')
+        .update({
+          batch_id: orderedBatchId,
+          updated_at: timestamp
+        })
+        .in('id', Array.from(selectedSet));
+    }
+    await syncBatchToCloud(activeBatch);
+  } catch (err) {
+    console.warn('Cloud sync error on selective finalization:', err);
   }
 
   return {
@@ -580,6 +622,19 @@ export async function fetchRemoteShortagesStore() {
       return null;
     }
 
+    // 1. Identify all ordered batches across Supabase
+    const orderedBatchesFromDb = batches.filter((b) => b.status === 'ORDERED');
+    const orderedBatchIds = new Set(orderedBatchesFromDb.map((b) => b.id));
+
+    // 2. Build complete tombstone Set of all ordered items
+    const knownOrderedIds = getOrderedItemIds();
+    items.forEach((it) => {
+      if (orderedBatchIds.has(it.batch_id)) {
+        knownOrderedIds.add(it.id);
+      }
+    });
+    recordOrderedItemIds(Array.from(knownOrderedIds));
+
     const itemsByBatch = {};
     items.forEach((it) => {
       const bId = it.batch_id;
@@ -602,54 +657,52 @@ export async function fetchRemoteShortagesStore() {
       });
     });
 
-    const currentLocal = getBranchShortagesStore();
     const newStore = {
       [BRANCH_KEYS.MAIN]: [],
       [BRANCH_KEYS.RAWAF]: [],
       [BRANCH_KEYS.KIA]: []
     };
 
-    // For each branch, guarantee EXACTLY ONE canonical active batch containing ALL active items!
+    // For each branch, guarantee EXACTLY ONE canonical active batch containing ONLY non-ordered items!
     Object.keys(BRANCH_META).forEach((bKey) => {
       const branchBatchesFromDb = batches.filter((b) => b.branch_key === bKey);
       const activeBatchesFromDb = branchBatchesFromDb.filter((b) => b.status === 'ACTIVE');
-      const orderedBatchesFromDb = branchBatchesFromDb.filter((b) => b.status === 'ORDERED');
-
-      const orderedBatchIds = new Set(orderedBatchesFromDb.map((b) => b.id));
+      const branchOrderedBatches = branchBatchesFromDb.filter((b) => b.status === 'ORDERED');
       const branchItems = items.filter((it) => it.branch_key === bKey);
 
       let canonicalActiveBatch = null;
 
+      // Active items are strictly items that do NOT belong to an ORDERED batch AND are NOT in tombstone!
+      const allActiveItems = [];
+      const seenItemIds = new Set();
+
+      branchItems.forEach((it) => {
+        const isOrdered = orderedBatchIds.has(it.batch_id) || knownOrderedIds.has(it.id);
+        if (!isOrdered && !seenItemIds.has(it.id)) {
+          seenItemIds.add(it.id);
+          allActiveItems.push({
+            id: it.id,
+            batchId: it.batch_id,
+            branchKey: it.branch_key,
+            partNumber: it.part_number,
+            normalizedPartNumber: normalizePartNumber(it.part_number),
+            partName: it.part_name,
+            requestedQty: it.requested_qty,
+            priority: it.priority,
+            notes: it.notes || '',
+            createdByName: it.created_by_name || 'موظف الفرع',
+            createdByUsername: 'staff',
+            createdAt: it.created_at,
+            updatedAt: it.updated_at,
+            isNewToInventory: !!it.is_new_to_inventory
+          });
+        }
+      });
+
       if (activeBatchesFromDb.length > 0) {
         // Sort active batches: prefer oldest/first created
         const primary = activeBatchesFromDb.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0];
-        
-        // Active items are ANY items for this branch that do NOT belong to an ORDERED batch!
-        // This guarantees 100% data integrity even if an item was recorded with a temporary batch ID or orphaned batch ID!
-        const allActiveItems = [];
-        const seenItemIds = new Set();
-
-        branchItems.forEach((it) => {
-          if (!orderedBatchIds.has(it.batch_id) && !seenItemIds.has(it.id)) {
-            seenItemIds.add(it.id);
-            allActiveItems.push({
-              id: it.id,
-              batchId: primary.id,
-              branchKey: it.branch_key,
-              partNumber: it.part_number,
-              normalizedPartNumber: normalizePartNumber(it.part_number),
-              partName: it.part_name,
-              requestedQty: it.requested_qty,
-              priority: it.priority,
-              notes: it.notes || '',
-              createdByName: it.created_by_name || 'موظف الفرع',
-              createdByUsername: 'staff',
-              createdAt: it.created_at,
-              updatedAt: it.updated_at,
-              isNewToInventory: !!it.is_new_to_inventory
-            });
-          }
-        });
+        allActiveItems.forEach((it) => { it.batchId = primary.id; });
 
         canonicalActiveBatch = {
           id: primary.id,
@@ -680,32 +733,9 @@ export async function fetchRemoteShortagesStore() {
           }
         }
       } else {
-        const nextNum = orderedBatchesFromDb.length + 1;
+        const nextNum = branchOrderedBatches.length + 1;
         canonicalActiveBatch = createNewBatch(bKey, nextNum);
-
-        const allActiveItems = [];
-        const seenItemIds = new Set();
-        branchItems.forEach((it) => {
-          if (!orderedBatchIds.has(it.batch_id) && !seenItemIds.has(it.id)) {
-            seenItemIds.add(it.id);
-            allActiveItems.push({
-              id: it.id,
-              batchId: canonicalActiveBatch.id,
-              branchKey: it.branch_key,
-              partNumber: it.part_number,
-              normalizedPartNumber: normalizePartNumber(it.part_number),
-              partName: it.part_name,
-              requestedQty: it.requested_qty,
-              priority: it.priority,
-              notes: it.notes || '',
-              createdByName: it.created_by_name || 'موظف الفرع',
-              createdByUsername: 'staff',
-              createdAt: it.created_at,
-              updatedAt: it.updated_at,
-              isNewToInventory: !!it.is_new_to_inventory
-            });
-          }
-        });
+        allActiveItems.forEach((it) => { it.batchId = canonicalActiveBatch.id; });
         canonicalActiveBatch.items = allActiveItems;
         syncBatchToCloud(canonicalActiveBatch).catch(() => {});
       }
@@ -714,7 +744,7 @@ export async function fetchRemoteShortagesStore() {
       newStore[bKey] = [canonicalActiveBatch];
 
       // Append past archived/ordered batches
-      orderedBatchesFromDb.forEach((ob) => {
+      branchOrderedBatches.forEach((ob) => {
         newStore[bKey].push({
           id: ob.id,
           branchKey: bKey,
@@ -743,6 +773,7 @@ export async function fetchRemoteShortagesStore() {
  * Automatically uploads any locally cached batches & items that were registered on this device
  * to the central cloud database so they become visible to all other devices and the Purchasing Manager.
  * Solves: Devices with existing records before the cloud update.
+ * ANTI-REVERSION HARDENED: Never uploads any item that was approved/ordered!
  */
 export async function uploadLocalShortagesToCloud() {
   if (!isSupabaseConfigured || !supabase) return { count: 0, error: 'Database not configured' };
@@ -750,24 +781,65 @@ export async function uploadLocalShortagesToCloud() {
     const localStore = getBranchShortagesStore();
     let totalItemsUploaded = 0;
 
-    // Fetch existing active batches from Supabase to prevent duplicate active batches
+    // 1. Fetch remote batches to distinguish ACTIVE vs ORDERED
     const { data: remoteBatches } = await supabase
       .from('branch_shortage_batches')
-      .select('id, branch_key, status, batch_number, batch_title')
-      .eq('status', 'ACTIVE');
+      .select('id, branch_key, status, batch_number, batch_title');
 
     const remoteActiveBatchesMap = {};
+    const remoteOrderedBatchIds = new Set();
     (remoteBatches || []).forEach((rb) => {
-      if (!remoteActiveBatchesMap[rb.branch_key]) {
-        remoteActiveBatchesMap[rb.branch_key] = rb;
+      if (rb.status === 'ACTIVE') {
+        if (!remoteActiveBatchesMap[rb.branch_key]) {
+          remoteActiveBatchesMap[rb.branch_key] = rb;
+        }
+      } else if (rb.status === 'ORDERED') {
+        remoteOrderedBatchIds.add(rb.id);
       }
     });
+
+    // 2. Fetch all item IDs that belong to ANY ordered batch in Supabase
+    const knownOrderedIds = getOrderedItemIds();
+    if (remoteOrderedBatchIds.size > 0) {
+      const { data: remoteOrderedItems } = await supabase
+        .from('branch_shortage_items')
+        .select('id, batch_id')
+        .in('batch_id', Array.from(remoteOrderedBatchIds));
+
+      (remoteOrderedItems || []).forEach((it) => {
+        knownOrderedIds.add(it.id);
+      });
+    }
+
+    // 3. Also include items from local ordered batches
+    for (const bKey of Object.keys(localStore)) {
+      const batches = localStore[bKey] || [];
+      batches.filter((b) => b.status === 'ORDERED').forEach((ob) => {
+        (ob.items || []).forEach((it) => knownOrderedIds.add(it.id));
+      });
+    }
+
+    recordOrderedItemIds(Array.from(knownOrderedIds));
+
+    let localModified = false;
 
     for (const branchKey of Object.keys(localStore)) {
       const batches = localStore[branchKey] || [];
       const activeBatch = batches.find((b) => b.status === 'ACTIVE');
 
       if (activeBatch) {
+        // CRITICAL ANTI-REVERSION FILTER:
+        // Filter out ANY item that is already ordered!
+        const originalCount = (activeBatch.items || []).length;
+        const validActiveItems = (activeBatch.items || []).filter(
+          (item) => !knownOrderedIds.has(item.id)
+        );
+
+        if (validActiveItems.length !== originalCount) {
+          activeBatch.items = validActiveItems;
+          localModified = true;
+        }
+
         let canonicalBatchId = activeBatch.id;
 
         if (remoteActiveBatchesMap[branchKey]) {
@@ -791,8 +863,9 @@ export async function uploadLocalShortagesToCloud() {
           remoteActiveBatchesMap[branchKey] = activeBatch;
         }
 
-        if (activeBatch.items && activeBatch.items.length > 0) {
-          const rows = activeBatch.items.map((item) => ({
+        // Only upload strictly active, non-ordered items!
+        if (validActiveItems.length > 0) {
+          const rows = validActiveItems.map((item) => ({
             id: item.id,
             batch_id: canonicalBatchId,
             branch_key: branchKey,
@@ -828,7 +901,29 @@ export async function uploadLocalShortagesToCloud() {
             supplier_notes: ob.supplierNotes || ''
           }
         ], { onConflict: 'id' });
+
+        if (ob.items && ob.items.length > 0) {
+          const orderedItemRows = ob.items.map((item) => ({
+            id: item.id,
+            batch_id: ob.id,
+            branch_key: branchKey,
+            part_number: item.partNumber,
+            part_name: item.partName,
+            requested_qty: item.requestedQty || 1,
+            priority: item.priority || 'NORMAL',
+            created_by_name: item.createdByName || 'موظف الفرع',
+            notes: item.notes || '',
+            created_at: item.createdAt || new Date().toISOString(),
+            updated_at: item.updatedAt || new Date().toISOString(),
+            is_new_to_inventory: !!item.isNewToInventory
+          }));
+          await supabase.from('branch_shortage_items').upsert(orderedItemRows, { onConflict: 'id' });
+        }
       }
+    }
+
+    if (localModified) {
+      saveBranchShortagesStore(localStore);
     }
 
     return { success: true, count: totalItemsUploaded };
