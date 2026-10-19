@@ -4,7 +4,7 @@ import { useBIAuth } from '@/auth/BIAuthContext';
 import {
   LayoutDashboard, TrendingUp, ShoppingCart, MapPin, Package,
   DollarSign, Target, Upload, Building2, Sparkles, X, Crown, Lock, Boxes,
-  Search, FileSpreadsheet, Scale, ClipboardList
+  Search, FileSpreadsheet, Scale, ClipboardList, Store
 } from 'lucide-react';
 import doraLogo from '@/assets/dora_logo.png';
 
@@ -30,6 +30,7 @@ const NAV_ITEMS = [
   { label: 'تقارير المخزون التخصصية', icon: FileSpreadsheet, path: '/inventory/reports', isInventory: true },
   { label: 'مقارنة أسعار الموردين', icon: Scale, path: '/inventory/supplier-comparison', isInventory: true },
   { label: 'نواقص طلبات الفروع', icon: ClipboardList, path: '/inventory/branch-shortages', isInventory: true },
+  { label: 'طلبية وافتتاح فرع جديد', icon: Store, path: '/inventory/new-branch', isInventory: true, altPaths: ['/new-branch'] },
   { label: 'المالية', icon: DollarSign, path: '/financials' },
   { label: 'الأهداف', icon: Target, path: '/targets' },
   { label: 'استيراد البيانات', icon: Upload, path: '/import' },

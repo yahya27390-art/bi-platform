@@ -115,20 +115,21 @@ function SummaryTab({ privacyMode, viewMode = 'mobile', periodMetrics, activePer
     <div className="space-y-4 pb-2">
 
       {/* ── Period Status Pill ── */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2 text-xs">
-          <span className="font-bold text-slate-800 dark:text-slate-200 font-heading">الفترة النشطة:</span>
-          <span className="font-black text-slate-900 font-mono">{activePeriodObj?.labelAr || activePeriodObj?.label}</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1 py-0.5">
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="font-bold text-slate-800 dark:text-slate-200 font-heading shrink-0">الفترة النشطة:</span>
+          <span className="font-black text-slate-900 font-mono text-[11px] sm:text-xs">{activePeriodObj?.labelAr || activePeriodObj?.label}</span>
         </div>
-        <div>
+        <div className="shrink-0">
           {isAudited ? (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-              🔒 معتمد 100% بالفواتير الرسمية
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1 shadow-xs">
+              <span>🔒</span>
+              <span>معتمد 100% بالفواتير</span>
             </span>
           ) : (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300 flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300 inline-flex items-center gap-1 shadow-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-              ⚡ شهر تشغيلي مربوط حياً بـ Meta Ads API
+              <span>مربوط حياً بالـ API</span>
             </span>
           )}
         </div>
@@ -419,7 +420,7 @@ export default function OwnerExecutiveDashboard() {
           <div className="flex items-center justify-between gap-2">
 
             {/* Logo & Brand Title */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 shrink-0">
               <img
                 src={doraLogo}
                 alt="درة السيارة"
@@ -434,89 +435,92 @@ export default function OwnerExecutiveDashboard() {
                     C-LEVEL
                   </span>
                 </div>
-                <div className="text-[10px] text-slate-400 leading-none">
+                <div className="hidden sm:block text-[10px] text-slate-400 leading-none">
                   درة السيارة • متابعة الأداء المالي والتشغيلي
                 </div>
               </div>
             </div>
 
-            {/* Period Selector & New Month Launch Action */}
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1">
-                <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <select
-                  value={periodId}
-                  onChange={(e) => setPeriodId(e.target.value)}
-                  className="bg-transparent text-white text-xs font-bold outline-none cursor-pointer pr-1"
+            {/* Controls Section (Period, Mode Switcher, Actions) */}
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
+              {/* Period Selector & New Month Launch Action */}
+              <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1 max-w-[155px] sm:max-w-none">
+                  <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <select
+                    value={periodId}
+                    onChange={(e) => setPeriodId(e.target.value)}
+                    className="bg-transparent text-white text-[11px] sm:text-xs font-bold outline-none cursor-pointer pr-1 truncate w-full"
+                  >
+                    {periods.map(p => (
+                      <option key={p.id} value={p.id} className="bg-slate-900 text-white">
+                        {p.labelAr || p.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setInitMonthModalOpen(true)}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl p-1.5 sm:px-2.5 sm:py-1 text-xs font-bold flex items-center gap-1 shadow-sm transition-all shrink-0"
+                  title="تهيئة وإطلاق شهر تشغيلي جديد"
                 >
-                  {periods.map(p => (
-                    <option key={p.id} value={p.id} className="bg-slate-900 text-white">
-                      {p.labelAr || p.label}
-                    </option>
-                  ))}
-                </select>
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">شهر جديد</span>
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setInitMonthModalOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl px-2.5 py-1 text-xs font-bold flex items-center gap-1 shadow-sm transition-all"
-                title="تهيئة وإطلاق شهر تشغيلي جديد"
-              >
-                <PlusCircle className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">شهر جديد</span>
-              </button>
-            </div>
+              {/* View Mode Switcher (Desktop vs Mobile) */}
+              <div className="flex items-center bg-slate-900/90 rounded-xl p-0.5 border border-slate-700 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleViewModeChange('mobile')}
+                  className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                    !isDesktop
+                      ? 'bg-amber-400 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="معاينة الهاتف (Mobile View)"
+                >
+                  <Smartphone className="w-3.5 h-3.5" />
+                  <span className="text-[10px] sm:text-[11px]">جوال</span>
+                </button>
 
-            {/* View Mode Switcher (Desktop vs Mobile) */}
-            <div className="flex items-center bg-slate-900/90 rounded-xl p-0.5 border border-slate-700">
-              <button
-                type="button"
-                onClick={() => handleViewModeChange('mobile')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
-                  !isDesktop
-                    ? 'bg-amber-400 text-slate-950 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-                title="معاينة الهاتف (Mobile View)"
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span className="text-[10px] sm:text-[11px]">جوال</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => handleViewModeChange('desktop')}
+                  className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                    isDesktop
+                      ? 'bg-amber-400 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="معاينة الكمبيوتر (Desktop View)"
+                >
+                  <Monitor className="w-3.5 h-3.5" />
+                  <span className="text-[10px] sm:text-[11px]">كمبيوتر</span>
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => handleViewModeChange('desktop')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
-                  isDesktop
-                    ? 'bg-amber-400 text-slate-950 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-                title="معاينة الكمبيوتر (Desktop View)"
-              >
-                <Monitor className="w-3.5 h-3.5" />
-                <span className="text-[10px] sm:text-[11px]">كمبيوتر</span>
-              </button>
-            </div>
-
-            {/* Quick Actions (Privacy + Lock) */}
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                onClick={() => setPrivacyMode(!privacyMode)}
-                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all ${
-                  privacyMode ? 'bg-amber-500 text-white' : 'bg-white/10 hover:bg-white/20 text-slate-300'
-                }`}
-                title={privacyMode ? 'إظهار الأرقام' : 'إخفاء الأرقام (حماية)'}
-              >
-                {privacyMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-              </button>
-              <button
-                onClick={handleLock}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center bg-rose-500/20 hover:bg-rose-500/40 transition-all text-rose-300"
-                title="قفل الخزنة"
-              >
-                <Lock className="w-3.5 h-3.5" />
-              </button>
+              {/* Quick Actions (Privacy + Lock) */}
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => setPrivacyMode(!privacyMode)}
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all ${
+                    privacyMode ? 'bg-amber-500 text-white' : 'bg-white/10 hover:bg-white/20 text-slate-300'
+                  }`}
+                  title={privacyMode ? 'إظهار الأرقام' : 'إخفاء الأرقام (حماية)'}
+                >
+                  {privacyMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={handleLock}
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center bg-rose-500/20 hover:bg-rose-500/40 transition-all text-rose-300"
+                  title="قفل الخزنة"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
 

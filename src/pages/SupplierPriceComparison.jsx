@@ -53,7 +53,11 @@ import {
   getCustomCostOverrides,
   CUSTOM_COSTS_STORAGE_KEY
 } from '../lib/supplierPriceComparator';
-import { fetchCostOverridesFromDatabase } from '../lib/supabaseClient';
+import {
+  fetchCostOverridesFromDatabase,
+  saveQuotationToDatabase,
+  fetchQuotationsFromDatabase
+} from '../lib/supabaseClient';
 import { formatSAR, formatNum } from '../lib/kpiEngine';
 import SupplierPriceReportModal from '../components/shared/SupplierPriceReportModal';
 
@@ -136,6 +140,10 @@ export default function SupplierPriceComparison() {
   const [editingCostInput, setEditingCostInput] = useState('');
   const [costFeedbackMsg, setCostFeedbackMsg] = useState(null);
 
+  // Cloud Database Save States for Quotations
+  const [isSavingToCloud, setIsSavingToCloud] = useState(false);
+  const [cloudSaveFeedback, setCloudSaveFeedback] = useState(null);
+
   const { items, stats, quotationInfo } = quotationResult;
 
   // Cloud Sync: Fetch database cost overrides on mount and merge
@@ -161,6 +169,29 @@ export default function SupplierPriceComparison() {
       }
     }
     loadCloudOverrides();
+  }, []);
+
+  // Cloud Sync: Fetch saved quotations from database on mount and merge into available list
+  useEffect(() => {
+    async function loadCloudQuotations() {
+      try {
+        const cloudQuotes = await fetchQuotationsFromDatabase();
+        if (cloudQuotes && Array.isArray(cloudQuotes) && cloudQuotes.length > 0) {
+          setSavedCustomQuotations((prev) => {
+            const map = new Map();
+            [...prev, ...cloudQuotes].forEach((q) => {
+              if (q && q.id) map.set(q.id, q);
+            });
+            const merged = Array.from(map.values());
+            saveCustomQuotationsToStorage(merged);
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.warn('Notice: offline or cloud quotations sync failed', err);
+      }
+    }
+    loadCloudQuotations();
   }, []);
 
   // Available Quotations Registry with Exact Dates
@@ -357,6 +388,63 @@ export default function SupplierPriceComparison() {
     }
   };
 
+  // Save current active quotation directly into Supabase cloud database
+  const handleSaveActiveQuotationToCloud = async () => {
+    try {
+      setIsSavingToCloud(true);
+      const targetQuotation = currentQuotationMeta || {
+        id: `quote_${Date.now()}`,
+        title: quotationInfo.quotationTitle,
+        supplierName: quotationInfo.supplierName,
+        date: quotationInfo.quotationDate,
+        badge: 'عرض محفوظ بالداتابيز',
+        icon: '📊'
+      };
+
+      const quoteToSave = {
+        ...targetQuotation,
+        id: targetQuotation.id || `custom_${Date.now()}`,
+        title: targetQuotation.title || quotationInfo.quotationTitle,
+        supplierName: targetQuotation.supplierName || quotationInfo.supplierName,
+        date: targetQuotation.date || quotationInfo.quotationDate,
+        itemsCount: items.length,
+        badge: targetQuotation.badge || 'عرض محفوظ بالداتابيز',
+        icon: targetQuotation.icon || '📊',
+        isBuiltIn: false,
+        analysisData: quotationResult,
+        rawItems: quotationResult.items || [],
+        quotationInfo: quotationInfo,
+        updatedAt: new Date().toISOString()
+      };
+
+      // 1. Save to Supabase Cloud Database
+      await saveQuotationToDatabase(quoteToSave);
+
+      // 2. Also ensure it is in savedCustomQuotations & localStorage
+      const updatedList = [
+        quoteToSave,
+        ...savedCustomQuotations.filter((q) => q.id !== quoteToSave.id && q.title !== quoteToSave.title)
+      ];
+      setSavedCustomQuotations(updatedList);
+      saveCustomQuotationsToStorage(updatedList);
+
+      setCloudSaveFeedback({
+        type: 'success',
+        msg: `✓ تم بنجاح حفظ عرض السعر (${quoteToSave.title}) في قاعدة البيانات! يمكنك مراجعته والرجوع إليه في أي وقت ومن أي جهاز.`
+      });
+      setTimeout(() => setCloudSaveFeedback(null), 6000);
+    } catch (err) {
+      console.error('Error saving quotation to cloud:', err);
+      setCloudSaveFeedback({
+        type: 'error',
+        msg: `حدث خطأ أثناء حفظ عرض السعر: ${err.message || 'خطأ غير متوقع'}`
+      });
+      setTimeout(() => setCloudSaveFeedback(null), 6000);
+    } finally {
+      setIsSavingToCloud(false);
+    }
+  };
+
   // Handle uploaded file (PDF or Excel)
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -383,12 +471,17 @@ export default function SupplierPriceComparison() {
         badge: isPdf ? 'ملف PDF محفوظ' : 'ملف Excel محفوظ',
         icon: isPdf ? '📄' : '📊',
         isBuiltIn: false,
-        analysisData: parsed
+        analysisData: parsed,
+        rawItems: parsed.items || [],
+        quotationInfo: parsed.quotationInfo || {}
       };
 
       const updatedList = [newCustomItem, ...savedCustomQuotations.filter((q) => q.title !== newCustomItem.title)];
       setSavedCustomQuotations(updatedList);
       saveCustomQuotationsToStorage(updatedList);
+
+      // Auto-save to Supabase cloud in background
+      saveQuotationToDatabase(newCustomItem).catch((e) => console.warn('Auto cloud quote save error:', e));
 
       setActivePreset(newCustomItem.id);
       setQuotationResult(parsed);
@@ -447,12 +540,17 @@ export default function SupplierPriceComparison() {
         badge: 'جدول أسعار ملصوق',
         icon: '📋',
         isBuiltIn: false,
-        analysisData: parsed
+        analysisData: parsed,
+        rawItems: parsed.items || [],
+        quotationInfo
       };
 
       const updatedList = [newCustomItem, ...savedCustomQuotations.filter((q) => q.title !== newCustomItem.title)];
       setSavedCustomQuotations(updatedList);
       saveCustomQuotationsToStorage(updatedList);
+
+      // Auto-save to Supabase cloud in background
+      saveQuotationToDatabase(newCustomItem).catch((e) => console.warn('Auto cloud quote save error:', e));
 
       setActivePreset(newCustomItem.id);
       setQuotationResult(parsed);
@@ -516,6 +614,8 @@ export default function SupplierPriceComparison() {
       list = list.filter((i) => !i.matched && i.verdict !== 'unavailable');
     } else if (filterVerdict === 'in_stock') {
       list = list.filter((i) => i.matched && i.ourTotalQty > 0);
+    } else if (filterVerdict === 'out_of_stock') {
+      list = list.filter((i) => i.matched && (!i.ourTotalQty || i.ourTotalQty <= 0));
     }
 
     // Sorting
@@ -645,19 +745,19 @@ export default function SupplierPriceComparison() {
                 />
               </button>
 
-              {/* Dropdown Popover */}
+              {/* Dropdown Popover with High-Contrast Solid Cards */}
               {isQuotationDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900/98 backdrop-blur-md border border-slate-700 rounded-3xl shadow-2xl z-50 overflow-hidden animate-fade-in p-2 space-y-1.5">
-                  <div className="px-3.5 py-2.5 text-[11px] font-bold text-slate-400 border-b border-slate-800 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-slate-300">
+                <div className="absolute right-0 mt-2 w-80 sm:w-[420px] bg-slate-950 border-2 border-slate-600 rounded-3xl shadow-2xl z-50 overflow-hidden animate-fade-in p-2.5 space-y-2">
+                  <div className="px-3.5 py-2 text-xs font-black text-slate-100 border-b border-slate-800 flex items-center justify-between bg-slate-900 rounded-2xl">
+                    <span className="flex items-center gap-1.5 text-slate-100">
                       <span>عروض الأسعار المتاحة للمقارنة:</span>
                     </span>
-                    <span className="font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-md border border-cyan-800/40">
+                    <span className="font-mono text-cyan-300 bg-cyan-950 px-2.5 py-0.5 rounded-lg border border-cyan-700 text-[11px] font-bold">
                       {availableQuotations.length} عروض
                     </span>
                   </div>
 
-                  <div className="space-y-1 max-h-72 overflow-y-auto custom-scrollbar">
+                  <div className="space-y-1.5 max-h-80 overflow-y-auto custom-scrollbar p-0.5">
                     {availableQuotations.map((q) => {
                       const isSelected = activePreset === q.id;
                       return (
@@ -665,8 +765,8 @@ export default function SupplierPriceComparison() {
                           key={q.id}
                           className={`w-full text-right p-3 rounded-2xl transition-all flex items-start justify-between gap-3 ${
                             isSelected
-                              ? 'bg-gradient-to-l from-blue-900/40 to-slate-800 border border-blue-500/60 text-white shadow-sm ring-1 ring-blue-500/30'
-                              : 'hover:bg-slate-800/80 text-slate-300 hover:text-white border border-transparent'
+                              ? 'bg-blue-600 text-white border-2 border-blue-400 shadow-lg ring-2 ring-blue-400/40'
+                              : 'bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 hover:border-blue-400/80 shadow-xs'
                           }`}
                         >
                           <button
@@ -676,24 +776,36 @@ export default function SupplierPriceComparison() {
                           >
                             <div className="flex items-center gap-2">
                               <span className="text-base shrink-0">{q.icon}</span>
-                              <span className="font-black text-xs text-white truncate">{q.title}</span>
+                              <span className="font-black text-xs text-white truncate drop-shadow-xs">{q.title}</span>
                             </div>
 
                             <div className="flex items-center gap-2 text-[11px] flex-wrap">
                               {/* Date Tag */}
-                              <span className="inline-flex items-center gap-1 font-mono font-bold text-cyan-300 bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-700">
-                                <Calendar className="w-3 h-3 text-cyan-400" />
+                              <span className={`inline-flex items-center gap-1 font-mono font-bold px-2 py-0.5 rounded-lg border ${
+                                isSelected 
+                                  ? 'bg-blue-700 text-white border-blue-300/50' 
+                                  : 'text-cyan-300 bg-slate-950 border-cyan-800/80'
+                              }`}>
+                                <Calendar className={`w-3 h-3 ${isSelected ? 'text-white' : 'text-cyan-400'}`} />
                                 <span>{q.date}</span>
-                                <span className="text-slate-400 text-[10px]">({q.dateFormatted})</span>
+                                <span className={`${isSelected ? 'text-blue-100' : 'text-slate-300'} text-[10px]`}>({q.dateFormatted})</span>
                               </span>
 
                               {/* Items Count */}
-                              <span className="px-2 py-0.5 rounded-md bg-slate-800/90 text-slate-300 text-[10px] font-mono border border-slate-700/60">
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${
+                                isSelected 
+                                  ? 'bg-blue-700 text-white border-blue-300/50' 
+                                  : 'bg-slate-950 text-slate-100 border-slate-700'
+                              }`}>
                                 {q.itemsCount} صنف
                               </span>
 
                               {/* Category Badge */}
-                              <span className="px-2 py-0.5 rounded-md bg-blue-950/70 text-blue-300 border border-blue-800/50 text-[10px] font-bold">
+                              <span className={`px-2 py-0.5 rounded-md border text-[10px] font-bold ${
+                                isSelected 
+                                  ? 'bg-blue-800 text-blue-100 border-blue-300/50' 
+                                  : 'bg-blue-950 text-blue-200 border-blue-700/80'
+                              }`}>
                                 {q.badge}
                               </span>
                             </div>
@@ -705,15 +817,15 @@ export default function SupplierPriceComparison() {
                                 type="button"
                                 title="حذف هذا العرض من القائمة المحفوظة"
                                 onClick={(e) => handleDeleteCustomQuotation(e, q.id)}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/50 border border-transparent hover:border-rose-800/50 transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-300 hover:bg-rose-900/60 border border-transparent hover:border-rose-600 transition-colors cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             )}
 
                             {isSelected && (
-                              <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs shadow-md shadow-blue-500/30">
-                                <Check className="w-3.5 h-3.5" />
+                              <div className="w-6 h-6 rounded-full bg-white text-blue-600 flex items-center justify-center text-xs shadow-md font-black">
+                                <Check className="w-4 h-4 stroke-[3]" />
                               </div>
                             )}
                           </div>
@@ -727,10 +839,21 @@ export default function SupplierPriceComparison() {
 
             <button
               onClick={() => setIsUploadModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600/90 hover:bg-blue-500 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>رفع عرض سعر جديد</span>
+            </button>
+
+            {/* Save Quotation to Database Button (User Request) */}
+            <button
+              onClick={handleSaveActiveQuotationToCloud}
+              disabled={isSavingToCloud}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-md transition-all cursor-pointer disabled:opacity-50"
+              title="حفظ ومزامنة عرض السعر الحالي في قاعدة البيانات السحابية لمراجعته في أي وقت"
+            >
+              <Save className="w-3.5 h-3.5 text-indigo-200" />
+              <span>{isSavingToCloud ? 'جاري الحفظ بالداتابيز...' : 'حفظ عرض السعر بالداتابيز'}</span>
             </button>
 
             <button
@@ -751,6 +874,17 @@ export default function SupplierPriceComparison() {
             </button>
           </div>
         </div>
+
+        {/* Cloud Save Feedback Alert Banner */}
+        {cloudSaveFeedback && (
+          <div className="mt-3 px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-between gap-2 shadow-sm animate-fade-in bg-emerald-500/15 border border-emerald-500/40 text-emerald-200">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{cloudSaveFeedback.msg}</span>
+            </div>
+            <button onClick={() => setCloudSaveFeedback(null)} className="text-slate-400 hover:text-white cursor-pointer">✕</button>
+          </div>
+        )}
       </div>
 
       {/* ─── 3. EXECUTIVE KPI METRICS (6 STAT CARDS) ─── */}
@@ -1079,6 +1213,18 @@ export default function SupplierPriceComparison() {
           >
             <span>📦 متوفر بمخازننا حالياً</span>
             <span className="font-mono text-[10px]">({stats.inStockCount})</span>
+          </button>
+
+          <button
+            onClick={() => { setFilterVerdict('out_of_stock'); setPage(1); }}
+            className={`flex items-center gap-1 px-3.5 py-1.5 rounded-xl font-bold transition-all shrink-0 cursor-pointer ${
+              filterVerdict === 'out_of_stock'
+                ? 'bg-amber-600 text-white shadow-sm shadow-amber-600/30'
+                : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
+            }`}
+          >
+            <span>⚠️ غير متوفر بمخازننا</span>
+            <span className="font-mono text-[10px]">({stats.outOfStockCount ?? items.filter(i => i.matched && (!i.ourTotalQty || i.ourTotalQty <= 0)).length})</span>
           </button>
 
           <button

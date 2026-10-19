@@ -72,9 +72,9 @@ export const AUTH_ACCOUNTS = [
     email: 'saleh@doratcars.com',
     password: 'dora#2026',
     name: 'صالح المحيميد',
-    role: BI_ROLES.INVENTORY_VIEWER,
+    role: BI_ROLES.PURCHASING_MANAGER,
     avatar: 'ص',
-    title: 'مبيعات وبحث قطع الغيار وعروض الأسعار',
+    title: 'إدارة المشتريات والطلبيات واعتماد نواقص الفروع وتصدير الإكسل',
   },
   {
     id: 'user-khaled',
@@ -82,9 +82,9 @@ export const AUTH_ACCOUNTS = [
     email: 'khaled@doratcars.com',
     password: 'dora#2026',
     name: 'خالد الجوعي',
-    role: BI_ROLES.INVENTORY_VIEWER,
+    role: BI_ROLES.PURCHASING_MANAGER,
     avatar: 'خ',
-    title: 'مبيعات وبحث قطع الغيار وعروض الأسعار',
+    title: 'إدارة المشتريات والطلبيات واعتماد نواقص الفروع وتصدير الإكسل',
   },
   {
     id: 'user-fahad-purchasing',
@@ -102,9 +102,9 @@ export const AUTH_ACCOUNTS = [
     email: 'abdulaziz@doratcars.com',
     password: 'dora#2026',
     name: 'عبد العزيز الجوعي',
-    role: BI_ROLES.INVENTORY_VIEWER,
+    role: BI_ROLES.PURCHASING_MANAGER,
     avatar: 'ع',
-    title: 'مبيعات وبحث قطع الغيار وعروض الأسعار',
+    title: 'إدارة المشتريات والطلبيات واعتماد نواقص الفروع وتصدير الإكسل',
   },
   {
     id: 'user-purchasing',
@@ -146,8 +146,17 @@ export function BIAuthProvider({ children }) {
         }
 
         const parsed = JSON.parse(saved);
-        // Ensure valid user object
-        if (parsed && parsed.id && parsed.role) {
+        // Ensure valid user object and keep in sync with current AUTH_ACCOUNTS configuration
+        if (parsed && (parsed.id || parsed.username)) {
+          const freshAcc = AUTH_ACCOUNTS.find(
+            a => a.id === parsed.id || a.username === parsed.username || (parsed.email && a.email === parsed.email)
+          );
+          if (freshAcc) {
+            parsed.role = freshAcc.role;
+            parsed.title = freshAcc.title;
+            parsed.name = freshAcc.name;
+            localStorage.setItem('bi_active_user', JSON.stringify(parsed));
+          }
           return parsed;
         }
       }
@@ -270,7 +279,10 @@ export function BIAuthProvider({ children }) {
         acc => acc.username.toLowerCase() === cleanId || 
                acc.email.toLowerCase() === cleanId ||
                (cleanId === 'purchasing' && acc.username === 'doracars.purchasing') ||
-               (cleanId === 'fahad' && acc.username === 'doracars.fahad')
+               (cleanId === 'fahad' && acc.username === 'doracars.fahad') ||
+               (cleanId === 'saleh' && acc.username === 'doracars.saleh') ||
+               (cleanId === 'khaled' && acc.username === 'doracars.khaled') ||
+               (cleanId === 'abdulaziz' && acc.username === 'doracars.abdulaziz')
       );
 
       if (matched) {

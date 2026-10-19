@@ -177,6 +177,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null, customOver
   let zeroCostCount = 0;
   let notInCatalogCount = 0;
   let inStockCount = 0;
+  let outOfStockCount = 0;
 
   let totalSupplierValue = 0;
   let totalOurCostValue = 0;
@@ -317,7 +318,11 @@ export function compareQuotationItems(rawItems, quotationInfo = null, customOver
       matchedSupplierValue += supplierPrice;
       matchedBatchSupplierValue += supplierBatchValue;
 
-      if (totalQty > 0) inStockCount++;
+      if (totalQty > 0) {
+        inStockCount++;
+      } else {
+        outOfStockCount++;
+      }
       if (ourCost > 0) {
         totalOurCostValue += ourCost;
         totalBatchOurCostValue += ourBatchCost;
@@ -500,6 +505,7 @@ export function compareQuotationItems(rawItems, quotationInfo = null, customOver
       equalCount,
       zeroCostCount,
       inStockCount,
+      outOfStockCount,
       totalOrderUnits,
       totalSupplierValue,
       totalOurCostValue,

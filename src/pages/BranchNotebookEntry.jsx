@@ -35,6 +35,7 @@ import {
   uploadLocalShortagesToCloud,
   fetchRemoteShortagesStore
 } from '../lib/branchShortagesStore';
+import { normalizePartNumber } from '../lib/supplierPriceComparator';
 
 const STAFF_PRESETS = [
   'صالح المحيميد',
@@ -121,6 +122,9 @@ export default function BranchNotebookEntry() {
 
   // Notification for parts automatically registered into inventory with zero stock
   const [newCatalogNotice, setNewCatalogNotice] = useState(null);
+
+  // Duplicate item confirmation modal state
+  const [duplicateWarning, setDuplicateWarning] = useState(null);
 
   // Current time state to re-evaluate remaining minutes every 60s
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -211,22 +215,13 @@ export default function BranchNotebookEntry() {
     }
   };
 
-  // Add Item to Branch Shortages Notebook
-  const handleAddItem = (e) => {
-    if (e) e.preventDefault();
-    if (!partNumber.trim()) return;
-
+  // Execute adding item to Branch Shortages Notebook
+  const executeAddItem = (payload) => {
     setAutoSaveStatus('saving');
 
     const result = addShortageItem(
       activeBranch,
-      {
-        partNumber,
-        partName: partName.trim() || 'صنف غير مسمى',
-        requestedQty,
-        priority,
-        notes
-      },
+      payload,
       { name: staffName || 'موظف الفرع', username: 'branch-staff' }
     );
 
@@ -234,8 +229,8 @@ export default function BranchNotebookEntry() {
 
     if (result.isNewToInventory) {
       setNewCatalogNotice({
-        sku: partNumber.trim().toUpperCase(),
-        name: partName.trim() || 'صنف جديد مسجل'
+        sku: (payload.partNumber || '').trim().toUpperCase(),
+        name: (payload.partName || '').trim() || 'صنف جديد مسجل'
       });
       setTimeout(() => setNewCatalogNotice(null), 7000);
     }
@@ -249,6 +244,45 @@ export default function BranchNotebookEntry() {
 
     setAutoSaveStatus('saved');
     setTimeout(() => setAutoSaveStatus(null), 2500);
+    setDuplicateWarning(null);
+  };
+
+  // Add Item to Branch Shortages Notebook (with duplicate checking)
+  const handleAddItem = (e) => {
+    if (e) e.preventDefault();
+    if (!partNumber.trim()) return;
+
+    const cleanNum = partNumber.trim();
+    const normalizedNew = normalizePartNumber ? normalizePartNumber(cleanNum) : cleanNum.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    
+    // Look for duplicate in active batch
+    const activeBatch = (store[activeBranch] || []).find((b) => b.status === 'ACTIVE');
+    const existing = (activeBatch?.items || []).find((it) => {
+      const itNorm = normalizePartNumber ? normalizePartNumber(it.partNumber) : it.partNumber.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      return itNorm === normalizedNew;
+    });
+
+    if (existing) {
+      setDuplicateWarning({
+        itemPayload: {
+          partNumber: cleanNum,
+          partName: partName.trim() || existing.partName || 'صنف غير مسمى',
+          requestedQty,
+          priority,
+          notes
+        },
+        existingItem: existing
+      });
+      return;
+    }
+
+    executeAddItem({
+      partNumber: cleanNum,
+      partName: partName.trim() || 'صنف غير مسمى',
+      requestedQty,
+      priority,
+      notes
+    });
   };
 
   // Open Edit Modal (strictly allowed within 1 hour)
@@ -887,6 +921,67 @@ export default function BranchNotebookEntry() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: تحذير تأكيد تكرار الصنف بالنواقص ─── */}
+      {duplicateWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in" dir="rtl">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-500/50 space-y-4">
+            <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 flex items-center justify-center text-2xl shrink-0">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="font-black text-base text-slate-900 dark:text-white">
+                  تنبيه: الصنف مضاف مسبقاً في النواقص!
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  تفادياً لازدواجية وتكرار الطلبيات لنفس القطعة
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400 font-bold">رقم القطعة:</span>
+                <span className="font-mono font-black text-blue-600 dark:text-blue-400 text-sm">{duplicateWarning.existingItem.partNumber}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400 font-bold">اسم الصنف:</span>
+                <span className="font-bold text-slate-900 dark:text-white">{duplicateWarning.existingItem.partName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400 font-bold">الكمية المسجلة سابقاً:</span>
+                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{duplicateWarning.existingItem.requestedQty} حبة</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400 font-bold">الموظف المسجل سابقاً:</span>
+                <span className="font-bold text-slate-700 dark:text-slate-300">{duplicateWarning.existingItem.createdByName || 'موظف الفرع'}</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-700 dark:text-slate-300 font-bold leading-relaxed text-center px-1">
+              هذا الصنف تم تسجيله مسبقاً في قائمة نواقص هذا الفرع الحالية. هل تريد بالتأكيد إضافته مرة أخرى؟
+            </p>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => executeAddItem(duplicateWarning.itemPayload)}
+                className="flex-1 py-3 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-black shadow-md shadow-amber-600/20 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>نعم، تأكيد الإضافة</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDuplicateWarning(null)}
+                className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer"
+              >
+                لا، إلغاء
+              </button>
+            </div>
           </div>
         </div>
       )}

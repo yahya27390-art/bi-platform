@@ -16,6 +16,7 @@ import Targets from './pages/Targets';
 import DataImport from './pages/DataImport';
 import PrivateCampaignLab from './pages/PrivateCampaignLab';
 import OwnerExecutiveDashboard from './pages/OwnerExecutiveDashboard';
+import NewBranchRequisition from './pages/NewBranchRequisition';
 import BILogin from './auth/BILogin';
 import BIProtectedRoute from './auth/BIProtectedRoute';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -64,7 +65,7 @@ export default function App() {
       >
         <Route path="/" element={homeElement} />
         
-        {/* Inventory Intelligence Module (Search & Reports & Supplier Comparison & Branch Shortages) */}
+        {/* Inventory Intelligence Module (Search & Reports & Supplier Comparison & Branch Shortages & New Branch Requisition) */}
         <Route path="/inventory" element={<Navigate to="/inventory/search" replace />} />
         <Route path="/inventory/search" element={<InventorySearch />} />
         <Route path="/inventory/reports" element={<InventoryReports />} />
@@ -72,6 +73,8 @@ export default function App() {
         <Route path="/supplier-comparison" element={<Navigate to="/inventory/supplier-comparison" replace />} />
         <Route path="/inventory/branch-shortages" element={<BranchShortages />} />
         <Route path="/branch-shortages" element={<Navigate to="/inventory/branch-shortages" replace />} />
+        <Route path="/inventory/new-branch" element={<NewBranchRequisition />} />
+        <Route path="/new-branch" element={<Navigate to="/inventory/new-branch" replace />} />
         <Route path="/products" element={<Navigate to="/inventory/search" replace />} />
 
         {/* Media & Marketing */}
