@@ -330,6 +330,95 @@ export function finalizeAndOrderBatch(branchKey, supplierNotes, managerUser) {
   };
 }
 
+/**
+ * PURCHASING MANAGER DECISION:
+ * Mark ONLY selected items as ORDERED, moving them into an ordered batch
+ * while keeping all unselected items ACTIVE in the current shortage list!
+ */
+export function finalizeAndOrderSelectedItems(branchKey, selectedItemIds, supplierNotes, managerUser) {
+  if (!selectedItemIds || selectedItemIds.length === 0) return null;
+
+  const store = getBranchShortagesStore();
+  const branchBatches = store[branchKey] || [];
+  const activeBatchIndex = branchBatches.findIndex((b) => b.status === 'ACTIVE');
+
+  if (activeBatchIndex === -1) return null;
+
+  const activeBatch = branchBatches[activeBatchIndex];
+  const selectedSet = new Set(selectedItemIds);
+
+  const itemsToOrder = (activeBatch.items || []).filter((i) => selectedSet.has(i.id));
+  const remainingItems = (activeBatch.items || []).filter((i) => !selectedSet.has(i.id));
+
+  if (itemsToOrder.length === 0) return null;
+
+  // If ALL items in the batch are selected, do a full batch finalization
+  if (remainingItems.length === 0) {
+    return finalizeAndOrderBatch(branchKey, supplierNotes, managerUser);
+  }
+
+  const timestamp = new Date().toISOString();
+  const orderedBatchId = `batch-${branchKey}-ordered-${Date.now()}`;
+  const orderedBatchesCount = branchBatches.filter((b) => b.status === 'ORDERED').length;
+  const nextOrderedNum = orderedBatchesCount + 1;
+
+  // 1. Create a dedicated ORDERED batch for the extracted items
+  const orderedBatch = {
+    id: orderedBatchId,
+    branchKey,
+    batchNumber: nextOrderedNum,
+    title: `طلبية معتمدة (${itemsToOrder.length} صنف) — ${BRANCH_META[branchKey]?.name || branchKey}`,
+    status: 'ORDERED',
+    createdAt: activeBatch.createdAt || timestamp,
+    orderedAt: timestamp,
+    orderedByName: managerUser?.name || 'مدير المشتريات',
+    orderedByUsername: managerUser?.username || 'manager',
+    supplierNotes: (supplierNotes || '').trim(),
+    items: itemsToOrder.map((it) => ({
+      ...it,
+      batchId: orderedBatchId,
+      orderedAt: timestamp,
+      status: 'ORDERED'
+    }))
+  };
+
+  // 2. Keep the remaining items in the active batch
+  activeBatch.items = remainingItems;
+  activeBatch.updatedAt = timestamp;
+
+  // 3. Insert the ordered batch right after the active batch
+  branchBatches.splice(activeBatchIndex + 1, 0, orderedBatch);
+
+  store[branchKey] = branchBatches;
+  saveBranchShortagesStore(store);
+
+  // 4. Cloud synchronization
+  syncBatchToCloud(orderedBatch).catch((e) => console.warn('Cloud sync ordered batch error:', e));
+  syncBatchToCloud(activeBatch).catch((e) => console.warn('Cloud sync active batch error:', e));
+
+  if (isSupabaseConfigured && supabase) {
+    supabase
+      .from('branch_shortage_items')
+      .update({
+        batch_id: orderedBatchId,
+        updated_at: timestamp
+      })
+      .in('id', Array.from(selectedSet))
+      .then(({ error }) => {
+        if (error) console.warn('Supabase update ordered items error:', error);
+      })
+      .catch((e) => console.warn('Supabase update ordered items error:', e));
+  }
+
+  return {
+    store,
+    orderedBatch,
+    activeBatch,
+    orderedCount: itemsToOrder.length,
+    remainingCount: remainingItems.length
+  };
+}
+
 // ─── AUTO-LOOKUP HELPER FROM MASTER CATALOG ───
 export function lookupCatalogPart(inputQuery) {
   if (!inputQuery || inputQuery.trim().length < 2) return null;
@@ -392,11 +481,12 @@ export function searchCatalogParts(query, limit = 8) {
 }
 
 // ─── EXPORT TO EXCEL (.xlsx) ───
-export function exportShortagesBatchToExcel(batch, branchMeta) {
-  const branchName = branchMeta?.name || batch.branchKey;
-  const isOrdered = batch.status === 'ORDERED';
+export function exportShortagesBatchToExcel(batch, branchMeta, customItems = null) {
+  const branchName = branchMeta?.name || batch?.branchKey || 'الفرع';
+  const isOrdered = batch?.status === 'ORDERED';
+  const items = customItems || batch?.items || [];
 
-  const rows = (batch.items || []).map((item, index) => ({
+  const rows = items.map((item, index) => ({
     'م': index + 1,
     'رقم القطعة': item.partNumber,
     'اسم وتوصيف الصنف': item.partName,
@@ -411,10 +501,13 @@ export function exportShortagesBatchToExcel(batch, branchMeta) {
 
   const worksheet = XLSX.utils.json_to_sheet(rows);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, `نواقص ${branchName}`);
+  XLSX.utils.book_append_sheet(workbook, worksheet, `طلبية ${branchName}`);
 
   const dateStr = new Date().toISOString().split('T')[0];
-  const fileName = `نواقص_${branchName}_دورة_${batch.batchNumber}_${dateStr}.xlsx`;
+  const isPartial = customItems && batch?.items && customItems.length < batch.items.length;
+  const fileName = isPartial
+    ? `طلبية_معتمدة_محددة_${branchName}_(${items.length}_صنف)_${dateStr}.xlsx`
+    : `نواقص_${branchName}_دورة_${batch?.batchNumber || 1}_${dateStr}.xlsx`;
   XLSX.writeFile(workbook, fileName);
 }
 

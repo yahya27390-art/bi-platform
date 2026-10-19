@@ -26,7 +26,10 @@ import {
   Scale,
   FileSpreadsheet,
   BookOpen,
-  ExternalLink
+  ExternalLink,
+  CheckSquare,
+  Square,
+  ListChecks
 } from 'lucide-react';
 import doraLogo from '../assets/dora_logo.png';
 import { useBIAuth } from '../auth/BIAuthContext';
@@ -40,22 +43,26 @@ import {
   addShortageItem,
   deleteShortageItem,
   finalizeAndOrderBatch,
+  finalizeAndOrderSelectedItems,
   lookupCatalogPart,
   searchCatalogParts,
   exportShortagesBatchToExcel,
   subscribeToShortagesSync
 } from '../lib/branchShortagesStore';
+import { normalizePartNumber } from '../lib/supplierPriceComparator';
 
 export default function BranchShortages() {
   const { user, permissions } = useBIAuth();
 
-  // Authority to approve and finalize batches (Exclusively Purchasing Manager, Admin, Owner)
+  // Authority to approve and finalize batches (Purchasing Managers, Saleh, Khaled, Abdulaziz, Fahad, Admin, Owner)
   const canApprove = Boolean(
     permissions?.canApproveBranchShortages ||
     user?.role === 'PURCHASING_MANAGER' ||
     user?.role === 'PURCHASING' ||
     user?.role === 'ADMIN' ||
-    user?.role === 'OWNER'
+    user?.role === 'OWNER' ||
+    ['user-saleh', 'user-khaled', 'user-abdulaziz', 'user-fahad-purchasing', 'user-purchasing'].includes(user?.id) ||
+    ['doracars.saleh', 'doracars.khaled', 'doracars.abdulaziz', 'doracars.fahad', 'doracars.purchasing'].includes(user?.username)
   );
 
   // Active Branch: 'main' | 'rawaf' | 'kia'
@@ -99,6 +106,9 @@ export default function BranchShortages() {
   // Auto-save feedback animation
   const [autoSaveStatus, setAutoSaveStatus] = useState(null); // 'saving' | 'saved' | null
 
+  // Duplicate item confirmation modal state
+  const [duplicateWarning, setDuplicateWarning] = useState(null);
+
   // Table search & filter
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState('all'); // 'all' | 'NORMAL' | 'URGENT' | 'CUSTOMER_REQUEST'
@@ -108,6 +118,11 @@ export default function BranchShortages() {
   const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
   const [supplierNotes, setSupplierNotes] = useState('');
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+
+  // Multi-item selection state for partial order approvals
+  const [selectedItemIds, setSelectedItemIds] = useState(() => new Set());
+  const [finalizeScope, setFinalizeScope] = useState('ALL'); // 'ALL' | 'SELECTED'
+  const [orderToast, setOrderToast] = useState(null); // Success message feedback
 
   // Reload store from local/cloud
   const refreshStore = () => {
@@ -130,10 +145,11 @@ export default function BranchShortages() {
     return branchBatches.find((b) => b.status === 'ACTIVE') || branchBatches[0] || null;
   }, [branchBatches, selectedBatchId]);
 
-  // When active branch changes, reset selectedBatchId to active
+  // When active branch changes, reset selectedBatchId to active and clear selection
   useEffect(() => {
     const active = branchBatches.find((b) => b.status === 'ACTIVE');
     setSelectedBatchId(active ? active.id : branchBatches[0]?.id || null);
+    setSelectedItemIds(new Set());
     setSearchQuery('');
     setFilterPriority('all');
     setPartNumber('');
@@ -142,6 +158,11 @@ export default function BranchShortages() {
     setSuggestions([]);
     setIsSuggestionsOpen(false);
   }, [activeBranch]);
+
+  // Clear selection when switching batches
+  useEffect(() => {
+    setSelectedItemIds(new Set());
+  }, [selectedBatchId]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -219,22 +240,13 @@ export default function BranchShortages() {
     setTimeout(() => setCopiedSku(null), 1800);
   };
 
-  // Add Item with instant auto-save
-  const handleAddItem = (e) => {
-    if (e) e.preventDefault();
-    if (!partNumber.trim()) return;
-
+  // Execute adding item to branch batch
+  const executeAddItem = (payload) => {
     setAutoSaveStatus('saving');
 
     const result = addShortageItem(
       activeBranch,
-      {
-        partNumber,
-        partName: partName.trim() || catalogHint?.name || 'صنف غير مسمى',
-        requestedQty,
-        priority,
-        notes
-      },
+      payload,
       user
     );
 
@@ -254,6 +266,45 @@ export default function BranchShortages() {
     setTimeout(() => {
       setAutoSaveStatus(null);
     }, 2500);
+    setDuplicateWarning(null);
+  };
+
+  // Add Item with duplicate validation and instant auto-save
+  const handleAddItem = (e) => {
+    if (e) e.preventDefault();
+    if (!partNumber.trim()) return;
+
+    const cleanNum = partNumber.trim();
+    const normalizedNew = normalizePartNumber ? normalizePartNumber(cleanNum) : cleanNum.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+
+    // Look for duplicate in active batch
+    const activeBatch = (store[activeBranch] || []).find((b) => b.status === 'ACTIVE');
+    const existing = (activeBatch?.items || []).find((it) => {
+      const itNorm = normalizePartNumber ? normalizePartNumber(it.partNumber) : it.partNumber.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      return itNorm === normalizedNew;
+    });
+
+    if (existing) {
+      setDuplicateWarning({
+        itemPayload: {
+          partNumber: cleanNum,
+          partName: partName.trim() || catalogHint?.name || existing.partName || 'صنف غير مسمى',
+          requestedQty,
+          priority,
+          notes
+        },
+        existingItem: existing
+      });
+      return;
+    }
+
+    executeAddItem({
+      partNumber: cleanNum,
+      partName: partName.trim() || catalogHint?.name || 'صنف غير مسمى',
+      requestedQty,
+      priority,
+      notes
+    });
   };
 
   // Delete Item
@@ -263,42 +314,6 @@ export default function BranchShortages() {
     if (updatedStore) {
       setStore({ ...updatedStore });
     }
-  };
-
-  // Confirm Finalize / Order with post-action: 'EXCEL' | 'PRINT' | 'CLOSE_ONLY'
-  const handleConfirmOrder = (postAction = 'EXCEL') => {
-    if (!currentBatch || currentBatch.status === 'ORDERED') return;
-    setIsSubmittingOrder(true);
-
-    try {
-      const batchToExport = { ...currentBatch };
-      const branchMeta = BRANCH_META[activeBranch];
-      const res = finalizeAndOrderBatch(activeBranch, supplierNotes, user);
-      if (res) {
-        setStore({ ...res.store });
-        setSelectedBatchId(res.newActiveBatch.id);
-        setIsFinalizeModalOpen(false);
-        setSupplierNotes('');
-
-        if (postAction === 'EXCEL') {
-          // Immediately trigger Excel spreadsheet download
-          exportShortagesBatchToExcel(batchToExport, branchMeta);
-        } else if (postAction === 'PRINT') {
-          // Immediately trigger official print sheet
-          setTimeout(() => {
-            window.print();
-          }, 350);
-        }
-      }
-    } finally {
-      setIsSubmittingOrder(false);
-    }
-  };
-
-  // Export current batch to Excel
-  const handleExportExcel = () => {
-    if (!currentBatch) return;
-    exportShortagesBatchToExcel(currentBatch, BRANCH_META[activeBranch]);
   };
 
   // Filtered Items
@@ -324,6 +339,105 @@ export default function BranchShortages() {
 
     return list;
   }, [currentBatch, searchQuery, filterPriority]);
+
+  // Selected Items & Quantities for partial approval
+  const selectedItems = useMemo(() => {
+    if (!currentBatch?.items || selectedItemIds.size === 0) return [];
+    return currentBatch.items.filter((i) => selectedItemIds.has(i.id));
+  }, [currentBatch, selectedItemIds]);
+
+  const selectedTotalQty = useMemo(() => {
+    return selectedItems.reduce((acc, curr) => acc + (curr.requestedQty || 1), 0);
+  }, [selectedItems]);
+
+  const toggleSelectItem = (id) => {
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllFiltered = () => {
+    if (filteredItems.length === 0) return;
+    const allFilteredSelected = filteredItems.every((i) => selectedItemIds.has(i.id));
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      if (allFilteredSelected) {
+        filteredItems.forEach((i) => next.delete(i.id));
+      } else {
+        filteredItems.forEach((i) => next.add(i.id));
+      }
+      return next;
+    });
+  };
+
+  // Export selected items only to Excel
+  const handleExportSelectedExcel = () => {
+    if (!currentBatch || selectedItems.length === 0) return;
+    exportShortagesBatchToExcel(currentBatch, BRANCH_META[activeBranch], selectedItems);
+  };
+
+  // Confirm Finalize / Order with post-action: 'EXCEL' | 'PRINT' | 'CLOSE_ONLY'
+  const handleConfirmOrder = (postAction = 'EXCEL') => {
+    if (!currentBatch || currentBatch.status === 'ORDERED') return;
+    setIsSubmittingOrder(true);
+
+    try {
+      const branchMeta = BRANCH_META[activeBranch];
+      const isSelectedOnly = finalizeScope === 'SELECTED' && selectedItemIds.size > 0 && selectedItemIds.size < currentBatch.items.length;
+
+      let res;
+      let batchToExport;
+
+      if (isSelectedOnly) {
+        const selectedIdsArray = Array.from(selectedItemIds);
+        res = finalizeAndOrderSelectedItems(activeBranch, selectedIdsArray, supplierNotes, user);
+        if (res) {
+          batchToExport = res.orderedBatch;
+          setStore({ ...res.store });
+          setSelectedBatchId(res.orderedBatch.id);
+          setSelectedItemIds(new Set());
+          setOrderToast(`✓ تم بنجاح اعتماد وإخراج ${res.orderedCount} صنف كطلبية مورد، وباقي ${res.remainingCount} صنف في القائمة النشطة للمتابعة!`);
+        }
+      } else {
+        batchToExport = { ...currentBatch };
+        res = finalizeAndOrderBatch(activeBranch, supplierNotes, user);
+        if (res) {
+          batchToExport = res.orderedBatch;
+          setStore({ ...res.store });
+          setSelectedBatchId(res.newActiveBatch.id);
+          setSelectedItemIds(new Set());
+          setOrderToast(`✓ تم بنجاح اعتماد كامل طلبية النواقص وإقفال الدورة وفتح دورة جديدة فارغة!`);
+        }
+      }
+
+      if (res) {
+        setIsFinalizeModalOpen(false);
+        setSupplierNotes('');
+        setTimeout(() => setOrderToast(null), 8000);
+
+        if (postAction === 'EXCEL') {
+          // Immediately trigger Excel spreadsheet download
+          exportShortagesBatchToExcel(batchToExport, branchMeta);
+        } else if (postAction === 'PRINT') {
+          // Immediately trigger official print sheet
+          setTimeout(() => {
+            window.print();
+          }, 350);
+        }
+      }
+    } finally {
+      setIsSubmittingOrder(false);
+    }
+  };
+
+  // Export current batch to Excel
+  const handleExportExcel = () => {
+    if (!currentBatch) return;
+    exportShortagesBatchToExcel(currentBatch, BRANCH_META[activeBranch]);
+  };
 
   // Batch stats
   const itemsCount = currentBatch?.items?.length || 0;
@@ -376,6 +490,25 @@ export default function BranchShortages() {
           </div>
         </div>
 
+        {/* Live Order Feedback Notification Toast */}
+        {orderToast && (
+          <div className="p-4 px-6 rounded-2xl bg-gradient-to-l from-emerald-600 via-teal-600 to-emerald-700 text-white shadow-xl border border-emerald-400/40 flex items-center justify-between gap-4 animate-fade-in text-xs md:text-sm font-bold">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-emerald-100" />
+              </div>
+              <span>{orderToast}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOrderToast(null)}
+              className="p-1 px-2 rounded-lg bg-black/20 hover:bg-black/30 text-white text-xs font-mono cursor-pointer"
+            >
+              إغلاق
+            </button>
+          </div>
+        )}
+
         {/* ─── 1. HEADER SECTION ─── */}
         <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-850 to-blue-950 p-6 md:p-8 border border-slate-800 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
@@ -402,14 +535,29 @@ export default function BranchShortages() {
               {isCurrentBatchActive && itemsCount > 0 && canApprove && (
                 <button
                   type="button"
-                  onClick={() => setIsFinalizeModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-l from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-black shadow-lg shadow-emerald-900/40 border border-emerald-400/40 transition-all cursor-pointer ring-2 ring-emerald-400/20 active:scale-95"
-                  title="اعتماد طلب النواقص من الموردين وقفل هذه القائمة"
+                  onClick={() => {
+                    setFinalizeScope(selectedItemIds.size > 0 ? 'SELECTED' : 'ALL');
+                    setIsFinalizeModalOpen(true);
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-white text-xs font-black shadow-lg transition-all cursor-pointer active:scale-95 border ${
+                    selectedItemIds.size > 0
+                      ? 'bg-gradient-to-l from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 shadow-emerald-900/50 border-emerald-300/50 ring-2 ring-emerald-300/30'
+                      : 'bg-gradient-to-l from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 shadow-emerald-900/40 border-emerald-400/40 ring-2 ring-emerald-400/20'
+                  }`}
+                  title={
+                    selectedItemIds.size > 0
+                      ? `اعتماد الأصناف المحددة فقط (${selectedItemIds.size} صنف) كطلبية مورد وإخراجها من النواقص`
+                      : 'اعتماد طلب النواقص من الموردين وقفل هذه القائمة'
+                  }
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-                  <span>اعتماد تم الطلب من المورد</span>
+                  <span>
+                    {selectedItemIds.size > 0
+                      ? `اعتماد تم الطلب للمحدد (${selectedItemIds.size} صنف)`
+                      : 'اعتماد تم الطلب من المورد'}
+                  </span>
                   <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-white font-mono">
-                    خاص بالمشتريات
+                    {selectedItemIds.size > 0 ? `${selectedTotalQty} قطعة` : 'خاص بالمشتريات'}
                   </span>
                 </button>
               )}
@@ -909,6 +1057,63 @@ export default function BranchShortages() {
             </div>
           </div>
 
+          {/* Multi-Selection Sticky Bar */}
+          {isCurrentBatchActive && selectedItemIds.size > 0 && (
+            <div className="p-3.5 px-5 bg-gradient-to-r from-blue-900/95 via-indigo-900/90 to-slate-900 border-b border-blue-500/40 shadow-inner flex items-center justify-between gap-4 flex-wrap animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-cyan-300 flex items-center justify-center font-bold">
+                  <CheckSquare className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-black text-white flex items-center gap-2">
+                    <span>تم تحديد <strong className="text-cyan-300 font-mono text-sm">{selectedItemIds.size}</strong> صنف</span>
+                    <span className="text-slate-400 font-normal">من أصل {currentBatch?.items?.length || 0} صنف</span>
+                    <span className="px-2 py-0.5 rounded-full bg-blue-950 text-blue-200 border border-blue-700/50 font-mono text-[11px]">
+                      {selectedTotalQty} قطعة
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-blue-200/80">
+                    يمكنك اعتماد هذه القطع المحددة فقط كطلبية تم طلبها من المورد وإخراجها من النواقص
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                {canApprove && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFinalizeScope('SELECTED');
+                      setIsFinalizeModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-l from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-black shadow-lg shadow-emerald-900/40 border border-emerald-400/40 transition-all cursor-pointer active:scale-95"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>اعتماد تم الطلب للمحدد فقط ({selectedItemIds.size} صنف)</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleExportSelectedExcel}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-bold border border-slate-700 transition-all cursor-pointer"
+                  title="تصدير الأصناف المحددة فقط إلى ملف إكسل"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>تصدير المحدد إكسل</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedItemIds(new Set())}
+                  className="px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                >
+                  إلغاء التحديد
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Table Content */}
           {filteredItems.length === 0 ? (
             <div className="p-12 text-center space-y-3">
@@ -929,6 +1134,17 @@ export default function BranchShortages() {
               <table className="w-full text-right border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850/60 text-slate-500 dark:text-slate-400 font-bold">
+                    {isCurrentBatchActive && (
+                      <th className="py-3 px-3 w-10 text-center">
+                        <input
+                          type="checkbox"
+                          checked={filteredItems.length > 0 && filteredItems.every((i) => selectedItemIds.has(i.id))}
+                          onChange={toggleSelectAllFiltered}
+                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                          title="تحديد الكل / إلغاء تحديد الكل"
+                        />
+                      </th>
+                    )}
                     <th className="py-3 px-4 w-12 text-center">م</th>
                     <th className="py-3 px-4">رقم القطعة</th>
                     <th className="py-3 px-4">اسم وتوصيف الصنف</th>
@@ -943,11 +1159,29 @@ export default function BranchShortages() {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredItems.map((item, idx) => {
                     const prioMeta = PRIORITY_LEVELS[item.priority] || PRIORITY_LEVELS.NORMAL;
+                    const isItemSelected = selectedItemIds.has(item.id);
                     return (
                       <tr
                         key={item.id}
-                        className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                        onClick={() => isCurrentBatchActive && toggleSelectItem(item.id)}
+                        className={`transition-colors group cursor-pointer ${
+                          isItemSelected
+                            ? 'bg-blue-50/80 dark:bg-blue-950/40 border-r-4 border-r-blue-500'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                        }`}
                       >
+                        {/* Checkbox */}
+                        {isCurrentBatchActive && (
+                          <td className="py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isItemSelected}
+                              onChange={() => toggleSelectItem(item.id)}
+                              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                            />
+                          </td>
+                        )}
+
                         {/* Row No */}
                         <td className="py-3 px-4 text-center font-mono text-slate-400 text-[11px]">
                           {idx + 1}
@@ -1054,14 +1288,49 @@ export default function BranchShortages() {
                   <span>صلاحية حصرية لمسؤول المشتريات والإدارة</span>
                 </div>
                 <h3 className="text-xl font-black text-white">
-                  اعتماد طلب نواقص {BRANCH_META[activeBranch]?.name}
+                  {finalizeScope === 'SELECTED' && selectedItemIds.size > 0
+                    ? `اعتماد الأصناف المحددة (${selectedItemIds.size} صنف) — ${BRANCH_META[activeBranch]?.name}`
+                    : `اعتماد طلب نواقص ${BRANCH_META[activeBranch]?.name}`}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
-                  اختر الإجراء المطلوب؛ سيتم اعتماد الطلبية وقفل الدورة الحالية مع فتح دورة جديدة فارغة للفرع تلقائياً.
+                  {finalizeScope === 'SELECTED' && selectedItemIds.size > 0
+                    ? `سيتم اعتماد وإخراج ${selectedItemIds.size} صنف التي تم طلبها بالفعل، وستبقى الأصناف الأخرى في النواقص للمتابعة.`
+                    : 'سيتم اعتماد الطلبية وقفل الدورة الحالية مع فتح دورة جديدة فارغة للفرع تلقائياً.'}
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 space-y-2 text-xs text-slate-300">
+              {/* Scope Switcher: Selected Items vs All Items (When items are selected) */}
+              {selectedItemIds.size > 0 && selectedItemIds.size < itemsCount && (
+                <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-800/90 rounded-2xl border border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setFinalizeScope('SELECTED')}
+                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      finalizeScope === 'SELECTED'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <CheckSquare className="w-3.5 h-3.5" />
+                    <span>المحددة فقط ({selectedItemIds.size})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFinalizeScope('ALL')}
+                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      finalizeScope === 'ALL'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>كامل القائمة ({itemsCount})</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Dynamic Information Card */}
+              <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 space-y-2.5 text-xs text-slate-300">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">الفرع الميداني:</span>
                   <span className="font-bold text-white flex items-center gap-1.5">
@@ -1069,11 +1338,51 @@ export default function BranchShortages() {
                     <span>{BRANCH_META[activeBranch]?.name}</span>
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">عدد الأصناف وإجمالي القطع:</span>
-                  <span className="font-mono font-bold text-cyan-300">{itemsCount} صنف ({totalQtyRequested} قطعة)</span>
-                </div>
-                <div className="flex items-center justify-between">
+
+                {finalizeScope === 'SELECTED' && selectedItemIds.size > 0 ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">الأصناف المعتمدة (تم طلبها):</span>
+                      <span className="font-mono font-bold text-emerald-400">
+                        {selectedItemIds.size} صنف ({selectedTotalQty} قطعة)
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">الأصناف المتبقية في النواقص:</span>
+                      <span className="font-mono font-bold text-amber-300">
+                        {itemsCount - selectedItemIds.size} صنف
+                      </span>
+                    </div>
+
+                    {/* Scrollable Preview List of Selected Items */}
+                    <div className="pt-2 border-t border-slate-700/70 space-y-1.5">
+                      <span className="text-[10px] font-bold text-slate-400 block">
+                        معاينة الأصناف المحددة للطلب ({selectedItemIds.size}):
+                      </span>
+                      <div className="max-h-28 overflow-y-auto space-y-1 pr-1 border border-slate-700/50 rounded-xl p-1.5 bg-slate-900/60 no-scrollbar">
+                        {selectedItems.map((it) => (
+                          <div
+                            key={it.id}
+                            className="flex items-center justify-between text-[10px] bg-slate-800/80 p-1.5 rounded-lg border border-slate-700/60"
+                          >
+                            <span className="font-mono font-bold text-cyan-300">{it.partNumber}</span>
+                            <span className="truncate max-w-[170px] text-slate-300">{it.partName || '--'}</span>
+                            <span className="font-mono font-black text-white px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-700/60">
+                              {it.requestedQty} حبة
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">عدد الأصناف وإجمالي القطع:</span>
+                    <span className="font-mono font-bold text-cyan-300">{itemsCount} صنف ({totalQtyRequested} قطعة)</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-1 border-t border-slate-700/60">
                   <span className="text-slate-400">الموظف المعتمد:</span>
                   <span className="font-bold text-emerald-400">{user?.name || 'مسؤول المشتريات'}</span>
                 </div>
@@ -1165,6 +1474,67 @@ export default function BranchShortages() {
                   className="w-full py-2.5 rounded-2xl bg-slate-850 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-bold border border-slate-800 transition-all cursor-pointer"
                 >
                   إلغاء وتراجع
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─── MODAL: تحذير تأكيد تكرار الصنف بالنواقص ─── */}
+        {duplicateWarning && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in" dir="rtl">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-500/50 space-y-4">
+              <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/15 flex items-center justify-center text-2xl shrink-0">
+                  ⚠️
+                </div>
+                <div>
+                  <h3 className="font-black text-base text-slate-900 dark:text-white">
+                    تنبيه: الصنف مضاف مسبقاً في النواقص!
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    تفادياً لازدواجية وتكرار الطلبيات لنفس القطعة
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 dark:text-slate-400 font-bold">رقم القطعة:</span>
+                  <span className="font-mono font-black text-blue-600 dark:text-blue-400 text-sm">{duplicateWarning.existingItem.partNumber}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 dark:text-slate-400 font-bold">اسم الصنف:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{duplicateWarning.existingItem.partName}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 dark:text-slate-400 font-bold">الكمية المسجلة سابقاً:</span>
+                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{duplicateWarning.existingItem.requestedQty} حبة</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 dark:text-slate-400 font-bold">الموظف المسجل سابقاً:</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-300">{duplicateWarning.existingItem.createdByName || 'موظف الفرع'}</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-700 dark:text-slate-300 font-bold leading-relaxed text-center px-1">
+                هذا الصنف تم تسجيله مسبقاً في قائمة نواقص هذا الفرع الحالية. هل تريد بالتأكيد إضافته مرة أخرى؟
+              </p>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => executeAddItem(duplicateWarning.itemPayload)}
+                  className="flex-1 py-3 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-black shadow-md shadow-amber-600/20 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span>نعم، تأكيد الإضافة</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDuplicateWarning(null)}
+                  className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                >
+                  لا، إلغاء
                 </button>
               </div>
             </div>
