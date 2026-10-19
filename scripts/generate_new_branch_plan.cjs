@@ -6,45 +6,80 @@ const XLSX = require('xlsx');
 const invPath = path.resolve(__dirname, '../src/data/officialWarehouseInventory.json');
 const rawInv = JSON.parse(fs.readFileSync(invPath, 'utf8')).items;
 
-console.log(`Loaded ${rawInv.length} inventory items for New Branch Planning.`);
-
-// Helper to clean price and numbers
 function round2(num) {
   return +(Number(num || 0).toFixed(2));
 }
 
+// Helper to determine proportional opening quantity based on branch stock & sales velocity
+function calculateProportionalQty(item, isTransfer = false) {
+  const main = item.qtyMain || 0;
+  const rawaf = item.qtyRawaf || 0;
+  const sulaim = item.qtySulaim || 0;
+  const total = item.totalQty || 0;
+  const issued = item.issued || 0;
+  const n = (item.name || '').toLowerCase();
+
+  if (isTransfer) {
+    // For transfer: take ~30% to 40% of the surplus branch (at least 2, max 8)
+    const maxBranchStock = Math.max(main, rawaf, sulaim);
+    return Math.max(2, Math.min(8, Math.floor(maxBranchStock * 0.35)));
+  }
+
+  // Active branches with stock > 0
+  const activeBranches = [main, rawaf, sulaim].filter(q => q > 0).length || 1;
+  const avgStockPerActiveBranch = Math.round(total / activeBranches);
+
+  let suggested = Math.max(2, avgStockPerActiveBranch);
+
+  // Proportional fine-tuning by category and velocity
+  if (/كلبس|قفيز/.test(n)) {
+    suggested = Math.max(50, Math.min(200, Math.round(avgStockPerActiveBranch * 0.8)));
+  } else if (/ماء مقطر/.test(n)) {
+    suggested = Math.max(24, Math.min(80, avgStockPerActiveBranch));
+  } else if (/زيت مكينة|زيت ديزل|5w30|10w40/.test(n)) {
+    suggested = Math.max(24, Math.min(48, avgStockPerActiveBranch));
+  } else if (/زيت قير|atf/.test(n)) {
+    suggested = Math.max(12, Math.min(36, avgStockPerActiveBranch));
+  } else if (/بواجي|بوجي/.test(n)) {
+    suggested = Math.max(12, Math.min(24, avgStockPerActiveBranch));
+  } else if (/سيفون|فلتر زيت/.test(n)) {
+    suggested = Math.max(10, Math.min(25, avgStockPerActiveBranch));
+  } else if (/فلتر هوا|فلتر مكيف/.test(n)) {
+    suggested = Math.max(4, Math.min(12, avgStockPerActiveBranch));
+  } else if (/فحمات|قماش/.test(n)) {
+    suggested = Math.max(3, Math.min(8, avgStockPerActiveBranch));
+  } else {
+    // High-sales items get a boost proportional to branch average
+    if (issued > 150) suggested = Math.max(4, Math.min(12, Math.round(avgStockPerActiveBranch * 1.1)));
+    else if (issued > 50) suggested = Math.max(3, Math.min(8, avgStockPerActiveBranch));
+    else suggested = Math.max(2, Math.min(6, avgStockPerActiveBranch));
+  }
+
+  return Math.min(suggested, 60); // Cap reasonable single-item opening order
+}
+
 // -------------------------------------------------------------
-// 1. SECTION 1: CONSUMABLES (الأصناف الاستهلاكية)
+// 1. SECTION 1: CONSUMABLES (الأصناف الاستهلاكية) - 220 items
 // -------------------------------------------------------------
-// Filters, spark plugs, wipers, clips, cleaner sprays
 const consumablesRaw = rawInv.filter(i => {
   const n = (i.name || '').toLowerCase();
   const c = i.category;
-  const isConsumable = c === 'فلاتر ومصفيات' || c === 'كلبسات ومثبتات' || 
-    /فلتر|سيفون|صفاية|بواجي|بوجي|شمعة احتراق|مساحة|قفيز|كلبس|بخاخ تنظيف|منظف فرامل|اسيدلكو/.test(n);
+  const isConsumable = c === 'فلاتر ومصفيات' || c === 'كلبسات ومثبتات' || c === 'مكابح وهوبات' ||
+    /فلتر|سيفون|صفاية|بواجي|بوجي|شمعة احتراق|مساحة|قفيز|كلبس|بخاخ تنظيف|منظف فرامل|اسيدلكو|فحمات|قماش/.test(n);
   const isOil = /زيت|سائل فرامل|سائل تبريد|ماء مقطر|ماء رديتر|كولانت/.test(n);
-  return isConsumable && !isOil && i.unitCost > 0;
+  return isConsumable && !isOil && i.unitCost > 0 && ((i.issued || 0) >= 2 || (i.totalQty || 0) >= 2);
 }).sort((a,b) => (b.issued || 0) - (a.issued || 0));
 
-// Select top 60 essential consumables
-const consumables = consumablesRaw.slice(0, 60).map((item, idx) => {
+const consumables = consumablesRaw.slice(0, 220).map((item, idx) => {
   const n = item.name.toLowerCase();
-  let suggestedQty = 10;
-  if (/كلبس|قفيز/.test(n)) suggestedQty = 200;
-  else if (/بواجي|بوجي|شمعة/.test(n)) suggestedQty = 24; // 6 sets of 4
-  else if (/سيفون|فلتر زيت/.test(n)) suggestedQty = 25;
-  else if (/فلتر هوا|فلتر مكيف/.test(n)) suggestedQty = 12;
-  else if (/فلتر ديزل|صفاية/.test(n)) suggestedQty = 10;
-  else if (/مساحة/.test(n)) suggestedQty = 8;
-  else if (/بخاخ/.test(n)) suggestedQty = 30;
-  else if (/مسمار|صامولة/.test(n)) suggestedQty = 40;
+  const suggestedQty = calculateProportionalQty(item);
 
   return {
     index: idx + 1,
     sku: item.sku,
     name: item.name,
     category: 'أصناف استهلاكية',
-    subType: /فلتر|سيفون/.test(n) ? 'فلاتر' : /بواجي|بوجي/.test(n) ? 'بواجي' : /مساحة/.test(n) ? 'مساحات' : /كلبس|قفيز/.test(n) ? 'كلبسات وتثبيت' : 'مستهلكات عامة',
+    subType: /فلتر|سيفون/.test(n) ? 'فلاتر' : /فحمات|قماش/.test(n) ? 'فحمات ومكابح' : /بواجي|بوجي/.test(n) ? 'بواجي' : /مساحة/.test(n) ? 'مساحات' : /كلبس|قفيز/.test(n) ? 'كلبسات وتثبيت' : 'مستهلكات عامة',
     brand: item.brand === 'hyundai' ? 'هيونداي' : item.brand === 'kia' ? 'كيا' : item.brand === 'mobis' ? 'موبيس أصلي' : 'عام',
     unitCost: round2(item.unitCost),
     totalStock: item.totalQty || 0,
@@ -53,36 +88,25 @@ const consumables = consumablesRaw.slice(0, 60).map((item, idx) => {
     qtySulaim: item.qtySulaim || 0,
     issued: item.issued || 0,
     suggestedQty,
-    actualQty: '', // Empty for purchasing manager
     supplySource: 'طلب شراء وتوريد جديد للفرع',
     estCost: round2(suggestedQty * item.unitCost)
   };
 });
 
 // -------------------------------------------------------------
-// 2. SECTION 2: OILS & FLUIDS (الزيوت والسوائل)
+// 2. SECTION 2: OILS & FLUIDS (الزيوت والسوائل) - 50 items
 // -------------------------------------------------------------
-// Engine oils, Transmission/Gear fluids, Coolants, Brake fluids, AdBlue, Grease
 const oilsRaw = rawInv.filter(i => {
   const n = (i.name || '').toLowerCase();
   const c = i.category;
-  // Exclude oil filters or coolers
   const isFilterOrCooler = /فلتر|سيفون|مبرد|قاعدة|رديتر|غطا/.test(n);
   const isOil = c === 'زيوت وسوائل' || /زيت|سائل فرامل|سائل تبريد|ماء مقطر|ماء رديتر|كولانت|شحم|اد بلو|يوريا|atf|cvt|dot4/.test(n);
   return isOil && !isFilterOrCooler && i.unitCost > 0;
 }).sort((a,b) => (b.issued || 0) - (a.issued || 0));
 
-// Select top 35 essential oils and fluids
-const oils = oilsRaw.slice(0, 35).map((item, idx) => {
+const oils = oilsRaw.slice(0, 50).map((item, idx) => {
   const n = item.name.toLowerCase();
-  let suggestedQty = 24;
-  if (/ماء مقطر/.test(n)) suggestedQty = 120; // cartons
-  else if (/اد بلو|يوريا/.test(n)) suggestedQty = 20; // jugs
-  else if (/زيت ديزل|زيت مكينة|5w30|10w40/.test(n)) suggestedQty = 48; // bottles/liters
-  else if (/زيت قير|atf/.test(n)) suggestedQty = 36;
-  else if (/ماء رديتر|كولانت/.test(n)) suggestedQty = 30;
-  else if (/فرامل/.test(n)) suggestedQty = 36;
-  else if (/شحم/.test(n)) suggestedQty = 15;
+  const suggestedQty = calculateProportionalQty(item);
 
   return {
     index: idx + 1,
@@ -98,37 +122,27 @@ const oils = oilsRaw.slice(0, 35).map((item, idx) => {
     qtySulaim: item.qtySulaim || 0,
     issued: item.issued || 0,
     suggestedQty,
-    actualQty: '', // Empty for purchasing manager
     supplySource: 'طلب توريد جديد للفرع',
     estCost: round2(suggestedQty * item.unitCost)
   };
 });
 
 // -------------------------------------------------------------
-// 3. SECTION 3: FAST-MOVING SPARE PARTS (الأصناف سريعة الدوران)
+// 3. SECTION 3: FAST-MOVING SPARE PARTS (الأصناف سريعة الدوران) - 430 items
 // -------------------------------------------------------------
-// Mechanical, Suspension, Electrical, Engine parts with high velocity
-const existingSkus = new Set([...consumables.map(x => x.sku), ...oils.map(x => x.sku)]);
+const cSkus = new Set(consumables.map(x => x.sku));
+const oSkus = new Set(oils.map(x => x.sku));
 
 const fastMovingRaw = rawInv.filter(i => {
-  if (existingSkus.has(i.sku)) return false;
+  if (cSkus.has(i.sku) || oSkus.has(i.sku)) return false;
   const n = (i.name || '').toLowerCase();
   const isOil = /زيت|سائل فرامل|سائل تبريد|ماء مقطر|ماء رديتر|كولانت|شحم|اد بلو|يوريا/.test(n);
-  const isConsumable = /فلتر|سيفون|صفاية|بواجي|بوجي|شمعة احتراق|مساحة|قفيز|كلبس|بخاخ تنظيف|منظف فرامل/.test(n);
-  return !isOil && !isConsumable && (i.issued || 0) >= 20 && i.unitCost > 0;
+  const isConsumable = /فلتر|سيفون|صفاية|بواجي|بوجي|شمعة احتراق|مساحة|قفيز|كلبس|بخاخ تنظيف|منظف فرامل|فحمات|قماش/.test(n);
+  return !isOil && !isConsumable && (i.issued || 0) >= 4 && i.unitCost > 0;
 }).sort((a,b) => (b.issued || 0) - (a.issued || 0));
 
-// Select top 70 fast-moving items
-const fastMoving = fastMovingRaw.slice(0, 70).map((item, idx) => {
-  const n = item.name.toLowerCase();
-  const issued = item.issued || 0;
-  let suggestedQty = 4;
-  if (issued > 300) suggestedQty = 12;
-  else if (issued > 150) suggestedQty = 8;
-  else if (issued > 60) suggestedQty = 6;
-  else suggestedQty = 4;
-
-  if (/صامولة|مسمار/.test(n)) suggestedQty = 20;
+const fastMoving = fastMovingRaw.slice(0, 430).map((item, idx) => {
+  const suggestedQty = calculateProportionalQty(item);
 
   return {
     index: idx + 1,
@@ -144,29 +158,23 @@ const fastMoving = fastMovingRaw.slice(0, 70).map((item, idx) => {
     qtySulaim: item.qtySulaim || 0,
     issued: item.issued || 0,
     suggestedQty,
-    actualQty: '', // Empty for purchasing manager
     supplySource: 'طلب شراء جديد / مخزون افتتاحي',
     estCost: round2(suggestedQty * item.unitCost)
   };
 });
 
 // -------------------------------------------------------------
-// 4. SECTION 4: STAGNANT & SURPLUS STOCK TRANSFERS (التحويلات المقترحة للأصناف الراكدة)
+// 4. SECTION 4: STAGNANT & SURPLUS TRANSFERS (التحويلات المقترحة) - 250 items
 // -------------------------------------------------------------
-// Real items with healthy surplus in one branch and low turnover ratio
-const allPriorSkus = new Set([...existingSkus, ...fastMoving.map(x => x.sku)]);
+const allPriorSkus = new Set([...cSkus, ...oSkus, ...fastMoving.map(x => x.sku)]);
 
 const transfersRaw = rawInv.filter(i => {
   if (allPriorSkus.has(i.sku)) return false;
-  const total = i.totalQty || 0;
-  const issued = i.issued || 0;
   const main = i.qtyMain || 0;
   const rawaf = i.qtyRawaf || 0;
   const sulaim = i.qtySulaim || 0;
-  const maxBranch = Math.max(main, rawaf, sulaim);
-  
-  // Must have at least 4 units in at least one branch, unit cost >= 20 SAR, and slow/moderate turnover
-  return total >= 5 && maxBranch >= 4 && (issued / Math.max(1, total)) < 0.35 && i.unitCost >= 20;
+  const max = Math.max(main, rawaf, sulaim);
+  return max >= 3 && ((i.issued || 0) / Math.max(1, i.totalQty || 0)) <= 0.4 && i.unitCost >= 15;
 }).map(item => {
   const main = item.qtyMain || 0;
   const rawaf = item.qtyRawaf || 0;
@@ -186,8 +194,7 @@ const transfersRaw = rawInv.filter(i => {
     sourceQty = sulaim;
   }
 
-  // Suggest transferring ~30% to 40% of the branch's surplus stock (minimum 2, max 10)
-  const suggestedTransfer = Math.max(2, Math.min(10, Math.floor(sourceQty * 0.35)));
+  const suggestedTransfer = calculateProportionalQty(item, true);
 
   return {
     sku: item.sku,
@@ -205,21 +212,17 @@ const transfersRaw = rawInv.filter(i => {
     qtySulaim: sulaim,
     issued: item.issued || 0,
     suggestedQty: suggestedTransfer,
-    actualQty: '', // Empty for purchasing/storekeeper transfer execution
     supplySource: `تحويل داخلي من ${sourceBranch}`,
     estCost: round2(suggestedTransfer * item.unitCost)
   };
 }).sort((a,b) => (b.estCost || 0) - (a.estCost || 0));
 
-// Select top 60 high-value transfer candidates
-const transfers = transfersRaw.slice(0, 60).map((t, idx) => ({
+const transfers = transfersRaw.slice(0, 250).map((t, idx) => ({
   ...t,
   index: idx + 1
 }));
 
-// -------------------------------------------------------------
-// Summary & Metrics Calculation
-// -------------------------------------------------------------
+// Summary Calculations
 const summary = {
   totalItems: consumables.length + oils.length + fastMoving.length + transfers.length,
   consumablesCount: consumables.length,
@@ -236,9 +239,8 @@ const summary = {
 
   transfersCount: transfers.length,
   transfersSuggestedQty: transfers.reduce((s, i) => s + i.suggestedQty, 0),
-  transfersEstSavings: round2(transfers.reduce((s, i) => s + i.estCost, 0)), // Financial capital saved via internal transfer
+  transfersEstSavings: round2(transfers.reduce((s, i) => s + i.estCost, 0)),
 
-  // Total new purchase budget needed:
   totalNewPurchaseCost: round2(
     consumables.reduce((s, i) => s + i.estCost, 0) +
     oils.reduce((s, i) => s + i.estCost, 0) +
@@ -250,15 +252,15 @@ const summary = {
     transfers.reduce((s, i) => s + i.suggestedQty, 0)
 };
 
-console.log('Summary Statistics:', summary);
+console.log('Grand Summary of 950 Requisition Items:');
+console.log(summary);
 
 // Save JSON for Web App
 const fullData = {
   metadata: {
-    title: 'كشف طلبية وافتتاح الفرع الجديد — شركة درة السيارة لقطع الغيار',
+    title: 'كشف طلبية وافتتاح الفرع الجديد الشامل (950 صنفاً متنوعاً) — شركة درة السيارة لقطع الغيار',
     generatedAt: new Date().toISOString(),
     preparedBy: 'إدارة ذكاء الأعمال والتحليل المالي (BI Intelligence)',
-    forRoles: ['مسئول المشتريات', 'أمين المستودعات', 'الإدارة العامة'],
     summary
   },
   sections: {
@@ -271,153 +273,201 @@ const fullData = {
 
 const outputJsonPath = path.resolve(__dirname, '../src/data/newBranchRequisitionData.json');
 fs.writeFileSync(outputJsonPath, JSON.stringify(fullData, null, 2), 'utf8');
-console.log(`Saved JSON dataset to: ${outputJsonPath}`);
 
 // -------------------------------------------------------------
-// 5. GENERATE PROFESSIONAL EXCEL WORKBOOK (.XLSX)
+// 5. GENERATE ADVANCED EXCEL WORKBOOK WITH DYNAMIC FORMULAS
 // -------------------------------------------------------------
 const wb = XLSX.utils.book_new();
 
-// Helper to format rows for Excel
-function createSheetRows(items, sectionTitle, isTransfer = false) {
-  const header = [
-    ['شركة درة السيارة للتجارة — نظام ذكاء الأعمال والمخزون'],
-    [`كشف طلبيات وافتتاح الفرع الجديد — ${sectionTitle}`],
-    [`تاريخ الإعداد: ${new Date().toLocaleDateString('ar-SA')} | حالة الاعتماد: بانتظار تحديد الكميات من مسئول المشتريات`],
+function createFormulaWorksheet(items, sectionTitle, isTransfer = false) {
+  const headerLines = [
+    ['شركة درة السيارة للتجارة — كشف طلبيات وتجهيز افتتاح الفرع الجديد'],
+    [`القسم: ${sectionTitle} | الصيغة: تفاعلية بالمعادلات المحاسبية الكاملة (SUM, PRODUCT, IF)`],
+    [`تاريخ الكشف: ${new Date().toLocaleDateString('ar-SA')} | ملاحظة: عند تعبئة عمود "الكمية المطلوبة الفعلية" تُحسب التكلفة تلقائياً`],
     []
   ];
 
   const colHeaders = [
     'م',
-    'رقم الصنف (Part Number)',
+    'رقم الصنف (SKU)',
     'اسم وتوصيف الصنف',
     'الفئة / التصنيف',
     'الماركة',
     'آخر سعر شراء (ر.س)',
-    isTransfer ? 'رصيد الفرع المحوّل منه' : 'الرصيد الإجمالي بالفروع',
+    isTransfer ? 'رصيد فرع المصدر' : 'الرصيد الكلي بالفروع',
     'الكمية المقترحة',
-    'الكمية المطلوبة الفعلية (للتعبئة)',
-    isTransfer ? 'الفرع المقترح التحويل منه' : 'مصدر التوفير',
-    isTransfer ? 'وفر السيولة المقترح (ر.س)' : 'التكلفة التقديرية (ر.س)'
+    'التكلفة المقترحة (ر.س)',
+    'الكمية المطلوبة الفعلية (اكتب هنا)',
+    'التكلفة الفعلية المعتمدة (ر.س)',
+    isTransfer ? 'الفرع المقترح التحويل منه' : 'مصدر التوفير'
   ];
 
-  const dataRows = items.map((item, i) => [
-    i + 1,
-    item.sku,
-    item.name,
-    item.subType,
-    item.brand,
-    item.unitCost,
-    isTransfer ? item.sourceQty : item.totalStock,
-    item.suggestedQty,
-    '', // Empty for manual/purchasing input
-    isTransfer ? item.sourceBranch : item.supplySource,
-    item.estCost
+  const rows = [...headerLines, colHeaders];
+  const startRow = 6;
+
+  items.forEach((item, idx) => {
+    const rowNum = startRow + idx;
+    rows.push([
+      idx + 1,
+      item.sku,
+      item.name,
+      item.subType,
+      item.brand,
+      item.unitCost,
+      isTransfer ? item.sourceQty : item.totalStock,
+      item.suggestedQty,
+      { t: 'n', f: `F${rowNum}*H${rowNum}`, v: round2(item.unitCost * item.suggestedQty) },
+      null,
+      { t: 'n', f: `IF(ISNUMBER(J${rowNum}), F${rowNum}*J${rowNum}, 0)`, v: 0 },
+      isTransfer ? item.sourceBranch : item.supplySource
+    ]);
+  });
+
+  const lastDataRow = startRow + items.length - 1;
+  const totalsRow = lastDataRow + 2;
+
+  rows.push([]);
+  rows.push([
+    'الإجمالي العام للقسم',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    { t: 'n', f: `SUM(H${startRow}:H${lastDataRow})`, v: items.reduce((s, i) => s + i.suggestedQty, 0) },
+    { t: 'n', f: `SUM(I${startRow}:I${lastDataRow})`, v: round2(items.reduce((s, i) => s + i.estCost, 0)) },
+    { t: 'n', f: `SUM(J${startRow}:J${lastDataRow})`, v: 0 },
+    { t: 'n', f: `SUM(K${startRow}:K${lastDataRow})`, v: 0 },
+    isTransfer ? 'إجمالي وفر السيولة من التحويلات' : 'إجمالي ميزانية الشراء للقسم'
   ]);
 
-  return [...header, colHeaders, ...dataRows];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  ws['!cols'] = [
+    { wch: 6 },
+    { wch: 19 },
+    { wch: 42 },
+    { wch: 20 },
+    { wch: 14 },
+    { wch: 16 },
+    { wch: 16 },
+    { wch: 16 },
+    { wch: 19 },
+    { wch: 22 },
+    { wch: 21 },
+    { wch: 32 }
+  ];
+
+  ws['!views'] = [{ rightToLeft: true }];
+
+  return { ws, totalsRow };
 }
 
 // 1. Executive Summary Sheet
-const summaryRows = [
-  ['شركة درة السيارة للتجارة — الإدارة العامة'],
-  ['الملخص التنفيذي لخطة توريد وتحويلات افتتاح الفرع الجديد'],
-  [`تاريخ الإصدار: ${new Date().toLocaleDateString('ar-SA')} | منصة ذكاء الأعمال (BI Platform)`],
+const summaryHeader = [
+  ['شركة درة السيارة للتجارة — الإدارة العامة ومجلس الإدارة'],
+  ['الملخص التنفيذي لخطة توريد وافتتاح الفرع الجديد الشاملة (950 صنفاً متنوعاً)'],
+  [`تاريخ الإصدار: ${new Date().toLocaleDateString('ar-SA')} | مربوط بالمعادلات الحية تلقائياً`],
   [],
-  ['البيان', 'عدد الأصناف', 'إجمالي الكميات المقترحة', 'القيمة التقديرية (ر.س)', 'ملاحظات استراتيجية'],
-  ['1. الأصناف الاستهلاكية (فلاتر، بواجي، مساحات، كلبسات)', summary.consumablesCount, summary.consumablesSuggestedQty, summary.consumablesEstCost, 'طلب شراء جديد للموردين (مستهلكات سريعة النفاذ)'],
-  ['2. الزيوت والسوائل (محركات، قير، سوائل تبريد وفرامل)', summary.oilsCount, summary.oilsSuggestedQty, summary.oilsEstCost, 'طلب توريد مباشر لزيوت وكولانت وماء مقطر ويوريا'],
-  ['3. الأصناف سريعة الدوران (ميكانيك، تعليق، كهرباء)', summary.fastMovingCount, summary.fastMovingSuggestedQty, summary.fastMovingEstCost, 'تشكيلة القطع الميكانيكية والكهربائية الأكثر طلباً وسحباً'],
-  ['4. التحويلات الداخلية للأصناف الراكدة والفائضة', summary.transfersCount, summary.transfersSuggestedQty, summary.transfersEstSavings, 'وفر مباشر في السيولة بتحويل فائض المخزون من الفروع الحالية دون شراء جديد!'],
-  [],
-  ['إجمالي ميزانية الشراء الجديدة المطلوبة:', '', summary.consumablesSuggestedQty + summary.oilsSuggestedQty + summary.fastMovingSuggestedQty, summary.totalNewPurchaseCost, 'ر.س (المطلوب اعتماده للموردين)'],
-  ['وفر السيولة المحقق من التحويلات الداخلية:', '', summary.transfersSuggestedQty, summary.transfersEstSavings, 'ر.س (مخزون منقول من الفروع دون تكلفة نقدية جديدة)'],
-  [],
-  ['تعليمات مسئول المشتريات:'],
-  ['1. يرجى مراجعة عمود "الكمية المقترحة" لكل صنف وتعبئة عمود "الكمية المطلوبة الفعلية" بالكمية المراد تعميدها.'],
-  ['2. الأصناف في تبويب "التحويلات المقترحة" يتم إصدار سندات نقل داخلي بها من الفروع المذكورة إلى الفرع الجديد.'],
-  [],
-  ['اعتماد مسئول المشتريات: __________________    توقيع أمين المستودعات: __________________    موافقة الإدارة العامة: __________________']
-];
-
-const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
-wsSummary['!cols'] = [{ wch: 45 }, { wch: 15 }, { wch: 25 }, { wch: 25 }, { wch: 65 }];
-XLSX.utils.book_append_sheet(wb, wsSummary, 'الملخص التنفيذي');
-
-// 2. Consumables Sheet
-const wsConsumables = XLSX.utils.aoa_to_sheet(createSheetRows(consumables, 'القسم 1: الأصناف الاستهلاكية'));
-wsConsumables['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 40 }, { wch: 18 }, { wch: 15 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 26 }, { wch: 28 }, { wch: 22 }];
-XLSX.utils.book_append_sheet(wb, wsConsumables, '1_الأصناف_الاستهلاكية');
-
-// 3. Oils & Fluids Sheet
-const wsOils = XLSX.utils.aoa_to_sheet(createSheetRows(oils, 'القسم 2: الزيوت والسوائل'));
-wsOils['!cols'] = [{ wch: 5 }, { wch: 22 }, { wch: 42 }, { wch: 24 }, { wch: 15 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 26 }, { wch: 28 }, { wch: 22 }];
-XLSX.utils.book_append_sheet(wb, wsOils, '2_الزيوت_والسوائل');
-
-// 4. Fast Moving Sheet
-const wsFast = XLSX.utils.aoa_to_sheet(createSheetRows(fastMoving, 'القسم 3: الأصناف سريعة الدوران'));
-wsFast['!cols'] = [{ wch: 5 }, { wch: 22 }, { wch: 42 }, { wch: 22 }, { wch: 15 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 26 }, { wch: 28 }, { wch: 22 }];
-XLSX.utils.book_append_sheet(wb, wsFast, '3_سريعة_الدوران');
-
-// 5. Internal Transfers Sheet
-const wsTransfers = XLSX.utils.aoa_to_sheet(createSheetRows(transfers, 'القسم 4: التحويلات المقترحة للأصناف الراكدة والفائضة', true));
-wsTransfers['!cols'] = [{ wch: 5 }, { wch: 22 }, { wch: 42 }, { wch: 22 }, { wch: 15 }, { wch: 18 }, { wch: 24 }, { wch: 18 }, { wch: 26 }, { wch: 32 }, { wch: 22 }];
-XLSX.utils.book_append_sheet(wb, wsTransfers, '4_تحويلات_الفروع_الراكدة');
-
-// 6. Complete Combined Printable Sheet (الكل في كشف واحد مرتب بالتسلسل)
-const allItems = [
-  ...consumables.map(x => ({ ...x, sectionName: '1. الأصناف الاستهلاكية' })),
-  ...oils.map(x => ({ ...x, sectionName: '2. الزيوت والسوائل' })),
-  ...fastMoving.map(x => ({ ...x, sectionName: '3. الأصناف سريعة الدوران' })),
-  ...transfers.map(x => ({ ...x, sectionName: '4. التحويلات الداخلية من الفروع' }))
-];
-
-const combinedRows = [
-  ['شركة درة السيارة للتجارة — كشف شامل لجميع طلبيات وافتتاح الفرع الجديد'],
-  ['كشف رسمي مجمع مرتب بالأقسام: 1. الاستهلاكية | 2. الزيوت والسوائل | 3. سريعة الدوران | 4. التحويلات الراكدة'],
-  [`تاريخ الكشف: ${new Date().toLocaleDateString('ar-SA')} | إجمالي عدد الأصناف: ${allItems.length} صنف`],
+  ['البيان والتبويب', 'عدد الأصناف', 'الكمية المقترحة', 'الميزانية التقديرية (ر.س)', 'الكمية الفعلية المطلوبة', 'الميزانية الفعلية المعتمدة (ر.س)', 'الملاحظات الاستراتيجية والتنفيذية'],
+  [
+    '1. الأصناف الاستهلاكية (فلاتر، فحمات، بواجي، مساحات، كلبسات)',
+    consumables.length,
+    { t: 'n', f: `'1_الأصناف_الاستهلاكية'!H${consumables.length + 7}`, v: summary.consumablesSuggestedQty },
+    { t: 'n', f: `'1_الأصناف_الاستهلاكية'!I${consumables.length + 7}`, v: summary.consumablesEstCost },
+    { t: 'n', f: `'1_الأصناف_الاستهلاكية'!J${consumables.length + 7}`, v: 0 },
+    { t: 'n', f: `'1_الأصناف_الاستهلاكية'!K${consumables.length + 7}`, v: 0 },
+    'طلب شراء جديد للموردين (مستهلكات سريعة الحركة والنفاذ لكافة الموديلات)'
+  ],
+  [
+    '2. الزيوت والسوائل (محركات، قير، سوائل تبريد وفرامل، يوريا)',
+    oils.length,
+    { t: 'n', f: `'2_الزيوت_والسوائل'!H${oils.length + 7}`, v: summary.oilsSuggestedQty },
+    { t: 'n', f: `'2_الزيوت_والسوائل'!I${oils.length + 7}`, v: summary.oilsEstCost },
+    { t: 'n', f: `'2_الزيوت_والسوائل'!J${oils.length + 7}`, v: 0 },
+    { t: 'n', f: `'2_الزيوت_والسوائل'!K${oils.length + 7}`, v: 0 },
+    'طلب توريد مباشر لزيوت وكولانت وماء مقطر ويوريا وشحوم'
+  ],
+  [
+    '3. الأصناف سريعة الدوران (ميكانيك، تعليق، كهرباء، محركات)',
+    fastMoving.length,
+    { t: 'n', f: `'3_سريعة_الدوران'!H${fastMoving.length + 7}`, v: summary.fastMovingSuggestedQty },
+    { t: 'n', f: `'3_سريعة_الدوران'!I${fastMoving.length + 7}`, v: summary.fastMovingEstCost },
+    { t: 'n', f: `'3_سريعة_الدوران'!J${fastMoving.length + 7}`, v: 0 },
+    { t: 'n', f: `'3_سريعة_الدوران'!K${fastMoving.length + 7}`, v: 0 },
+    'تشكيلة شاملة تغطي كافة موديلات هيونداي وكيا والديزل'
+  ],
+  [
+    '4. التحويلات الداخلية للأصناف الراكدة والفائضة من الفروع',
+    transfers.length,
+    { t: 'n', f: `'4_تحويلات_الفروع_الراكدة'!H${transfers.length + 7}`, v: summary.transfersSuggestedQty },
+    { t: 'n', f: `'4_تحويلات_الفروع_الراكدة'!I${transfers.length + 7}`, v: summary.transfersEstSavings },
+    { t: 'n', f: `'4_تحويلات_الفروع_الراكدة'!J${transfers.length + 7}`, v: 0 },
+    { t: 'n', f: `'4_تحويلات_الفروع_الراكدة'!K${transfers.length + 7}`, v: 0 },
+    'وفر نقدي مباشر: استغلال وتسييل المخزون الفائض من الفروع الحالية دون دفع سيولة للموردين!'
+  ],
   [],
   [
-    'م',
-    'القسم التابع له',
-    'رقم الصنف (SKU)',
-    'اسم وتوصيف الصنف',
-    'الماركة',
-    'آخر سعر شراء (ر.س)',
-    'رصيد الفروع الحالي',
-    'الكمية المقترحة',
-    'الكمية الفعلية المطلوبة',
-    'المصدر / فرع التحويل',
-    'التكلفة / الوفر التقديري (ر.س)'
-  ],
-  ...allItems.map((item, idx) => [
-    idx + 1,
-    item.sectionName,
-    item.sku,
-    item.name,
-    item.brand,
-    item.unitCost,
-    item.sourceQty || item.totalStock,
-    item.suggestedQty,
+    'إجمالي ميزانية الشراء الجديدة المطلوبة (القسم 1 + 2 + 3):',
     '',
-    item.sourceBranch || item.supplySource,
-    item.estCost
-  ])
+    { t: 'n', f: 'SUM(C6:C8)', v: summary.consumablesSuggestedQty + summary.oilsSuggestedQty + summary.fastMovingSuggestedQty },
+    { t: 'n', f: 'SUM(D6:D8)', v: summary.totalNewPurchaseCost },
+    { t: 'n', f: 'SUM(E6:E8)', v: 0 },
+    { t: 'n', f: 'SUM(F6:F8)', v: 0 },
+    'ر.س (المطلوب اعتماده وتعميده للموردين للطلبيات الجديدة)'
+  ],
+  [
+    'وفر السيولة النقدية المحقق من التحويلات الداخلية (القسم 4):',
+    '',
+    { t: 'n', f: 'C9', v: summary.transfersSuggestedQty },
+    { t: 'n', f: 'D9', v: summary.transfersEstSavings },
+    { t: 'n', f: 'E9', v: 0 },
+    { t: 'n', f: 'F9', v: 0 },
+    'ر.س (توفير نقدي مباشر ومخزون منقول من الفروع الحالية)'
+  ],
+  [],
+  ['تعليمات وتوجيهات الاستخدام:'],
+  ['1. ملف الإكسل مدعوم بالكامل بالمعادلات الحسابية التفاعلية؛ بمجرد أن يكتب مسئول المشتريات الكمية المطلوبة في أي شيت تتحدث التكلفة والإجماليات فوراً.'],
+  ['2. أصناف التبويب الرابع (التحويلات) يتم إرسالها لمستودعات الفروع (الرئيسي، الرواف، السليم) لإصدار أذونات تحويل واستلام للفرع الجديد.'],
+  [],
+  ['إعداد ومطابقة: إدارة ذكاء الأعمال (BI)       اعتماد ومراجعة: مسئول المشتريات والتوريد       الموافقة النهائية: المدير العام / المالك']
 ];
 
-const wsAll = XLSX.utils.aoa_to_sheet(combinedRows);
-wsAll['!cols'] = [{ wch: 5 }, { wch: 26 }, { wch: 20 }, { wch: 42 }, { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 24 }, { wch: 32 }, { wch: 24 }];
-XLSX.utils.book_append_sheet(wb, wsAll, 'الكشف_الشامل_للطباعة');
+const wsSummary = XLSX.utils.aoa_to_sheet(summaryHeader);
+wsSummary['!cols'] = [{ wch: 48 }, { wch: 14 }, { wch: 18 }, { wch: 25 }, { wch: 22 }, { wch: 26 }, { wch: 65 }];
+wsSummary['!views'] = [{ rightToLeft: true }];
+XLSX.utils.book_append_sheet(wb, wsSummary, 'الملخص التنفيذي');
 
-// Write Excel files
+// 2. Consumables Sheet (220 items)
+const sConsumables = createFormulaWorksheet(consumables, '1_الأصناف_الاستهلاكية');
+XLSX.utils.book_append_sheet(wb, sConsumables.ws, '1_الأصناف_الاستهلاكية');
+
+// 3. Oils Sheet (50 items)
+const sOils = createFormulaWorksheet(oils, '2_الزيوت_والسوائل');
+XLSX.utils.book_append_sheet(wb, sOils.ws, '2_الزيوت_والسوائل');
+
+// 4. Fast Moving Sheet (430 items)
+const sFast = createFormulaWorksheet(fastMoving, '3_سريعة_الدوران');
+XLSX.utils.book_append_sheet(wb, sFast.ws, '3_سريعة_الدوران');
+
+// 5. Transfers Sheet (250 items)
+const sTransfers = createFormulaWorksheet(transfers, '4_تحويلات_الفروع_الراكدة', true);
+XLSX.utils.book_append_sheet(wb, sTransfers.ws, '4_تحويلات_الفروع_الراكدة');
+
+// Save Excel file to Root, Public, Dist
 const rootExcelPath = path.resolve(__dirname, '../../كشف_طلبية_وافتتاح_الفرع_الجديد_درة_السيارات.xlsx');
 XLSX.writeFile(wb, rootExcelPath);
-console.log(`Excel file written to root: ${rootExcelPath}`);
+console.log(`Excel file with formulas written to: ${rootExcelPath}`);
 
 const publicDownloadsDir = path.resolve(__dirname, '../public/downloads');
-if (!fs.existsSync(publicDownloadsDir)) {
-  fs.mkdirSync(publicDownloadsDir, { recursive: true });
-}
-const publicExcelPath = path.resolve(publicDownloadsDir, 'كشف_طلبية_وافتتاح_الفرع_الجديد_درة_السيارات.xlsx');
+if (!fs.existsSync(publicDownloadsDir)) fs.mkdirSync(publicDownloadsDir, { recursive: true });
+const publicExcelPath = path.join(publicDownloadsDir, 'كشف_طلبية_وافتتاح_الفرع_الجديد_درة_السيارات.xlsx');
 XLSX.writeFile(wb, publicExcelPath);
-console.log(`Excel file also copied to public downloads: ${publicExcelPath}`);
+
+const distDownloadsDir = path.resolve(__dirname, '../dist/downloads');
+if (!fs.existsSync(distDownloadsDir)) fs.mkdirSync(distDownloadsDir, { recursive: true });
+const distExcelPath = path.join(distDownloadsDir, 'كشف_طلبية_وافتتاح_الفرع_الجديد_درة_السيارات.xlsx');
+XLSX.writeFile(wb, distExcelPath);
+
+console.log('✓ All 950-item Excel files and JSON updated with proportional quantities and formulas!');
