@@ -107,6 +107,16 @@ export const AUTH_ACCOUNTS = [
     title: 'إدارة المشتريات والطلبيات واعتماد نواقص الفروع وتصدير الإكسل',
   },
   {
+    id: 'user-taha',
+    username: 'doracars.taha',
+    email: 'taha@doratcars.com',
+    password: 'dora#2026',
+    name: 'طه المحيميد',
+    role: BI_ROLES.PURCHASING_MANAGER,
+    avatar: 'ط',
+    title: 'مسؤول المتجر الإلكتروني وفرع كيا (المشتريات والطلبيات)',
+  },
+  {
     id: 'user-purchasing',
     username: 'doracars.purchasing',
     email: 'purchasing@doratcars.com',
@@ -118,8 +128,8 @@ export const AUTH_ACCOUNTS = [
   },
 ];
 
-// Strict Session Inactivity Timeout: 5 minutes (300,000 milliseconds)
-export const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
+// Strict Session Inactivity Timeout: 30 minutes (1,800,000 milliseconds)
+export const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
 export const LAST_ACTIVE_KEY = 'bi_last_active_time';
 export const LOGOUT_REASON_KEY = 'bi_logout_reason';
 
@@ -136,12 +146,12 @@ export function BIAuthProvider({ children }) {
         const lastActive = lastActiveStr ? parseInt(lastActiveStr, 10) : 0;
         const now = Date.now();
 
-        // If inactive for more than 5 minutes on startup, strictly terminate session
+        // If inactive for more than 30 minutes on startup, strictly terminate session
         if (lastActive && now - lastActive >= INACTIVITY_TIMEOUT_MS) {
           localStorage.removeItem('bi_active_user');
           localStorage.removeItem(LAST_ACTIVE_KEY);
           sessionStorage.removeItem('dora_owner_vault_unlocked');
-          sessionStorage.setItem(LOGOUT_REASON_KEY, 'inactivity_5min');
+          sessionStorage.setItem(LOGOUT_REASON_KEY, 'inactivity_30min');
           return null;
         }
 
@@ -206,8 +216,8 @@ export function BIAuthProvider({ children }) {
       const elapsed = Date.now() - lastActive;
 
       if (elapsed >= INACTIVITY_TIMEOUT_MS) {
-        console.warn('🔒 تم استيفاء مهلة عدم النشاط (5 دقائق). إنهاء الجلسة فوراً لأسباب أمنية.');
-        sessionStorage.setItem(LOGOUT_REASON_KEY, 'inactivity_5min');
+        console.warn('🔒 تم استيفاء مهلة عدم النشاط (30 دقيقة). إنهاء الجلسة فوراً لأسباب أمنية.');
+        sessionStorage.setItem(LOGOUT_REASON_KEY, 'inactivity_30min');
         sessionStorage.removeItem('dora_owner_vault_unlocked');
         localStorage.removeItem('bi_active_user');
         localStorage.removeItem(LAST_ACTIVE_KEY);
@@ -277,6 +287,7 @@ export function BIAuthProvider({ children }) {
       // Check registered system accounts
       const matched = AUTH_ACCOUNTS.find(
         acc => acc.username.toLowerCase() === cleanId || 
+               acc.username.toLowerCase().replace('doracars.', '') === cleanId ||
                acc.email.toLowerCase() === cleanId ||
                (cleanId === 'purchasing' && acc.username === 'doracars.purchasing') ||
                (cleanId === 'fahad' && acc.username === 'doracars.fahad') ||

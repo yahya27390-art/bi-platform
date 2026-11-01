@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://flfbzeyoqouzctoteyef.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_cVmS9xHwNXSZC3qilRhSXQ_mVoeL_01';
+const env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : (typeof process !== 'undefined' && process.env) ? process.env : {};
+const supabaseUrl = env.VITE_SUPABASE_URL || 'https://flfbzeyoqouzctoteyef.supabase.co';
+const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_cVmS9xHwNXSZC3qilRhSXQ_mVoeL_01';
 
 export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey && !supabaseUrl.includes('your-project-id'));
 
@@ -177,6 +178,106 @@ export async function fetchQuotationsFromDatabase() {
   } catch (err) {
     console.warn('fetchQuotationsFromDatabase catch:', err);
     return [];
+  }
+}
+
+/**
+ * Saves/upserts a Corporate B2B Quotation into Supabase database
+ */
+export async function saveCorporateQuotationToDatabase(quote) {
+  if (!supabase || !quote) return { success: false, error: 'No client or quote' };
+  try {
+    const payload = {
+      id: String(quote.id || `QUO-${Date.now()}`),
+      quote_number: String(quote.quoteNumber || '00001'),
+      issue_date: String(quote.issueDate || new Date().toISOString().split('T')[0]),
+      valid_days: Number(quote.validDays || 4),
+      client_name: String(quote.clientCompany?.name || ''),
+      vehicle_summary: `${quote.vehicle?.make || ''} ${quote.vehicle?.model || ''} ${quote.vehicle?.year || ''}`.trim(),
+      plate: String(quote.vehicle?.plate || ''),
+      vin: String(quote.vehicle?.vin || ''),
+      work_order_no: String(quote.vehicle?.workOrderNo || ''),
+      items_count: Number(quote.items?.length || 0),
+      full_quote_data: quote,
+      updated_at: new Date().toISOString()
+    };
+
+    // Primary attempt: corporate_quotations table
+    const { data, error } = await supabase
+      .from('corporate_quotations')
+      .upsert(payload, { onConflict: 'id' });
+
+    if (!error) return { success: true, data };
+
+    // Fallback: bi_documents table (already existing in Supabase)
+    const docPayload = {
+      id: payload.id,
+      title: `عرض سعر ${payload.quote_number} - ${payload.client_name}`,
+      doc_type: 'corporate_quotation',
+      file_url: JSON.stringify(quote)
+    };
+    const { data: dData, error: dErr } = await supabase
+      .from('bi_documents')
+      .upsert(docPayload, { onConflict: 'id' });
+
+    if (!dErr) return { success: true, data: dData };
+    return { success: false, error: dErr.message };
+  } catch (err) {
+    console.warn('saveCorporateQuotationToDatabase error:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Fetches all Corporate B2B Quotations from Supabase database
+ */
+export async function fetchCorporateQuotationsFromDatabase() {
+  if (!supabase) return [];
+  try {
+    // Primary attempt: corporate_quotations table
+    const { data, error } = await supabase
+      .from('corporate_quotations')
+      .select('*')
+      .order('updated_at', { ascending: false });
+
+    if (!error && Array.isArray(data) && data.length > 0) {
+      return data.map((r) => r.full_quote_data || r).filter(Boolean);
+    }
+
+    // Fallback: bi_documents table
+    const { data: docData, error: docErr } = await supabase
+      .from('bi_documents')
+      .select('*')
+      .eq('doc_type', 'corporate_quotation');
+
+    if (!docErr && Array.isArray(docData) && docData.length > 0) {
+      return docData.map((d) => {
+        try {
+          return JSON.parse(d.file_url);
+        } catch {
+          return null;
+        }
+      }).filter(Boolean);
+    }
+    return [];
+  } catch (err) {
+    console.warn('fetchCorporateQuotationsFromDatabase error:', err);
+    return [];
+  }
+}
+
+/**
+ * Deletes a Corporate B2B Quotation from Supabase database
+ */
+export async function deleteCorporateQuotationFromDatabase(id) {
+  if (!supabase || !id) return false;
+  try {
+    await supabase.from('corporate_quotations').delete().eq('id', id);
+    await supabase.from('bi_documents').delete().eq('id', id);
+    return true;
+  } catch (err) {
+    console.warn('deleteCorporateQuotationFromDatabase error:', err);
+    return false;
   }
 }
 

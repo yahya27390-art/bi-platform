@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, ChevronDown, RefreshCw, Bell, User, LogOut, ShieldCheck, Upload } from 'lucide-react';
+import { Menu, ChevronDown, RefreshCw, Bell, User, LogOut, ShieldCheck, Upload, Compass } from 'lucide-react';
 import { useBIAuth } from '@/auth/BIAuthContext';
 import { usePeriods } from '../../hooks/useBIData';
 import { useCurrentPeriod } from '../../context/BIPeriodContext';
@@ -92,6 +92,16 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
         <RefreshCw className="w-3 h-3 text-emerald-600" />
         بيانات مدققة ومطابقة Z-Report
       </div>
+
+      {/* Portal Launcher Switcher */}
+      <button
+        onClick={() => navigate('/portal')}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 text-xs font-bold transition-all shadow-xs cursor-pointer"
+        title="بوابة الأنظمة والتحويل السريع"
+      >
+        <Compass className="w-3.5 h-3.5 text-blue-600" />
+        <span className="hidden sm:inline">بوابة الأنظمة</span>
+      </button>
 
       {/* Quick Data Import Button for Owner & Management */}
       <button

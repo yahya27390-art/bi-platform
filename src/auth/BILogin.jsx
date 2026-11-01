@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import doraLogo from '../assets/dora_logo.png';
 import greenArrowLogo from '../assets/green-arrow-logo.png';
+import { getSingleSystemAutoRedirect } from '../lib/systemsRegistry';
 
 // System Showcase Slides Configuration (محتوى النظام في سلايدات تفاعلية)
 const SYSTEM_SLIDES = [
@@ -120,9 +121,9 @@ export default function BILogin() {
   const [securityNotice, setSecurityNotice] = useState(() => {
     try {
       const reason = sessionStorage.getItem('bi_logout_reason');
-      if (reason === 'inactivity_5min') {
+      if (reason === 'inactivity_30min' || reason === 'inactivity_5min') {
         sessionStorage.removeItem('bi_logout_reason');
-        return 'تم إنهاء الجلسة تلقائياً لعدم وجود حركة لمدة 5 دقائق حفاظاً على سرية البيانات. يرجى تسجيل الدخول مجدداً.';
+        return 'تم إنهاء الجلسة تلقائياً لعدم وجود حركة لمدة 30 دقيقة حفاظاً على سرية البيانات. يرجى تسجيل الدخول مجدداً.';
       }
     } catch {
       // ignore
@@ -159,14 +160,13 @@ export default function BILogin() {
       const loggedUser = await loginWithCredentials(identifier, password);
       let destination = location.state?.from?.pathname;
       if (!destination || destination === '/') {
-        if (loggedUser?.role === 'OWNER') {
-          destination = '/owner';
-        } else if (loggedUser?.role === 'PURCHASING_MANAGER') {
-          destination = '/inventory/branch-shortages';
-        } else if (loggedUser?.role === 'INVENTORY_VIEWER') {
-          destination = '/inventory/supplier-comparison';
+        const singleAutoRedirect = getSingleSystemAutoRedirect(loggedUser);
+        if (singleAutoRedirect) {
+          // Employee has ONLY ONE system: direct access automatically!
+          destination = singleAutoRedirect;
         } else {
-          destination = '/';
+          // Employee has MULTIPLE systems: open the systems portal!
+          destination = '/portal';
         }
       }
       navigate(destination, { replace: true });

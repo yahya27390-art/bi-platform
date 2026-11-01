@@ -1,3 +1,5 @@
+@import './styles/animista.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -157,7 +159,10 @@
     display: block !important;
   }
 
-  /* Hide non-printable interactive elements */
+  /* Hide non-printable interactive elements, navigation, and sidebar */
+  aside,
+  header,
+  nav,
   .no-print,
   .no-print * {
     display: none !important;
@@ -166,6 +171,13 @@
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
+  }
+
+  .bi-main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   /* Table rules for A4 multi-page pagination */

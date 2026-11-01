@@ -17,12 +17,16 @@ import DataImport from './pages/DataImport';
 import PrivateCampaignLab from './pages/PrivateCampaignLab';
 import OwnerExecutiveDashboard from './pages/OwnerExecutiveDashboard';
 import NewBranchRequisition from './pages/NewBranchRequisition';
+import CorporateQuotations from './pages/CorporateQuotations';
+import CustomerOrders from './pages/CustomerOrders';
+import SystemsPortal from './pages/SystemsPortal';
 import BILogin from './auth/BILogin';
 import BIProtectedRoute from './auth/BIProtectedRoute';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletion from './pages/DataDeletion';
 import { useBIAuth } from './auth/BIAuthContext';
+import { getSingleSystemAutoRedirect } from './lib/systemsRegistry';
 
 export default function App() {
   const { user } = useBIAuth();
@@ -30,14 +34,11 @@ export default function App() {
   const isInventoryViewer = user?.role === 'INVENTORY_VIEWER';
   const isPurchasingManager = user?.role === 'PURCHASING_MANAGER';
 
-  // Default home redirect based on role
-  const homeElement = isOwner 
-    ? <Navigate to="/owner" replace /> 
-    : isPurchasingManager
-    ? <Navigate to="/inventory/branch-shortages" replace />
-    : isInventoryViewer 
-    ? <Navigate to="/inventory/search" replace /> 
-    : <BIOverview />;
+  // Smart single-system redirect vs Portal for multi-system users
+  const singleAutoRedirect = getSingleSystemAutoRedirect(user);
+  const homeElement = singleAutoRedirect
+    ? <Navigate to={singleAutoRedirect} replace />
+    : <Navigate to="/portal" replace />;
 
   const restrictedRedirect = isPurchasingManager 
     ? <Navigate to="/inventory/branch-shortages" replace /> 
@@ -52,6 +53,17 @@ export default function App() {
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/data-deletion" element={<DataDeletion />} />
       
+      {/* Interactive Systems Portal */}
+      <Route
+        path="/portal"
+        element={
+          <BIProtectedRoute>
+            <SystemsPortal />
+          </BIProtectedRoute>
+        }
+      />
+      <Route path="/launcher" element={<Navigate to="/portal" replace />} />
+
       {/* Public Branch Notebook Entry (No Login Required) */}
       <Route path="/branch-entry" element={<BranchNotebookEntry />} />
       <Route path="/notebook" element={<Navigate to="/branch-entry" replace />} />
@@ -75,6 +87,10 @@ export default function App() {
         <Route path="/branch-shortages" element={<Navigate to="/inventory/branch-shortages" replace />} />
         <Route path="/inventory/new-branch" element={<NewBranchRequisition />} />
         <Route path="/new-branch" element={<Navigate to="/inventory/new-branch" replace />} />
+        <Route path="/corporate-quotes" element={<CorporateQuotations />} />
+        <Route path="/quotes" element={<Navigate to="/corporate-quotes" replace />} />
+        <Route path="/customer-orders" element={<CustomerOrders />} />
+        <Route path="/orders" element={<Navigate to="/customer-orders" replace />} />
         <Route path="/products" element={<Navigate to="/inventory/search" replace />} />
 
         {/* Media & Marketing */}

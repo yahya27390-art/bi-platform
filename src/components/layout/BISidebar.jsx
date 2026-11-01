@@ -4,7 +4,7 @@ import { useBIAuth } from '@/auth/BIAuthContext';
 import {
   LayoutDashboard, TrendingUp, ShoppingCart, MapPin, Package,
   DollarSign, Target, Upload, Building2, Sparkles, X, Crown, Lock, Boxes,
-  Search, FileSpreadsheet, Scale, ClipboardList, Store
+  Search, FileSpreadsheet, Scale, ClipboardList, Store, FileText, PackageCheck
 } from 'lucide-react';
 import doraLogo from '@/assets/dora_logo.png';
 
@@ -31,6 +31,8 @@ const NAV_ITEMS = [
   { label: 'مقارنة أسعار الموردين', icon: Scale, path: '/inventory/supplier-comparison', isInventory: true },
   { label: 'نواقص طلبات الفروع', icon: ClipboardList, path: '/inventory/branch-shortages', isInventory: true },
   { label: 'طلبية وافتتاح فرع جديد', icon: Store, path: '/inventory/new-branch', isInventory: true, altPaths: ['/new-branch'] },
+  { label: 'عروض أسعار الشركات B2B', icon: FileText, path: '/corporate-quotes', isInventory: true, altPaths: ['/quotes'] },
+  { label: 'إدارة طلبات العملاء الخاصة', icon: PackageCheck, path: '/customer-orders', isInventory: true, altPaths: ['/orders'] },
   { label: 'المالية', icon: DollarSign, path: '/financials' },
   { label: 'الأهداف', icon: Target, path: '/targets' },
   { label: 'استيراد البيانات', icon: Upload, path: '/import' },

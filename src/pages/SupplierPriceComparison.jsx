@@ -89,14 +89,44 @@ function getStoredCustomQuotations() {
   }
 }
 
+function sanitizeForStorage(quotations) {
+  return (quotations || []).map((q) => {
+    const rawItems = (q.rawItems || q.analysisData?.items || []).map((it) => ({
+      partNumber: it.partNumber || it.sku || '',
+      partName: it.partName || it.name || '',
+      supplierPrice: Number(it.supplierPrice) || 0,
+      unit: it.unit || 'حبه',
+      qty: Number(it.qty) || 1,
+      brand: it.brand || ''
+    }));
+
+    return {
+      id: q.id,
+      supplierName: q.supplierName || 'مورد خارجي',
+      title: q.title || 'عرض سعر محفوظ',
+      shortName: q.shortName || q.supplierName || q.title,
+      date: q.date || new Date().toISOString().split('T')[0],
+      dateFormatted: q.dateFormatted || q.date,
+      itemsCount: q.itemsCount || rawItems.length,
+      badge: q.badge || 'عرض محفوظ',
+      icon: q.icon || '📄',
+      isBuiltIn: false,
+      quotationInfo: q.quotationInfo || {},
+      rawItems,
+      updatedAt: q.updatedAt || new Date().toISOString()
+    };
+  });
+}
+
 function saveCustomQuotationsToStorage(quotations) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(quotations));
+    const sanitized = sanitizeForStorage(quotations);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
   } catch (e) {
-    console.warn('Storage quota issue, trimming to 5 newest quotations:', e);
+    console.warn('Storage quota issue, trimming quotations:', e);
     try {
-      const trimmed = quotations.slice(0, 5);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+      const sanitized = sanitizeForStorage(quotations).slice(0, 5);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
     } catch (e2) {
       console.error('Failed to save quotations to localStorage:', e2);
     }
@@ -301,8 +331,17 @@ export default function SupplierPriceComparison() {
       setQuotationResult(getMiskQuotationAnalysis());
     } else {
       const custom = savedCustomQuotations.find((q) => q.id === id);
-      if (custom && custom.analysisData) {
-        setQuotationResult(custom.analysisData);
+      if (custom) {
+        if (custom.analysisData) {
+          setQuotationResult(custom.analysisData);
+        } else if (custom.rawItems && custom.rawItems.length > 0) {
+          const recomputed = compareQuotationItems(custom.rawItems, custom.quotationInfo || {
+            supplierName: custom.supplierName || 'مورد خارجي',
+            quotationTitle: custom.title || 'عرض سعر محفوظ',
+            quotationDate: custom.date || new Date().toISOString().split('T')[0]
+          });
+          setQuotationResult(recomputed);
+        }
       }
     }
     setSearchQuery('');

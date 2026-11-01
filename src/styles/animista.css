@@ -1,0 +1,235 @@
+/**
+ * ANIMISTA ON-DEMAND CSS ANIMATION LIBRARY
+ * Source & Design: https://animista.net
+ * Custom tailored for React & Tailwind CSS integration
+ */
+
+/* ==========================================================================
+   1. SCALE & ENTRANCES
+   ========================================================================== */
+
+@keyframes scale-up-center {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-scale-up-center {
+  animation: scale-up-center 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+}
+
+@keyframes scale-up-top {
+  0% { transform: scale(0.5); transform-origin: 50% 0%; opacity: 0; }
+  100% { transform: scale(1); transform-origin: 50% 0%; opacity: 1; }
+}
+.animate-scale-up-top {
+  animation: scale-up-top 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+}
+
+@keyframes scale-in-hor-center {
+  0% { transform: scaleX(0); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+.animate-scale-in-hor-center {
+  animation: scale-in-hor-center 0.35s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes scale-down-center {
+  0% { transform: scale(1); }
+  100% { transform: scale(0.92); opacity: 0.8; }
+}
+.animate-scale-down-center {
+  animation: scale-down-center 0.3s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/* ==========================================================================
+   2. SLIDES & FADES
+   ========================================================================== */
+
+@keyframes slide-in-bottom {
+  0% { transform: translateY(30px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes slide-in-top {
+  0% { transform: translateY(-30px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-in-top {
+  animation: slide-in-top 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes slide-in-right {
+  0% { transform: translateX(40px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.45s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes slide-in-left {
+  0% { transform: translateX(-40px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-left {
+  animation: slide-in-left 0.45s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes fade-in-fwd {
+  0% { transform: translateZ(-80px); opacity: 0; }
+  100% { transform: translateZ(0); opacity: 1; }
+}
+.animate-fade-in-fwd {
+  animation: fade-in-fwd 0.5s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+}
+
+/* ==========================================================================
+   3. ROTATE & FLIP
+   ========================================================================== */
+
+@keyframes rotate-scale-up {
+  0% { transform: scale(1) rotateZ(0); }
+  50% { transform: scale(1.1) rotateZ(180deg); }
+  100% { transform: scale(1) rotateZ(360deg); }
+}
+.animate-rotate-scale-up {
+  animation: rotate-scale-up 0.65s linear both;
+}
+
+@keyframes rotate-90-cw {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(90deg); }
+}
+.animate-rotate-90 {
+  animation: rotate-90-cw 0.3s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes flip-scale-up-hor {
+  0% { transform: scale(1) rotateX(0); }
+  50% { transform: scale(1.1) rotateX(-90deg); }
+  100% { transform: scale(1) rotateX(-180deg); }
+}
+.animate-flip-scale-up-hor {
+  animation: flip-scale-up-hor 0.5s linear both;
+}
+
+@keyframes swing-in-top-fwd {
+  0% {
+    transform: rotateX(-100deg);
+    transform-origin: top;
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg);
+    transform-origin: top;
+    opacity: 1;
+  }
+}
+.animate-swing-in-top {
+  animation: swing-in-top-fwd 0.5s cubic-bezier(0.175, 0.885, 0.320, 1.275) both;
+}
+
+/* ==========================================================================
+   4. ATTENTION & PULSATE
+   ========================================================================== */
+
+@keyframes pulsate-bck {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.animate-pulsate-bck {
+  animation: pulsate-bck 0.6s ease-in-out infinite both;
+}
+
+@keyframes wobble-hor-bottom {
+  0%, 100% { transform: translateX(0%); transform-origin: 50% 50%; }
+  15% { transform: translateX(-15px) rotate(-4deg); }
+  30% { transform: translateX(10px) rotate(4deg); }
+  45% { transform: translateX(-8px) rotate(-2.5deg); }
+  60% { transform: translateX(5px) rotate(1.5deg); }
+  75% { transform: translateX(-2px) rotate(-0.8deg); }
+}
+.animate-wobble-bottom {
+  animation: wobble-hor-bottom 0.8s both;
+}
+
+@keyframes jello-horizontal {
+  0% { transform: scale3d(1, 1, 1); }
+  30% { transform: scale3d(1.15, 0.85, 1); }
+  40% { transform: scale3d(0.85, 1.15, 1); }
+  50% { transform: scale3d(1.08, 0.92, 1); }
+  65% { transform: scale3d(0.97, 1.03, 1); }
+  75% { transform: scale3d(1.02, 0.98, 1); }
+  100% { transform: scale3d(1, 1, 1); }
+}
+.animate-jello {
+  animation: jello-horizontal 0.8s both;
+}
+
+/* ==========================================================================
+   5. SHADOW & GLOW EFFECTS
+   ========================================================================== */
+
+@keyframes shadow-drop-2-center {
+  0% {
+    transform: translateZ(0);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+  100% {
+    transform: translateZ(50px);
+    box-shadow: 0 0 20px 0px rgba(37, 99, 235, 0.35);
+  }
+}
+.animate-shadow-drop-center {
+  animation: shadow-drop-2-center 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes shadow-pop-tr {
+  0% {
+    box-shadow: 0 0 #3b82f6, 0 0 #3b82f6;
+    transform: translateX(0) translateY(0);
+  }
+  100% {
+    box-shadow: 1px -1px #3b82f6, 2px -2px #3b82f6, 3px -3px #3b82f6, 4px -4px #3b82f6;
+    transform: translateX(-4px) translateY(4px);
+  }
+}
+.animate-shadow-pop-tr {
+  animation: shadow-pop-tr 0.3s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/* ==========================================================================
+   6. TEXT ANIMATIONS
+   ========================================================================== */
+
+@keyframes tracking-in-expand {
+  0% {
+    letter-spacing: -0.5em;
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.animate-tracking-in {
+  animation: tracking-in-expand 0.7s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
+}
+
+@keyframes text-focus-in {
+  0% {
+    filter: blur(8px);
+    opacity: 0;
+  }
+  100% {
+    filter: blur(0px);
+    opacity: 1;
+  }
+}
+.animate-text-focus-in {
+  animation: text-focus-in 0.6s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+}

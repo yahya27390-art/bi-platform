@@ -12,11 +12,13 @@ export default function BILayout() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans overflow-x-hidden w-full relative" dir="rtl">
-      {/* Sidebar is hidden for OWNER (returns null from BISidebar) */}
-      <BISidebar
-        mobileOpen={mobileSidebarOpen}
-        onCloseMobile={() => setMobileSidebarOpen(false)}
-      />
+      {/* Sidebar is hidden on print and for OWNER */}
+      <div className="no-print print:hidden">
+        <BISidebar
+          mobileOpen={mobileSidebarOpen}
+          onCloseMobile={() => setMobileSidebarOpen(false)}
+        />
+      </div>
 
       {/* Main Content Area */}
       <div
@@ -35,19 +37,30 @@ export default function BILayout() {
                 width: calc(100% - 72px) !important;
               }
             }
+            @media print {
+              .bi-main-content {
+                margin-right: 0 !important;
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+              }
+            }
           `}</style>
         )}
 
-        {/* TopBar: hidden for OWNER on mobile (owner has their own header) */}
+        {/* TopBar: hidden on print and for OWNER */}
         {!isOwner && (
-          <BITopBar onOpenMobileSidebar={() => setMobileSidebarOpen(true)} />
+          <div className="no-print print:hidden">
+            <BITopBar onOpenMobileSidebar={() => setMobileSidebarOpen(true)} />
+          </div>
         )}
 
         <main
           className={
             isOwner
               ? 'w-full min-w-0 overflow-x-hidden p-0'
-              : 'bi-main-content px-3 sm:px-6 lg:px-8 py-5 max-w-[1800px] mx-auto space-y-6 pb-20 lg:pb-8 w-full min-w-0 overflow-x-hidden'
+              : 'bi-main-content px-3 sm:px-6 lg:px-8 py-5 max-w-[1800px] mx-auto space-y-6 pb-20 lg:pb-8 w-full min-w-0 overflow-x-hidden print:p-0 print:m-0 print:max-w-none'
           }
         >
           <Outlet />
