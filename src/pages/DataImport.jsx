@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import * as XLSX from 'xlsx';
+import { aggregateBranchSales } from '../lib/branchSalesParser';
 import { useImportHistory, usePeriods } from '../hooks/useBIData';
 import { BIRoleGuard } from '../components/shared/BIRoleGuard';
 import { DataSourceBadge, SectionHeader } from '../components/shared/SharedComponents';
 import {
   Upload, CheckCircle, AlertCircle, XCircle, FileSpreadsheet, Clock,
   Image, FileText, CheckCircle2, Eye, ShieldCheck, ArrowRight, Save, Plus, Download,
-  ShoppingCart
+  ShoppingCart, Building2, Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatSAR } from '../lib/kpiEngine';
@@ -31,8 +33,10 @@ export default function DataImport() {
   const [selectedCategory, setSelectedCategory] = useState('branch_sales');
   const [sourceType, setSourceType] = useState('screenshot');
   const { periodId, setPeriodId, periods } = useCurrentPeriod();
+  const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [simulatedFile, setSimulatedFile] = useState(null);
+  const [doraParsedResult, setDoraParsedResult] = useState(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showSallaModal, setShowSallaModal] = useState(false);
   const [sallaConfig, setSallaConfig] = useState(loadSallaConfig);
@@ -48,25 +52,71 @@ export default function DataImport() {
 
   const { data: history } = useImportHistory();
 
+  const handleProcessFile = (file) => {
+    if (!file) return;
+
+    setSimulatedFile({
+      name: file.name,
+      size: `${(file.size / 1024).toFixed(1)} KB`,
+      type: file.type || 'file',
+    });
+
+    const isExcelOrCsv = file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv');
+
+    if (isExcelOrCsv) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+          // Check if file contains Dora Cars invoice prefixes (260)
+          const isDoraFormat = rows.some((r) => {
+            const inv = String(r['رقم الفاتورة'] || r['رقم_الفاتورة'] || '');
+            return inv.startsWith('260');
+          });
+
+          if (isDoraFormat) {
+            const aggregated = aggregateBranchSales(rows);
+            setDoraParsedResult(aggregated);
+            setVerificationForm({
+              branch: 'all',
+              grossSales: aggregated.totals.grossSales,
+              returns: aggregated.totals.returns,
+              confidence: 'VERIFIED',
+              notes: `تم فك وتصنيف كشف المبيعات آلياً بناءً على قاعدة درة السيارات (260). إجمالي العمليات: ${aggregated.totals.totalOperations} عبر الفروع الثلاثة.`,
+            });
+          } else {
+            setDoraParsedResult(null);
+          }
+        } catch (err) {
+          console.error('Failed to parse sheet:', err);
+          setDoraParsedResult(null);
+        }
+      };
+      reader.readAsBinaryString(file);
+    } else {
+      setDoraParsedResult(null);
+    }
+
+    setShowVerificationModal(true);
+  };
+
   const handleFileUpload = (e) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
-      setSimulatedFile({
-        name: file.name,
-        size: `${(file.size / 1024).toFixed(1)} KB`,
-        type: file.type,
-      });
-      setShowVerificationModal(true);
+      handleProcessFile(file);
     }
   };
 
   const handleSimulateDrop = () => {
-    setSimulatedFile({
-      name: selectedCategory === 'branch_sales' ? 'Main_Branch_ZReport_Aug2026.png' : 'Consolidated_Data_Aug2026.xlsx',
-      size: '1.4 MB',
-      type: sourceType === 'screenshot' ? 'image/png' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    handleProcessFile({
+      name: 'sales_october_2026_all_branches.xlsx',
+      size: 1400 * 1024,
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
-    setShowVerificationModal(true);
   };
 
   const handleCommitData = () => {
@@ -217,12 +267,72 @@ export default function DataImport() {
           </div>
         )}
 
+        {/* Dora Invoicing Rule Indicator Card */}
+        <div className="rounded-3xl border border-emerald-500/20 bg-gradient-to-r from-emerald-950/20 via-slate-900/40 to-[#070e0a] p-5 border shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-slate-100 flex items-center gap-2">
+                  <span>محرك الفرز الآلي لفواتير درة السيارات (Dora Invoicing & Return Classifier)</span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">معتمد ونشط</span>
+                </h4>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  تمت برمجة واعتماد التعرف التلقائي على أرقام الفواتير والمردودات وفق الهيكل الرسمي لدرة السيارات:
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-[11px]">
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+              <div>
+                <span className="font-bold text-blue-400 block">الفرع الرئيسي (Main)</span>
+                <span className="text-[10px] text-slate-400 font-mono">فاتورة: 26011 • مردود: 260311</span>
+              </div>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">11</span>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+              <div>
+                <span className="font-bold text-emerald-400 block">فرع الرواف (Al-Rawaf)</span>
+                <span className="text-[10px] text-slate-400 font-mono">فاتورة: 26012 • مردود: 260312</span>
+              </div>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">12</span>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+              <div>
+                <span className="font-bold text-purple-400 block">فرع كيا (Kia)</span>
+                <span className="text-[10px] text-slate-400 font-mono">فاتورة: 26013 • مردود: 260313</span>
+              </div>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">13</span>
+            </div>
+          </div>
+        </div>
+
         {/* 3. Upload & Drop Zone */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          accept=".xlsx,.xls,.csv,.png,.jpg,.jpeg,.pdf"
+          className="hidden"
+        />
+
         <div
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => { e.preventDefault(); setDragOver(false); handleSimulateDrop(); }}
-          onClick={handleSimulateDrop}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            const file = e.dataTransfer?.files?.[0];
+            if (file) handleProcessFile(file);
+            else handleSimulateDrop();
+          }}
+          onClick={() => fileInputRef.current?.click()}
           className={cn(
             'rounded-3xl border-2 border-dashed transition-all p-10 flex flex-col items-center gap-4 cursor-pointer text-center relative overflow-hidden',
             dragOver
@@ -235,15 +345,15 @@ export default function DataImport() {
           </div>
           <div>
             <h3 className="text-base font-black text-slate-900">
-              اسحب المستند المصدر إلى هنا أو اضغط للاختيار
+              اسحب المستند المصدر أو كشف المبيعات إلى هنا أو اضغط للاختيار
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              يدعم صور السكرين شوت (PNG, JPG) وملفات الجداول (XLSX, CSV) حتى 25 ميجابايت
+              يدعم ملفات الجداول (XLSX, CSV) مع الفرز الآلي للفروع الثلاثة، وصور السكرين شوت حتى 25 ميجابايت
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-blue-900 bg-blue-50 px-3.5 py-1.5 rounded-xl border border-blue-200 font-bold">
             <ShieldCheck className="w-4 h-4" />
-            <span>سيتم فتح نافذة المعاينة والتدقيق البشري فور الرفع</span>
+            <span>سيتم فك وتصنيف بيانات الفروع والمردودات تلقائياً فور الرفع</span>
           </div>
         </div>
 
@@ -395,6 +505,62 @@ export default function DataImport() {
                 <span className="text-slate-500 font-mono font-bold">{simulatedFile?.size}</span>
               </div>
 
+              {/* Automated Dora Multi-Branch Breakdown if detected */}
+              {doraParsedResult && (
+                <div className="space-y-3 bg-emerald-50/70 border border-emerald-200 p-4 rounded-2xl">
+                  <div className="flex items-center justify-between text-xs font-black text-emerald-900 border-b border-emerald-200 pb-2">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>تم التعرف الآلي على قاعدة درة السيارات (260) وتفكيك الفروع الثلاثة:</span>
+                    </span>
+                    <span className="font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-[10px]">
+                      {doraParsedResult.totals.totalOperations} حركة
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                    {/* Main */}
+                    <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1 shadow-xs">
+                      <div className="font-bold text-blue-900 flex items-center justify-between">
+                        <span>الفرع الرئيسي</span>
+                        <span className="text-[10px] text-blue-600 font-mono">26011 / 260311</span>
+                      </div>
+                      <div className="text-[11px] text-slate-600">المبيعات: <strong>{formatSAR(doraParsedResult.branches.main.grossSales)}</strong></div>
+                      <div className="text-[11px] text-rose-600">المردود: <strong>{formatSAR(doraParsedResult.branches.main.returns)}</strong></div>
+                      <div className="text-xs font-black text-emerald-700 pt-1 border-t border-slate-100">
+                        الصافي: {formatSAR(doraParsedResult.branches.main.netSales)}
+                      </div>
+                    </div>
+
+                    {/* Rawaf */}
+                    <div className="bg-white p-3 rounded-xl border border-emerald-200 space-y-1 shadow-xs">
+                      <div className="font-bold text-emerald-900 flex items-center justify-between">
+                        <span>فرع الرواف</span>
+                        <span className="text-[10px] text-emerald-600 font-mono">26012 / 260312</span>
+                      </div>
+                      <div className="text-[11px] text-slate-600">المبيعات: <strong>{formatSAR(doraParsedResult.branches['al-rawaf'].grossSales)}</strong></div>
+                      <div className="text-[11px] text-rose-600">المردود: <strong>{formatSAR(doraParsedResult.branches['al-rawaf'].returns)}</strong></div>
+                      <div className="text-xs font-black text-emerald-700 pt-1 border-t border-slate-100">
+                        الصافي: {formatSAR(doraParsedResult.branches['al-rawaf'].netSales)}
+                      </div>
+                    </div>
+
+                    {/* Kia */}
+                    <div className="bg-white p-3 rounded-xl border border-purple-200 space-y-1 shadow-xs">
+                      <div className="font-bold text-purple-900 flex items-center justify-between">
+                        <span>فرع كيا</span>
+                        <span className="text-[10px] text-purple-600 font-mono">26013 / 260313</span>
+                      </div>
+                      <div className="text-[11px] text-slate-600">المبيعات: <strong>{formatSAR(doraParsedResult.branches.kia.grossSales)}</strong></div>
+                      <div className="text-[11px] text-rose-600">المردود: <strong>{formatSAR(doraParsedResult.branches.kia.returns)}</strong></div>
+                      <div className="text-xs font-black text-emerald-700 pt-1 border-t border-slate-100">
+                        الصافي: {formatSAR(doraParsedResult.branches.kia.netSales)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Manual Confirmation Form */}
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
@@ -405,6 +571,7 @@ export default function DataImport() {
                       onChange={(e) => setVerificationForm({ ...verificationForm, branch: e.target.value })}
                       className="w-full mt-1 bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 font-medium"
                     >
+                      <option value="all">جميع الفروع مجمعة (All Branches Consolidated)</option>
                       <option value="main">الفرع الرئيسي (Main Branch)</option>
                       <option value="al-rawaf">فرع الرواف (Al Rawaf)</option>
                       <option value="kia">فرع كيا (Kia)</option>

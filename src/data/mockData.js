@@ -8,9 +8,12 @@
 
 // ── PERIODS ───────────────────────────────────────────────────
 export const MOCK_PERIODS = [
+  { id: 'p-2026-10', periodKey: '2026-10', year: 2026, month: 10, quarter: 4,
+    label: 'أكتوبر 2026 (المعتمد بالفواتير)', labelEn: 'Oct 2026 (Audited)',
+    startDate: '2026-10-01', endDate: '2026-10-31', isCurrent: true, isClosed: true, isAudited: true },
   { id: 'p-2026-09', periodKey: '2026-09', year: 2026, month: 9, quarter: 3,
     label: 'سبتمبر 2026 (المعتمد بالفواتير)', labelEn: 'Sep 2026 (Audited)',
-    startDate: '2026-09-01', endDate: '2026-09-30', isCurrent: true, isClosed: true, isAudited: true },
+    startDate: '2026-09-01', endDate: '2026-09-30', isCurrent: false, isClosed: true, isAudited: true },
   { id: 'p-2026-08', periodKey: '2026-08', year: 2026, month: 8, quarter: 3,
     label: 'أغسطس 2026 (المعتمد بالفواتير)', labelEn: 'Aug 2026 (Audited)',
     startDate: '2026-08-01', endDate: '2026-08-31', isCurrent: false, isClosed: true, isAudited: true },
@@ -210,6 +213,9 @@ export const MOCK_BRANCHES = [
 // ── BRANCH PERIOD STATS (Gross, Returns, Net, Targets) ───────────────
 export const MOCK_BRANCH_PERIOD_STATS = {
   'main': {
+    'p-2026-10': { revenue: 274978.46, grossSales: 305520.03, returns: 30541.57, revenueGrowth: -13.48, cogs: 191110.03, grossProfit: 83868.43,
+      orders: 1695, ordersGrowth: -1.17, customers: 1410, newCustomers: 360, avgOrderValue: 162.23,
+      targetRevenue: 350000, targetAchievement: 78.57, satisfaction: 4.8 },
     'p-2026-09': { revenue: 317816.51, grossSales: 358779.51, returns: 40963.00, revenueGrowth: -25.9, cogs: 228733, grossProfit: 89083.51,
       orders: 1715, ordersGrowth: 63.3, customers: 1420, newCustomers: 380, avgOrderValue: 209.2,
       targetRevenue: 350000, targetAchievement: 90.80, satisfaction: 4.8 },
@@ -218,6 +224,9 @@ export const MOCK_BRANCH_PERIOD_STATS = {
       targetRevenue: 350000, targetAchievement: 122.54, satisfaction: 4.8 },
   },
   'al-rawaf': {
+    'p-2026-10': { revenue: 191174.79, grossSales: 218526.97, returns: 27352.17, revenueGrowth: -34.59, cogs: 132866.48, grossProfit: 58308.31,
+      orders: 830, ordersGrowth: -19.10, customers: 720, newCustomers: 210, avgOrderValue: 230.33,
+      targetRevenue: 250000, targetAchievement: 76.47, satisfaction: 4.8 },
     'p-2026-09': { revenue: 292288.13, grossSales: 361365.13, returns: 69077.00, revenueGrowth: 0.31, cogs: 210359, grossProfit: 81928.13,
       orders: 1026, ordersGrowth: 43.5, customers: 840, newCustomers: 260, avgOrderValue: 352.2,
       targetRevenue: 250000, targetAchievement: 116.92, satisfaction: 4.8 },
@@ -226,6 +235,9 @@ export const MOCK_BRANCH_PERIOD_STATS = {
       targetRevenue: 250000, targetAchievement: 116.55, satisfaction: 4.7 },
   },
   'kia': {
+    'p-2026-10': { revenue: 178988.68, grossSales: 214917.81, returns: 35929.13, revenueGrowth: -26.01, cogs: 124397.13, grossProfit: 54591.55,
+      orders: 548, ordersGrowth: -11.47, customers: 480, newCustomers: 150, avgOrderValue: 326.62,
+      targetRevenue: 200000, targetAchievement: 89.49, satisfaction: 4.8 },
     'p-2026-09': { revenue: 241897.00, grossSales: 279437.00, returns: 37540.00, revenueGrowth: -10.16, cogs: 174093, grossProfit: 67803.00,
       orders: 619, ordersGrowth: -6.2, customers: 520, newCustomers: 180, avgOrderValue: 451.4,
       targetRevenue: 200000, targetAchievement: 120.95, satisfaction: 4.7 },
@@ -254,14 +266,17 @@ function genDailySales(baseRevenue, days = 30) {
 
 export const MOCK_BRANCH_DAILY_SALES = {
   'main': {
+    'p-2026-10': [{"day":1,"revenue":12225,"cogs":8496,"grossProfit":3729,"orders":64,"customers":56},{"day":2,"revenue":5703,"cogs":3964,"grossProfit":1739,"orders":35,"customers":31},{"day":3,"revenue":9813,"cogs":6820,"grossProfit":2993,"orders":61,"customers":54},{"day":4,"revenue":8302,"cogs":5770,"grossProfit":2532,"orders":77,"customers":68},{"day":5,"revenue":9072,"cogs":6305,"grossProfit":2767,"orders":57,"customers":50},{"day":6,"revenue":12324,"cogs":8565,"grossProfit":3759,"orders":51,"customers":45},{"day":7,"revenue":10244,"cogs":7120,"grossProfit":3124,"orders":64,"customers":56},{"day":8,"revenue":5695,"cogs":3958,"grossProfit":1737,"orders":54,"customers":48},{"day":9,"revenue":1971,"cogs":1370,"grossProfit":601,"orders":18,"customers":16},{"day":10,"revenue":10533,"cogs":7320,"grossProfit":3213,"orders":77,"customers":68},{"day":11,"revenue":10395,"cogs":7225,"grossProfit":3170,"orders":66,"customers":58},{"day":12,"revenue":6000,"cogs":4170,"grossProfit":1830,"orders":60,"customers":53},{"day":13,"revenue":7499,"cogs":5212,"grossProfit":2287,"orders":60,"customers":53},{"day":14,"revenue":7350,"cogs":5108,"grossProfit":2242,"orders":62,"customers":55},{"day":15,"revenue":8429,"cogs":5858,"grossProfit":2571,"orders":58,"customers":51},{"day":16,"revenue":1944,"cogs":1351,"grossProfit":593,"orders":12,"customers":11},{"day":17,"revenue":9355,"cogs":6502,"grossProfit":2853,"orders":62,"customers":55},{"day":18,"revenue":5796,"cogs":4028,"grossProfit":1768,"orders":56,"customers":49},{"day":19,"revenue":6345,"cogs":4410,"grossProfit":1935,"orders":45,"customers":40},{"day":20,"revenue":6140,"cogs":4267,"grossProfit":1873,"orders":65,"customers":57},{"day":21,"revenue":11893,"cogs":8266,"grossProfit":3627,"orders":57,"customers":50},{"day":22,"revenue":9572,"cogs":6653,"grossProfit":2919,"orders":77,"customers":68},{"day":23,"revenue":2222,"cogs":1544,"grossProfit":678,"orders":19,"customers":17},{"day":24,"revenue":19380,"cogs":13469,"grossProfit":5911,"orders":90,"customers":79},{"day":25,"revenue":12594,"cogs":8753,"grossProfit":3841,"orders":88,"customers":77},{"day":26,"revenue":7856,"cogs":5460,"grossProfit":2396,"orders":65,"customers":57},{"day":27,"revenue":16252,"cogs":11295,"grossProfit":4957,"orders":85,"customers":75},{"day":28,"revenue":12000,"cogs":8340,"grossProfit":3660,"orders":116,"customers":102},{"day":29,"revenue":10715,"cogs":7447,"grossProfit":3268,"orders":87,"customers":77},{"day":30,"revenue":1991,"cogs":1384,"grossProfit":607,"orders":18,"customers":16},{"day":31,"revenue":15369,"cogs":10681,"grossProfit":4688,"orders":80,"customers":70}],
     'p-2026-09': genDailySales(317816),
     'p-2026-08': genDailySales(428885),
   },
   'al-rawaf': {
+    'p-2026-10': [{"day":1,"revenue":7573,"cogs":5263,"grossProfit":2310,"orders":43,"customers":38},{"day":2,"revenue":1010,"cogs":702,"grossProfit":308,"orders":12,"customers":11},{"day":3,"revenue":5670,"cogs":3941,"grossProfit":1729,"orders":36,"customers":32},{"day":4,"revenue":10321,"cogs":7173,"grossProfit":3148,"orders":39,"customers":34},{"day":5,"revenue":10406,"cogs":7232,"grossProfit":3174,"orders":31,"customers":27},{"day":6,"revenue":6850,"cogs":4761,"grossProfit":2089,"orders":31,"customers":27},{"day":7,"revenue":5968,"cogs":4148,"grossProfit":1820,"orders":47,"customers":41},{"day":8,"revenue":3063,"cogs":2129,"grossProfit":934,"orders":21,"customers":18},{"day":9,"revenue":1109,"cogs":771,"grossProfit":338,"orders":5,"customers":4},{"day":10,"revenue":6022,"cogs":4185,"grossProfit":1837,"orders":28,"customers":25},{"day":11,"revenue":7202,"cogs":5005,"grossProfit":2197,"orders":38,"customers":33},{"day":12,"revenue":5026,"cogs":3493,"grossProfit":1533,"orders":25,"customers":22},{"day":13,"revenue":7349,"cogs":5108,"grossProfit":2241,"orders":33,"customers":29},{"day":14,"revenue":6803,"cogs":4728,"grossProfit":2075,"orders":26,"customers":23},{"day":15,"revenue":5570,"cogs":3871,"grossProfit":1699,"orders":27,"customers":24},{"day":16,"revenue":291,"cogs":202,"grossProfit":89,"orders":4,"customers":4},{"day":17,"revenue":6860,"cogs":4768,"grossProfit":2092,"orders":56,"customers":49},{"day":18,"revenue":3995,"cogs":2777,"grossProfit":1218,"orders":16,"customers":14},{"day":19,"revenue":5216,"cogs":3625,"grossProfit":1591,"orders":28,"customers":25},{"day":20,"revenue":7737,"cogs":5377,"grossProfit":2360,"orders":38,"customers":33},{"day":21,"revenue":8659,"cogs":6018,"grossProfit":2641,"orders":37,"customers":33},{"day":22,"revenue":5456,"cogs":3792,"grossProfit":1664,"orders":33,"customers":29},{"day":23,"revenue":52,"cogs":36,"grossProfit":16,"orders":1,"customers":1},{"day":24,"revenue":11773,"cogs":8182,"grossProfit":3591,"orders":42,"customers":37},{"day":25,"revenue":8797,"cogs":6114,"grossProfit":2683,"orders":37,"customers":33},{"day":26,"revenue":7845,"cogs":5452,"grossProfit":2393,"orders":36,"customers":32},{"day":27,"revenue":6752,"cogs":4693,"grossProfit":2059,"orders":50,"customers":44},{"day":28,"revenue":10708,"cogs":7442,"grossProfit":3266,"orders":36,"customers":32},{"day":29,"revenue":6034,"cogs":4194,"grossProfit":1840,"orders":37,"customers":33},{"day":30,"revenue":565,"cogs":393,"grossProfit":172,"orders":4,"customers":4},{"day":31,"revenue":10493,"cogs":7293,"grossProfit":3200,"orders":42,"customers":37}],
     'p-2026-09': genDailySales(292288),
     'p-2026-08': genDailySales(291371),
   },
   'kia': {
+    'p-2026-10': [{"day":1,"revenue":11023,"cogs":7661,"grossProfit":3362,"orders":33,"customers":29},{"day":2,"revenue":1730,"cogs":1202,"grossProfit":528,"orders":4,"customers":4},{"day":3,"revenue":16807,"cogs":11681,"grossProfit":5126,"orders":25,"customers":22},{"day":4,"revenue":3817,"cogs":2653,"grossProfit":1164,"orders":28,"customers":25},{"day":5,"revenue":2491,"cogs":1731,"grossProfit":760,"orders":17,"customers":15},{"day":6,"revenue":4510,"cogs":3134,"grossProfit":1376,"orders":19,"customers":17},{"day":7,"revenue":10757,"cogs":7476,"grossProfit":3281,"orders":28,"customers":25},{"day":8,"revenue":5548,"cogs":3856,"grossProfit":1692,"orders":21,"customers":18},{"day":9,"revenue":152,"cogs":106,"grossProfit":46,"orders":3,"customers":3},{"day":10,"revenue":10583,"cogs":7355,"grossProfit":3228,"orders":38,"customers":33},{"day":11,"revenue":11252,"cogs":7820,"grossProfit":3432,"orders":32,"customers":28},{"day":12,"revenue":9217,"cogs":6406,"grossProfit":2811,"orders":25,"customers":22},{"day":13,"revenue":7039,"cogs":4892,"grossProfit":2147,"orders":20,"customers":18},{"day":14,"revenue":3245,"cogs":2255,"grossProfit":990,"orders":23,"customers":20},{"day":15,"revenue":4116,"cogs":2861,"grossProfit":1255,"orders":19,"customers":17},{"day":16,"revenue":-1178,"cogs":-819,"grossProfit":-359,"orders":2,"customers":2},{"day":17,"revenue":8022,"cogs":5575,"grossProfit":2447,"orders":15,"customers":13},{"day":18,"revenue":8113,"cogs":5639,"grossProfit":2474,"orders":28,"customers":25},{"day":19,"revenue":3996,"cogs":2777,"grossProfit":1219,"orders":14,"customers":12},{"day":20,"revenue":3428,"cogs":2382,"grossProfit":1046,"orders":24,"customers":21},{"day":21,"revenue":5247,"cogs":3647,"grossProfit":1600,"orders":25,"customers":22},{"day":22,"revenue":3070,"cogs":2134,"grossProfit":936,"orders":20,"customers":18},{"day":23,"revenue":1635,"cogs":1136,"grossProfit":499,"orders":5,"customers":4},{"day":24,"revenue":5605,"cogs":3895,"grossProfit":1710,"orders":15,"customers":13},{"day":25,"revenue":7039,"cogs":4892,"grossProfit":2147,"orders":21,"customers":18},{"day":26,"revenue":9853,"cogs":6848,"grossProfit":3005,"orders":17,"customers":15},{"day":27,"revenue":7258,"cogs":5044,"grossProfit":2214,"orders":27,"customers":24},{"day":28,"revenue":6209,"cogs":4315,"grossProfit":1894,"orders":37,"customers":33},{"day":29,"revenue":1035,"cogs":719,"grossProfit":316,"orders":21,"customers":18},{"day":30,"revenue":304,"cogs":211,"grossProfit":93,"orders":5,"customers":4},{"day":31,"revenue":7066,"cogs":4911,"grossProfit":2155,"orders":27,"customers":24}],
     'p-2026-09': genDailySales(241897),
     'p-2026-08': genDailySales(269265),
   },
@@ -398,6 +413,41 @@ export const MOCK_ECOMMERCE_STATS = {
 // IMPORTANT: totalRevenue here is factual business revenue (branches 989,522.16 + Salla 36,660.19)
 // NOT platform-attributed revenue
 export const MOCK_FINANCIALS = {
+  'p-2026-10': {
+    totalRevenue: 684641.93,
+    totalRevenueGrowth: -23.05,
+    grossSales: 780164.80,
+    returns: 93932.87,
+    ecommerceRevenue: 39500.00,
+    branchRevenue: 645141.93,
+    cogs: 475826.14,
+    grossProfit: 208815.79,
+    grossMarginPct: 30.50,
+    operatingExpenses: {
+      salaries: 60000,
+      rent: 12000,
+      utilities: 4000,
+      logistics: 4000,
+      marketing: 8000.00,
+      other: 10000,
+    },
+    totalOpex: 90000.00,
+    ebitda: 118815.79,
+    ebitdaMarginPct: 17.35,
+    depreciation: 0,
+    ebit: 118815.79,
+    interest: 0,
+    ebt: 118815.79,
+    tax: 0,
+    netProfit: 118815.79,
+    netProfitMarginPct: 17.35,
+    cashFlow: 118815.79,
+    accountsReceivable: 42000,
+    inventoryValue: 198000,
+    monthlyTarget: 800000,
+    targetAchievementPct: 85.58,
+    blendedMER: 85.58,
+  },
   'p-2026-09': {
     totalRevenue: 889726.72,
     totalRevenueGrowth: -10.08,
@@ -489,10 +539,31 @@ export const MOCK_REVENUE_TREND = [
   { month: 'يوليو', monthEn: 'Jul', revenue: 404000, grossProfit: 180000, netProfit: 33405, adSpend: 31800 },
   { month: 'أغسطس', monthEn: 'Aug', revenue: 989522, grossProfit: 277363, netProfit: 187363, adSpend: 9403 },
   { month: 'سبتمبر', monthEn: 'Sep', revenue: 889727, grossProfit: 271389, netProfit: 181389, adSpend: 8323 },
+  { month: 'أكتوبر', monthEn: 'Oct', revenue: 684642, grossProfit: 208816, netProfit: 118816, adSpend: 8000 },
 ];
 
 // ── TARGETS ───────────────────────────────────────────────────
 export const MOCK_TARGETS = {
+  'p-2026-10': {
+    revenue: 800000,
+    netProfit: 118815.79,
+    adSpend: 8000.00,
+    blendedMER: 85.58,
+    roas: 15.0,
+    orders: 65,
+    newCustomers: 1350,
+    cpa: 3.80,
+    hyundaiRevenue: 230000,
+    kiaRevenue: 180000,
+    ecommerceRevenue: 40000,
+    omnichannelRevenue: 160000,
+    omnichannelROAS: 32.0,
+    metaROAS: 32.0,
+    metaConversations: 1150,
+    googleROAS: 7.5,
+    googleConversions: 2200,
+    tiktokROAS: 11.0,
+  },
   'p-2026-09': {
     revenue: 850000,
     netProfit: 181388.58,
@@ -566,6 +637,24 @@ export const MOCK_AD_FUNNELS = {
       { stage: 'المشاهدات والظهور', stageEn: 'Impressions', value: 483951, color: '#8B5CF6' },
       { stage: 'النقرات للرابط والمتجر', stageEn: 'Clicks', value: 13915, color: '#A78BFA' },
       { stage: 'التحويلات المسجلة', stageEn: 'Conversions', value: 18, color: '#7C3AED' },
+    ],
+  },
+  'p-2026-10': {
+    meta: [
+      { stage: 'الوصول (Reach)', stageEn: 'Reach', value: 195000, color: '#1877F2' },
+      { stage: 'المشاهدات والظهور', stageEn: 'Impressions', value: 460000, color: '#3B82F6' },
+      { stage: 'النقرات والتفاعل', stageEn: 'Clicks', value: 2750, color: '#60A5FA' },
+      { stage: 'محادثات وتواصل واتساب', stageEn: 'WhatsApp Contacts', value: 1380, color: '#22C55E' },
+    ],
+    google: [
+      { stage: 'الظهور والبحث والخرائط', stageEn: 'Impressions', value: 95000, color: '#10B981' },
+      { stage: 'التفاعلات والنقرات', stageEn: 'Interactions', value: 9100, color: '#34D399' },
+      { stage: 'التحويلات والاتصالات المحلية', stageEn: 'Conversions', value: 2380, color: '#059669' },
+    ],
+    tiktok: [
+      { stage: 'المشاهدات والظهور', stageEn: 'Impressions', value: 450000, color: '#8B5CF6' },
+      { stage: 'النقرات للرابط والمتجر', stageEn: 'Clicks', value: 12800, color: '#A78BFA' },
+      { stage: 'التحويلات المسجلة', stageEn: 'Conversions', value: 16, color: '#7C3AED' },
     ],
   },
 };

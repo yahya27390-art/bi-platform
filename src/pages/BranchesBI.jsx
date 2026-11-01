@@ -77,7 +77,62 @@ const MAP_METRICS = [
   { key: 'newCustomers', label: 'العملاء الجدد' },
 ];
 
-// Rich Branch Comparisons Data for August 2026 (Auto Spare Parts for Hyundai & Kia)
+// Rich Branch Comparisons Data for October 2026 (Audited from official sales file)
+const BRANCH_ANALYTICS_OCTOBER = {
+  'main': {
+    name: 'الفرع الرئيسي',
+    specialty: 'قطع غيار سيارات هيونداي وكيا وموبيس الأصلية (26011 / 260311)',
+    paymentMethods: [
+      { method: 'بطاقة ائتمان (شبكة / مدى)', pct: 71.1, amount: 195507.84, color: '#3B82F6' },
+      { method: 'نقدي وسداد مباشر', pct: 16.3, amount: 44713.92, color: '#10B981' },
+      { method: 'آجل وتوريد شركات', pct: 9.3, amount: 25617.57, color: '#F59E0B' },
+      { method: 'تحويلات بنكية مباشرة', pct: 3.3, amount: 9139.13, color: '#64748B' },
+    ],
+    sparePartsCategories: [
+      { name: 'قطع غيار سيارات هيونداي (Hyundai Genuine Parts)', pct: 58, sales: 159487.50, count: 983 },
+      { name: 'قطع غيار سيارات كيا (Kia Genuine Parts)', pct: 42, sales: 115490.96, count: 712 },
+    ],
+    teamCount: 14,
+    peakHours: '5:00 م — 10:00 م',
+    dailyAvg: '8,870 ر.س / يوم',
+  },
+  'al-rawaf': {
+    name: 'فرع الرواف',
+    specialty: 'المركز المتخصص: قطع غيار سيارات هيونداي (26012 / 260312)',
+    paymentMethods: [
+      { method: 'بطاقة ائتمان (شبكة / مدى)', pct: 57.0, amount: 109020.00, color: '#3B82F6' },
+      { method: 'آجل وتوريد شركات', pct: 16.4, amount: 31395.65, color: '#F59E0B' },
+      { method: 'تحويلات بنكية مباشرة', pct: 15.3, amount: 29304.35, color: '#10B981' },
+      { method: 'نقدي وسداد مباشر', pct: 11.2, amount: 21454.79, color: '#64748B' },
+    ],
+    sparePartsCategories: [
+      { name: 'قطع غيار سيارات هيونداي (Hyundai Genuine Parts)', pct: 78, sales: 149116.34, count: 647 },
+      { name: 'قطع غيار سيارات كيا (Kia Genuine Parts)', pct: 22, sales: 42058.45, count: 183 },
+    ],
+    teamCount: 9,
+    peakHours: '4:30 م — 9:30 م',
+    dailyAvg: '6,167 ر.س / يوم',
+  },
+  'kia': {
+    name: 'فرع كيا',
+    specialty: 'المركز المتخصص: قطع غيار سيارات كيا (26013 / 260313)',
+    paymentMethods: [
+      { method: 'بطاقة ائتمان (شبكة / مدى)', pct: 43.3, amount: 77575.65, color: '#3B82F6' },
+      { method: 'آجل وتوريد شركات', pct: 25.2, amount: 45046.96, color: '#F59E0B' },
+      { method: 'تحويلات بنكية مباشرة', pct: 19.3, amount: 34553.48, color: '#10B981' },
+      { method: 'نقدي وسداد مباشر', pct: 12.2, amount: 21812.59, color: '#64748B' },
+    ],
+    sparePartsCategories: [
+      { name: 'قطع غيار سيارات كيا (Kia Genuine Parts)', pct: 82, sales: 146770.72, count: 449 },
+      { name: 'قطع غيار سيارات هيونداي (Hyundai Genuine Parts)', pct: 18, sales: 32217.96, count: 99 },
+    ],
+    teamCount: 8,
+    peakHours: '5:00 م — 10:30 م',
+    dailyAvg: '5,774 ر.س / يوم',
+  },
+};
+
+// Rich Branch Comparisons Data for August/September 2026 (Auto Spare Parts for Hyundai & Kia)
 const BRANCH_ANALYTICS = {
   'main': {
     name: 'الفرع الرئيسي',
@@ -169,7 +224,9 @@ export default function BranchesBI() {
   const totalSurplus = totalRevenue - totalTarget;
 
   // Selected branch analytics
-  const currentBranchAnalytics = selectedBranch ? BRANCH_ANALYTICS[selectedBranch.id] : null;
+  const currentBranchAnalytics = selectedBranch 
+    ? (periodId === 'p-2026-10' ? BRANCH_ANALYTICS_OCTOBER[selectedBranch.id] : BRANCH_ANALYTICS[selectedBranch.id]) 
+    : null;
 
   // Radar Chart Option (5-Axis Operational Benchmark)
   const radarOption = {
