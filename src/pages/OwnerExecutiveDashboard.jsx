@@ -27,6 +27,7 @@ import OwnerBranchesTab from '../components/owner/OwnerBranchesTab';
 import OwnerStoreTab from '../components/owner/OwnerStoreTab';
 import OwnerInventoryTab from '../components/owner/OwnerInventoryTab';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
+import { MOCK_FINANCIALS } from '../data/mockData';
 
 const VAULT_SESSION_KEY = 'dora_owner_vault_unlocked';
 const VIEW_MODE_KEY = 'dora_owner_view_mode';
@@ -61,12 +62,16 @@ function SummaryTab({ privacyMode, viewMode = 'mobile', periodMetrics, activePer
     isLiveApi
   } = periodMetrics;
 
+  // Target progress (Dora Cars Rule: Target is measured against sales inclusive of 15% VAT)
+  const salesForTarget = periodMetrics.salesWithVat || (netSales * 1.15);
+  const targetPct = Math.min((salesForTarget / (monthlyTarget || 1)) * 100, 200);
+
   const kpis = [
     {
       label: 'صافي المبيعات',
       value: mask(netSales.toLocaleString('ar-SA', { maximumFractionDigits: 0 })),
       unit: 'ر.س',
-      sub: `${mask(((netSales / (monthlyTarget || 1)) * 100).toFixed(1))}% من التارجت`,
+      sub: periodMetrics.isAudited && activePeriodObj?.id === 'p-2026-10' ? `${mask(((salesForTarget / (monthlyTarget || 1)) * 100).toFixed(1))}% شامل سلة (أو 92.7% فروع الميدان)` : `${mask(((salesForTarget / (monthlyTarget || 1)) * 100).toFixed(1))}% من التارجت (+15% ضريبة)`,
       color: '#0284C7',
       bg: '#EFF6FF',
       icon: '📈',
@@ -106,9 +111,6 @@ function SummaryTab({ privacyMode, viewMode = 'mobile', periodMetrics, activePer
     { label: 'الطوارئ', value: opexContingency, color: '#D97706' },
   ];
 
-  // Target progress
-  const targetPct = Math.min((netSales / (monthlyTarget || 1)) * 100, 200);
-
   const [showDetailedStatement, setShowDetailedStatement] = useState(viewMode === 'desktop');
 
   return (
@@ -139,7 +141,7 @@ function SummaryTab({ privacyMode, viewMode = 'mobile', periodMetrics, activePer
       <div className="bg-gradient-to-l from-[#0A192F] to-[#0F2744] rounded-2xl p-4 sm:p-5 text-white shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <div className="text-xs text-slate-300 font-medium">مستهدف مبيعات الشهر</div>
+            <div className="text-xs text-slate-300 font-medium">مستهدف مبيعات الشهر (شامل الضريبة 15%)</div>
             <div className="text-2xl sm:text-3xl font-black mt-0.5">
               {mask(monthlyTarget.toLocaleString('ar-SA'))} <span className="text-sm text-slate-300">ر.س</span>
             </div>
@@ -158,11 +160,11 @@ function SummaryTab({ privacyMode, viewMode = 'mobile', periodMetrics, activePer
           />
         </div>
         <div className="flex flex-wrap gap-1 justify-between text-[10px] sm:text-xs text-slate-400 mt-1.5 font-mono">
-          <span>المبيعات المحققة: {mask(netSales.toLocaleString('ar-SA', { maximumFractionDigits: 0 }))} ر.س</span>
+          <span>المبيعات المحققة (+15% ضريبة): {mask(salesForTarget.toLocaleString('ar-SA', { maximumFractionDigits: 0 }))} ر.س</span>
           <span>
-            {netSales >= monthlyTarget
-              ? `فائض المبيعات: ${mask((netSales - monthlyTarget).toLocaleString('ar-SA', { maximumFractionDigits: 0 }))} ر.س`
-              : `المتبقي للهدف: ${mask((monthlyTarget - netSales).toLocaleString('ar-SA', { maximumFractionDigits: 0 }))} ر.س`}
+            {salesForTarget >= monthlyTarget
+              ? `فائض المبيعات: ${mask((salesForTarget - monthlyTarget).toLocaleString('ar-SA', { maximumFractionDigits: 0 }))} ر.س`
+              : `المتبقي للهدف: ${mask((monthlyTarget - salesForTarget).toLocaleString('ar-SA', { maximumFractionDigits: 0 }))} ر.س`}
           </span>
         </div>
       </div>
@@ -270,7 +272,7 @@ function SummaryTab({ privacyMode, viewMode = 'mobile', periodMetrics, activePer
               opexTotal={totalMonthlyOpex}
               cogsTotal={cogsTotal}
               periodId={activePeriodObj?.id || 'p-2026-09'}
-              periodLabel={activePeriodObj?.labelAr || 'سبتمبر 2026'}
+              periodLabel={activePeriodObj?.labelAr || (activePeriodObj?.id === 'p-2026-10' ? 'أكتوبر 2026' : (activePeriodObj?.id === 'p-2026-08' ? 'أغسطس 2026' : 'سبتمبر 2026'))}
             />
           </div>
         )}
@@ -328,6 +330,29 @@ export default function OwnerExecutiveDashboard() {
 
   // Compute dynamic period metrics based on selected period
   const periodMetrics = useMemo(() => {
+    // 1. October 2026 (Audited Authentic Dora Cars Multi-branch & Salla & Marketing)
+    if (periodId === 'p-2026-10') {
+      const fin = MOCK_FINANCIALS['p-2026-10'];
+      return {
+        netSales: fin?.totalRevenue || 671855.55,
+        cogsTotal: fin?.cogs || 466922.78,
+        grossProfit: fin?.grossProfit || 204932.77,
+        monthlyTarget: fin?.monthlyTarget || 800000,
+        branchRevenueWithVat: fin?.branchRevenueWithVat || 741913.22,
+        consolidatedRevenueWithVat: fin?.consolidatedRevenueWithVat || 772633.88,
+        salesWithVat: fin?.branchRevenueWithVat || 741913.22,
+        grossMarginPct: fin?.grossMarginPct || 30.50,
+        opexSalaries: 60000,
+        opexFacilities: 20000,
+        opexContingency: 19070, // 9,070 marketing + 10,000 other
+        totalMonthlyOpex: fin?.totalOpex || 99070,
+        netProfit: fin?.netProfit || 105862.77,
+        netMarginPct: fin?.netProfitMarginPct || 15.76,
+        opexCoverageRatio: 207,
+        isAudited: true,
+        isLiveApi: false,
+      };
+    }
     if (periodId === 'p-2026-09') {
       return {
         netSales: 889726.72,
@@ -551,7 +576,7 @@ export default function OwnerExecutiveDashboard() {
                 <span className={`w-2 h-2 rounded-full ${periodMetrics.isAudited ? 'bg-green-400' : 'bg-blue-400 animate-pulse'}`} />
                 <span>
                   {periodMetrics.isAudited
-                    ? 'البيانات: فواتير ودفاتر أغسطس 2026 المعتمدة'
+                    ? `البيانات: فواتير ودفاتر ${activePeriodObj?.labelAr || 'الفترة المعتمدة'}`
                     : `البيانات: ${activePeriodObj?.labelAr || 'قيد التشغيل اللحظي بالـ API'}`}
                 </span>
               </div>

@@ -46,7 +46,7 @@ export function formatSyncTime(isoString) {
 }
 
 // Fetch current sync status from worker or local state
-export async function fetchLiveSyncStatus(periodId = 'p-2026-09') {
+export async function fetchLiveSyncStatus(periodId = 'p-2026-10') {
   // Try remote worker if accessible
   try {
     const controller = new AbortController();
@@ -123,7 +123,7 @@ export async function fetchLiveSyncStatus(periodId = 'p-2026-09') {
 }
 
 // Trigger immediate on-demand synchronization
-export async function triggerManualSync(periodId = 'p-2026-09') {
+export async function triggerManualSync(periodId = 'p-2026-10') {
   const syncTimestamp = new Date().toISOString();
   
   try {

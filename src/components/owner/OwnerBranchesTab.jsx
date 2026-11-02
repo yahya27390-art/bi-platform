@@ -1,6 +1,83 @@
 import React, { useState } from 'react';
 import { useCurrentPeriod } from '../../context/BIPeriodContext';
 
+// ── October 2026 Official Audited Accounting Reports (26011, 26012, 26013) ────
+// Dora Cars Rule: Target is calculated on sales inclusive of 15% VAT
+const BRANCHES_OCT = [
+  {
+    id: 'main',
+    name: 'الفرع الرئيسي',
+    subtitle: 'بريدة — طريق الملك عبد العزيز (26011)',
+    emoji: '🏪',
+    gradient: 'from-[#0A192F] to-[#0F2744]',
+    accentColor: '#0284C7',
+    grossSales: 305520.03,
+    returns: 30541.57,
+    sales: 274978.46,
+    salesWithVat: 316225.23,
+    target: 350000,
+    achievementPct: 90.35,
+    tag: 'الرئيسي',
+    tagColor: '#0A192F',
+    city: 'بريدة',
+    products: 'قطع غيار شاملة',
+  },
+  {
+    id: 'hyundai',
+    name: 'فرع الرواف',
+    subtitle: 'هيونداي — حي الرواف (26012)',
+    emoji: '🏬',
+    gradient: 'from-[#0369A1] to-[#0284C7]',
+    accentColor: '#38BDF8',
+    grossSales: 218526.97,
+    returns: 27352.17,
+    sales: 191174.79,
+    salesWithVat: 219851.01,
+    target: 250000,
+    achievementPct: 87.94,
+    tag: 'هيونداي',
+    tagColor: '#0369A1',
+    city: 'بريدة',
+    products: 'قطع هيونداي معتمدة',
+  },
+  {
+    id: 'kia',
+    name: 'فرع كيا المعتمد',
+    subtitle: 'كيا — طريق الملك فهد (26013)',
+    emoji: '🏪',
+    gradient: 'from-[#C2410C] to-[#EA580C]',
+    accentColor: '#FB923C',
+    grossSales: 214917.81,
+    returns: 35929.13,
+    sales: 178988.68,
+    salesWithVat: 205836.98,
+    target: 200000,
+    achievementPct: 102.92,
+    tag: 'كيا',
+    tagColor: '#C2410C',
+    city: 'بريدة',
+    products: 'قطع كيا أصلية (تجاوز التارجت!)',
+  },
+  {
+    id: 'online',
+    name: 'متجر سلة أونلاين',
+    subtitle: 'doracars.com — سلة',
+    emoji: '🛒',
+    gradient: 'from-[#065F46] to-[#047857]',
+    accentColor: '#34D399',
+    grossSales: 28070.00,
+    returns: 0.00,
+    sales: 26713.62,
+    salesWithVat: 30720.66,
+    target: 35000,
+    achievementPct: 87.77,
+    tag: 'أونلاين',
+    tagColor: '#065F46',
+    city: 'المملكة كاملة',
+    products: 'منتجات متجر سلة',
+  },
+];
+
 // ── September 2026 Official Audited Accounting Reports ─────────────────────────
 const BRANCHES_SEP = [
   {
@@ -175,8 +252,9 @@ function TargetProgressBar({ sales, target, accentColor }) {
 }
 
 function BranchCard({ branch, isSelected, onSelect, periodLabel = 'الفترة الحالية' }) {
-  const achievementPct = ((branch.sales / branch.target) * 100).toFixed(1);
-  const isAchieved = branch.sales >= branch.target;
+  const salesForTarget = branch.salesWithVat || (branch.sales * 1.15);
+  const achievementPct = branch.achievementPct != null ? Number(branch.achievementPct).toFixed(1) : ((salesForTarget / branch.target) * 100).toFixed(1);
+  const isAchieved = salesForTarget >= branch.target;
 
   return (
     <div
@@ -205,8 +283,8 @@ function BranchCard({ branch, isSelected, onSelect, periodLabel = 'الفترة 
               {branch.tag}
             </span>
             <div className="mt-1.5 text-right">
-              <div className={`text-xs font-bold ${isAchieved ? 'text-green-300' : 'text-red-300'}`}>
-                {isAchieved ? '✅' : '⚠️'} {achievementPct}%
+              <div className={`text-xs font-bold ${isAchieved ? 'text-green-300' : 'text-amber-300'}`}>
+                {isAchieved ? '✅' : '🎯'} {achievementPct}%
               </div>
             </div>
           </div>
@@ -214,9 +292,12 @@ function BranchCard({ branch, isSelected, onSelect, periodLabel = 'الفترة 
 
         {/* Sales Figure */}
         <div className="mt-3 pt-3 border-t border-white/15">
-          <div className="text-white/60 text-[10px]">صافي المبيعات الفعلية — {periodLabel}</div>
+          <div className="text-white/60 text-[10px]">صافي الفواتير — {periodLabel} (بدون ضريبة)</div>
           <div className="text-white font-black text-xl mt-0.5">
             {branch.sales.toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm font-bold text-white/70">ر.س</span>
+          </div>
+          <div className="text-cyan-300 text-[11px] font-bold mt-1">
+            المحتسب للتارجت (+15% ضريبة): {salesForTarget.toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ر.س
           </div>
         </div>
       </div>
@@ -239,7 +320,7 @@ function BranchCard({ branch, isSelected, onSelect, periodLabel = 'الفترة 
 
       {/* Target Progress (always visible) */}
       <div className="bg-slate-50 px-3 pb-3">
-        <TargetProgressBar sales={branch.sales} target={branch.target} accentColor={branch.accentColor} />
+        <TargetProgressBar sales={salesForTarget} target={branch.target} accentColor={branch.accentColor} />
       </div>
     </div>
   );
@@ -248,16 +329,19 @@ function BranchCard({ branch, isSelected, onSelect, periodLabel = 'الفترة 
 export default function OwnerBranchesTab({ viewMode = 'mobile', periodId: propPeriodId }) {
   const [selectedId, setSelectedId] = useState(null);
   const { periodId: ctxPeriodId, activePeriodObj } = useCurrentPeriod();
-  const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-09';
-  const periodLabel = activePeriodObj?.labelAr || activePeriodObj?.label || (currentPeriodId === 'p-2026-08' ? 'أغسطس 2026' : 'سبتمبر 2026');
+  const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-10';
+  const periodLabel = activePeriodObj?.labelAr || activePeriodObj?.label || (currentPeriodId === 'p-2026-10' ? 'أكتوبر 2026' : currentPeriodId === 'p-2026-08' ? 'أغسطس 2026' : 'سبتمبر 2026');
 
-  const branches = currentPeriodId === 'p-2026-08' ? BRANCHES_AUG : BRANCHES_SEP;
+  const branches = currentPeriodId === 'p-2026-10' ? BRANCHES_OCT
+    : currentPeriodId === 'p-2026-08' ? BRANCHES_AUG
+    : BRANCHES_SEP;
 
   const totalGross = branches.reduce((s, b) => s + b.grossSales, 0);
   const totalSales = branches.reduce((s, b) => s + b.sales, 0); // صافي المبيعات
+  const totalSalesWithVat = branches.reduce((s, b) => s + (b.salesWithVat || (b.sales * 1.15)), 0);
   const totalReturns = branches.reduce((s, b) => s + b.returns, 0);
   const totalTarget = activePeriodObj?.target || branches.reduce((s, b) => s + b.target, 0);
-  const totalPct = ((totalSales / totalTarget) * 100).toFixed(1);
+  const totalPct = ((totalSalesWithVat / totalTarget) * 100).toFixed(1);
 
   return (
     <div className="space-y-4 pb-2" dir="rtl">

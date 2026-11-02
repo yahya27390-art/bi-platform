@@ -29,7 +29,74 @@ import doraLogo from '../../assets/dora_logo.png';
 
 // Authentic Audited Financial Flow Configs (August & September 2026)
 const SANKEY_CONFIGS = {
-  'p-2026-08': {
+  'p-2026-10': {
+    periodLabel: 'أكتوبر 2026 (المعتمد بالفواتير)',
+    totalRevenue: 671855.55,
+    inflowText: '+671.9K ر.س',
+    surplusText: '+105.9K ر.س',
+    cogs: 466922.78,
+    cogsPct: '69.50%',
+    grossProfit: 204932.77,
+    grossProfitPct: '30.50%',
+    adSpend: 9070.00,
+    adSpendShare: '4.4% من الربح',
+    adChannelsText: 'جوجل (5.11K) • ميتا (2.90K) • تيك توك (1.06K)',
+    merText: '74.1× MER',
+    opex: 90000.00,
+    opexShare: '43.9% من الربح',
+    netProfit: 105862.77,
+    netProfitPct: '15.76% صافي',
+    netProfitShareText: 'أرباح نقدية بالخزينة (51.7% من مجمل الربح بعد التسويق والتشغيل)',
+    verificationText: 'صافي الإيراد: 671,855.55 ر.س = تكلفة البضاعة (466.9K) + أرباح الأعمال (204.9K)',
+    simCogsPct: 69.50,
+    simSalariesPct: 8.93,
+    simUtilitiesPct: 2.98,
+    simBufferPct: 1.49,
+    simNetProfitPct: 15.76,
+    branches: [
+      { id: 'branch_main', name: 'الفرع الرئيسي', value: 274978.46, pct: '40.9%', color: '#3B82F6', barWidth: '40.9%' },
+      { id: 'branch_rawaf', name: 'فرع الرواف', value: 191174.79, pct: '28.5%', color: '#06B6D4', barWidth: '28.5%' },
+      { id: 'branch_kia', name: 'فرع كيا', value: 178988.68, pct: '26.6%', color: '#6366F1', barWidth: '26.6%' },
+      { id: 'branch_salla', name: 'متجر سلة أونلاين', value: 26713.62, pct: '4.0%', color: '#10B981', barWidth: '4.0%' },
+    ],
+    nodes: [
+      { id: 'branch_main', name: 'الفرع الرئيسي', value: 274978.46, pct: '40.9%', color: '#3B82F6', type: 'inflow', desc: 'مبيعات المعرض الرئيسي لشهر أكتوبر المعتمدة (26011)' },
+      { id: 'branch_rawaf', name: 'فرع الرواف', value: 191174.79, pct: '28.5%', color: '#06B6D4', type: 'inflow', desc: 'مبيعات فرع الرواف الموثقة عبر نقاط البيع (26012)' },
+      { id: 'branch_kia', name: 'فرع كيا', value: 178988.68, pct: '26.6%', color: '#6366F1', type: 'inflow', desc: 'مبيعات فرع كيا المعتمدة (26013 - تجاوز التارجت 102.9%)' },
+      { id: 'branch_salla', name: 'متجر سلة أونلاين', value: 26713.62, pct: '4.0%', color: '#10B981', type: 'inflow', desc: 'صافي مبيعات متجر سلة (43 طلباً - شاملة الضريبة 15%)' },
+      { id: 'hub_central', name: 'إجمالي صافي المبيعات', value: 671855.55, pct: '100%', color: '#0F172A', type: 'hub', desc: 'إجمالي المبيعات الصافية المجمعة لفروع الشركة والمتجر' },
+      { id: 'cogs', name: 'تكلفة البضاعة (COGS)', value: 466922.78, pct: '69.50%', color: '#94A3B8', type: 'cost', desc: 'تكلفة استيراد وشراء مخزون قطع الغيار (هامش معتمد 30.50%)' },
+      { id: 'gross_profit', name: 'مجمل أرباح الأعمال', value: 204932.77, pct: '30.50%', color: '#10B981', type: 'profit', desc: 'هامش الربح الإجمالي المحقق (30.50%) لشركة درة' },
+      { id: 'ads', name: 'الإنفاق الإعلاني والتسويق', value: 9070.00, pct: '1.35%', color: '#F59E0B', type: 'ads', desc: 'إعلانات جوجل وميتا وتيك توك لشهر أكتوبر 2026' },
+      { id: 'opex', name: 'المصاريف التشغيلية للفروع', value: 90000.00, pct: '13.39%', color: '#64748B', type: 'opex', desc: 'رواتب (60K) + إيجار وشحن ومرافق (20K) + احتياطي طوارئ (10K)' },
+      { id: 'net_profit', name: 'صافي الفائض والربح النقدي', value: 105862.77, pct: '15.76%', color: '#059669', type: 'surplus', desc: 'صافي الأرباح النقدية الفعلية بالخزينة بعد كافة المصاريف والتسويق' },
+      { id: 'ads_google', name: 'إعلانات Google Ads', value: 5105.97, pct: '56.3%', color: '#3B82F6', type: 'sub_ads', desc: '40,619 تفاعل محلي و 9,662 نقرة لحملات البحث والخرائط' },
+      { id: 'ads_meta', name: 'إعلانات Meta Ads', value: 2901.45, pct: '32.0%', color: '#0668E1', type: 'sub_ads', desc: '1,736 محادثة واتساب بيعية بتكلفة 1.63 ر.س للمحادثة' },
+      { id: 'ads_tiktok', name: 'إعلانات TikTok Ads', value: 1062.58, pct: '11.7%', color: '#FE2C55', type: 'sub_ads', desc: '7,583 نقرة لمتجر سلة بتكلفة 0.12 ر.س ومعدل تفاعل عالي' },
+      { id: 'opex_salaries', name: 'رواتب وكوادر الفروع (60K)', value: 60000.00, pct: '8.93%', color: '#64748B', type: 'sub_opex', desc: 'رواتب الموظفين والكوادر لكامل فروع الشركة شهرياً' },
+      { id: 'opex_utilities', name: 'إيجار وشحن ومرافق (20K)', value: 20000.00, pct: '2.98%', color: '#475569', type: 'sub_opex', desc: 'إيجار المعارض والكهرباء والخدمات ونقليات الشحن' },
+      { id: 'opex_buffer', name: 'طوارئ ونثريات (10K)', value: 10000.00, pct: '1.49%', color: '#94A3B8', type: 'sub_opex', desc: 'مخصص أمان لتغطية الطوارئ وتذبذب الأسعار' },
+    ],
+    links: [
+      { source: 'الفرع الرئيسي', target: 'إجمالي صافي المبيعات', value: 274978.46 },
+      { source: 'فرع الرواف', target: 'إجمالي صافي المبيعات', value: 191174.79 },
+      { source: 'فرع كيا', target: 'إجمالي صافي المبيعات', value: 178988.68 },
+      { source: 'متجر سلة أونلاين', target: 'إجمالي صافي المبيعات', value: 26713.62 },
+      { source: 'إجمالي صافي المبيعات', target: 'تكلفة البضاعة (COGS)', value: 466922.78 },
+      { source: 'إجمالي صافي المبيعات', target: 'مجمل أرباح الأعمال', value: 204932.77 },
+      { source: 'مجمل أرباح الأعمال', target: 'الإنفاق الإعلاني والتسويق', value: 9070.00 },
+      { source: 'مجمل أرباح الأعمال', target: 'المصاريف التشغيلية للفروع', value: 90000.00 },
+      { source: 'مجمل أرباح الأعمال', target: 'صافي الفائض والربح النقدي', value: 105862.77 },
+      { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Google Ads', value: 5105.97 },
+      { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات Meta Ads', value: 2901.45 },
+      { source: 'الإنفاق الإعلاني والتسويق', target: 'إعلانات TikTok Ads', value: 1062.58 },
+      { source: 'المصاريف التشغيلية للفروع', target: 'رواتب وكوادر الفروع (60K)', value: 60000.00 },
+      { source: 'المصاريف التشغيلية للفروع', target: 'إيجار وشحن ومرافق (20K)', value: 20000.00 },
+      { source: 'المصاريف التشغيلية للفروع', target: 'طوارئ ونثريات (10K)', value: 10000.00 },
+    ],
+  },
+
+'p-2026-08': {
     periodLabel: 'أغسطس 2026',
     totalRevenue: 989522.16,
     inflowText: '+989.5K ر.س',
@@ -160,7 +227,7 @@ const SANKEY_CONFIGS = {
 export default function SankeyFlowChart({ height = 520, periodId: propPeriodId }) {
   const { periodId: ctxPeriodId } = useCurrentPeriod();
   const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-09';
-  const cfg = currentPeriodId === 'p-2026-08' ? SANKEY_CONFIGS['p-2026-08'] : SANKEY_CONFIGS['p-2026-09'];
+  const cfg = SANKEY_CONFIGS[currentPeriodId] || SANKEY_CONFIGS['p-2026-10'];
 
   const [viewMode, setViewMode] = useState('kinetic'); // 'kinetic' | 'sankey' | 'simulator'
   const [colorTheme, setColorTheme] = useState('dark'); // 'dark' | 'light'

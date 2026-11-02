@@ -44,6 +44,48 @@ function getLogMeta(log) {
         icon: <ShieldCheck className="w-4 h-4 text-emerald-600" />,
         documentId: 'doc-aug-07',
       };
+    case 'rec-oct-01':
+      return {
+        shortTitle: 'مبيعات الفروع الإجمالية (Gross)',
+        heroAmount: 738964.81,
+        icon: <Store className="w-4 h-4 text-blue-600" />,
+        documentId: 'doc-oct-01',
+      };
+    case 'rec-oct-02':
+      return {
+        shortTitle: 'مردودات مبيعات الفروع (Returns)',
+        heroAmount: 93822.87,
+        icon: <RotateCcw className="w-4 h-4 text-rose-600" />,
+        documentId: 'doc-oct-02',
+      };
+    case 'rec-oct-03':
+      return {
+        shortTitle: 'صافي مبيعات الفروع الميدانية',
+        heroAmount: 645141.93,
+        icon: <Store className="w-4 h-4 text-emerald-600" />,
+        documentId: 'doc-oct-01',
+      };
+    case 'rec-oct-04':
+      return {
+        shortTitle: 'مبيعات متجر سلة (شاملة الضريبة 15%)',
+        heroAmount: 26713.62,
+        icon: <CreditCard className="w-4 h-4 text-cyan-600" />,
+        documentId: 'doc-oct-03',
+      };
+    case 'rec-oct-05':
+      return {
+        shortTitle: 'صافي المبيعات الشامل وتحقيق التارجت',
+        heroAmount: 768626.84,
+        icon: <ShieldCheck className="w-4 h-4 text-emerald-600" />,
+        documentId: 'doc-oct-01',
+      };
+    case 'rec-oct-06':
+      return {
+        shortTitle: 'مصروفات الحملات الإعلانية',
+        heroAmount: 9070.00,
+        icon: <Building2 className="w-4 h-4 text-amber-600" />,
+        documentId: 'doc-oct-04',
+      };
     case 'rec-sep-01':
       return {
         shortTitle: 'صافي مبيعات الفروع ووسائل الدفع',
@@ -126,7 +168,7 @@ export default function ReconciliationCenter({
         {/* Period Switcher */}
         <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 self-start sm:self-auto">
           <Calendar className="w-3.5 h-3.5 text-slate-500 mr-1 ml-1" />
-          {DORA_PERIODS.slice(0, 2).map((p) => (
+          {DORA_PERIODS.slice(0, 3).map((p) => (
             <button
               key={p.id}
               onClick={() => setGlobalPeriodId(p.id)}

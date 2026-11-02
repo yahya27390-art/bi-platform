@@ -161,14 +161,17 @@ export function StatRow({ label, value, valueClass = 'text-[#0F172A]' }) {
  * Shows data completeness, missing data, and validation health across channels
  */
 export function DataHealthBar({ periodLabel = 'الفترة الحالية' }) {
+  const isOct = periodLabel.includes('أكتوبر') || periodLabel.includes('10');
+  const isSep = periodLabel.includes('سبتمبر') || periodLabel.includes('9');
+
   const healthItems = [
-    { name: 'ميتا (Meta)', status: 'complete', icon: '✓', label: 'مكتمل', desc: '180 صف · 0 أخطاء' },
-    { name: 'جوجل (Google)', status: 'complete', icon: '✓', label: 'مكتمل', desc: '142 صف · 0 أخطاء' },
-    { name: 'تيك توك (TikTok)', status: 'complete', icon: '✓', label: 'مكتمل', desc: '98 صف · 0 أخطاء' },
+    { name: 'ميتا (Meta)', status: 'complete', icon: '✓', label: 'مكتمل', desc: isOct ? '1,736 محادثة · 0 أخطاء' : isSep ? '1,477 محادثة · 0 أخطاء' : '180 صف · 0 أخطاء' },
+    { name: 'جوجل (Google)', status: 'complete', icon: '✓', label: 'مكتمل', desc: isOct ? '40,619 تفاعل · 0 أخطاء' : isSep ? '2,503 تفاعل · 0 أخطاء' : '142 صف · 0 أخطاء' },
+    { name: 'تيك توك (TikTok)', status: 'complete', icon: '✓', label: 'مكتمل', desc: isOct ? '7,583 نقرة · 0 أخطاء' : isSep ? '13,915 نقرة · 0 أخطاء' : '98 صف · 0 أخطاء' },
     { name: 'سناب شات (Snapchat)', status: 'complete', icon: '✓', label: 'مكتمل', desc: '64 صف · 0 أخطاء' },
-    { name: 'المتجر (Salla)', status: 'complete', icon: '✓', label: 'مكتمل', desc: '1,012 طلب · تم التحقق' },
+    { name: 'المتجر (Salla)', status: 'complete', icon: '✓', label: 'مكتمل', desc: isOct ? '43 طلب · شامل الضريبة 15%' : isSep ? '61 طلب · تم التحقق' : '1,012 طلب · تم التحقق' },
     { name: 'الفروع (Branches)', status: 'complete', icon: '✓', label: 'مكتمل', desc: '3 فروع · مطابقة Z-Report' },
-    { name: 'المالية (Accounting)', status: 'complete', icon: '✓', label: 'معتمد', desc: 'قائمة P&L مغلقة 28.02%' },
+    { name: 'المالية (Accounting)', status: 'complete', icon: '✓', label: 'معتمد', desc: isOct ? 'قائمة P&L معتمدة 30.50%' : isSep ? 'قائمة P&L مغلقة 30.50%' : 'قائمة P&L مغلقة 28.02%' },
   ];
 
   return (

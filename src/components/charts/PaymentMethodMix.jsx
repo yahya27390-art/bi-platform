@@ -4,9 +4,9 @@ import { formatSAR, formatNum } from '../../lib/kpiEngine';
 import { CreditCard, Banknote, Landmark, Smartphone, FileCheck } from 'lucide-react';
 import { DORA_SALES_BY_PAYMENT_METHOD } from '../../data/doraSchema';
 
-export default function PaymentMethodMix({ payments, periodId = 'p-2026-08', onInspectDocument }) {
+export default function PaymentMethodMix({ payments, periodId = 'p-2026-10', onInspectDocument }) {
   const filteredFromSchema = DORA_SALES_BY_PAYMENT_METHOD.filter(p => p.periodId === periodId);
-  const paymentList = payments || (filteredFromSchema.length > 0 ? filteredFromSchema : DORA_SALES_BY_PAYMENT_METHOD.filter(p => p.periodId === 'p-2026-08'));
+  const paymentList = payments || (filteredFromSchema.length > 0 ? filteredFromSchema : DORA_SALES_BY_PAYMENT_METHOD.filter(p => p.periodId === 'p-2026-10'));
 
   const totalAmount = paymentList.reduce((s, p) => s + (p.amount || 0), 0);
   const totalOrders = paymentList.reduce((s, p) => s + (p.orderCount || 0), 0);

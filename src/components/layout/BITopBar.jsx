@@ -16,7 +16,7 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const currentPeriod = periods?.find(p => p.id === effectivePeriodId) || periods?.find(p => p.id === 'p-2026-08') || periods?.[0];
+  const currentPeriod = periods?.find(p => p.id === effectivePeriodId) || periods?.find(p => p.id === 'p-2026-10') || periods?.[0];
 
   return (
     <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4 shadow-sm">

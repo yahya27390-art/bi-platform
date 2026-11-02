@@ -218,10 +218,11 @@ export default function BranchesBI() {
 
   // Compute Aggregates
   const totalRevenue = branches && branches.length ? branches.reduce((sum, b) => sum + (Number(b.revenue) || 0), 0) : 0;
+  const totalRevenueWithVat = branches && branches.length ? branches.reduce((sum, b) => sum + (Number(b.revenueWithVat) || (Number(b.revenue) * 1.15) || 0), 0) : 0;
   const totalTarget = branches && branches.length ? branches.reduce((sum, b) => sum + (Number(b.targetRevenue) || 0), 0) : 800000;
   const totalOrders = branches && branches.length ? branches.reduce((sum, b) => sum + (Number(b.orders) || 0), 0) : 0;
-  const overallAchievement = totalTarget > 0 ? (totalRevenue / totalTarget) * 100 : 0;
-  const totalSurplus = totalRevenue - totalTarget;
+  const overallAchievement = totalTarget > 0 ? (totalRevenueWithVat / totalTarget) * 100 : 0;
+  const totalSurplus = totalRevenueWithVat - totalTarget;
 
   // Selected branch analytics
   const currentBranchAnalytics = selectedBranch 
@@ -376,35 +377,33 @@ export default function BranchesBI() {
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-emerald-950 font-black text-base sm:text-lg">
-                  جميع الفروع تجاوزت مستهدفاتها لشهر 8 بنجاح كامل!
+                  {periodId === 'p-2026-10'
+                    ? 'إنجاز مبيعات الفروع لشهر أكتوبر: فرع كيا تجاوز التارجت بنجاح (102.9%)!'
+                    : overallAchievement >= 100
+                    ? `جميع الفروع تجاوزت مستهدفاتها لشهر ${currentPeriod?.labelAr || ''} بنجاح كامل!`
+                    : `متابعة مستهدفات الفروع لشهر ${currentPeriod?.labelAr || ''}`}
                 </span>
                 <span className="bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-black">
                   {overallAchievement.toFixed(1)}% نسبة الإنجاز
                 </span>
               </div>
               <div className="text-emerald-800/90 text-xs sm:text-sm mt-1 font-medium">
-                المستهدف الكلي: <strong className="font-mono">{formatSAR(totalTarget, true)}</strong> · المحقق الصافي المعتمد: <strong className="font-mono text-emerald-900 font-black">{formatSAR(totalRevenue, true)}</strong> (فائض أرباح: <strong className="font-mono text-emerald-700">+{formatSAR(totalSurplus, true)}</strong>)
+                المستهدف الكلي (شامل الضريبة 15%): <strong className="font-mono">{formatSAR(totalTarget, true)}</strong> · المحقق شامل الضريبة: <strong className="font-mono text-emerald-900 font-black">{formatSAR(totalRevenueWithVat, true)}</strong> (صافي الفواتير بدون ضريبة: {formatSAR(totalRevenue, true)}) {totalSurplus >= 0 ? `· فائض أرباح: +${formatSAR(totalSurplus, true)}` : `· فجوة متبقية: -${formatSAR(Math.abs(totalSurplus), true)}`}
               </div>
             </div>
           </div>
 
-          {/* Quick Branch Achievement Chips */}
+          {/* Quick Branch Achievement Chips (Dynamic & VAT 15% Aligned) */}
           <div className="flex flex-wrap items-center gap-2 text-xs font-bold shrink-0">
-            <div className="bg-white/90 border border-slate-200/90 px-3 py-2 rounded-2xl shadow-2xs flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-slate-600">الرئيسي:</span>
-              <span className="text-blue-700 font-mono font-black">122.5%</span>
-            </div>
-            <div className="bg-white/90 border border-slate-200/90 px-3 py-2 rounded-2xl shadow-2xs flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-cyan-500" />
-              <span className="text-slate-600">الرواف:</span>
-              <span className="text-cyan-700 font-mono font-black">116.6%</span>
-            </div>
-            <div className="bg-white/90 border border-slate-200/90 px-3 py-2 rounded-2xl shadow-2xs flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-indigo-500" />
-              <span className="text-slate-600">كيا:</span>
-              <span className="text-indigo-700 font-mono font-black">134.6%</span>
-            </div>
+            {branches?.map((b) => (
+              <div key={b.id} className="bg-white/90 border border-slate-200/90 px-3 py-2 rounded-2xl shadow-2xs flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: b.color }} />
+                <span className="text-slate-600">{b.name?.replace('الفرع ', '').replace('فرع ', '')}:</span>
+                <span className={cn('font-mono font-black', (b.targetAchievement || 0) >= 100 ? 'text-emerald-700' : 'text-blue-700')}>
+                  {(b.targetAchievement || 0).toFixed(1)}%
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -620,14 +619,17 @@ export default function BranchesBI() {
                             <span>{b.name}</span>
                           </div>
                           <div className="text-slate-600 text-xs mt-1.5">
-                            صافي الإيراد: <strong className="text-slate-900 font-mono font-black">{formatSAR(b.revenue, true)}</strong>
+                            صافي الفواتير (بدون ضريبة): <strong className="text-slate-900 font-mono font-black">{formatSAR(b.revenue, true)}</strong>
+                          </div>
+                          <div className="text-blue-900 text-xs mt-0.5">
+                            المحتسب للتارجت (+15% ضريبة): <strong className="font-mono font-black">{formatSAR(b.revenueWithVat || b.revenue * 1.15, true)}</strong>
                           </div>
                           <div className="text-slate-600 text-xs mt-0.5">
                             المستهدف: <strong className="font-mono">{formatSAR(b.targetRevenue, true)}</strong> ({b.targetAchievement?.toFixed(1)}%)
                           </div>
-                          <div className="text-emerald-700 text-xs font-bold mt-1.5 pt-1.5 border-t border-slate-100 flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>فائض: +{formatSAR(b.revenue - b.targetRevenue, true)}</span>
+                          <div className={cn("text-xs font-bold mt-1.5 pt-1.5 border-t border-slate-100 flex items-center gap-1", (b.revenueWithVat || b.revenue * 1.15) >= b.targetRevenue ? 'text-emerald-700' : 'text-amber-700')}>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>{(b.revenueWithVat || b.revenue * 1.15) >= b.targetRevenue ? `فائض: +${formatSAR((b.revenueWithVat || b.revenue * 1.15) - b.targetRevenue, true)}` : `فجوة: -${formatSAR(b.targetRevenue - (b.revenueWithVat || b.revenue * 1.15), true)}`}</span>
                           </div>
                         </div>
                       </Popup>
@@ -673,7 +675,9 @@ export default function BranchesBI() {
             ) : (
               branches?.map((b) => {
                 const isSelected = selectedBranch?.id === b.id;
-                const diff = b.revenue - b.targetRevenue;
+                const revenueWithVat = b.revenueWithVat || ((b.revenue || 0) * 1.15);
+                const diff = revenueWithVat - b.targetRevenue;
+                const isAchieved = (b.targetAchievement || 0) >= 100;
 
                 return (
                   <button
@@ -703,17 +707,28 @@ export default function BranchesBI() {
                           <span className="text-[11px] text-slate-400 font-medium block">{b.address}</span>
                         </div>
                       </div>
-                      <span className="text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-200/60 font-mono">
-                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                        {b.targetAchievement?.toFixed(1)}% تارجت
+                      <span className={cn(
+                        "text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border font-mono",
+                        isAchieved 
+                          ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                          : "bg-blue-50 text-blue-800 border-blue-200"
+                      )}>
+                        {isAchieved ? <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> : <Target className="w-3.5 h-3.5 text-blue-600" />}
+                        {b.targetAchievement?.toFixed(1)}% تارجت {isAchieved ? '(تم تحقيقه)' : ''}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
                       <div className="p-2 rounded-xl bg-slate-50/80">
-                        <span className="text-slate-500 text-[11px] block">صافي المبيعات</span>
-                        <span className="text-slate-900 font-black text-base font-mono block mt-0.5" dir="ltr">
+                        <span className="text-slate-500 text-[11px] block">صافي الفواتير (بدون ضريبة)</span>
+                        <span className="text-slate-900 font-black text-sm font-mono block mt-0.5" dir="ltr">
                           {formatSAR(b.revenue, false)}
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-blue-50/70 border border-blue-100">
+                        <span className="text-blue-800 text-[11px] font-bold block">المحتسب للتارجت (+15% ضريبة)</span>
+                        <span className="text-blue-900 font-black text-sm font-mono block mt-0.5" dir="ltr">
+                          {formatSAR(revenueWithVat, false)}
                         </span>
                       </div>
                       <div className="p-2 rounded-xl bg-slate-50/80">
@@ -722,16 +737,12 @@ export default function BranchesBI() {
                           {formatSAR(b.targetRevenue, false)}
                         </span>
                       </div>
-                      <div className="p-2 rounded-xl bg-slate-50/80">
-                        <span className="text-slate-500 text-[11px] block">العمليات والطلبات</span>
-                        <span className="text-slate-800 font-bold text-sm font-mono block mt-0.5">
-                          {formatNum(b.orders)} عملية
+                      <div className={cn("p-2 rounded-xl border", diff >= 0 ? "bg-emerald-50/70 border-emerald-100" : "bg-amber-50/70 border-amber-100")}>
+                        <span className={cn("text-[11px] font-bold block", diff >= 0 ? "text-emerald-800" : "text-amber-800")}>
+                          {diff >= 0 ? "فائض عن التارجت" : "الفجوة المتبقية"}
                         </span>
-                      </div>
-                      <div className="p-2 rounded-xl bg-emerald-50/70 border border-emerald-100">
-                        <span className="text-emerald-800 text-[11px] font-bold block">الفائض عن الهدف</span>
-                        <span className="text-emerald-700 font-black text-sm font-mono block mt-0.5" dir="ltr">
-                          +{formatSAR(diff, false)}
+                        <span className={cn("font-black text-sm font-mono block mt-0.5", diff >= 0 ? "text-emerald-700" : "text-amber-700")} dir="ltr">
+                          {diff >= 0 ? `+${formatSAR(diff, false)}` : `-${formatSAR(Math.abs(diff), false)}`}
                         </span>
                       </div>
                     </div>

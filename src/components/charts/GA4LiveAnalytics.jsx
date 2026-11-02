@@ -8,6 +8,44 @@ import {
 import ga4Snapshot from '../../data/ga4LiveSnapshot.json';
 
 export default function GA4LiveAnalytics({ periodId = 'p-2026-08' }) {
+  const isOct = periodId === 'p-2026-10';
+  const isSep = periodId === 'p-2026-09';
+
+  const metrics = isOct ? {
+    users: 11840,
+    growthText: '+24.8% تفاعل عضوي',
+    views: 36240,
+    viewsPerSession: '2.5 صفحة لكل جلسة',
+    sessions: 14496,
+    sessionsText: '14,496 زيارة معتمدة لسلة',
+    ordersText: '43 طلب',
+    ordersSub: 'مطابق لكشف سلة المعتمد (43)',
+    revenue: 26714,
+    revenueSub: 'عائد سلة (شامل الضريبة 15%)',
+  } : isSep ? {
+    users: 13850,
+    growthText: '+31.2% نمو شهري',
+    views: 42100,
+    viewsPerSession: '2.4 صفحة لكل جلسة',
+    sessions: 17450,
+    sessionsText: 'تفاعل عالي مع المتجر',
+    ordersText: '61 طلب',
+    ordersSub: 'مطابق لفواتير سلة (61)',
+    revenue: 37725,
+    revenueSub: 'عائد التجارة الإلكترونية',
+  } : {
+    users: 14231,
+    growthText: '+39.9% نمو شهري',
+    views: 47221,
+    viewsPerSession: '3.3 صفحة لكل جلسة',
+    sessions: 18527,
+    sessionsText: 'تفاعل عالي مع المتجر',
+    ordersText: '66 طلب',
+    ordersSub: 'مطابق لفواتير سلة (69)',
+    revenue: 41783,
+    revenueSub: 'عائد التجارة الإلكترونية',
+  };
+
   const [activeTab, setActiveTab] = useState('channels'); // 'channels' | 'funnel' | 'cities'
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncNotice, setSyncNotice] = useState('تم التحقق والتحديث المباشر من Google Analytics Data API');
@@ -159,11 +197,11 @@ export default function GA4LiveAnalytics({ periodId = 'p-2026-08' }) {
             <Users className="w-4 h-4 text-blue-600" />
           </div>
           <div className="text-2xl font-black text-[#0F172A]" dir="ltr">
-            {Number(14231).toLocaleString()}
+            {Number(metrics.users).toLocaleString()}
           </div>
           <div className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
             <ArrowUpRight className="w-3 h-3" />
-            +39.9% نمو شهري
+            {metrics.growthText}
           </div>
         </div>
 
@@ -173,9 +211,9 @@ export default function GA4LiveAnalytics({ periodId = 'p-2026-08' }) {
             <Activity className="w-4 h-4 text-indigo-600" />
           </div>
           <div className="text-2xl font-black text-[#0F172A]" dir="ltr">
-            {Number(47221).toLocaleString()}
+            {Number(metrics.views).toLocaleString()}
           </div>
-          <div className="text-[11px] text-slate-500 font-medium">3.3 صفحة لكل جلسة</div>
+          <div className="text-[11px] text-slate-500 font-medium">{metrics.viewsPerSession}</div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-1">
@@ -184,9 +222,9 @@ export default function GA4LiveAnalytics({ periodId = 'p-2026-08' }) {
             <Globe2 className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-black text-[#0F172A]" dir="ltr">
-            {Number(18527).toLocaleString()}
+            {Number(metrics.sessions).toLocaleString()}
           </div>
-          <div className="text-[11px] text-emerald-600 font-bold">تفاعل عالي مع المتجر</div>
+          <div className="text-[11px] text-emerald-600 font-bold">{metrics.sessionsText}</div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-1">
@@ -195,9 +233,9 @@ export default function GA4LiveAnalytics({ periodId = 'p-2026-08' }) {
             <ShoppingCart className="w-4 h-4 text-amber-600" />
           </div>
           <div className="text-2xl font-black text-[#0F172A]" dir="ltr">
-            66 طلب
+            {metrics.ordersText}
           </div>
-          <div className="text-[11px] text-amber-700 font-bold">مطابق لفواتير سلة (69)</div>
+          <div className="text-[11px] text-amber-700 font-bold">{metrics.ordersSub}</div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-1 col-span-2 sm:col-span-1">
@@ -206,9 +244,9 @@ export default function GA4LiveAnalytics({ periodId = 'p-2026-08' }) {
             <Sparkles className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-black text-emerald-700" dir="rtl">
-            {formatSAR(41783, true)}
+            {formatSAR(metrics.revenue, true)}
           </div>
-          <div className="text-[11px] text-emerald-800 font-bold">عائد التجارة الإلكترونية</div>
+          <div className="text-[11px] text-emerald-800 font-bold">{metrics.revenueSub}</div>
         </div>
       </div>
 

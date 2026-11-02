@@ -4,6 +4,179 @@ import { RefreshCw, CheckCircle2, AlertCircle, ShieldCheck, Zap, Radio } from 'l
 import { loadMetaConfig, validateTokenAndPermissions, formatMetaForAgentPrompt } from '@/lib/metaIntegration';
 
 // ─── Real September 2026 Advertising Data (Official Audited Proofs) ─────────────
+// ── Real October 2026 Advertising Data (Official Audited Proofs) ────────
+const PLATFORMS_OCT = [
+  {
+    key: 'google',
+    name: 'Google Ads',
+    nameAr: 'جوجل (بحث + خرائط الفروع)',
+    emoji: '🔍',
+    color: '#34A853',
+    bg: 'from-green-600 to-green-800',
+    cardBg: '#F0FDF4',
+    borderColor: '#BBF7D0',
+    spend: 5105.97,
+    primaryMetricLabel: 'التفاعلات والزيارات المحلية',
+    primaryMetricValue: '40,619',
+    primaryMetricSub: 'معدل التفاعل: 29.91% | نقرات: 9,662',
+    roas: 5.23,
+    roasLabel: '×5.23 ROAS',
+    roasColor: '#15803D',
+    stats: [
+      { label: 'مرات الظهور', value: '135,797' },
+      { label: 'التفاعلات', value: '40,619' },
+      { label: 'النقرات الإجمالية', value: '9,662' },
+      { label: 'نقرات حملة البحث DEC', value: '5,250' },
+      { label: 'نسبة نقر البحث CTR', value: '16.76%' },
+      { label: 'حصة الهواتف', value: '97.0%' },
+    ],
+    campaigns: [
+      {
+        name: 'DEC Search Campaign (متجر سلة)',
+        status: 'ENDED',
+        spend: 1996.19,
+        kpi: '5,250 نقرة',
+        cpa: '0.38 ر.س',
+        reach: '31,329 ظهور',
+        roas: '×13.38',
+        badge: 'أعلى نقرات',
+        badgeColor: '#15803D',
+      },
+      {
+        name: 'خرائط Google كيا',
+        status: 'ENDED',
+        spend: 1180.87,
+        kpi: '30,153 تفاعل',
+        cpa: '0.04 ر.س',
+        reach: '58,958 ظهور',
+        roas: 'محلي',
+        badge: 'الأعلى تفاعلاً',
+        badgeColor: '#0284C7',
+      },
+      {
+        name: 'خرائط Google الرئيسي (السليم)',
+        status: 'ENDED',
+        spend: 1028.00,
+        kpi: '3,993 تفاعل',
+        cpa: '0.26 ر.س',
+        reach: '27,367 ظهور',
+        roas: 'محلي',
+        badge: 'زيارات الفرع',
+        badgeColor: '#0284C7',
+      },
+      {
+        name: 'خرائط Google هيونداي (الرواف)',
+        status: 'ENDED',
+        spend: 900.91,
+        kpi: '1,223 تفاعل',
+        cpa: '0.74 ر.س',
+        reach: '18,143 ظهور',
+        roas: 'محلي',
+        badge: 'زيارات الفرع',
+        badgeColor: '#0284C7',
+      },
+    ],
+  },
+  {
+    key: 'meta',
+    name: 'Meta Ads',
+    nameAr: 'ميتا (واتساب + إنستغرام)',
+    emoji: '💬',
+    color: '#1877F2',
+    bg: 'from-blue-600 to-blue-800',
+    cardBg: '#EFF6FF',
+    borderColor: '#BFDBFE',
+    spend: 2901.45,
+    primaryMetricLabel: 'محادثات واتساب البيعية',
+    primaryMetricValue: '1,736',
+    primaryMetricSub: 'تكلفة: 1.63 ر.س / محادثة',
+    roas: 29.3,
+    roasLabel: '×29.3 ROAS',
+    roasColor: '#15803D',
+    stats: [
+      { label: 'مرات الظهور', value: '525,662' },
+      { label: 'الوصول', value: '200,058' },
+      { label: 'النقرات والتفاعل', value: '2,930' },
+      { label: 'جهات اتصال جديدة', value: '1,394' },
+      { label: 'تكلفة المحادثة', value: '1.63 ر.س' },
+      { label: 'التكرار Frequency', value: '2.63' },
+    ],
+    campaigns: [
+      {
+        name: 'حملة تفاعل واتساب 14/4/2026',
+        status: 'ENDED',
+        spend: 2831.52,
+        kpi: '1,736 محادثة',
+        cpa: '1.63 ر.س',
+        reach: '182,824',
+        roas: '×29.3',
+        badge: 'الأعلى تحويلاً',
+        badgeColor: '#15803D',
+      },
+      {
+        name: 'حملة وعي لبريدة',
+        status: 'ENDED',
+        spend: 69.93,
+        kpi: '17,234 وصول',
+        cpa: '0.004 ر.س',
+        reach: '17,234',
+        roas: '—',
+        badge: 'وعي محلي',
+        badgeColor: '#16A34A',
+      },
+    ],
+  },
+  {
+    key: 'tiktok',
+    name: 'TikTok Ads',
+    nameAr: 'تيك توك (ترافيك متجر سلة)',
+    emoji: '🎵',
+    color: '#FE2C55',
+    bg: 'from-slate-900 to-slate-800',
+    cardBg: '#FFF1F2',
+    borderColor: '#FECDD3',
+    spend: 1062.58,
+    primaryMetricLabel: 'نقرات المتجر (Clicks)',
+    primaryMetricValue: '7,583',
+    primaryMetricSub: 'تكلفة نقرة رخيصة: 0.12 ر.س (CPC)',
+    roas: 11.29,
+    roasLabel: '×11.3 ROAS',
+    roasColor: '#15803D',
+    stats: [
+      { label: 'مرات الظهور', value: '400,700' },
+      { label: 'النقرات', value: '7,583' },
+      { label: 'تكلفة النقرة CPC', value: '0.12 ر.س' },
+      { label: 'معدل النقر CTR', value: '2.01%' },
+      { label: 'تكلفة الألف CPM', value: '2.48 ر.س' },
+      { label: 'تفاعل وإعجاب', value: '381' },
+    ],
+    campaigns: [
+      {
+        name: 'Traffic22/7/2026',
+        status: 'ENDED',
+        spend: 935.74,
+        kpi: '7,583 نقرة',
+        cpa: '0.12 ر.س',
+        reach: '377,276 ظهور',
+        roas: '×11.3',
+        badge: 'أعلى ترافيك',
+        badgeColor: '#15803D',
+      },
+      {
+        name: 'Community الوعي 10/8/2026',
+        status: 'ENDED',
+        spend: 126.84,
+        kpi: '23,424 ظهور',
+        cpa: '—',
+        reach: '23,424',
+        roas: '—',
+        badge: 'تفاعل مجتمعي',
+        badgeColor: '#64748B',
+      },
+    ],
+  },
+];
+
 const PLATFORMS_SEP = [
   {
     key: 'meta',
@@ -391,10 +564,10 @@ function SpendBar({ platform, totalSpend }) {
 }
 
 export default function OwnerCampaignTab({ viewMode = 'mobile', periodId = 'p-2026-09' }) {
-  const isAudited = periodId === 'p-2026-08' || periodId === 'p-2026-09';
+  const isAudited = periodId === 'p-2026-10' || periodId === 'p-2026-08' || periodId === 'p-2026-09';
   const isAuditedAugust = periodId === 'p-2026-08';
-  const periodLabel = periodId === 'p-2026-08' ? 'أغسطس 2026' : (periodId === 'p-2026-09' ? 'سبتمبر 2026' : 'الشهر الحالي');
-  const platforms = periodId === 'p-2026-09' ? PLATFORMS_SEP : (periodId === 'p-2026-08' ? PLATFORMS_AUG : PLATFORMS_LIVE);
+  const periodLabel = periodId === 'p-2026-10' ? 'أكتوبر 2026' : (periodId === 'p-2026-08' ? 'أغسطس 2026' : (periodId === 'p-2026-09' ? 'سبتمبر 2026' : 'الشهر الحالي'));
+  const platforms = periodId === 'p-2026-10' ? PLATFORMS_OCT : (periodId === 'p-2026-09' ? PLATFORMS_SEP : (periodId === 'p-2026-08' ? PLATFORMS_AUG : PLATFORMS_LIVE));
 
   const [activePlatform, setActivePlatform] = useState('meta');
   const [metaSyncing, setMetaSyncing] = useState(false);

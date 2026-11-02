@@ -71,9 +71,9 @@ export class MockProvider {
       avgOrderValue:      calcAOV(fin.ecommerceRevenue, ecm.totalOrders),
       conversionRate:     ecm.conversionRate,
 
-      // Targets
-      targetRevenue:      MOCK_TARGETS[periodId]?.revenue || 800000,
-      targetAchievementPct: calcTargetAchievement(fin.totalRevenue, MOCK_TARGETS[periodId]?.revenue || 800000),
+      // Targets - Dora Cars Rule: Target is compared against sales inclusive of 15% VAT
+      targetRevenue:        fin.monthlyTarget || MOCK_TARGETS[periodId]?.revenue || 800000,
+      targetAchievementPct: fin.targetAchievementPct || calcTargetAchievement((fin.branchRevenue || fin.totalRevenue || 0) * 1.15, fin.monthlyTarget || MOCK_TARGETS[periodId]?.revenue || 800000),
     };
   }
 

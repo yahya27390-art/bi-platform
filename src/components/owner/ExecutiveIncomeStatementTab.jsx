@@ -12,6 +12,7 @@ export default function ExecutiveIncomeStatementTab({
   periodId = 'p-2026-09',
   periodLabel = 'سبتمبر 2026'
 }) {
+  const isOct = periodId === 'p-2026-10';
   const isSep = periodId === 'p-2026-09';
   // P&L Waterfall Chart Option (Safe formatter & confined tooltip)
   const waterfallOption = {
@@ -115,7 +116,12 @@ export default function ExecutiveIncomeStatementTab({
         label: {
           show: false
         },
-        data: isSep ? [
+        data: isOct ? [
+          { value: 274978.46, name: 'الفرع الرئيسي', itemStyle: { color: '#0F2744' } },
+          { value: 191174.79, name: 'فرع الرواف هيونداي', itemStyle: { color: '#0284C7' } },
+          { value: 178988.68, name: 'فرع كيا المعتمد', itemStyle: { color: '#F97316' } },
+          { value: 26713.62, name: 'متجر سلة أونلاين', itemStyle: { color: '#10B981' } }
+        ] : isSep ? [
           { value: 317816.51, name: 'الفرع الرئيسي', itemStyle: { color: '#0F2744' } },
           { value: 292288.13, name: 'فرع الرواف هيونداي', itemStyle: { color: '#0284C7' } },
           { value: 241897.00, name: 'فرع كيا المعتمد', itemStyle: { color: '#F97316' } },

@@ -34,17 +34,19 @@ export default function App() {
   const isInventoryViewer = user?.role === 'INVENTORY_VIEWER';
   const isPurchasingManager = user?.role === 'PURCHASING_MANAGER';
 
-  // Smart single-system redirect vs Portal for multi-system users
-  const singleAutoRedirect = getSingleSystemAutoRedirect(user);
-  const homeElement = singleAutoRedirect
-    ? <Navigate to={singleAutoRedirect} replace />
-    : <Navigate to="/portal" replace />;
+  const isRestrictedRole = isInventoryViewer || isPurchasingManager;
 
   const restrictedRedirect = isPurchasingManager 
     ? <Navigate to="/inventory/branch-shortages" replace /> 
     : <Navigate to="/inventory/search" replace />;
 
-  const isRestrictedRole = isInventoryViewer || isPurchasingManager;
+  const overviewElement = isRestrictedRole ? restrictedRedirect : <BIOverview />;
+
+  // Smart single-system redirect: If restricted single-system user, send to their system; otherwise default to Sales Analysis (BIOverview)
+  const singleAutoRedirect = getSingleSystemAutoRedirect(user);
+  const homeElement = singleAutoRedirect
+    ? <Navigate to={singleAutoRedirect} replace />
+    : overviewElement;
 
   return (
     <Routes>
@@ -76,6 +78,7 @@ export default function App() {
         }
       >
         <Route path="/" element={homeElement} />
+        <Route path="/overview" element={overviewElement} />
         
         {/* Inventory Intelligence Module (Search & Reports & Supplier Comparison & Branch Shortages & New Branch Requisition) */}
         <Route path="/inventory" element={<Navigate to="/inventory/search" replace />} />

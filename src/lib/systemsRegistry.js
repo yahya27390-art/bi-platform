@@ -99,7 +99,7 @@ export const PLATFORM_SYSTEMS = [
     badgeClass: 'bg-blue-500/15 text-blue-700 border-blue-400/30',
     dotClass: 'bg-blue-500',
     description: 'متابعة حية لمبيعات الفروع الميدانية، إعلانات تيك توك وميتا وجوجل، ومبيعات المتجر الإلكتروني مع مؤشرات النمو اللحظية.',
-    path: '/',
+    path: '/overview',
     icon: LayoutDashboard,
     accentGradient: 'from-blue-700 via-sky-700 to-slate-900',
     cardBorder: 'hover:border-blue-500 hover:ring-2 hover:ring-blue-500/20',

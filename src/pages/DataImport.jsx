@@ -388,9 +388,9 @@ export default function DataImport() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-slate-900">الأرشيف الرقمي لمستندات شهر 8 المرفوعة (August 2026 Source Archive)</h3>
+                <h3 className="text-lg font-black text-slate-900">الأرشيف الرقمي لمستندات الفترة النشطة المرفوعة ({periods.find(p => p.id === periodId)?.labelAr || 'المستندات المصدرية'})</h3>
                 <span className="text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-full">
-                  {DORA_DOCUMENTS.filter(d => d.periodId === 'p-2026-08').length} مستنداً معتمداً
+                  {(DORA_DOCUMENTS.filter(d => d.periodId === periodId).length > 0 ? DORA_DOCUMENTS.filter(d => d.periodId === periodId) : DORA_DOCUMENTS).length} مستنداً معتمداً
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -404,7 +404,7 @@ export default function DataImport() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {DORA_DOCUMENTS.filter(d => d.periodId === 'p-2026-08').map((doc) => {
+            {(DORA_DOCUMENTS.filter(d => d.periodId === periodId).length > 0 ? DORA_DOCUMENTS.filter(d => d.periodId === periodId) : DORA_DOCUMENTS).map((doc) => {
               const isImg = doc.fileName?.match(/\.(png|jpe?g)$/i);
               const isPdf = doc.fileName?.match(/\.pdf$/i);
               return (
@@ -527,8 +527,16 @@ export default function DataImport() {
                       </div>
                       <div className="text-[11px] text-slate-600">المبيعات: <strong>{formatSAR(doraParsedResult.branches.main.grossSales)}</strong></div>
                       <div className="text-[11px] text-rose-600">المردود: <strong>{formatSAR(doraParsedResult.branches.main.returns)}</strong></div>
-                      <div className="text-xs font-black text-emerald-700 pt-1 border-t border-slate-100">
-                        الصافي: {formatSAR(doraParsedResult.branches.main.netSales)}
+                      <div className="text-xs font-semibold text-slate-700 pt-1 border-t border-slate-100">
+                        صافي الفواتير: {formatSAR(doraParsedResult.branches.main.netSales)}
+                      </div>
+                      <div className="text-xs font-black text-blue-700 flex items-center justify-between">
+                        <span>للتارجت (+15% ضريبة):</span>
+                        <span className="font-mono">{formatSAR(doraParsedResult.branches.main.salesWithVat)}</span>
+                      </div>
+                      <div className="text-[11px] font-bold text-slate-600 bg-blue-50 px-2 py-0.5 rounded flex items-center justify-between">
+                        <span>إنجاز التارجت:</span>
+                        <span className="font-mono text-blue-800 font-black">{doraParsedResult.branches.main.targetAchievementPct}%</span>
                       </div>
                     </div>
 
@@ -540,8 +548,16 @@ export default function DataImport() {
                       </div>
                       <div className="text-[11px] text-slate-600">المبيعات: <strong>{formatSAR(doraParsedResult.branches['al-rawaf'].grossSales)}</strong></div>
                       <div className="text-[11px] text-rose-600">المردود: <strong>{formatSAR(doraParsedResult.branches['al-rawaf'].returns)}</strong></div>
-                      <div className="text-xs font-black text-emerald-700 pt-1 border-t border-slate-100">
-                        الصافي: {formatSAR(doraParsedResult.branches['al-rawaf'].netSales)}
+                      <div className="text-xs font-semibold text-slate-700 pt-1 border-t border-slate-100">
+                        صافي الفواتير: {formatSAR(doraParsedResult.branches['al-rawaf'].netSales)}
+                      </div>
+                      <div className="text-xs font-black text-emerald-700 flex items-center justify-between">
+                        <span>للتارجت (+15% ضريبة):</span>
+                        <span className="font-mono">{formatSAR(doraParsedResult.branches['al-rawaf'].salesWithVat)}</span>
+                      </div>
+                      <div className="text-[11px] font-bold text-slate-600 bg-emerald-50 px-2 py-0.5 rounded flex items-center justify-between">
+                        <span>إنجاز التارجت:</span>
+                        <span className="font-mono text-emerald-800 font-black">{doraParsedResult.branches['al-rawaf'].targetAchievementPct}%</span>
                       </div>
                     </div>
 
@@ -553,10 +569,25 @@ export default function DataImport() {
                       </div>
                       <div className="text-[11px] text-slate-600">المبيعات: <strong>{formatSAR(doraParsedResult.branches.kia.grossSales)}</strong></div>
                       <div className="text-[11px] text-rose-600">المردود: <strong>{formatSAR(doraParsedResult.branches.kia.returns)}</strong></div>
-                      <div className="text-xs font-black text-emerald-700 pt-1 border-t border-slate-100">
-                        الصافي: {formatSAR(doraParsedResult.branches.kia.netSales)}
+                      <div className="text-xs font-semibold text-slate-700 pt-1 border-t border-slate-100">
+                        صافي الفواتير: {formatSAR(doraParsedResult.branches.kia.netSales)}
+                      </div>
+                      <div className="text-xs font-black text-purple-700 flex items-center justify-between">
+                        <span>للتارجت (+15% ضريبة):</span>
+                        <span className="font-mono">{formatSAR(doraParsedResult.branches.kia.salesWithVat)}</span>
+                      </div>
+                      <div className="text-[11px] font-bold text-purple-900 bg-purple-50 px-2 py-0.5 rounded flex items-center justify-between">
+                        <span>إنجاز التارجت:</span>
+                        <span className="font-mono text-purple-800 font-black">{doraParsedResult.branches.kia.targetAchievementPct}% (تجاوز التارجت!)</span>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="bg-white/80 p-2.5 rounded-xl border border-emerald-300/80 flex flex-wrap items-center justify-between text-xs font-bold text-slate-800">
+                    <span>إجمالي الفروع الثلاثة المجمعة:</span>
+                    <span>صافي الفواتير: <strong className="font-mono">{formatSAR(doraParsedResult.totals.netSales)}</strong></span>
+                    <span>المحتسب للتارجت (+15% ضريبة): <strong className="font-mono text-emerald-700">{formatSAR(doraParsedResult.totals.salesWithVat)}</strong></span>
+                    <span className="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-md font-mono">{doraParsedResult.totals.targetAchievementPct}% إنجاز</span>
                   </div>
                 </div>
               )}

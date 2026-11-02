@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatSAR } from '../../lib/kpiEngine';
+import { cn } from '@/lib/utils';
 import {
   Store,
   Target,
@@ -17,21 +18,22 @@ import doraLogo from '../../assets/dora_logo.png';
 
 export default function DoraBranchCards({
   branchSales = DORA_BRANCH_SALES,
-  periodId = 'p-2026-08',
+  periodId = 'p-2026-10',
   onInspectDocument,
 }) {
   // Find sales for current period, fallback to p-2026-08 if current empty
   let currentSales = branchSales.filter((s) => s.periodId === periodId);
   if (!currentSales.length) {
-    currentSales = branchSales.filter((s) => s.periodId === 'p-2026-08');
+    currentSales = branchSales.filter((s) => s.periodId === 'p-2026-10');
   }
 
   const totalGross = currentSales.reduce((s, b) => s + (b.grossSales || 0), 0);
   const totalReturns = currentSales.reduce((s, b) => s + (b.returnsAmount || 0), 0);
   const totalNet = currentSales.reduce((s, b) => s + (b.netSales || 0), 0);
+  const totalWithVat = currentSales.reduce((s, b) => s + (b.salesWithVat || ((b.netSales || 0) * 1.15)), 0);
   const totalTarget = currentSales.reduce((s, b) => s + (b.target || 0), 0);
-  const totalAchievement = totalTarget ? (totalNet / totalTarget) * 100 : 0;
-  const totalSurplus = totalNet - totalTarget;
+  const totalAchievement = totalTarget ? (totalWithVat / totalTarget) * 100 : 0;
+  const totalSurplus = totalWithVat - totalTarget;
 
   // Branch Address & Metadata Map
   const branchMetaMap = {
@@ -94,16 +96,22 @@ export default function DoraBranchCards({
               إجمالي مبيعات الفروع الميدانية (POS)
             </div>
             <div className="text-base sm:text-lg font-black text-[#0F172A] font-mono flex items-center gap-1.5" dir="ltr">
-              <span>{formatSAR(totalNet, false)}</span>
+              <span>{formatSAR(totalWithVat, false)}</span>
               <span className="text-xs text-slate-500 font-normal">/ المستهدف: {formatSAR(totalTarget, false)}</span>
             </div>
+            <div className="text-[10px] text-slate-400 font-medium">صافي الفواتير (بدون ضريبة): {formatSAR(totalNet, false)}</div>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <span className="text-xs font-black text-emerald-800 bg-emerald-100/70 border border-emerald-300 px-3 py-1 rounded-xl shadow-2xs">
+            <span className={cn(
+              "text-xs font-black px-3 py-1 rounded-xl shadow-2xs border font-mono",
+              totalAchievement >= 100 
+                ? "text-emerald-800 bg-emerald-100/70 border-emerald-300"
+                : "text-blue-800 bg-blue-100/70 border-blue-300"
+            )}>
               {totalAchievement.toFixed(1)}% تحقيق
             </span>
-            <span className="text-[10px] text-emerald-700 font-bold">
-              +{formatSAR(totalSurplus, true)} فائض
+            <span className={cn("text-[10px] font-bold font-mono", totalSurplus >= 0 ? "text-emerald-700" : "text-amber-700")}>
+              {totalSurplus >= 0 ? `+${formatSAR(totalSurplus, true)} فائض` : `-${formatSAR(Math.abs(totalSurplus), true)} فجوة`}
             </span>
           </div>
         </div>
@@ -189,9 +197,9 @@ export default function DoraBranchCards({
                 {/* Net Sales Hero Box */}
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-1.5">
                   <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold">
-                    <span>صافي المبيعات الفعلية (Net Sales):</span>
+                    <span>صافي الفواتير (بدون ضريبة):</span>
                     <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">
-                      +{branch.growthVsLastMonth}% نمو
+                      {branch.growthVsLastMonth >= 0 ? `+${branch.growthVsLastMonth}%` : `${branch.growthVsLastMonth}%`} نمو
                     </span>
                   </div>
                   <div
@@ -200,7 +208,13 @@ export default function DoraBranchCards({
                   >
                     <span>{formatSAR(branch.netSales, false)}</span>
                   </div>
-                  <div className="text-[11px] text-slate-500 font-medium pt-1 border-t border-slate-200/70 flex items-center justify-between">
+                  <div className="text-[11px] text-blue-900 font-semibold pt-1 border-t border-slate-200/70 flex items-center justify-between">
+                    <span>المبيعات للتارجت (+15% ضريبة):</span>
+                    <span className="font-black font-mono">
+                      {formatSAR(branch.salesWithVat || (branch.netSales * 1.15), false)}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-medium flex items-center justify-between">
                     <span>المستهدف الشهري:</span>
                     <span className="font-bold text-[#0F172A] font-mono">
                       {formatSAR(branch.target, false)}

@@ -56,9 +56,14 @@ export default function Targets() {
   const { data: branchesPerf }  = useBranchesWithPerformance(periodId);
   const currentPeriod           = periods?.find(p => p.id === periodId);
 
-  const mainBranchRev = branchesPerf?.find(b => b.id === 'main')?.revenue || 0;
-  const rawafBranchRev = branchesPerf?.find(b => b.id === 'al-rawaf')?.revenue || 0;
-  const kiaBranchRev = branchesPerf?.find(b => b.id === 'kia')?.revenue || 0;
+  const mainRaw = branchesPerf?.find(b => b.id === 'main')?.revenue || 0;
+  const rawafRaw = branchesPerf?.find(b => b.id === 'al-rawaf')?.revenue || 0;
+  const kiaRaw = branchesPerf?.find(b => b.id === 'kia')?.revenue || 0;
+
+  // Dora Cars Business Rule: Target is based on sales inclusive of 15% VAT
+  const mainBranchRev = mainRaw * 1.15;
+  const rawafBranchRev = rawafRaw * 1.15;
+  const kiaBranchRev = kiaRaw * 1.15;
   const totalBranchRev = mainBranchRev + rawafBranchRev + kiaBranchRev;
 
   const metaMetrics   = adMetrics?.find(p => p.slug === 'meta');
@@ -91,13 +96,17 @@ export default function Targets() {
             </div>
             <div>
               <div className="text-emerald-950 font-black text-base">
-                {periodId === 'p-2026-08'
-                  ? 'تحقيق استثنائي للمستهدفات: 123.7% من تارجت الفروع لشهر أغسطس'
+                {periodId === 'p-2026-10'
+                  ? 'متابعة مستهدفات شهر أكتوبر 2026: تحقيق 92.7% من تارجت الفروع وتفوق فرع كيا بنسبة 102.9%!'
+                  : periodId === 'p-2026-08'
+                  ? 'تحقيق استثنائي للمستهدفات: 140.9% من تارجت الفروع لشهر أغسطس'
                   : `متابعة مستهدفات ${currentPeriod?.labelAr || 'الشهر التشغيلي'}: مستهدف الفروع 800,000 ر.س`}
               </div>
               <div className="text-emerald-800 text-xs mt-0.5 font-medium">
-                {periodId === 'p-2026-08'
-                  ? 'تم تحقيق صافي مبيعات 989,522.16 ر.س مقابل مستهدف 800,000 ر.س بهامش ربح صافي قدره 28.02%'
+                {periodId === 'p-2026-10'
+                  ? 'قاعدة التارجت المعتمدة: تحتسب المستهدفات على المبيعات شاملة ضريبة 15% (صافي الفواتير 645,142 ر.س × 1.15 = 741,913 ر.س المحققة)'
+                  : periodId === 'p-2026-08'
+                  ? 'تم تحقيق مبيعات شاملة الضريبة 1,137,950 ر.س مقابل مستهدف 800,000 ر.س بهامش ربح صافي قدره 28.02%'
                   : 'البيانات تُحدّث آلياً فور تسجيل إغلاقات الصندوق وتقارير Z-Reports ومزامنة الفواتير'}
               </div>
             </div>
@@ -114,7 +123,7 @@ export default function Targets() {
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <SectionHeader title="نظرة سريعة على المستهدفات الكلية للشركة" className="mb-8" />
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-6 justify-items-center">
-                <MetricRing value={kpis.totalRevenue} target={targets?.revenue || 800000} color="#059669" size={100} label="صافي المبيعات" />
+                <MetricRing value={(kpis.branchRevenue || kpis.totalRevenue || 0) * 1.15} target={targets?.revenue || 800000} color="#059669" size={100} label="المبيعات للتارجت" />
                 <MetricRing value={kpis.totalOrders}  target={targets?.orders || 2000}    color="#2563EB" size={100} label="إجمالي العمليات" />
                 <MetricRing value={kpis.newCustomers} target={targets?.newCustomers || 450} color="#0F172A" size={100} label="عملاء جدد" />
                 <MetricRing value={kpis.overallROAS}  target={targets?.roas || 4}          color="#D97706" size={100} label="ROAS المجمّع" />
@@ -127,12 +136,45 @@ export default function Targets() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Branch targets */}
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <SectionHeader title="مستهدفات الفروع الميدانية (Branch Targets)" className="mb-4" />
+                <div className="flex items-center justify-between mb-4">
+                  <SectionHeader title="مستهدفات الفروع الميدانية (Branch Targets)" />
+                  <span className="text-[10px] font-bold text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
+                    المبيعات شاملة 15% ضريبة
+                  </span>
+                </div>
                 <div>
-                  <TargetRow label="إجمالي مبيعات الفروع المجمعة" actual={totalBranchRev} target={800000} format="sar" color="#059669" />
-                  <TargetRow label="الفرع الرئيسي (Main Branch)" actual={mainBranchRev} target={350000} format="sar" color="#2563EB" />
-                  <TargetRow label="فرع الرواف (Al Rawaf Branch)" actual={rawafBranchRev} target={250000} format="sar" color="#059669" />
-                  <TargetRow label="فرع كيا (Kia Branch)" actual={kiaBranchRev} target={200000} format="sar" color="#0F172A" />
+                  <TargetRow 
+                    label="إجمالي مبيعات الفروع المجمعة" 
+                    subtitle={periodId === 'p-2026-10' ? "المبيعات شاملة 15% ضريبة: 741,913 ر.س (صافي الفواتير بدون ضريبة: 645,142 ر.س)" : undefined}
+                    actual={totalBranchRev} 
+                    target={800000} 
+                    format="sar" 
+                    color="#059669" 
+                  />
+                  <TargetRow 
+                    label="الفرع الرئيسي (Main Branch)" 
+                    subtitle={periodId === 'p-2026-10' ? "المبيعات شاملة 15% ضريبة: 316,225 ر.س (صافي الفواتير: 274,978 ر.س)" : undefined}
+                    actual={mainBranchRev} 
+                    target={350000} 
+                    format="sar" 
+                    color="#2563EB" 
+                  />
+                  <TargetRow 
+                    label="فرع الرواف (Al Rawaf Branch)" 
+                    subtitle={periodId === 'p-2026-10' ? "المبيعات شاملة 15% ضريبة: 219,851 ر.س (صافي الفواتير: 191,175 ر.س)" : undefined}
+                    actual={rawafBranchRev} 
+                    target={250000} 
+                    format="sar" 
+                    color="#059669" 
+                  />
+                  <TargetRow 
+                    label="فرع كيا (Kia Branch)" 
+                    subtitle={periodId === 'p-2026-10' ? "المبيعات شاملة 15% ضريبة: 205,837 ر.س (صافي الفواتير: 178,989 ر.س) — تم تجاوز التارجت!" : undefined}
+                    actual={kiaBranchRev} 
+                    target={200000} 
+                    format="sar" 
+                    color="#0F172A" 
+                  />
                 </div>
               </div>
 
@@ -177,7 +219,7 @@ export default function Targets() {
                   <TargetRow 
                     label="مبيعات قنوات التواصل (ميتا + تيك توك)" 
                     subtitle="المبيعات المغلقة عبر المحادثات: تحويلات بنكية (130.9K) + تمارا (60.5K) + تابي (33.1K)"
-                    actual={periodId === 'p-2026-08' ? 224558.08 : 150000} 
+                    actual={periodId === 'p-2026-10' ? (targets?.omnichannelRevenue || 85000) : (periodId === 'p-2026-08' ? 224558.08 : 150000)} 
                     target={targets?.omnichannelRevenue || 180000} 
                     format="sar" 
                     color="#8B5CF6" 
@@ -185,7 +227,7 @@ export default function Targets() {
                   <TargetRow 
                     label="العائد الإعلاني لميتا وتيك توك (Messaging ROAS)" 
                     subtitle="مبيعات المحادثات والتقسيط (224.6K) ÷ إنفاق ميتا وتيك توك (4,743 ر.س)"
-                    actual={periodId === 'p-2026-08' ? 47.35 : 6.0} 
+                    actual={periodId === 'p-2026-10' ? (targets?.omnichannelROAS || 29.3) : (periodId === 'p-2026-08' ? 47.35 : 6.0)} 
                     target={targets?.omnichannelROAS || 35.0} 
                     format="multiplier" 
                     color="#2563EB" 
@@ -201,7 +243,7 @@ export default function Targets() {
                   <TargetRow 
                     label="تحويلات جوجل الإجمالية (خرائط الفروع والمتجر)" 
                     subtitle="2,160 إجراء تحويل ومكالمات وزيارات فروع بمتوسط تكلفة تحويل 2.16 ر.س"
-                    actual={periodId === 'p-2026-08' ? 2160 : (googleMetrics?.conversions || 450)} 
+                    actual={periodId === 'p-2026-10' ? 40619 : (periodId === 'p-2026-08' ? 2160 : (googleMetrics?.conversions || 450))} 
                     target={targets?.googleConversions || 1800} 
                     format="number" 
                     color="#059669" 
@@ -213,9 +255,9 @@ export default function Targets() {
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <SectionHeader title="مستهدفات متجر سلة الإلكتروني" className="mb-4" />
                 <div>
-                  <TargetRow label="صافي مبيعات المتجر الإلكتروني" actual={36660.19} target={targets?.ecommerceRevenue || 35000} format="sar" color="#2563EB" />
-                  <TargetRow label="عدد الطلبات المكتملة" actual={69} target={60} format="number" color="#059669" />
-                  <TargetRow label="معدل التحويل (Conversion Rate)" actual={3.2} target={3.0} format="percent" color="#0F172A" />
+                  <TargetRow label="صافي مبيعات المتجر الإلكتروني" subtitle={periodId === 'p-2026-10' ? "مبيعات سلة شاملة الضريبة 15%" : undefined} actual={periodId === 'p-2026-10' ? 26713.62 : (periodId === 'p-2026-09' ? 37725.08 : 36660.19)} target={targets?.ecommerceRevenue || 35000} format="sar" color="#2563EB" />
+                  <TargetRow label="عدد الطلبات المكتملة" actual={periodId === 'p-2026-10' ? 43 : (periodId === 'p-2026-09' ? 61 : 69)} target={periodId === 'p-2026-10' ? 43 : 60} format="number" color="#059669" />
+                  <TargetRow label="معدل التحويل (Conversion Rate)" actual={periodId === 'p-2026-10' ? 0.30 : (periodId === 'p-2026-09' ? 0.35 : 3.2)} target={3.0} format="percent" color="#0F172A" />
                 </div>
               </div>
             </div>

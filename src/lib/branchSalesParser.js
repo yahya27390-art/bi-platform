@@ -13,10 +13,16 @@
  *    - 260312... => مردود فرع الرواف (Al-Rawaf Return - unlinked)
  *    - 260313... => مردود فرع كيا (Kia Branch Return - unlinked)
  *    - Any invoice (e.g. 26011..., 26012..., 26013...) where returnNet > 0 or netSales < 0 is also counted as a return for that branch.
+ * 4. Target Calculation Rule (اعتماد الإدارة الرسمي):
+ *    - التارجت الشهري معتمد على أساس المبيعات شاملة ضريبة القيمة المضافة 15%.
+ *    - بما أن فواتير نظام ERP معفاة / غير شاملة الضريبة:
+ *      المبيعات المحتسبة للتارجت = صافي المبيعات (غير شامل الضريبة) × 1.15
+ *      نسبة تحقيق التارجت = (المبيعات شاملة الضريبة 15% ÷ التارجت) × 100
  */
 
 export const DORA_BRANCH_RULES = {
   companyPrefix: '260',
+  vatRate: 0.15, // ضريبة القيمة المضافة 15%
   branches: {
     '11': { id: 'main', name: 'الفرع الرئيسي', color: '#3B82F6', targetRevenue: 350000 },
     '12': { id: 'al-rawaf', name: 'فرع الرواف', color: '#10B981', targetRevenue: 250000 },
@@ -183,12 +189,32 @@ export function aggregateBranchSales(rows) {
     totalNet += item.netSales;
   }
 
+  // Calculate salesWithVat (15% VAT) & Target Achievement per official Dora Cars rule
+  const targetMap = { main: 350000, 'al-rawaf': 250000, kia: 200000 };
+  for (const bid of Object.keys(branches)) {
+    const b = branches[bid];
+    b.salesWithVat = Number((b.netSales * 1.15).toFixed(2));
+    b.targetRevenue = targetMap[bid] || 0;
+    b.targetAchievementPct = b.targetRevenue > 0
+      ? Number(((b.salesWithVat / b.targetRevenue) * 100).toFixed(2))
+      : 0;
+    b.varianceWithVat = Number((b.salesWithVat - b.targetRevenue).toFixed(2));
+  }
+
+  const totalWithVat = Number((totalNet * 1.15).toFixed(2));
+  const totalTarget = 800000;
+  const totalAchievementPct = Number(((totalWithVat / totalTarget) * 100).toFixed(2));
+
   return {
     branches,
     totals: {
       grossSales: totalGross,
       returns: totalReturns,
       netSales: totalNet,
+      salesWithVat: totalWithVat,
+      targetRevenue: totalTarget,
+      targetAchievementPct: totalAchievementPct,
+      varianceWithVat: Number((totalWithVat - totalTarget).toFixed(2)),
       salesInvoicesCount: totalSalesCount,
       returnsCount: totalReturnsCount,
       totalOperations: totalSalesCount + totalReturnsCount
@@ -201,3 +227,4 @@ export default {
   classifyDoraInvoice,
   aggregateBranchSales
 };
+

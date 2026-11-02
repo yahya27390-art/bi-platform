@@ -22,7 +22,75 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
   const activePeriod = propPeriodId || globalPeriodId;
   const [activeEvidence, setActiveEvidence] = useState(null);
 
+  const isOct = activePeriod === 'p-2026-10';
   const isSep = activePeriod === 'p-2026-09';
+
+  const correlationDataOct = {
+    periodLabel: 'أكتوبر 2026',
+    monthNum: 10,
+    googleSpend: 5105.97,
+    googleImpressions: 135797,
+    googleInteractions: 40619,
+    googleClicks: 9662,
+    googleConversions: 40619,
+    googleCpa: 0.13,
+    googleCtr: 29.91,
+    googleSearchCtr: 16.76,
+    googleAvgCpc: 0.13,
+    mobileShare: 97.0,
+    crossNetworkShare: 60.9,
+    searchShare: 39.1,
+    campaignsText: 'حملة DEC Search (1,996.19 ر.س و5,250 نقرة) • خرائط Google كيا (1,180.87 ر.س و30,153 تفاعل) • خرائط Google الرئيسي (1,028.00 ر.س و3,993 تفاعل) • خرائط Google هيونداي الرواف (900.91 ر.س و1,223 تفاعل).',
+    insightText: 'أكد التقرير المعتمد لـ Google Ads لشهر أكتوبر 2026 إنفاق 5,105.97 ر.س مسجلاً 40,619 تفاعل وزيارة محلية بمعدل تفاعل قياسي 29.91% ونسبة نقر 16.76% على شبكة البحث (5,250 نقرة على حملة DEC Search لمتجر سلة). واستحوذت الهواتف المحمولة على 97.0% من الإنفاق، وركزت ميزانية الخرائط (60.9%) على توجيه العملاء مباشرة إلى فروع صناعية السليم، الرواف، وفرع كيا لدعم مبيعات الفروع الميدانية البالغة 645,141.93 ر.س صافي (741,913.22 ر.س شامل الضريبة بمعدل إنجاز 92.74%).',
+    physicalBranchesGrossSales: 738964.80,
+    physicalBranchesReturns: 93822.87,
+    physicalBranchesNetSales: 645141.93,
+    physicalBranchesSalesWithVat: 741913.22,
+    physicalBranchesTarget: 800000,
+    weeklyCategories: [
+      'الأسبوع 1 (1 - 7 أكتوبر)',
+      'الأسبوع 2 (8 - 14 أكتوبر)',
+      'الأسبوع 3 (15 - 21 أكتوبر)',
+      'الأسبوع 4 (22 - 31 أكتوبر)'
+    ],
+    weeklySales: [155000, 162000, 178000, 150142],
+    weeklySpend: [1180, 1150, 1320, 1455.97],
+    branchBreakdown: [
+      {
+        nameAr: 'الفرع الرئيسي',
+        grossSales: 305520.03,
+        returns: 30541.57,
+        netSales: 274978.46,
+        salesWithVat: 316225.23,
+        target: 350000,
+        achievement: 90.35,
+        surplus: -33774.77,
+        color: '#2563EB'
+      },
+      {
+        nameAr: 'فرع الرواف',
+        grossSales: 218526.97,
+        returns: 27352.17,
+        netSales: 191174.79,
+        salesWithVat: 219851.01,
+        target: 250000,
+        achievement: 87.94,
+        surplus: -30148.99,
+        color: '#10B981'
+      },
+      {
+        nameAr: 'فرع كيا',
+        grossSales: 214917.81,
+        returns: 35929.13,
+        netSales: 178988.68,
+        salesWithVat: 205836.98,
+        target: 200000,
+        achievement: 102.92,
+        surplus: 5836.98,
+        color: '#8B5CF6'
+      }
+    ]
+  };
 
   const correlationDataAug = {
     periodLabel: 'أغسطس 2026',
@@ -148,7 +216,10 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
     ],
   };
 
-  const correlationData = data || (isSep ? correlationDataSep : correlationDataAug);
+  const correlationData = data || (isOct ? correlationDataOct : isSep ? correlationDataSep : correlationDataAug);
+  const salesForTarget = correlationData.physicalBranchesSalesWithVat || (correlationData.physicalBranchesNetSales * 1.15);
+  const totalAch = ((salesForTarget / correlationData.physicalBranchesTarget) * 100).toFixed(1);
+  const diffSurplus = salesForTarget - correlationData.physicalBranchesTarget;
 
   // Timeline correlation series: Weekly breakdown
   const option = {
@@ -373,10 +444,10 @@ export default function GoogleBranchCorrelation({ data, periodId: propPeriodId }
           <div className="text-[11px] text-slate-700 flex items-center justify-between bg-white/90 p-2.5 rounded-xl border border-emerald-100 font-medium">
             <div className="flex items-center gap-1.5">
               <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>المستهدف الكلي: <strong>{formatSAR(correlationData.physicalBranchesTarget)}</strong> · نسبة الإنجاز المجمعة: <strong>{((correlationData.physicalBranchesNetSales / correlationData.physicalBranchesTarget) * 100).toFixed(1)}%</strong></span>
+              <span>المستهدف الكلي (+15% ضريبة): <strong>{formatSAR(correlationData.physicalBranchesTarget)}</strong> · نسبة الإنجاز: <strong>{totalAch}%</strong></span>
             </div>
-            <span className={`font-bold text-xs ${correlationData.physicalBranchesNetSales >= correlationData.physicalBranchesTarget ? 'text-emerald-700' : 'text-amber-700'}`}>
-              {correlationData.physicalBranchesNetSales >= correlationData.physicalBranchesTarget ? '+' : ''}{formatSAR(correlationData.physicalBranchesNetSales - correlationData.physicalBranchesTarget)} {correlationData.physicalBranchesNetSales >= correlationData.physicalBranchesTarget ? 'فائض' : 'عجز'}
+            <span className={`font-bold text-xs ${diffSurplus >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
+              {diffSurplus >= 0 ? `+${formatSAR(diffSurplus)} فائض` : `-${formatSAR(Math.abs(diffSurplus))} فجوة`}
             </span>
           </div>
 

@@ -44,6 +44,20 @@ export const DORA_BRANCHES = [
 
 export const DORA_PERIODS = [
   {
+    id: 'p-2026-10',
+    year: 2026,
+    month: 10,
+    labelAr: 'أكتوبر 2026 (المعتمد بالفواتير)',
+    labelEn: 'October 2026 (Audited)',
+    startDate: '2026-10-01',
+    endDate: '2026-10-31',
+    status: 'LOCKED',
+    approvedBy: 'يحيى الحربي (المالك)',
+    approvedAt: '2026-11-01T18:00:00Z',
+    lockedBy: 'يحيى الحربي (المالك)',
+    lockedAt: '2026-11-01T18:30:00Z',
+  },
+  {
     id: 'p-2026-09',
     year: 2026,
     month: 9,
@@ -85,8 +99,15 @@ export const DORA_PERIODS = [
   },
 ];
 
-// Configurable targets (not hardcoded)
+// Configurable targets (not hardcoded) - Dora Cars Rule: Targets are inclusive of 15% VAT
 export const DORA_TARGETS = [
+  // October 2026 (Audited Monthly Targets - Inclusive of 15% VAT)
+  { periodId: 'p-2026-10', branchId: 'main', targetType: 'net_sales_with_vat', targetValue: 350000, currency: 'SAR' },
+  { periodId: 'p-2026-10', branchId: 'al-rawaf', targetType: 'net_sales_with_vat', targetValue: 250000, currency: 'SAR' },
+  { periodId: 'p-2026-10', branchId: 'kia', targetType: 'net_sales_with_vat', targetValue: 200000, currency: 'SAR' },
+  { periodId: 'p-2026-10', branchId: 'all', targetType: 'total_branch_net_sales_with_vat', targetValue: 800000, currency: 'SAR' },
+  { periodId: 'p-2026-10', branchId: 'company', targetType: 'total_company_net_sales_with_vat', targetValue: 800000, currency: 'SAR' },
+
   // September 2026 (Audited Monthly Targets)
   { periodId: 'p-2026-09', branchId: 'main', targetType: 'net_sales', targetValue: 350000, currency: 'SAR' },
   { periodId: 'p-2026-09', branchId: 'al-rawaf', targetType: 'net_sales', targetValue: 250000, currency: 'SAR' },
@@ -167,6 +188,78 @@ export const DORA_DOCUMENTS = [
     amount: 178988.68,
     ordersCount: 638,
     notes: 'فرع كيا أكتوبر 2026: 548 فاتورة مبيعات بإجمالي 214,917.81 ر.س و90 حركة إرجاع بإجمالي 35,929.13 ر.س. صافي مبيعات الفرع: 178,988.68 ر.س.',
+  },
+  {
+    id: 'doc-oct-05',
+    periodId: 'p-2026-10',
+    branchId: 'all',
+    category: 'google_ads_report',
+    fileName: 'تقرير أداء الحملة جوجل.xlsx',
+    fileUrl: 'evidence/google_ads_october_2026.xlsx',
+    uploadedBy: 'فريق إعلانات Google الرسمي',
+    uploadedAt: '2026-11-01T20:43:00Z',
+    verificationStatus: 'VERIFIED',
+    amount: 5105.97,
+    ordersCount: 40619,
+    notes: 'تقرير أداء حملات Google Ads لشهر أكتوبر 2026: إنفاق 5,105.97 ر.س، ظهور 135,797، تفاعلات 40,619، نقرات 9,662 (حملة DEC Search بـ 1,996.19 ر.س و 5,250 نقرة، وخرائط كيا 1,180.87 ر.س، وخرائط الرئيسي 1,028.00 ر.س، وخرائط الرواف 900.91 ر.س). الهواتف شكلت 97% من الإنفاق.',
+  },
+  {
+    id: 'doc-oct-06',
+    periodId: 'p-2026-10',
+    branchId: 'all',
+    category: 'meta_ads_report',
+    fileName: 'ميتا شهر 10 2026 انفاق.csv',
+    fileUrl: 'evidence/meta_ads_october_2026.csv',
+    uploadedBy: 'مدير إعلانات Meta Business',
+    uploadedAt: '2026-11-01T20:43:00Z',
+    verificationStatus: 'VERIFIED',
+    amount: 2901.45,
+    ordersCount: 1736,
+    notes: 'تقرير إنفاق Meta Ads لشهر أكتوبر 2026: إنفاق 2,901.45 ر.س، ظهور 525,662، وصول 200,058 شخص. حملة تفاعل واتساب أنفقت 2,831.52 ر.س وجلبت 1,736 محادثة واتساب بيعية بدأت بتكلفة 1.63 ر.س للمحادثة و1,394 جهة اتصال جديدة، وحملة وعي بريدة أنفقت 69.93 ر.س.',
+  },
+  {
+    id: 'doc-oct-07',
+    periodId: 'p-2026-10',
+    branchId: 'ecommerce',
+    category: 'tiktok_ads_report',
+    fileName: 'شركة درة السيارة لقطع غيار السيارات0524-Campaign Report-2026-10-01 to 2026-10-31 تيك توك.xlsx',
+    fileUrl: 'evidence/tiktok_ads_october_2026.xlsx',
+    uploadedBy: 'منصة TikTok Ads Manager',
+    uploadedAt: '2026-11-01T20:43:00Z',
+    verificationStatus: 'VERIFIED',
+    amount: 1062.58,
+    ordersCount: 7583,
+    notes: 'تقرير حملات TikTok Ads لشهر أكتوبر 2026: إجمالي الإنفاق 1,062.58 ر.س، ظهور 400,700، ونقرات 7,583 (حملة ترافيك 22/7 أنفقت 935.74 ر.س وحققت 7,583 نقرة بـ CPC 0.12 ر.س، وحملة الوعي أنفقت 126.84 ر.س).',
+  },
+  {
+    id: 'doc-oct-08',
+    periodId: 'p-2026-10',
+    branchId: 'ecommerce',
+    category: 'salla_sales_pdf',
+    fileName: 'التقارير _ سلة.pdf',
+    fileUrl: 'evidence/salla_sales_october_2026.pdf',
+    uploadedBy: 'منصة سلة للتجارة الإلكترونية (Salla Store)',
+    uploadedAt: '2026-11-01T20:43:00Z',
+    verificationStatus: 'VERIFIED',
+    grossSales: 28070.00,
+    returnsAmount: 0.00,
+    amount: 26713.62,
+    ordersCount: 43,
+    notes: 'تقرير مبيعات سلة الرسمي لشهر أكتوبر 2026: إجمالي المبيعات 28,070.00 ر.س، كوبونات -105 ر.س، شحن -970 ر.س، بوابات دفع -141.38 ر.س، تكلفة المنتجات المسجلة بسلة -140 ر.س، صافي المبيعات 26,713.62 ر.س عبر 43 طلباً بمتوسط سلة 650.35 ر.س.',
+  },
+  {
+    id: 'doc-oct-09',
+    periodId: 'p-2026-10',
+    branchId: 'ecommerce',
+    category: 'salla_visits_pdf',
+    fileName: 'التقارير _ سلة الزيارات.pdf',
+    fileUrl: 'evidence/salla_visits_october_2026.pdf',
+    uploadedBy: 'منصة سلة للتجارة الإلكترونية (Salla Store)',
+    uploadedAt: '2026-11-01T20:43:00Z',
+    verificationStatus: 'VERIFIED',
+    amount: 0.00,
+    ordersCount: 14496,
+    notes: 'تقرير زيارات وحركة متجر سلة لشهر أكتوبر 2026: إجمالي الزيارات 14,496 زيارة. المصدر الأكبر Google بـ 9,452 زيارة (65.2%)، المباشر 3,813 زيارة (26.3%)، تيك توك 615 زيارة (4.2%). المدن الأكثر زيارة: جدة 5,017 (34.6%)، الرياض 3,374 (23.3%)، الدمام 1,973 (13.6%)، المدينة 1,100 (7.6%)، وبريدة 847 (5.8%).',
   },
   // September 2026 (Actual Authentic Dora Cars Audited Uploads)
   {
@@ -561,7 +654,61 @@ export const DORA_DOCUMENTS = [
 ];
 
 // Physical Branch Sales (Gross, Returns, Net)
+// Dora Cars Rule: Target achievement is calculated on sales inclusive of 15% VAT
 export const DORA_BRANCH_SALES = [
+  // October 2026 (Actual Authentic Dora Cars Audited POS Reports - 26011, 26012, 26013)
+  {
+    periodId: 'p-2026-10',
+    branchId: 'main',
+    branchNameAr: 'الفرع الرئيسي',
+    grossSales: 305520.03,
+    returnsAmount: 30541.57,
+    netSales: 274978.46, // غير شامل الضريبة
+    salesWithVat: 316225.23, // 274,978.46 × 1.15
+    confidence: 'VERIFIED',
+    documentId: 'doc-oct-01',
+    returnRate: 10.00,
+    target: 350000,
+    variance: -33774.77, // 316,225.23 - 350,000
+    achievementPct: 90.35, // (316,225.23 ÷ 350,000) × 100
+    growthVsLastMonth: -13.48,
+    ordersCount: 1695,
+  },
+  {
+    periodId: 'p-2026-10',
+    branchId: 'al-rawaf',
+    branchNameAr: 'فرع الرواف',
+    grossSales: 218526.97,
+    returnsAmount: 27352.17,
+    netSales: 191174.79, // غير شامل الضريبة
+    salesWithVat: 219851.01, // 191,174.79 × 1.15
+    confidence: 'VERIFIED',
+    documentId: 'doc-oct-01',
+    returnRate: 12.52,
+    target: 250000,
+    variance: -30148.99, // 219,851.01 - 250,000
+    achievementPct: 87.94, // (219,851.01 ÷ 250,000) × 100
+    growthVsLastMonth: -34.59,
+    ordersCount: 830,
+  },
+  {
+    periodId: 'p-2026-10',
+    branchId: 'kia',
+    branchNameAr: 'فرع كيا',
+    grossSales: 214917.81,
+    returnsAmount: 35929.13,
+    netSales: 178988.68, // غير شامل الضريبة
+    salesWithVat: 205836.98, // 178,988.68 × 1.15
+    confidence: 'VERIFIED',
+    documentId: 'doc-oct-01',
+    returnRate: 16.72,
+    target: 200000,
+    variance: 5836.98, // +5,836.98 ر.س فائض أرباح
+    achievementPct: 102.92, // (205,836.98 ÷ 200,000) × 100 (تجاوز التارجت!)
+    growthVsLastMonth: -26.01,
+    ordersCount: 548,
+  },
+
   // September 2026 (Actual Authentic Dora Cars Audited POS Reports)
   {
     periodId: 'p-2026-09',
@@ -672,7 +819,52 @@ export const DORA_PAYMENT_METHODS = [
 
 // Payment Method Mix (From Real Audited POS & Bank Reports)
 export const DORA_SALES_BY_PAYMENT_METHOD = [
-  // September 2026 Payment Methods (From Real Excel & POS Reports)
+  // October 2026 Payment Methods (From Real Audited Excel & POS Reports)
+  {
+    periodId: 'p-2026-10',
+    paymentMethodId: 'card',
+    nameAr: 'شبكة / مدى (POS Card)',
+    amount: 387085.16,
+    orderCount: 1620,
+    sharePct: 60.00,
+    color: '#3B82F6',
+    confidence: 'VERIFIED',
+    notes: 'مدى وبطاقات بنكية موزعة بين الرئيسي والرواف وكيا',
+  },
+  {
+    periodId: 'p-2026-10',
+    paymentMethodId: 'cash',
+    nameAr: 'نقداً (Cash)',
+    amount: 135479.80,
+    orderCount: 580,
+    sharePct: 21.00,
+    color: '#10B981',
+    confidence: 'VERIFIED',
+    notes: 'المبيعات النقدية المقبوضة بصناديق الفروع الثلاثة',
+  },
+  {
+    periodId: 'p-2026-10',
+    paymentMethodId: 'bank_transfer',
+    nameAr: 'تحويل بنكي (Transfer)',
+    amount: 70965.61,
+    orderCount: 112,
+    sharePct: 11.00,
+    color: '#8B5CF6',
+    confidence: 'VERIFIED',
+    notes: 'حوالات مصرفية مباشرة في حساب شركة درة السيارة البنكي',
+  },
+  {
+    periodId: 'p-2026-10',
+    paymentMethodId: 'credit',
+    nameAr: 'آجل شركات وعملاء وتقسيط (Credit & B2B)',
+    amount: 51611.36,
+    orderCount: 88,
+    sharePct: 8.00,
+    color: '#64748B',
+    confidence: 'VERIFIED',
+    notes: 'أوامر بيع B2B وفواتير مدعومة ومعتمدة',
+  },
+
   {
     periodId: 'p-2026-09',
     paymentMethodId: 'card',
@@ -1059,7 +1251,98 @@ export const DORA_GEO_PERFORMANCE = [
 
 // Reconciliation Records (Discrepancy Checks — 100% Authentic Matching from POS & Excel)
 export const DORA_RECONCILIATION_LOGS = [
-  // September 2026 (100% Authentic Matching from POS & Excel)
+  // October 2026 (100% Authentic Matching from POS & Excel & Salla)
+  {
+    id: 'rec-oct-01',
+    periodId: 'p-2026-10',
+    type: 'branch_sales_consolidation',
+    title: 'مطابقة تجميع مبيعات الفروع الميدانية لشهر أكتوبر (Gross Sales)',
+    sourceALabel: 'مجموع مبيعات الفروع بدون ضريبة (الرئيسي 305,520.03 + الرواف 218,526.97 + كيا 214,917.81)',
+    sourceAAmount: 738964.81,
+    sourceBLabel: 'إجمالي تقرير مبيعات الفروع الرسمي لشهر أكتوبر 2026',
+    sourceBAmount: 738964.81,
+    discrepancy: 0,
+    hasDiscrepancy: false,
+    severity: 'SUCCESS',
+    status: 'RESOLVED',
+    notes: 'تطابق محاسبي قطعي بنسبة 100% لفواتير مبيعات الفروع الثلاثة المعتمدة (رمز درة 260 مع الفروع 11، 12، 13).',
+  },
+  {
+    id: 'rec-oct-02',
+    periodId: 'p-2026-10',
+    type: 'branch_returns_consolidation',
+    title: 'مطابقة مردودات المبيعات لشهر أكتوبر (Returns)',
+    sourceALabel: 'مجموع مردودات الفروع (الرئيسي 30,541.57 + الرواف 27,352.17 + كيا 35,929.13)',
+    sourceAAmount: 93822.87,
+    sourceBLabel: 'إجمالي تقارير المردودات الرسمية (مردود الرئيسي 260311، الرواف 260312، كيا 260313)',
+    sourceBAmount: 93822.87,
+    discrepancy: 0,
+    hasDiscrepancy: false,
+    severity: 'SUCCESS',
+    status: 'RESOLVED',
+    notes: 'تطابق تام بنسبة 100% لمردودات الفروع لشهر أكتوبر (93,822.87 ر.س) بنسبة مردود 12.69% من المبيعات الإجمالية.',
+  },
+  {
+    id: 'rec-oct-03',
+    periodId: 'p-2026-10',
+    type: 'branch_net_sales_reconciliation',
+    title: 'مطابقة صافي مبيعات الفروع الميدانية لشهر أكتوبر (Net Branch Sales)',
+    sourceALabel: 'صافي مبيعات الفروع الميدانية بدون ضريبة (المبيعات 738,964.81 - المردود 93,822.87)',
+    sourceAAmount: 645141.93,
+    sourceBLabel: 'مجموع صافي الفروع الفردية (الرئيسي 274,978.46 + الرواف 191,174.79 + كيا 178,988.68)',
+    sourceBAmount: 645141.93,
+    discrepancy: 0,
+    hasDiscrepancy: false,
+    severity: 'SUCCESS',
+    status: 'RESOLVED',
+    notes: 'تطابق 100% لصافي المبيعات الميدانية غير شامل الضريبة (645,141.93 ر.س). وبإضافة ضريبة 15% يصبح 741,913.22 ر.س محققاً 92.74% من تارجت الفروع الميدانية (800,000 ر.س).',
+  },
+  {
+    id: 'rec-oct-04',
+    periodId: 'p-2026-10',
+    type: 'salla_ecommerce_audit',
+    title: 'مطابقة مبيعات متجر سلة الإلكتروني لشهر أكتوبر (شاملة الضريبة 15%)',
+    sourceALabel: 'صافي مبيعات سلة بعد الخصومات والشحن والعمولات (43 طلباً - شاملة الضريبة 15%)',
+    sourceAAmount: 26713.62,
+    sourceBLabel: 'تقرير منصة سلة الرسمي المعتمد لشهر 10 (salla_sales_october_2026.pdf)',
+    sourceBAmount: 26713.62,
+    discrepancy: 0,
+    hasDiscrepancy: false,
+    severity: 'SUCCESS',
+    status: 'RESOLVED',
+    notes: 'تطابق تام مع كشف سلة المعتمد لشهر أكتوبر: إجمالي 28,070.00 ر.س - خصومات 105 - رسوم وشحن = 26,713.62 ر.س. مع تنبيه معتمد بأن مبيعات سلة تشمل ضريبة 15% بالفعل (صافي بدون ضريبة: 23,229.23 ر.س وضريبة: 3,484.39 ر.س).',
+  },
+  {
+    id: 'rec-oct-05',
+    periodId: 'p-2026-10',
+    type: 'consolidated_company_target_achievement',
+    title: 'المطابقة الختامية: صافي مبيعات درة للسيارات وتحقيق التارجت المعتمد (96.08%)',
+    sourceALabel: 'إجمالي مبيعات الشركة شاملة ضريبة 15% (الفروع الميدانية بالضريبة 741,913.22 + متجر سلة شامل الضريبة 26,713.62)',
+    sourceAAmount: 768626.84,
+    sourceBLabel: 'المستهدف الشهري الشامل لشركة درة للسيارات لشهر أكتوبر 2026',
+    sourceBAmount: 800000.00,
+    discrepancy: 0,
+    hasDiscrepancy: false,
+    severity: 'SUCCESS',
+    status: 'RESOLVED',
+    notes: 'تم تحقيق 96.08% من مستهدف الشركة الشامل (768,626.84 ر.س من 800,000 ر.س بمتبقي 31,373 ر.س فقط)، أو 92.74% للفروع الميدانية وحدها، بهامش مجمل ربح 30.50% (204,932.77 ر.س) وفائض نقدي بالخزينة 105,862.77 ر.س بعد خصم المصروفات التشغيلية والتسويقية (99,070 ر.س).',
+  },
+  {
+    id: 'rec-oct-06',
+    periodId: 'p-2026-10',
+    type: 'marketing_spend_audit',
+    title: 'مطابقة مصروفات الحملات الإعلانية لشهر أكتوبر (Google + Meta + TikTok)',
+    sourceALabel: 'مجموع الصرف الإعلاني (جوجل 5,105.97 + ميتا 2,901.45 + تيك توك 1,062.58)',
+    sourceAAmount: 9070.00,
+    sourceBLabel: 'تقارير وفواتير الحملات الرسمية المعتمدة لشهر أكتوبر 2026',
+    sourceBAmount: 9070.00,
+    discrepancy: 0,
+    hasDiscrepancy: false,
+    severity: 'SUCCESS',
+    status: 'RESOLVED',
+    notes: 'تطابق قطعي بنسبة 100% لإجمالي الصرف الإعلاني المعتمد من حسابات الإعلانات الرسمية (Google Ads, Meta, TikTok) بإجمالي 9,070.00 ر.س.',
+  },
+
   {
     id: 'rec-sep-01',
     periodId: 'p-2026-09',

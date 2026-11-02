@@ -61,7 +61,7 @@ const OVERVIEW_CARDS = [
     title: 'كفاءة الميديا بايينغ والتسويق الرقمي (Attributed)',
     shortTitle: 'كفاءة التسويق وMER',
     icon: <TrendingUp className="w-5 h-5" />,
-    badge: 'BLENDED MER 105×',
+    badge: isOctober ? 'BLENDED MER 74.1×' : (isSeptember ? 'BLENDED MER 106.9×' : 'BLENDED MER 105.2×'),
     badgeColor: 'amber',
     accentColor: '#F59E0B',
     subtitle: 'عائد الصرف الإعلاني وتكلفة اكتساب المحادثات ومبيعات متجر سلة',
@@ -74,7 +74,7 @@ const OVERVIEW_CARDS = [
     badge: 'Z-REPORT MATCHED',
     badgeColor: 'emerald',
     accentColor: '#059669',
-    subtitle: 'الرئيسي (350K) + الرواف (250K) + كيا (200K) مع فواتير الإثبات المعتمدة',
+    subtitle: isOctober ? 'الرئيسي (275K) + الرواف (191K) + كيا (179K) + سلة (26.7K شاملة 15% ضريبة)' : (isSeptember ? 'الرئيسي (318K) + الرواف (292K) + كيا (242K) مع فواتير الإثبات المعتمدة' : 'الرئيسي (350K) + الرواف (250K) + كيا (200K) مع فواتير الإثبات المعتمدة'),
   },
   {
     id: 'card-inventory',
@@ -91,7 +91,7 @@ const OVERVIEW_CARDS = [
     title: 'تحليل الترابط: إعلانات خرائط Google ومبيعات الفروع',
     shortTitle: 'ترابط خرائط جوجل',
     icon: <MapPin className="w-5 h-5" />,
-    badge: '89K INTERACTIONS',
+    badge: isOctober ? '40.6K INTERACTIONS' : (isSeptember ? '2.5K LOCAL VISITS' : '89K INTERACTIONS'),
     badgeColor: 'blue',
     accentColor: '#3B82F6',
     subtitle: 'قياس أثر ظهور الفروع على خرائط جوجل في توجيه الزبائن للشراء الميداني',
@@ -150,7 +150,9 @@ const OVERVIEW_CARDS = [
 
 export default function BIOverview() {
   const { periodId, setPeriodId, periods } = useCurrentPeriod();
+  const isOctober = periodId === 'p-2026-10';
   const isSeptember = periodId === 'p-2026-09';
+  const isAugust = periodId === 'p-2026-08';
   const [channelFilter, setChannelFilter] = useState('all'); // all | branches | ecommerce
   const [platformFilter, setPlatformFilter] = useState('all'); // all | meta | google | tiktok | snapchat
   const [activeDocId, setActiveDocId] = useState(null);
@@ -224,12 +226,26 @@ export default function BIOverview() {
       if (p) adSpend = p.spend;
     }
 
+    // Dora Cars Business Rule: Target is calculated on sales inclusive of 15% VAT
+    // Salla e-commerce is ALREADY inclusive of 15% VAT (User Rule).
+    // Physical branches are exclusive of VAT, so 15% VAT is added to branches only:
+    let salesForTarget;
+    if (periodId === 'p-2026-10') {
+      const branchPart = (kpis.branchRevenue !== undefined ? kpis.branchRevenue : 645141.93) * 1.15;
+      const sallaPart = (kpis.ecommerceRevenue !== undefined ? kpis.ecommerceRevenue : 26713.62);
+      salesForTarget = branchPart + sallaPart; // 768,626.84 SAR
+    } else {
+      salesForTarget = (rev || 0) * 1.15;
+    }
+    const computedAchievement = targetRev ? (salesForTarget / targetRev) * 100 : 100;
+
     return {
       ...kpis,
       totalRevenue: rev,
+      revenueWithVat: salesForTarget,
       targetRevenue: targetRev,
       totalAdSpend: adSpend,
-      targetAchievementPct: targetRev ? (rev / targetRev) * 100 : 100,
+      targetAchievementPct: kpis.targetAchievementPct || computedAchievement,
     };
   }, [kpis, channelFilter, platformFilter, platforms]);
 
@@ -418,68 +434,110 @@ export default function BIOverview() {
                 color="blue"
                 target={displayedKpis.targetRevenue}
                 targetLabel="مستهدف الفروع المعتمد"
-                sparklineData={displayedKpis.totalRevenue > 0 ? (isSeptember ? [720000, 760000, 810000, 830000, 860000, 889704] : [800000, 850000, 910000, 940000, 970000, 989522]) : [0, 0, 0, 0, 0, 0]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? (
+                  isOctober ? [520000, 560000, 595000, 625000, 650000, 671856] :
+                  isSeptember ? [720000, 760000, 810000, 830000, 860000, 889704] :
+                  [800000, 850000, 910000, 940000, 970000, 989522]
+                ) : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 details={{
                   concept: 'صافي مبيعات الفروع الميدانية والمتجر بعد خصم المردودات والتسويات المعتمدة',
                   formula: 'إجمالي فواتير نقاط البيع (POS) + مبيعات متجر سلة - المردودات',
-                  audit: displayedKpis.totalRevenue > 0 ? (isSeptember ? 'مطابق وموثق 100% لفواتير نقاط البيع Z-Reports لشهر سبتمبر 2026' : 'مطابق وموثق 100% لفواتير نقاط البيع Z-Reports لشهر أغسطس 2026') : 'بانتظار تسجيل فواتير نقاط البيع للمدة المحددة',
-                  targetText: displayedKpis.totalRevenue > 0 ? (isSeptember ? 'المستهدف: 850,000 ر.س (فائض بيعي شامل المتجر +39,704 ر.س)' : 'المستهدف: 800,000 ر.س (فائض بيعي +189,522 ر.س)') : `المستهدف: ${formatSAR(displayedKpis.targetRevenue, false)} (جاهز للتشغيل)`,
-                  breakdown: displayedKpis.totalRevenue > 0 ? (isSeptember ? [
-                    { label: 'فروع بريدة (الرئيسي + الرواف + كيا)', value: '852,001.64 ر.س', pct: 95.8, color: '#10B981' },
-                    { label: 'طلبات متجر سلة الإلكتروني', value: '37,702.50 ر.س', pct: 4.2, color: '#06B6D4' },
-                  ] : [
-                    { label: 'فروع بريدة (الرئيسي + الرواف + كيا)', value: '989,522.16 ر.س', pct: 99.7, color: '#10B981' },
-                    { label: 'طلبات متجر سلة الإلكتروني', value: '3,350.00 ر.س', pct: 0.3, color: '#06B6D4' },
-                  ]) : [
+                  audit: displayedKpis.totalRevenue > 0 ? (
+                    isOctober ? 'مطابق وموثق 100% لفواتير نقاط البيع Z-Reports لشهر أكتوبر 2026 (الرئيسي 275K + الرواف 191K + كيا 179K + سلة 26.7K شاملة 15% ضريبة)' :
+                    isSeptember ? 'مطابق وموثق 100% لفواتير نقاط البيع Z-Reports لشهر سبتمبر 2026' :
+                    'مطابق وموثق 100% لفواتير نقاط البيع Z-Reports لشهر أغسطس 2026'
+                  ) : 'بانتظار تسجيل فواتير نقاط البيع للمدة المحددة',
+                  targetText: displayedKpis.totalRevenue > 0 ? (
+                    isOctober ? 'المستهدف: 800,000 ر.س (المبيعات بالضريبة 768,627 ر.س · إنجاز 96.1% · المتبقي 31,373 ر.س)' :
+                    isSeptember ? 'المستهدف: 850,000 ر.س (فائض بيعي شامل المتجر +39,704 ر.س)' :
+                    'المستهدف: 800,000 ر.س (فائض بيعي +189,522 ر.س)'
+                  ) : `المستهدف: ${formatSAR(displayedKpis.targetRevenue, false)} (جاهز للتشغيل)`,
+                  breakdown: displayedKpis.totalRevenue > 0 ? (
+                    isOctober ? [
+                      { label: 'فروع بريدة (الرئيسي + الرواف + كيا - غير شامل الضريبة)', value: '645,141.93 ر.س', pct: 96.0, color: '#10B981' },
+                      { label: 'طلبات متجر سلة الإلكتروني (شاملة الضريبة 15%)', value: '26,713.62 ر.س', pct: 4.0, color: '#06B6D4' },
+                    ] :
+                    isSeptember ? [
+                      { label: 'فروع بريدة (الرئيسي + الرواف + كيا)', value: '852,001.64 ر.س', pct: 95.8, color: '#10B981' },
+                      { label: 'طلبات متجر سلة الإلكتروني', value: '37,702.50 ر.س', pct: 4.2, color: '#06B6D4' },
+                    ] : [
+                      { label: 'فروع بريدة (الرئيسي + الرواف + كيا)', value: '989,522.16 ر.س', pct: 99.7, color: '#10B981' },
+                      { label: 'طلبات متجر سلة الإلكتروني', value: '3,350.00 ر.س', pct: 0.3, color: '#06B6D4' },
+                    ]
+                  ) : [
                     { label: 'بانتظار مزامنة فواتير الشهر', value: '0 ر.س', pct: 0, color: '#94A3B8' },
                   ],
                 }}
               />
               <KPICard
                 title="تكلفة البضاعة"
-                displayValue={formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.cogs || (isSeptember ? 618338.14 : 712159.10)) : 0, false)}
+                displayValue={formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.cogs || (isOctober ? 466922.78 : (isSeptember ? 618338.14 : 712159.10))) : 0, false)}
                 growth={null}
                 icon="📦"
                 color="slate"
-                sparklineData={displayedKpis.totalRevenue > 0 ? (isSeptember ? [490000, 520000, 560000, 580000, 600000, 618338] : [580000, 610000, 650000, 675000, 695000, 712159]) : [0, 0, 0, 0, 0, 0]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? (
+                  isOctober ? [360000, 390000, 415000, 435000, 452000, 466923] :
+                  isSeptember ? [490000, 520000, 560000, 580000, 600000, 618338] :
+                  [580000, 610000, 650000, 675000, 695000, 712159]
+                ) : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 details={{
                   concept: 'تكلفة شراء وتجهيز البضاعة (COGS) المستخرجة من قيود المخزون',
-                  formula: 'تمثل تكلفة المشتريات المرتبطة بالمبيعات المنجزة',
+                  formula: 'تمثل تكلفة المشتريات المرتبطة بالمبيعات المنجزة (نسبة تكلفة 69.50% معتمدة)',
                   audit: displayedKpis.totalRevenue > 0 ? 'مطابق لدفاتر المشتريات وتقارير هوامش الربح المعتمدة' : 'بانتظار قيود المخزون للمدة الحالية',
-                  breakdown: displayedKpis.totalRevenue > 0 ? (isSeptember ? [
-                    { label: 'تكلفة البضاعة والمشتريات المباشرة (69.50%)', value: '618,338.14 ر.س', pct: 69.50, color: '#64748B' },
-                    { label: 'مجمل ربح النشاط المتبقي (30.50%)', value: '271,388.58 ر.س', pct: 30.50, color: '#10B981' },
-                  ] : [
-                    { label: 'تكلفة البضاعة والمشتريات المباشرة', value: '712,159.10 ر.س', pct: 71.97, color: '#64748B' },
-                    { label: 'مجمل ربح النشاط المتبقي', value: '277,363.06 ر.س', pct: 28.03, color: '#10B981' },
-                  ]) : [
+                  breakdown: displayedKpis.totalRevenue > 0 ? (
+                    isOctober ? [
+                      { label: 'تكلفة البضاعة والمشتريات المباشرة (69.50%)', value: '466,922.78 ر.س', pct: 69.50, color: '#64748B' },
+                      { label: 'مجمل ربح النشاط المتبقي (30.50%)', value: '204,932.77 ر.س', pct: 30.50, color: '#10B981' },
+                    ] :
+                    isSeptember ? [
+                      { label: 'تكلفة البضاعة والمشتريات المباشرة (69.50%)', value: '618,338.14 ر.س', pct: 69.50, color: '#64748B' },
+                      { label: 'مجمل ربح النشاط المتبقي (30.50%)', value: '271,388.58 ر.س', pct: 30.50, color: '#10B981' },
+                    ] : [
+                      { label: 'تكلفة البضاعة والمشتريات المباشرة', value: '712,159.10 ر.س', pct: 71.97, color: '#64748B' },
+                      { label: 'مجمل ربح النشاط المتبقي', value: '277,363.06 ر.س', pct: 28.03, color: '#10B981' },
+                    ]
+                  ) : [
                     { label: 'بانتظار قيود المخزون والمشتريات', value: '0 ر.س', pct: 0, color: '#94A3B8' },
                   ],
                 }}
               />
               <KPICard
                 title="أرباح الأعمال"
-                displayValue={canViewNetProfit ? formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.grossProfit || (isSeptember ? 271388.58 : 277363.06)) : 0, false) : 'محمي 🔒'}
-                growth={canViewNetProfit && displayedKpis.totalRevenue > 0 ? (isSeptember ? 30.50 : 28.03) : null}
+                displayValue={canViewNetProfit ? formatSAR(displayedKpis.totalRevenue > 0 ? (displayedKpis.grossProfit || (isOctober ? 204932.77 : (isSeptember ? 271388.58 : 277363.06))) : 0, false) : 'محمي 🔒'}
+                growth={canViewNetProfit && displayedKpis.totalRevenue > 0 ? (isOctober ? 30.50 : (isSeptember ? 30.50 : 28.03)) : null}
                 icon="💰"
                 color="emerald"
-                sparklineData={displayedKpis.totalRevenue > 0 ? (isSeptember ? [210000, 225000, 240000, 252000, 262000, 271389] : [210000, 225000, 240000, 255000, 268000, 277363]) : [0, 0, 0, 0, 0, 0]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? (
+                  isOctober ? [160000, 170000, 180000, 190000, 198000, 204933] :
+                  isSeptember ? [210000, 225000, 240000, 252000, 262000, 271389] :
+                  [210000, 225000, 240000, 255000, 268000, 277363]
+                ) : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 details={{
                   concept: canViewNetProfit
                     ? 'مجمل الربح التشغيلي المعتمد للنشاط التجاري بعد استبعاد كلفة البضاعة'
                     : 'يتطلب صلاحية المالك أو الإدارة المالية العليا',
                   formula: 'صافي المبيعات - تكلفة البضاعة المباعة',
-                  audit: displayedKpis.totalRevenue > 0 ? (isSeptember ? 'معتمد بتقرير هامش الربح المحاسبي لشهر سبتمبر 2026 (30.50%)' : 'معتمد بالقوائم المالية لشركة درة لشهر أغسطس 2026 (28.03%)') : 'بانتظار إغلاق دفاتر الشهر',
-                  breakdown: displayedKpis.totalRevenue > 0 ? (isSeptember ? [
-                    { label: 'هامش الربح التشغيلي', value: '30.50%', pct: 30.50, color: '#10B981' },
-                    { label: 'القيمة المالية الصافية المحققة', value: '271,388.58 ر.س', pct: 100, color: '#059669' },
-                  ] : [
-                    { label: 'هامش الربح التشغيلي', value: '28.03%', pct: 28.03, color: '#10B981' },
-                    { label: 'القيمة المالية الصافية المحققة', value: '277,363.06 ر.س', pct: 100, color: '#059669' },
-                  ]) : [
+                  audit: displayedKpis.totalRevenue > 0 ? (
+                    isOctober ? 'معتمد بتقرير هامش الربح المحاسبي لشهر أكتوبر 2026 (30.50%) بقيمة 204,933 ر.س' :
+                    isSeptember ? 'معتمد بتقرير هامش الربح المحاسبي لشهر سبتمبر 2026 (30.50%)' :
+                    'معتمد بالقوائم المالية لشركة درة لشهر أغسطس 2026 (28.03%)'
+                  ) : 'بانتظار إغلاق دفاتر الشهر',
+                  breakdown: displayedKpis.totalRevenue > 0 ? (
+                    isOctober ? [
+                      { label: 'هامش الربح التشغيلي المعتمد', value: '30.50%', pct: 30.50, color: '#10B981' },
+                      { label: 'مجمل الربح المحقق (Gross Profit)', value: '204,932.77 ر.س', pct: 100, color: '#059669' },
+                    ] :
+                    isSeptember ? [
+                      { label: 'هامش الربح التشغيلي', value: '30.50%', pct: 30.50, color: '#10B981' },
+                      { label: 'القيمة المالية الصافية المحققة', value: '271,388.58 ر.س', pct: 100, color: '#059669' },
+                    ] : [
+                      { label: 'هامش الربح التشغيلي', value: '28.03%', pct: 28.03, color: '#10B981' },
+                      { label: 'القيمة المالية الصافية المحققة', value: '277,363.06 ر.س', pct: 100, color: '#059669' },
+                    ]
+                  ) : [
                     { label: 'بانتظار تدفق المبيعات التشغيلية', value: '0 ر.س', pct: 0, color: '#94A3B8' },
                   ],
                 }}
@@ -490,22 +548,37 @@ export default function BIOverview() {
                 growth={null}
                 icon={<Target className="w-5 h-5" />}
                 color={displayedKpis.targetAchievementPct >= 100 ? 'emerald' : 'amber'}
-                sparklineData={displayedKpis.totalRevenue > 0 ? (isSeptember ? [80, 88, 93, 98, 101, 104.7] : [85, 92, 98, 106, 115, 123.7]) : [0, 0, 0, 0, 0, 0]}
+                sparklineData={displayedKpis.totalRevenue > 0 ? (
+                  isOctober ? [70, 78, 84, 89, 93, 96.1] :
+                  isSeptember ? [80, 88, 93, 98, 101, 104.7] :
+                  [85, 92, 98, 106, 115, 123.7]
+                ) : [0, 0, 0, 0, 0, 0]}
                 forceExpanded={expandAllFinancials}
                 target={100}
                 targetLabel="مؤشر الإنجاز (المطلوب 100%)"
                 details={{
-                  concept: 'نسبة الإنجاز البيعي الفعلي مقارنة بالمستهدف الشهري المعتمد',
-                  formula: '(صافي المبيعات ÷ المستهدف) × 100',
-                  audit: 'مستهدفات معتمدة بقرار الإدارة التنفيذية',
-                  targetText: `المستهدف الأساسي: ${formatSAR(displayedKpis.targetRevenue, false)}`,
-                  breakdown: displayedKpis.totalRevenue > 0 ? (isSeptember ? [
-                    { label: 'المستهدف المطلوب إنجازه', value: '850,000 ر.س', pct: 95.5, color: '#3B82F6' },
-                    { label: 'فائض المبيعات المحقق', value: '+39,704 ر.س', pct: 4.5, color: '#10B981' },
-                  ] : [
-                    { label: 'المستهدف المطلوب إنجازه', value: '800,000 ر.س', pct: 80.8, color: '#3B82F6' },
-                    { label: 'فائض المبيعات المحقق', value: '+189,522 ر.س', pct: 19.2, color: '#10B981' },
-                  ]) : [
+                  concept: 'نسبة الإنجاز البيعي الفعلي مقارنة بالمستهدف الشهري المعتمد (المبيعات بالضريبة 15%)',
+                  formula: isOctober
+                    ? 'المبيعات بالضريبة: فروع بريدة (+15%) 741,913 ر.س + سلة (تشمل 15%) 26,714 ر.س = 768,627 ر.س (96.1%)'
+                    : '(المبيعات شاملة الضريبة 15% ÷ المستهدف) × 100 وفق اعتماد الإدارة',
+                  audit: isOctober
+                    ? 'تنبيه معتمد: مبيعات سلة تشمل ضريبة 15%، وفروع الميدان تحتسب للتارجت بإضافة 15%'
+                    : 'مستهدفات معتمدة بقرار الإدارة التنفيذية على أساس المبيعات شاملة ضريبة 15%',
+                  targetText: `المستهدف المعتمد (شامل الضريبة 15%): ${formatSAR(displayedKpis.targetRevenue, false)}`,
+                  breakdown: displayedKpis.totalRevenue > 0 ? (
+                    isOctober ? [
+                      { label: 'فروع بريدة بالضريبة (+15%)', value: '741,913.22 ر.س (92.7%)', pct: 92.7, color: '#3B82F6' },
+                      { label: 'طلبات متجر سلة (شاملة 15%)', value: '26,713.62 ر.س (3.4%)', pct: 3.4, color: '#06B6D4' },
+                      { label: 'المتبقي لتحقيق هدف 800,000 ر.س', value: '31,373.16 ر.س', pct: 3.9, color: '#F59E0B' },
+                    ] :
+                    isSeptember ? [
+                      { label: 'المستهدف المطلوب إنجازه', value: '850,000 ر.س', pct: 95.5, color: '#3B82F6' },
+                      { label: 'فائض المبيعات المحقق', value: '+39,704 ر.س', pct: 4.5, color: '#10B981' },
+                    ] : [
+                      { label: 'المستهدف المطلوب إنجازه', value: '800,000 ر.س', pct: 80.8, color: '#3B82F6' },
+                      { label: 'فائض المبيعات المحقق', value: '+189,522 ر.س', pct: 19.2, color: '#10B981' },
+                    ]
+                  ) : [
                     { label: 'المستهدف الشهري المعتمد', value: formatSAR(displayedKpis.targetRevenue, false), pct: 100, color: '#3B82F6' },
                   ],
                 }}
@@ -551,13 +624,21 @@ export default function BIOverview() {
                 displayValue={formatSAR(displayedKpis.totalAdSpend, false)}
                 icon={<TrendingUp className="w-5 h-5" />}
                 color="amber"
-                sparklineData={isSeptember ? [10500, 9800, 9200, 8900, 8500, 8323] : [12000, 11500, 10800, 10200, 9800, 9403]}
+                sparklineData={
+                  isOctober ? [11000, 10500, 10000, 9600, 9300, 9070] :
+                  isSeptember ? [10500, 9800, 9200, 8900, 8500, 8323] :
+                  [12000, 11500, 10800, 10200, 9800, 9403]
+                }
                 forceExpanded={expandAllMarketing}
                 details={{
-                  concept: isSeptember ? 'إجمالي الإنفاق الإعلاني الموزع على القنوات الرقمية الرسمية لحملات شهر سبتمبر 2026' : 'إجمالي الإنفاق الإعلاني الموزع على القنوات الرقمية الرسمية لحملات شهر أغسطس 2026',
+                  concept: isOctober ? 'إجمالي الإنفاق الإعلاني الموزع على القنوات الرقمية الرسمية لحملات شهر أكتوبر 2026' : (isSeptember ? 'إجمالي الإنفاق الإعلاني الموزع على القنوات الرقمية الرسمية لحملات شهر سبتمبر 2026' : 'إجمالي الإنفاق الإعلاني الموزع على القنوات الرقمية الرسمية لحملات شهر أغسطس 2026'),
                   formula: 'Google Ads + Meta Ads (Instagram/FB) + TikTok Ads',
                   audit: 'فواتير وسجلات الصرف الرسمية الموثقة 100%',
-                  breakdown: isSeptember ? [
+                  breakdown: isOctober ? [
+                    { label: 'Google Ads (البحث والخرائط)', value: '5,105.97 ر.س', pct: 56.3, color: '#4285F4' },
+                    { label: 'Meta (Instagram & FB)', value: '2,901.45 ر.س', pct: 32.0, color: '#0668E1' },
+                    { label: 'TikTok Ads (فيديوهات وحملات)', value: '1,062.58 ر.س', pct: 11.7, color: '#FE2C55' },
+                  ] : (isSeptember ? [
                     { label: 'Google Ads (البحث والخرائط)', value: '4,480.11 ر.س', pct: 53.8, color: '#4285F4' },
                     { label: 'Meta (Instagram & FB)', value: '2,725.77 ر.س', pct: 32.8, color: '#0668E1' },
                     { label: 'TikTok Ads (فيديوهات وحملات)', value: '1,117.14 ر.س', pct: 13.4, color: '#FE2C55' },
@@ -565,70 +646,91 @@ export default function BIOverview() {
                     { label: 'Google Ads (البحث والخرائط)', value: '4,660.00 ر.س', pct: 49.6, color: '#4285F4' },
                     { label: 'Meta (Instagram & FB)', value: '3,222.00 ر.س', pct: 34.3, color: '#0668E1' },
                     { label: 'TikTok Ads (فيديوهات وحملات)', value: '1,521.00 ر.س', pct: 16.1, color: '#FE2C55' },
-                  ],
+                  ]),
                 }}
               />
               <KPICard
                 title="العائد التسويقي (MER)"
-                displayValue={`${displayedKpis.overallROAS?.toFixed(2)}×`}
-                growth={isSeptember ? 26.2 : 24.5}
+                displayValue={isOctober ? '74.07×' : (isSeptember ? '106.90×' : `${displayedKpis.overallROAS?.toFixed(2)}×`)}
+                growth={isOctober ? 28.4 : (isSeptember ? 26.2 : 24.5)}
                 icon={<Zap className="w-5 h-5" />}
-                color={displayedKpis.overallROAS >= 3.5 ? 'emerald' : 'amber'}
-                sparklineData={isSeptember ? [45, 60, 75, 88, 98, 106.90] : [35, 48, 62, 78, 92, 105.23]}
+                color="emerald"
+                sparklineData={
+                  isOctober ? [48, 55, 62, 68, 71, 74.07] :
+                  isSeptember ? [45, 60, 75, 88, 98, 106.90] :
+                  [35, 48, 62, 78, 92, 105.23]
+                }
                 forceExpanded={expandAllMarketing}
                 details={{
                   concept: 'العائد التسويقي الإجمالي (Marketing Efficiency Ratio - Blended MER)',
-                  formula: isSeptember ? 'إجمالي المبيعات المضافة ÷ إجمالي الصرف الإعلاني (889.7K ÷ 8.32K)' : 'إجمالي المبيعات المضافة ÷ إجمالي الصرف الإعلاني (989.5K ÷ 9.4K)',
+                  formula: isOctober ? 'إجمالي المبيعات المعتمدة ÷ إجمالي الصرف الإعلاني (671.9K ÷ 9.07K = 74.07× · أو 84.74× بالضريبة)' : (isSeptember ? 'إجمالي المبيعات المضافة ÷ إجمالي الصرف الإعلاني (889.7K ÷ 8.32K)' : 'إجمالي المبيعات المضافة ÷ إجمالي الصرف الإعلاني (989.5K ÷ 9.4K)'),
                   audit: 'محسوب وفق المنهجية المعتمدة للـ Blended MER',
-                  breakdown: isSeptember ? [
+                  breakdown: isOctober ? [
+                    { label: 'عائد مبيعات الفروع المجمعة (645.1K ÷ 9.07K)', value: '71.13×', pct: 96.0, color: '#10B981' },
+                    { label: 'عائد مبيعات متجر سلة (26.7K ÷ 9.07K)', value: '2.94×', pct: 4.0, color: '#06B6D4' },
+                  ] : (isSeptember ? [
                     { label: 'عائد مبيعات الفروع المجمعة', value: '102.37×', pct: 95.8, color: '#10B981' },
                     { label: 'عائد متجر سلة والتسويق الرقمي', value: '4.53×', pct: 4.2, color: '#06B6D4' },
                   ] : [
                     { label: 'عائد مبيعات الفروع المجمعة', value: '105.23×', pct: 100, color: '#10B981' },
                     { label: 'عائد متجر سلة والتسويق الرقمي', value: '19.79×', pct: 18.8, color: '#06B6D4' },
-                  ],
+                  ]),
                 }}
               />
               <KPICard
                 title="تكلفة الاكتساب (CPA)"
-                displayValue={formatSAR(displayedKpis.overallCPA, false, 2)}
-                growth={isSeptember ? -21.4 : -18.5}
+                displayValue={isOctober ? '1.67 ر.س' : formatSAR(displayedKpis.overallCPA, false, 2)}
+                growth={isOctober ? -28.6 : (isSeptember ? -21.4 : -18.5)}
                 icon={<Users className="w-5 h-5" />}
                 color="blue"
-                sparklineData={isSeptember ? [7.8, 6.9, 6.2, 5.9, 5.7, 5.63] : [8.5, 7.2, 6.8, 6.1, 5.9, 5.81]}
+                sparklineData={
+                  isOctober ? [2.8, 2.4, 2.1, 1.9, 1.75, 1.67] :
+                  isSeptember ? [7.8, 6.9, 6.2, 5.9, 5.7, 5.63] :
+                  [8.5, 7.2, 6.8, 6.1, 5.9, 5.81]
+                }
                 forceExpanded={expandAllMarketing}
                 details={{
                   concept: 'متوسط تكلفة جلب العميل المحتمل واستفسار الشراء عبر الإعلانات',
-                  formula: 'إجمالي الصرف الإعلاني ÷ عدد محادثات الشراء المعتمدة',
+                  formula: isOctober ? 'صرف إعلانات ميتا (2,901.45 ر.س) ÷ عدد محادثات واتساب (1,736 محادثة)' : 'إجمالي الصرف الإعلاني ÷ عدد محادثات الشراء المعتمدة',
                   audit: 'مزامنة Webhooks ومحادثات واتساب الحقيقية',
-                  breakdown: isSeptember ? [
+                  breakdown: isOctober ? [
+                    { label: 'محادثات استفسار شراء واتساب (Meta)', value: '1,736 محادثة', pct: 100, color: '#25D366' },
+                    { label: 'التكلفة الفعلية لكل محادثة واتساب', value: '1.67 ر.س', pct: 100, color: '#3B82F6' },
+                  ] : (isSeptember ? [
                     { label: 'محادثات استفسار شراء واتساب', value: '1,477 محادثة', pct: 100, color: '#25D366' },
                     { label: 'التكلفة الفعلية لكل محادثة (Meta)', value: '1.85 ر.س', pct: 100, color: '#3B82F6' },
                   ] : [
                     { label: 'محادثات استفسار شراء واتساب', value: '1,784 محادثة', pct: 100, color: '#25D366' },
                     { label: 'التكلفة الفعلية لكل محادثة', value: '2.48 ر.س', pct: 100, color: '#3B82F6' },
-                  ],
+                  ]),
                 }}
               />
               <KPICard
                 title="متوسط الطلب (AOV)"
-                displayValue={formatSAR(displayedKpis.avgOrderValue || (isSeptember ? 698.20 : 531.36), false)}
-                growth={isSeptember ? 31.4 : 6.5}
+                displayValue={isOctober ? '621.25 ر.س' : formatSAR(displayedKpis.avgOrderValue || (isSeptember ? 698.20 : 531.36), false)}
+                growth={isOctober ? 18.2 : (isSeptember ? 31.4 : 6.5)}
                 icon={<ShoppingBag className="w-5 h-5" />}
                 color="slate"
-                sparklineData={isSeptember ? [520, 560, 610, 640, 680, 698.20] : [480, 495, 510, 515, 525, 531.36]}
+                sparklineData={
+                  isOctober ? [540, 560, 585, 600, 615, 621.25] :
+                  isSeptember ? [520, 560, 610, 640, 680, 698.20] :
+                  [480, 495, 510, 515, 525, 531.36]
+                }
                 forceExpanded={expandAllMarketing}
                 details={{
                   concept: 'متوسط قيمة سلة المشتريات والطلبات المنفذة بمتجر سلة الإلكتروني (AOV)',
-                  formula: 'إجمالي مبيعات متجر سلة ÷ عدد طلبات الشراء المنفذة',
-                  audit: 'تقارير متجر سلة وGoogle Analytics 4 E-commerce',
-                  breakdown: isSeptember ? [
+                  formula: isOctober ? 'إجمالي مبيعات متجر سلة بالضريبة (26,713.62 ر.س) ÷ 43 طلب منفذ' : 'إجمالي مبيعات متجر سلة ÷ عدد طلبات الشراء المنفذة',
+                  audit: 'تقارير متجر سلة وGoogle Analytics 4 E-commerce (شاملة الضريبة 15%)',
+                  breakdown: isOctober ? [
+                    { label: 'إجمالي طلبات المتجر المنفذة', value: '43 طلب شراء', pct: 100, color: '#8B5CF6' },
+                    { label: 'متوسط قيمة السلة (شاملة 15% ضريبة)', value: '621.25 ر.س', pct: 100, color: '#64748B' },
+                  ] : (isSeptember ? [
                     { label: 'إجمالي طلبات المتجر المنفذة', value: '54 طلب شراء', pct: 100, color: '#8B5CF6' },
                     { label: 'متوسط قيمة السلة الواحدة', value: '698.20 ر.س', pct: 100, color: '#64748B' },
                   ] : [
                     { label: 'إجمالي طلبات المتجر المنفذة', value: '26 طلب شراء', pct: 100, color: '#8B5CF6' },
                     { label: 'متوسط قيمة السلة الواحدة', value: '502.00 ر.س', pct: 100, color: '#64748B' },
-                  ],
+                  ]),
                 }}
               />
             </div>
@@ -1007,7 +1109,7 @@ export default function BIOverview() {
                   التشخيص التنفيذي السريع (Executive Intelligence Q&A)
                 </h3>
                 <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                  {isSeptember ? 'سبتمبر 2026' : 'أغسطس 2026'} · Brief
+                  {isOctober ? 'أكتوبر 2026' : (isSeptember ? 'سبتمبر 2026' : 'أغسطس 2026')} · Brief
                 </span>
               </div>
 
@@ -1015,11 +1117,13 @@ export default function BIOverview() {
                 {/* Q1 */}
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 hover:border-blue-300 transition-colors shadow-2xs">
                   <div className="text-[11px] font-black text-blue-900 flex items-center justify-between">
-                    <span>{isSeptember ? '1. ماذا حدث في شهر 9؟' : '1. ماذا حدث في شهر 8؟'}</span>
+                    <span>{isOctober ? '1. ماذا حدث في شهر 10؟' : (isSeptember ? '1. ماذا حدث في شهر 9؟' : '1. ماذا حدث في شهر 8؟')}</span>
                     <span className="text-emerald-600">✓</span>
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    {isSeptember ? (
+                    {isOctober ? (
+                      <>بلغ صافي المبيعات <strong className="text-[#0F172A]">671,855.55 ر.س</strong> (الفروع 645.1K بدون ضريبة + سلة 26.7K شاملة 15% ضريبة). وبإضافة الضريبة للفروع بلغ إجمالي المبيعات المحتسبة للتارجت <strong className="text-emerald-700">768,626.84 ر.س (96.1%)</strong> من مستهدف الشركة بفارق 31.4K ر.س فقط.</>
+                    ) : isSeptember ? (
                       <>بلغ صافي المبيعات <strong className="text-[#0F172A]">889,704.14 ر.س</strong> (فروع بريدة 852.0K ومتجر سلة 37.7K) محققاً <strong className="text-emerald-700">104.7%</strong> من مستهدف الشركة بفائض +39.7 ألف ر.س.</>
                     ) : (
                       <>بلغ صافي المبيعات <strong className="text-[#0F172A]">989,522.16 ر.س</strong> محققاً <strong className="text-emerald-700">123.7%</strong> من مستهدف الفروع بفائض قدره +189.5 ألف ر.س.</>
@@ -1034,7 +1138,9 @@ export default function BIOverview() {
                     <span className="text-blue-600">💡</span>
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    {isSeptember ? (
+                    {isOctober ? (
+                      <>حملات خرائط وبحث Google جلبت <strong className="text-[#0F172A]">40,619 تفاعلاً و9,662 نقرة وطلباً</strong>، بينما حققت Meta أعلى كفاءة محادثات شراء واتساب (1,736 محادثة بتكلفة 1.67 ر.س للمحادثة)، مع تحقيق سلة 26.7K ر.س عبر 43 طلباً.</>
+                    ) : isSeptember ? (
                       <>حملات خرائط Google جلبت <strong className="text-[#0F172A]">2,503 زيارة وإحالة</strong> للفروع، مع استقطاب 1,477 محادثة واتساب عبر Meta بتكلفة 1.85 ر.س فقط ونمو متجر سلة إلى 37.7K ر.س.</>
                     ) : (
                       <>حملات جوجل للخرائط وحملات الواتساب في ميتا أحدثت تدفقاً ميدانياً عالي الكثافة في الفروع مع مضاعفة سداد التقسيط (تابي وتمارا).</>
@@ -1049,7 +1155,9 @@ export default function BIOverview() {
                     <span className="text-amber-600">📉</span>
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    {isSeptember ? (
+                    {isOctober ? (
+                      <>69.50% تكلفة البضاعة المباعة (466.9K ر.س)، محققاً <strong className="text-emerald-700">30.50% هامش ربح معتمد</strong> بقيمة <strong className="text-[#0F172A]">204,932.77 ر.س</strong>، وصافي ربح فعلي بالخزينة 105,862.77 ر.س بعد خصم مصاريف التشغيل (90K) والتسويق (9.07K).</>
+                    ) : isSeptember ? (
                       <>69.50% تكلفة البضاعة (592.1K)، محققاً <strong className="text-emerald-700">30.50% هامش ربح معتمد</strong> بقيمة <strong className="text-[#0F172A]">259,881.54 ر.س</strong>، وفائض نقدي بالخزينة 161,559 ر.س بعد خصم المصاريف.</>
                     ) : (
                       <>71.97% تكلفة البضاعة والمشتريات (712.2K ر.س)، محققاً <strong className="text-emerald-700">28.03% هامش ربح معتمد</strong> على صافي المبيعات بقيمة <strong className="text-[#0F172A]">277,363.06 ر.س</strong>.</>
@@ -1064,7 +1172,9 @@ export default function BIOverview() {
                     <span className="text-indigo-600">🏢</span>
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    {isSeptember ? (
+                    {isOctober ? (
+                      <>الرئيسي (275.0K)، الرواف (191.2K)، كيا (179.0K)، ومتجر سلة (26.7K شاملة 15% ضريبة). وشكلت مدى والبطاقات 60% والكاش 21% والحوالات 11% والآجل 8%.</>
+                    ) : isSeptember ? (
                       <>الرئيسي (317.8K)، الرواف (292.3K)، كيا (241.9K)، ومتجر سلة (37.7K) عبر الشبكة، الكاش، تابي وتمارا والحوالات البنكية المباشرة.</>
                     ) : (
                       <>الرئيسي (428.9K)، الرواف (291.4K)، كيا (269.3K)، وشملت شبكة وكاش و165 حوالة بنكية (130.9K) و131 عملية تقسيط (93.6K).</>
@@ -1079,7 +1189,9 @@ export default function BIOverview() {
                     <Flame className="w-3.5 h-3.5 text-amber-500" />
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    {isSeptember ? (
+                    {isOctober ? (
+                      <><strong className="text-[#0F172A]">حملات Meta</strong> كانت الأكفأ في استقطاب عملاء الشراء عبر الواتساب (1,736 محادثة بتكلفة 1.67 ر.س فقط)، بينما حققت حملات Google تدفقاً واسعاً بـ 40.6K تفاعل وبعائد مجمّع 74.1× MER.</>
+                    ) : isSeptember ? (
                       <><strong className="text-[#0F172A]">خرائط Google</strong> بإنفاق 4.48K حققت أعلى تدفق للمعارض، وميتا حققت 1,477 محادثة بإنفاق 2.73K وبعائد مجمّع استثنائي 106.9× MER.</>
                     ) : (
                       <><strong className="text-[#0F172A]">حملات خرائط Google</strong> بإنفاق 4.66K حققت 89K تفاعل، وميتا حققت 1,617 محادثة بإنفاق 3.22K.</>
@@ -1094,7 +1206,9 @@ export default function BIOverview() {
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    {isSeptember ? (
+                    {isOctober ? (
+                      <>حملة <strong className="text-amber-800">تيك توك</strong> حققت 7,583 نقرة بإنفاق 1,062.58 ر.س (0.14 ر.س للنقرة) ولكن تحويلها إلى طلبات سلة مباشرة بحاجة إلى تعزيز عروض الخصم الحصرية لجمهور تيك توك.</>
+                    ) : isSeptember ? (
                       <>حملة <strong className="text-amber-800">تيك توك</strong> حققت 13.9K نقرة بتكلفة 0.08 ر.س، ولكن تتطلب رفع معدل التحويل إلى طلبات سلة مباشرة.</>
                     ) : (
                       <>حملة <strong className="text-amber-800">تيك توك</strong> حققت 1.14M ظهور ولكن التحويل المباشر للزيارات يحتاج تعزيز عروض قطع الصيانة.</>
@@ -1109,7 +1223,9 @@ export default function BIOverview() {
                     <PackageSearch className="w-3.5 h-3.5 text-blue-600" />
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    {isSeptember ? (
+                    {isOctober ? (
+                      <><strong className="text-[#0F172A]">قطع غيار كيا وهيونداي الاستهلاكية</strong> (المساعدات، فلاتر، بواجي، فحمات) شكلت الحصة الأكبر بالمبيعات، مع تميز فرع كيا بتحقيق 102.9% من تارجته المستقل.</>
+                    ) : isSeptember ? (
                       <><strong className="text-[#0F172A]">قطع غيار كيا وهيونداي الاستهلاكية</strong> (فلاتر الزيت، السيور، الفحمات) شكلت النسبة الأعلى بالمعارض ومتجر سلة.</>
                     ) : (
                       <><strong className="text-[#0F172A]">قطع غيار كيا وهيونداي الأصلية</strong> شكلت 72.4% من مبيعات سلة، مع إقبال واسع على الفلاتر والزيوت.</>
@@ -1124,7 +1240,9 @@ export default function BIOverview() {
                     <Store className="w-3.5 h-3.5 text-emerald-600" />
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    {isSeptember ? (
+                    {isOctober ? (
+                      <>فرع كيا تفوق محققاً <strong className="text-emerald-700">102.9%</strong> من مستهدفه (179.0K من 174K)، بينما حققت الفروع المجمعة 92.7% من التارجت الميداني (741.9K بالضريبة من 800K)، و <strong className="text-emerald-700">96.1%</strong> بالإجمالي الشامل مع متجر سلة (768.6K ر.س).</>
+                    ) : isSeptember ? (
                       <>فروع بريدة حققت <strong className="text-emerald-700">852,001.64 ر.س</strong> بنسبة إنجاز تجاوزت 100% لتارجت الفروع الميدانية (850K).</>
                     ) : (
                       <>جميع الفروع حققت التارجت: <strong className="text-emerald-700">كيا 134.6%</strong>، <strong className="text-emerald-700">الرئيسي 122.5%</strong>، و <strong className="text-emerald-700">الرواف 116.6%</strong>!</>
@@ -1139,7 +1257,7 @@ export default function BIOverview() {
               <div className="space-y-3 pt-2">
                 <SectionHeader
                   title="المسار التاريخي للإيرادات وصافي الأرباح"
-                  subtitle={isSeptember ? 'مقارنة الأشهر توضح استدامة المبيعات في سبتمبر ووصول الصافي إلى 889,704 ر.س' : 'مقارنة آخر 6 أشهر توضح قفزة شهر أغسطس ووصول الصافي إلى 989,522 ر.س'}
+                  subtitle={isOctober ? 'مقارنة الأشهر توضح اعتماد فواتير شهر أكتوبر وصافي المبيعات 671,856 ر.س (فروع بريدة وسلة)' : (isSeptember ? 'مقارنة الأشهر توضح استدامة المبيعات في سبتمبر ووصول الصافي إلى 889,704 ر.س' : 'مقارنة آخر 6 أشهر توضح قفزة شهر أغسطس ووصول الصافي إلى 989,522 ر.س')}
                 />
                 <TrendAreaChart
                   data={trend}

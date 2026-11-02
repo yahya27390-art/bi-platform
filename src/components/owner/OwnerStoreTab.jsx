@@ -3,6 +3,17 @@ import { loadSallaConfig } from '../../lib/sallaIntegration';
 import { useCurrentPeriod } from '../../context/BIPeriodContext';
 
 // ── September 2026 Salla Official Audited Accounts ───────────────────────────
+// ── October 2026 Salla Official Audited Accounts ────────────────────────
+const STORE_STATS_OCT = {
+  totalOrders: 43,
+  totalRevenue: 26714,
+  avgOrderValue: 650,
+  abandonedCartsCount: 38,
+  abandonedCartsValue: 19850,
+  conversionRate: 0.30,
+  cartAbandonmentRate: 73.1,
+};
+
 const STORE_STATS_SEP = {
   totalOrders: 61,
   totalRevenue: 37725,
@@ -39,8 +50,8 @@ export default function OwnerStoreTab({ viewMode = 'mobile', periodId: propPerio
   const [activeView, setActiveView] = useState('overview'); // 'overview' | 'products' | 'orders'
   const { periodId: ctxPeriodId, activePeriodObj } = useCurrentPeriod();
   const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-09';
-  const periodLabel = activePeriodObj?.labelAr || activePeriodObj?.label || (currentPeriodId === 'p-2026-08' ? 'أغسطس 2026' : 'سبتمبر 2026');
-  const STORE_STATS = currentPeriodId === 'p-2026-08' ? STORE_STATS_AUG : STORE_STATS_SEP;
+  const periodLabel = activePeriodObj?.labelAr || activePeriodObj?.label || (currentPeriodId === 'p-2026-10' ? 'أكتوبر 2026' : currentPeriodId === 'p-2026-08' ? 'أغسطس 2026' : 'سبتمبر 2026');
+  const STORE_STATS = currentPeriodId === 'p-2026-10' ? STORE_STATS_OCT : (currentPeriodId === 'p-2026-08' ? STORE_STATS_AUG : STORE_STATS_SEP);
   const recoveryPotential = STORE_STATS.abandonedCartsValue * 0.25;
   const sallaConfig = loadSallaConfig();
   const liveOrders = (sallaConfig?.syncedStats?.recentOrders || []).filter(
