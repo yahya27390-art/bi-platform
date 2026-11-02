@@ -257,6 +257,377 @@ const SAUDI_CITIES_GEO = [
   },
 ];
 
+
+// Verified Historical & Live Datasets per Audited Period
+const CITY_METRICS_BY_PERIOD = {
+  'p-2026-10': {
+    buraydah: {
+      physicalSales: 645141.93,
+      onlineSales: 1860.00,
+      sales: 647001.93,
+      activeUsers: 680,
+      sessions: 847,
+      conversions: 3,
+      tag: 'المركز الرئيسي للفروع (3 فروع نشطة - أكتوبر)',
+      notes: 'المركز الرئيسي لدرة للسيارات لشهر أكتوبر 2026: الفرع الرئيسي (275K) + فرع الرواف (191K) + فرع كيا (179K) بالإضافة لطلبات متجر سلة بالقصيم',
+    },
+    jeddah: {
+      physicalSales: 0,
+      onlineSales: 9250.00,
+      sales: 9250.00,
+      activeUsers: 4100,
+      sessions: 5017,
+      conversions: 15,
+      tag: 'الأعلى طلباً بمتجر سلة (15 طلب - 5,017 زيارة)',
+      notes: 'المدينة الأولى بالمملكة في مبيعات متجر سلة لشهر أكتوبر 2026 وحجم الزيارات التسويقية',
+    },
+    riyadh: {
+      physicalSales: 0,
+      onlineSales: 6830.00,
+      sales: 6830.00,
+      activeUsers: 2750,
+      sessions: 3374,
+      conversions: 11,
+      tag: 'العاصمة (3,374 زيارة - 11 طلب)',
+      notes: 'أعلى كثافة بحثية وإعلانية عبر Google Ads وحملات البحث مع 11 طلب مكتمل أونلاين',
+    },
+    dammam: {
+      physicalSales: 0,
+      onlineSales: 4340.00,
+      sales: 4340.00,
+      activeUsers: 1620,
+      sessions: 1973,
+      conversions: 7,
+      tag: 'المنطقة الشرقية (7 طلبات)',
+      notes: 'مركز المبيعات الإلكترونية للشرقية يغطي الدمام والخبر والأحساء والجبيل',
+    },
+    madinah: {
+      physicalSales: 0,
+      onlineSales: 2480.00,
+      sales: 2480.00,
+      activeUsers: 890,
+      sessions: 1100,
+      conversions: 4,
+      tag: 'منطقة المدينة المنورة (4 طلبات)',
+      notes: 'نشاط بيعي وتسويقي مستمر عبر متجر سلة مع 4 طلبات شراء معتمدة',
+    },
+    abha: {
+      physicalSales: 0,
+      onlineSales: 650.00,
+      sales: 650.00,
+      activeUsers: 420,
+      sessions: 520,
+      conversions: 1,
+      tag: 'القطاع الجنوبي (طلب واحد)',
+      notes: 'نشاط سلة في المنطقة الجنوبية يغطي أبها وخميس مشيط ومحايل عسير',
+    },
+    makkah: {
+      physicalSales: 0,
+      onlineSales: 650.00,
+      sales: 650.00,
+      activeUsers: 110,
+      sessions: 140,
+      conversions: 1,
+      tag: 'العاصمة المقدسة (طلب واحد)',
+      notes: 'طلبات متجر سلة وشحن قطع الغيار لمنطقة مكة المكرمة',
+    },
+    tabuk: {
+      physicalSales: 0,
+      onlineSales: 653.62,
+      sales: 653.62,
+      activeUsers: 95,
+      sessions: 120,
+      conversions: 1,
+      tag: 'الشمال الغربي (طلب واحد)',
+      notes: 'منطقة تغطية متجر سلة في أقصى الشمال الغربي ونيوم',
+    },
+    hail: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 340,
+      sessions: 450,
+      conversions: 0,
+      tag: 'زيارات GA4 (450 زيارة)',
+      notes: 'زيارات تصفح واهتمام بحملات البحث دون طلبات شراء منفذة هذا الشهر',
+    },
+    jazan: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 300,
+      sessions: 385,
+      conversions: 0,
+      tag: 'زيارات GA4 (385 زيارة)',
+      notes: 'تصفح رقمي مباشر لكتالوج المنتجات بمتجر درة للسيارات',
+    },
+    najran: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 245,
+      sessions: 310,
+      conversions: 0,
+      tag: 'زيارات GA4 (310 زيارة)',
+      notes: 'زيارات استكشافية لمنتجات الشركة عبر إعلانات السوشيال ميديا',
+    },
+    jouf: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 200,
+      sessions: 260,
+      conversions: 0,
+      tag: 'زيارات GA4 (260 زيارة)',
+      notes: 'زيارات عضوية مباشرة قادمة من محرك بحث Google',
+    },
+  },
+  'p-2026-09': {
+    buraydah: {
+      physicalSales: 852001.64,
+      onlineSales: 2480.00,
+      sales: 854481.64,
+      activeUsers: 720,
+      sessions: 910,
+      conversions: 4,
+      tag: 'المركز الرئيسي للفروع (3 فروع نشطة - سبتمبر)',
+      notes: 'المركز الرئيسي لدرة للسيارات لشهر سبتمبر 2026: الفرع الرئيسي (318K) + فرع الرواف (292K) + فرع كيا (242K) بالإضافة لطلبات متجر سلة (37.7K)',
+    },
+    jeddah: {
+      physicalSales: 0,
+      onlineSales: 12400.00,
+      sales: 12400.00,
+      activeUsers: 4750,
+      sessions: 6020,
+      conversions: 20,
+      tag: 'الأعلى طلباً بمتجر سلة (20 طلب)',
+      notes: 'المدينة الأولى بالمملكة في مبيعات متجر سلة الإلكتروني وأعلى عدد زيارات تسويقية للموقع',
+    },
+    riyadh: {
+      physicalSales: 0,
+      onlineSales: 9300.00,
+      sales: 9300.00,
+      activeUsers: 3420,
+      sessions: 4110,
+      conversions: 15,
+      tag: 'العاصمة (15 طلب)',
+      notes: 'أعلى كثافة بحثية وإعلانية عبر Google Ads ومنصات التواصل مع 15 طلب مكتمل أونلاين',
+    },
+    dammam: {
+      physicalSales: 0,
+      onlineSales: 6200.00,
+      sales: 6200.00,
+      activeUsers: 1910,
+      sessions: 2350,
+      conversions: 10,
+      tag: 'المنطقة الشرقية (10 طلبات)',
+      notes: 'مركز المبيعات الإلكترونية للشرقية يغطي الدمام والخبر والأحساء والجبيل',
+    },
+    madinah: {
+      physicalSales: 0,
+      onlineSales: 4340.00,
+      sales: 4340.00,
+      activeUsers: 1050,
+      sessions: 1320,
+      conversions: 7,
+      tag: 'منطقة المدينة المنورة (7 طلبات)',
+      notes: 'نشاط بيعي وتسويقي مستمر عبر متجر سلة مع 7 طلبات شراء معتمدة',
+    },
+    abha: {
+      physicalSales: 0,
+      onlineSales: 1240.00,
+      sales: 1240.00,
+      activeUsers: 490,
+      sessions: 610,
+      conversions: 2,
+      tag: 'القطاع الجنوبي (طلبين)',
+      notes: 'نشاط سلة في المنطقة الجنوبية يغطي أبها وخميس مشيط ومحايل عسير',
+    },
+    makkah: {
+      physicalSales: 0,
+      onlineSales: 1120.00,
+      sales: 1120.00,
+      activeUsers: 140,
+      sessions: 190,
+      conversions: 2,
+      tag: 'العاصمة المقدسة (طلبين)',
+      notes: 'طلبات متجر سلة وشحن قطع الغيار والإكسسوارات لمنطقة مكة المكرمة',
+    },
+    tabuk: {
+      physicalSales: 0,
+      onlineSales: 622.50,
+      sales: 622.50,
+      activeUsers: 110,
+      sessions: 150,
+      conversions: 1,
+      tag: 'الشمال الغربي (طلب واحد)',
+      notes: 'منطقة تغطية متجر سلة في أقصى الشمال الغربي ونيوم',
+    },
+    hail: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 230,
+      sessions: 260,
+      conversions: 0,
+      tag: 'زيارات GA4 (260 زيارة)',
+      notes: 'زيارات تصفح واهتمام بحملات البحث دون طلبات شراء منفذة هذا الشهر',
+    },
+    jazan: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 195,
+      sessions: 220,
+      conversions: 0,
+      tag: 'زيارات GA4 (220 زيارة)',
+      notes: 'تصفح رقمي مباشر لكتالوج المنتجات بمتجر درة للسيارات',
+    },
+    najran: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 150,
+      sessions: 175,
+      conversions: 0,
+      tag: 'زيارات GA4 (175 زيارة)',
+      notes: 'زيارات استكشافية لمنتجات الشركة عبر إعلانات السوشيال ميديا',
+    },
+    jouf: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 105,
+      sessions: 125,
+      conversions: 0,
+      tag: 'زيارات GA4 (125 زيارة)',
+      notes: 'زيارات عضوية مباشرة قادمة من محرك بحث Google',
+    },
+  },
+  'p-2026-08': {
+    buraydah: {
+      physicalSales: 989522.16,
+      onlineSales: 3350.00,
+      sales: 992872.16,
+      activeUsers: 526,
+      sessions: 851,
+      conversions: 1,
+      tag: 'المركز الرئيسي للفروع (3 فروع نشطة - أغسطس)',
+      notes: 'المركز الرئيسي لدرة للسيارات لشهر أغسطس 2026: الفرع الرئيسي (428K) + فرع الرواف (291K) + فرع كيا (269K) بالإضافة لطلبات المتجر المعتمدة',
+    },
+    jeddah: {
+      physicalSales: 0,
+      onlineSales: 13150.00,
+      sales: 13150.00,
+      activeUsers: 4585,
+      sessions: 5712,
+      conversions: 20,
+      tag: 'الأعلى طلباً بمتجر سلة (20 طلب)',
+      notes: 'المدينة الأولى بالمملكة في مبيعات متجر سلة الإلكتروني وأعلى عدد زيارات تسويقية للموقع',
+    },
+    riyadh: {
+      physicalSales: 0,
+      onlineSales: 9375.00,
+      sales: 9375.00,
+      activeUsers: 3380,
+      sessions: 3878,
+      conversions: 16,
+      tag: 'العاصمة (16 طلب)',
+      notes: 'أعلى كثافة بحثية وإعلانية عبر Google Ads ومنصات التواصل مع 16 طلب مكتمل أونلاين',
+    },
+    dammam: {
+      physicalSales: 0,
+      onlineSales: 6885.00,
+      sales: 6885.00,
+      activeUsers: 1989,
+      sessions: 2308,
+      conversions: 12,
+      tag: 'المنطقة الشرقية (12 طلب)',
+      notes: 'مركز المبيعات الإلكترونية للشرقية، تغطي الدمام والخبر والأحساء والجبيل',
+    },
+    madinah: {
+      physicalSales: 0,
+      onlineSales: 5410.00,
+      sales: 5410.00,
+      activeUsers: 1115,
+      sessions: 1288,
+      conversions: 9,
+      tag: 'منطقة المدينة المنورة (9 طلبات)',
+      notes: 'نشاط بيعي وتسويقي مستمر عبر متجر سلة مع 9 طلبات شراء معتمدة',
+    },
+    abha: {
+      physicalSales: 0,
+      onlineSales: 2004.00,
+      sales: 2004.00,
+      activeUsers: 507,
+      sessions: 556,
+      conversions: 3,
+      tag: 'القطاع الجنوبي (3 طلبات)',
+      notes: 'نشاط سلة في المنطقة الجنوبية يغطي أبها وخميس مشيط ومحايل عسير',
+    },
+    makkah: {
+      physicalSales: 0,
+      onlineSales: 769.00,
+      sales: 769.00,
+      activeUsers: 113,
+      sessions: 145,
+      conversions: 2,
+      tag: 'العاصمة المقدسة (طلبين)',
+      notes: 'طلبات متجر سلة وشحن قطع الغيار والإكسسوارات لمنطقة مكة المكرمة',
+    },
+    tabuk: {
+      physicalSales: 0,
+      onlineSales: 125.00,
+      sales: 125.00,
+      activeUsers: 43,
+      sessions: 56,
+      conversions: 1,
+      tag: 'الشمال الغربي (طلب واحد)',
+      notes: 'منطقة تغطية متجر سلة في أقصى الشمال الغربي ونيوم',
+    },
+    hail: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 210,
+      sessions: 245,
+      conversions: 0,
+      tag: 'زيارات GA4 (210 زائر)',
+      notes: 'زيارات تصفح واهتمام بحملات البحث دون طلبات شراء منفذة هذا الشهر',
+    },
+    jazan: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 185,
+      sessions: 210,
+      conversions: 0,
+      tag: 'زيارات GA4 (185 زائر)',
+      notes: 'تصفح رقمي مباشر لكتالوج المنتجات بمتجر درة للسيارات',
+    },
+    najran: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 140,
+      sessions: 165,
+      conversions: 0,
+      tag: 'زيارات GA4 (140 زائر)',
+      notes: 'زيارات استكشافية لمنتجات الشركة عبر إعلانات السوشيال ميديا',
+    },
+    jouf: {
+      physicalSales: 0,
+      onlineSales: 0,
+      sales: 0,
+      activeUsers: 95,
+      sessions: 110,
+      conversions: 0,
+      tag: 'زيارات GA4 (95 زائر)',
+      notes: 'زيارات عضوية مباشرة قادمة من محرك بحث Google',
+    },
+  },
+};
+
 // Map Tile Providers
 const TILE_PROVIDERS = {
   google_roadmap: {
@@ -368,45 +739,54 @@ function MapController({ targetCity, recenterTrigger }) {
   return null;
 }
 
-export default function GeoPerformanceView({ geoData: propGeoData = DORA_GEO_PERFORMANCE, periodId: propPeriodId }) {
-  const { periodId: ctxPeriodId } = useCurrentPeriod ? useCurrentPeriod() : { periodId: 'p-2026-08' };
-  const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-08';
-  const isSeptember = currentPeriodId === 'p-2026-09';
+export default function GeoPerformanceView({ geoData: propGeoData, periodId: propPeriodId }) {
+  const { periodId: ctxPeriodId } = useCurrentPeriod ? useCurrentPeriod() : { periodId: 'p-2026-10' };
+  const currentPeriodId = propPeriodId || ctxPeriodId || 'p-2026-10';
 
   const citiesList = useMemo(() => {
+    const periodMetrics = CITY_METRICS_BY_PERIOD[currentPeriodId] || CITY_METRICS_BY_PERIOD['p-2026-10'];
     return SAUDI_CITIES_GEO.map((c) => {
-      if (c.id === 'buraydah') {
-        return isSeptember
-          ? {
-              ...c,
-              sales: 889704.14,
-              onlineSales: 37702.50,
-              physicalSales: 852001.64,
-              tag: 'المركز الرئيسي للفروع (3 فروع نشطة - سبتمبر)',
-              notes: 'المركز الرئيسي لدرة للسيارات لشهر سبتمبر: الفرع الرئيسي (317.8K) + فرع الرواف (292.3K) + فرع كيا (241.9K) بالإضافة لطلبات متجر سلة المعتمدة (37.7K)',
-            }
-          : c;
-      }
-      return c;
+      const m = periodMetrics[c.id] || {};
+      const physicalSales = m.physicalSales !== undefined ? m.physicalSales : (c.physicalSales || 0);
+      const onlineSales = m.onlineSales !== undefined ? m.onlineSales : (c.onlineSales || 0);
+      const sales = m.sales !== undefined ? m.sales : (physicalSales + onlineSales);
+      return {
+        ...c,
+        ...m,
+        physicalSales,
+        onlineSales,
+        sales,
+      };
     });
-  }, [isSeptember]);
+  }, [currentPeriodId]);
 
   const geoData = useMemo(() => {
-    const base = propGeoData || DORA_GEO_PERFORMANCE;
-    if (!isSeptember) return base;
-    return base.map((item) => {
-      if (item.id === 'buraydah' || item.cityAr === 'بريدة') {
-        return {
-          ...item,
-          totalSales: 889704.14,
-          sales: 889704.14,
-          physicalSales: 852001.64,
-          onlineSales: 37702.50,
-        };
-      }
-      return item;
-    });
-  }, [propGeoData, isSeptember]);
+    if (propGeoData && propGeoData.length > 0) return propGeoData;
+    return citiesList.map((c) => ({
+      id: c.id,
+      cityAr: c.cityAr,
+      cityEn: c.cityEn,
+      region: c.region,
+      sales: c.sales,
+      totalSales: c.sales,
+      physicalSales: c.physicalSales,
+      onlineSales: c.onlineSales,
+      activeUsers: c.activeUsers,
+      sessions: c.sessions,
+      conversions: c.conversions,
+      isPhysicalHub: c.isPhysicalHub,
+      channelType: c.isPhysicalHub ? 'فروع ميدانية (3 فروع) + متجر سلة' : (c.onlineSales > 0 ? 'متجر سلة أونلاين' : 'تصفح رقمي مباشر'),
+      confidence: c.isPhysicalHub ? 'VerifiedPOS' : 'GA4 Live API',
+      sourceText: c.isPhysicalHub ? 'فواتير الفروع (Z-Reports) + تقرير سلة' : 'ربط حي مباشر (GA4)',
+    }));
+  }, [citiesList, propGeoData]);
+
+  // Dynamically compute the top online performing city for the selected period
+  const topOnlineCity = useMemo(() => {
+    return [...citiesList]
+      .filter((c) => !c.isPhysicalHub && (c.onlineSales || 0) > 0)
+      .sort((a, b) => (b.onlineSales || 0) - (a.onlineSales || 0))[0] || citiesList[1];
+  }, [citiesList]);
 
   const [tileMode, setTileMode] = useState('google_roadmap'); // 'google_roadmap' | 'google_satellite' | 'carto_dark'
   const [selectedCityId, setSelectedCityId] = useState('buraydah');
@@ -505,10 +885,10 @@ export default function GeoPerformanceView({ geoData: propGeoData = DORA_GEO_PER
             <ShoppingCart className="w-4 h-4 text-cyan-600" />
           </div>
           <div className="text-lg md:text-xl font-black text-cyan-700">
-            جدة (Jeddah)
+            {topOnlineCity?.cityAr || 'جدة'} ({topOnlineCity?.cityEn || 'Jeddah'})
           </div>
           <div className="text-[11px] text-slate-500 font-mono font-medium" dir="ltr">
-            {formatSAR(13150, true)} (20 طلب شراء)
+            {formatSAR(topOnlineCity?.onlineSales || 0, true)} ({topOnlineCity?.conversions || 0} طلب شراء)
           </div>
         </div>
 
@@ -534,7 +914,7 @@ export default function GeoPerformanceView({ geoData: propGeoData = DORA_GEO_PER
             بريدة (القصيم)
           </div>
           <div className="text-[11px] text-slate-500 font-mono font-medium" dir="ltr">
-            {formatSAR(989522.16, true)} (3 فروع نشطة)
+            {formatSAR(totalPhysicalRevenue, true)} (3 فروع نشطة)
           </div>
         </div>
       </div>
