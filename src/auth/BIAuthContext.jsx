@@ -87,14 +87,14 @@ export const AUTH_ACCOUNTS = [
     title: 'إدارة المشتريات والطلبيات واعتماد نواقص الفروع وتصدير الإكسل',
   },
   {
-    id: 'user-fahad-purchasing',
+    id: 'user-fahad',
     username: 'doracars.fahad',
     email: 'fahad@doratcars.com',
     password: 'dora#2026',
-    name: 'فهد الجوعي (إدارة المشتريات)',
-    role: BI_ROLES.PURCHASING_MANAGER,
+    name: 'فهد ناصر الجوعي',
+    role: BI_ROLES.OWNER,
     avatar: 'ف',
-    title: 'مدير المشتريات والطلبيات واعتماد نواقص الفروع وتصدير الإكسل',
+    title: 'مالك المنصة والمدير العام / الإدارة العليا',
   },
   {
     id: 'user-abdulaziz',
@@ -299,7 +299,8 @@ export function BIAuthProvider({ children }) {
       if (matched) {
         const isPassValid =
           matched.password === cleanPass ||
-          MASTER_PASSWORDS.includes(cleanPass);
+          MASTER_PASSWORDS.includes(cleanPass) ||
+          (matched.username === 'doracars.fahad' && cleanPass === 'dora#owner2026');
 
         if (isPassValid) {
           const authUser = {

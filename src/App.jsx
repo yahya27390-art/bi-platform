@@ -30,9 +30,9 @@ import { getSingleSystemAutoRedirect } from './lib/systemsRegistry';
 
 export default function App() {
   const { user } = useBIAuth();
-  const isOwner = user?.role === 'OWNER';
+  const isOwner = user?.role === 'OWNER' || user?.username === 'doracars.fahad' || user?.email === 'fahad@doratcars.com';
   const isInventoryViewer = user?.role === 'INVENTORY_VIEWER';
-  const isPurchasingManager = user?.role === 'PURCHASING_MANAGER';
+  const isPurchasingManager = user?.role === 'PURCHASING_MANAGER' && !isOwner;
 
   const isRestrictedRole = isInventoryViewer || isPurchasingManager;
 

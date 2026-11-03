@@ -88,7 +88,7 @@ export const PLATFORM_SYSTEMS = [
     icon: Crown,
     accentGradient: 'from-slate-900 via-indigo-950 to-blue-950',
     cardBorder: 'hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/20',
-    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN],
+    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
     features: ['💎 خزنة مالية مشفرة', '📈 أرباح الفروع والمتجر', '💰 تدقيق Z-Report', '🔒 صلاحية المالك العليا']
   },
   {

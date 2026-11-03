@@ -8,7 +8,7 @@ export default function BILayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { user } = useBIAuth();
   const location = useLocation();
-  const isOwner = user?.role === 'OWNER' || location.pathname === '/owner';
+  const isOwner = location.pathname === '/owner';
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans overflow-x-hidden w-full relative" dir="rtl">
