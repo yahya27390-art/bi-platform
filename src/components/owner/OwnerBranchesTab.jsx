@@ -90,7 +90,9 @@ const BRANCHES_SEP = [
     grossSales: 358779.51,
     returns: 40963.00,
     sales: 317816.51,
+    salesWithVat: 365488.99,
     target: 350000,
+    achievementPct: 104.43,
     tag: 'الرئيسي',
     tagColor: '#0A192F',
     city: 'بريدة',
@@ -106,7 +108,9 @@ const BRANCHES_SEP = [
     grossSales: 361365.13,
     returns: 69077.00,
     sales: 292288.13,
+    salesWithVat: 336131.35,
     target: 250000,
+    achievementPct: 134.45,
     tag: 'هيونداي',
     tagColor: '#0369A1',
     city: 'بريدة',
@@ -122,7 +126,9 @@ const BRANCHES_SEP = [
     grossSales: 279437.00,
     returns: 37540.00,
     sales: 241897.00,
+    salesWithVat: 278181.55,
     target: 200000,
+    achievementPct: 139.09,
     tag: 'كيا',
     tagColor: '#C2410C',
     city: 'بريدة',
@@ -138,7 +144,9 @@ const BRANCHES_SEP = [
     grossSales: 39888.00,
     returns: 2162.92,
     sales: 37725.08,
+    salesWithVat: 43383.84,
     target: 35000,
+    achievementPct: 123.95,
     tag: 'أونلاين',
     tagColor: '#065F46',
     city: 'المملكة كاملة',
@@ -158,7 +166,9 @@ const BRANCHES_AUG = [
     grossSales: 471748.99,
     returns: 42863.50,
     sales: 428885.49,
+    salesWithVat: 493218.31,
     target: 350000,
+    achievementPct: 140.92,
     tag: 'الرئيسي',
     tagColor: '#0A192F',
     city: 'بريدة',
@@ -174,7 +184,9 @@ const BRANCHES_AUG = [
     grossSales: 328996.67,
     returns: 37625.00,
     sales: 291371.67,
+    salesWithVat: 335077.42,
     target: 250000,
+    achievementPct: 134.03,
     tag: 'هيونداي',
     tagColor: '#0369A1',
     city: 'بريدة',
@@ -190,7 +202,9 @@ const BRANCHES_AUG = [
     grossSales: 304155.00,
     returns: 34890.00,
     sales: 269265.00,
+    salesWithVat: 309654.75,
     target: 200000,
+    achievementPct: 154.83,
     tag: 'كيا',
     tagColor: '#C2410C',
     city: 'بريدة',
@@ -206,7 +220,9 @@ const BRANCHES_AUG = [
     grossSales: 41783.00,
     returns: 225.00,
     sales: 41558.00,
+    salesWithVat: 47791.70,
     target: 35000,
+    achievementPct: 136.55,
     tag: 'أونلاين',
     tagColor: '#065F46',
     city: 'المملكة كاملة',
@@ -409,17 +425,46 @@ export default function OwnerBranchesTab({ viewMode = 'mobile', periodId: propPe
 
       {/* ── Branch Ranking ── */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-        <div className="text-xs font-bold text-slate-500 mb-3">🏆 ترتيب الفروع حسب الإنجاز</div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-xs font-bold text-slate-500">🏆 ترتيب الفروع حسب الإنجاز</div>
+          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+            المبيعات شاملة 15% ضريبة
+          </span>
+        </div>
         {[...branches]
-          .sort((a, b) => (b.sales / b.target) - (a.sales / a.target))
+          .map(b => {
+            const salesForTarget = b.salesWithVat != null ? b.salesWithVat : (b.sales * 1.15);
+            const rawPct = b.achievementPct != null ? Number(b.achievementPct) : ((salesForTarget / b.target) * 100);
+            return {
+              ...b,
+              salesForTarget,
+              pctNum: rawPct,
+              pctStr: rawPct.toFixed(1)
+            };
+          })
+          .sort((a, b) => b.pctNum - a.pctNum)
           .map((b, i) => {
-            const pct = ((b.sales / b.target) * 100).toFixed(1);
             const medals = ['🥇', '🥈', '🥉', '4️⃣'];
+            const isTargetAchieved = b.pctNum >= 100;
             return (
               <div key={b.id} className="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
-                <span className="text-lg">{medals[i]}</span>
-                <span className="text-sm font-bold text-slate-800 flex-1">{b.name}</span>
-                <span className="text-sm font-black text-green-600">{pct}%</span>
+                <span className="text-lg">{medals[i] || `${i + 1}`}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-bold text-slate-800">{b.name}</span>
+                    {isTargetAchieved && (
+                      <span className="text-[9px] font-black bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md">
+                        تجاوز التارجت!
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">
+                    المحتسب للتارجت: {b.salesForTarget.toLocaleString('ar-SA', { maximumFractionDigits: 0 })} ر.س من {b.target.toLocaleString('ar-SA')} ر.س
+                  </div>
+                </div>
+                <span className={`text-sm font-black ${isTargetAchieved ? 'text-emerald-600' : 'text-slate-700'}`}>
+                  {b.pctStr}%
+                </span>
               </div>
             );
           })}
