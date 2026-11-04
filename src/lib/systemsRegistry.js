@@ -138,6 +138,10 @@ export function getUserAvailableSystems(user) {
  * If user has multiple systems, returns null (meaning show portal).
  */
 export function getSingleSystemAutoRedirect(user) {
+  // If user is OWNER, show the Portal with their exclusive Crown card
+  if (user?.role === 'OWNER' || user?.username === 'doracars.fahad') {
+    return '/portal';
+  }
   const systems = getUserAvailableSystems(user);
   if (systems.length === 1) {
     return systems[0].path;

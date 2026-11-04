@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
+  Crown,
   Lock,
   Eye,
   EyeOff,
@@ -27,6 +29,7 @@ import OwnerBranchesTab from '../components/owner/OwnerBranchesTab';
 import OwnerStoreTab from '../components/owner/OwnerStoreTab';
 import OwnerInventoryTab from '../components/owner/OwnerInventoryTab';
 import { useCurrentPeriod } from '../context/BIPeriodContext';
+import { useBIAuth } from '@/auth/BIAuthContext';
 import { MOCK_FINANCIALS } from '../data/mockData';
 
 const VAULT_SESSION_KEY = 'dora_owner_vault_unlocked';
@@ -284,11 +287,14 @@ function SummaryTab({ privacyMode, viewMode = 'mobile', periodMetrics, activePer
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function OwnerExecutiveDashboard() {
+  const { user } = useBIAuth();
   const { periodId, setPeriodId, periods, activePeriodObj, initializeNewPeriod } = useCurrentPeriod();
 
-  // Vault security check
+  const isOwnerUser = user?.role === 'OWNER' || user?.username === 'doracars.fahad' || user?.email === 'fahad@doratcars.com';
+
+  // Vault security check: authenticated OWNER account opens automatically without blocking
   const [unlocked, setUnlocked] = useState(() => {
-    return sessionStorage.getItem(VAULT_SESSION_KEY) === 'true';
+    return sessionStorage.getItem(VAULT_SESSION_KEY) === 'true' || isOwnerUser;
   });
 
   const [activeTab, setActiveTab] = useState('summary');
@@ -445,7 +451,7 @@ export default function OwnerExecutiveDashboard() {
           <div className="flex items-center justify-between gap-2">
 
             {/* Logo & Brand Title */}
-            <div className="flex items-center gap-2 shrink-0">
+            <Link to="/portal" className="flex items-center gap-2 shrink-0 hover:opacity-85 transition-opacity" title="العودة إلى بوابة الأنظمة">
               <img
                 src={doraLogo}
                 alt="درة السيارة"
@@ -464,7 +470,7 @@ export default function OwnerExecutiveDashboard() {
                   درة السيارة • متابعة الأداء المالي والتشغيلي
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* Controls Section (Period, Mode Switcher, Actions) */}
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
@@ -529,6 +535,14 @@ export default function OwnerExecutiveDashboard() {
 
               {/* Quick Actions (Privacy + Lock) */}
               <div className="flex items-center gap-1 shrink-0">
+                <Link
+                  to="/portal"
+                  className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all ml-1 shrink-0"
+                  title="العودة إلى بوابة الأنظمة"
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden sm:inline">بوابة الأنظمة</span>
+                </Link>
                 <button
                   onClick={() => setPrivacyMode(!privacyMode)}
                   className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all ${
