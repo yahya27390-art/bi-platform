@@ -103,15 +103,17 @@ export default function BITopBar({ onOpenMobileSidebar, periodId: propPeriodId, 
         <span className="hidden sm:inline">بوابة الأنظمة</span>
       </button>
 
-      {/* Quick Data Import Button for Owner & Management */}
-      <button
-        onClick={() => navigate('/import')}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 text-xs font-bold transition-all shadow-xs"
-        title="مركز استيراد وتدقيق البيانات (Data Import)"
-      >
-        <Upload className="w-3.5 h-3.5 text-blue-700" />
-        <span className="hidden md:inline">استيراد البيانات</span>
-      </button>
+      {/* Quick Data Import Button for Admin */}
+      {user?.role === 'ADMIN' && (
+        <button
+          onClick={() => navigate('/import')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 text-xs font-bold transition-all shadow-xs"
+          title="مركز استيراد وتدقيق البيانات (Data Import)"
+        >
+          <Upload className="w-3.5 h-3.5 text-blue-700" />
+          <span className="hidden md:inline">استيراد البيانات</span>
+        </button>
+      )}
 
       {/* User & Role Switcher */}
       <div className="relative">

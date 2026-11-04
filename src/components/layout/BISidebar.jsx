@@ -44,10 +44,14 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
   const isInventoryViewer = user?.role === 'INVENTORY_VIEWER';
   const isPurchasingManager = user?.role === 'PURCHASING_MANAGER';
 
-  // OWNER gets a dedicated full-screen mobile dashboard – no sidebar needed
-  if (user?.role === 'OWNER' || location.pathname === '/owner') return null;
+  // Dedicated full-screen layout for the Owner Executive Vault page – no sidebar needed
+  if (location.pathname === '/owner') return null;
 
   const isItemVisible = (item) => {
+    // If user is OWNER: allow the Owner Vault and inventory/orders/quotes items
+    if (user?.role === 'OWNER') {
+      return item.isOwnerVault === true || item.isInventory === true;
+    }
     // If user is INVENTORY_VIEWER or PURCHASING_MANAGER, ONLY allow inventory items
     if (isInventoryViewer || isPurchasingManager) {
       return item.isInventory === true;
@@ -75,7 +79,7 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
     <div className="flex flex-col h-full items-center py-4">
       {/* Brand Icon: Official Dora Logo */}
       <Link
-        to={isPurchasingManager ? "/inventory/branch-shortages" : isInventoryViewer ? "/inventory/search" : "/"}
+        to={user?.role === 'OWNER' ? "/portal" : isPurchasingManager ? "/inventory/branch-shortages" : isInventoryViewer ? "/inventory/search" : "/"}
         className="w-12 h-12 flex items-center justify-center shrink-0 hover:scale-110 transition-transform mb-4"
         title="درة للسيارات — BI Platform"
       >

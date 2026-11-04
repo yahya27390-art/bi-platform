@@ -83,20 +83,20 @@ export default function App() {
         <Route path="/overview" element={overviewElement} />
         
         {/* Inventory Intelligence Module (Search & Reports & Supplier Comparison & Branch Shortages & New Branch Requisition) */}
-        <Route path="/inventory" element={isOwner ? restrictedRedirect : <Navigate to="/inventory/search" replace />} />
-        <Route path="/inventory/search" element={isOwner ? restrictedRedirect : <InventorySearch />} />
-        <Route path="/inventory/reports" element={isOwner ? restrictedRedirect : <InventoryReports />} />
-        <Route path="/inventory/supplier-comparison" element={isOwner ? restrictedRedirect : <SupplierPriceComparison />} />
-        <Route path="/supplier-comparison" element={isOwner ? restrictedRedirect : <Navigate to="/inventory/supplier-comparison" replace />} />
-        <Route path="/inventory/branch-shortages" element={isOwner ? restrictedRedirect : <BranchShortages />} />
-        <Route path="/branch-shortages" element={isOwner ? restrictedRedirect : <Navigate to="/inventory/branch-shortages" replace />} />
-        <Route path="/inventory/new-branch" element={isOwner ? restrictedRedirect : <NewBranchRequisition />} />
-        <Route path="/new-branch" element={isOwner ? restrictedRedirect : <Navigate to="/inventory/new-branch" replace />} />
-        <Route path="/corporate-quotes" element={isOwner ? restrictedRedirect : <CorporateQuotations />} />
-        <Route path="/quotes" element={isOwner ? restrictedRedirect : <Navigate to="/corporate-quotes" replace />} />
-        <Route path="/customer-orders" element={isOwner ? restrictedRedirect : <CustomerOrders />} />
-        <Route path="/orders" element={isOwner ? restrictedRedirect : <Navigate to="/customer-orders" replace />} />
-        <Route path="/products" element={isOwner ? restrictedRedirect : <Navigate to="/inventory/search" replace />} />
+        <Route path="/inventory" element={<Navigate to="/inventory/search" replace />} />
+        <Route path="/inventory/search" element={<InventorySearch />} />
+        <Route path="/inventory/reports" element={<InventoryReports />} />
+        <Route path="/inventory/supplier-comparison" element={<SupplierPriceComparison />} />
+        <Route path="/supplier-comparison" element={<Navigate to="/inventory/supplier-comparison" replace />} />
+        <Route path="/inventory/branch-shortages" element={<BranchShortages />} />
+        <Route path="/branch-shortages" element={<Navigate to="/inventory/branch-shortages" replace />} />
+        <Route path="/inventory/new-branch" element={<NewBranchRequisition />} />
+        <Route path="/new-branch" element={<Navigate to="/inventory/new-branch" replace />} />
+        <Route path="/corporate-quotes" element={<CorporateQuotations />} />
+        <Route path="/quotes" element={<Navigate to="/corporate-quotes" replace />} />
+        <Route path="/customer-orders" element={<CustomerOrders />} />
+        <Route path="/orders" element={<Navigate to="/customer-orders" replace />} />
+        <Route path="/products" element={<Navigate to="/inventory/search" replace />} />
 
         {/* Media & Marketing */}
         <Route 
