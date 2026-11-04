@@ -45,7 +45,7 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
   const isPurchasingManager = user?.role === 'PURCHASING_MANAGER';
 
   // OWNER gets a dedicated full-screen mobile dashboard – no sidebar needed
-  if (location.pathname === '/owner') return null;
+  if (user?.role === 'OWNER' || location.pathname === '/owner') return null;
 
   const isItemVisible = (item) => {
     // If user is INVENTORY_VIEWER or PURCHASING_MANAGER, ONLY allow inventory items
@@ -58,7 +58,7 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
     }
     // 2. Owner Executive Vault: Visible to ADMIN only (owner bypasses sidebar entirely)
     if (item.isOwnerVault) {
-      return user?.role === 'ADMIN' || user?.role === 'OWNER' || user?.username === 'doracars.fahad';
+      return user?.role === 'ADMIN';
     }
     return true;
   };

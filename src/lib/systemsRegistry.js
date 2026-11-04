@@ -28,7 +28,7 @@ export const PLATFORM_SYSTEMS = [
     icon: PackageCheck,
     accentGradient: 'from-emerald-600 via-teal-600 to-cyan-700',
     cardBorder: 'hover:border-emerald-500 hover:ring-2 hover:ring-emerald-500/20',
-    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
+    roles: [BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
     features: ['🇸🇦 طلبات محلية', '🇰🇷 استيراد كوريا مباشر', '📱 رسائل واتساب للعميل', '🏢 عزل الفروع']
   },
   {
@@ -43,7 +43,7 @@ export const PLATFORM_SYSTEMS = [
     icon: Search,
     accentGradient: 'from-blue-600 via-cyan-600 to-teal-700',
     cardBorder: 'hover:border-cyan-500 hover:ring-2 hover:ring-cyan-500/20',
-    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER, BI_ROLES.INVENTORY_VIEWER],
+    roles: [BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER, BI_ROLES.INVENTORY_VIEWER],
     features: ['📦 3 مستودعات حية', '🔍 بحث بالرقم والاسم', '💰 كشف التكلفة والسعر', '⚡ سرعة استجابة فائقة']
   },
   {
@@ -58,7 +58,7 @@ export const PLATFORM_SYSTEMS = [
     icon: ClipboardList,
     accentGradient: 'from-amber-600 via-orange-600 to-rose-700',
     cardBorder: 'hover:border-amber-500 hover:ring-2 hover:ring-amber-500/20',
-    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
+    roles: [BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
     features: ['📝 دفتر النواقص السحابي', '⚖️ كشف الوفر المالي', '📊 تصدير Excel معتمد', '🔒 مسار اعتماد حصري']
   },
   {
@@ -73,7 +73,7 @@ export const PLATFORM_SYSTEMS = [
     icon: FileText,
     accentGradient: 'from-purple-600 via-indigo-600 to-violet-800',
     cardBorder: 'hover:border-purple-500 hover:ring-2 hover:ring-purple-500/20',
-    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
+    roles: [BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
     features: ['📄 طباعة A4 رسمية', '🏦 رقم الآيبان والضريبة', '💾 حفظ سحابي Hostinger', '🔄 تعديل فوري لكافة البنود']
   },
   {
@@ -88,7 +88,7 @@ export const PLATFORM_SYSTEMS = [
     icon: Crown,
     accentGradient: 'from-slate-900 via-indigo-950 to-blue-950',
     cardBorder: 'hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/20',
-    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
+    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN],
     features: ['💎 خزنة مالية مشفرة', '📈 أرباح الفروع والمتجر', '💰 تدقيق Z-Report', '🔒 صلاحية المالك العليا']
   },
   {
@@ -103,7 +103,7 @@ export const PLATFORM_SYSTEMS = [
     icon: LayoutDashboard,
     accentGradient: 'from-blue-700 via-sky-700 to-slate-900',
     cardBorder: 'hover:border-blue-500 hover:ring-2 hover:ring-blue-500/20',
-    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN, BI_ROLES.ANALYST, BI_ROLES.VIEWER],
+    roles: [BI_ROLES.ADMIN, BI_ROLES.ANALYST, BI_ROLES.VIEWER],
     features: ['📊 مؤشرات نمو حية', '🎯 حملات جوجل وتيك توك', '🛒 مبيعات سلة أونلاين', '🏢 مقارنة مبيعات الفروع']
   },
   {
@@ -118,7 +118,7 @@ export const PLATFORM_SYSTEMS = [
     icon: Store,
     accentGradient: 'from-teal-600 via-emerald-600 to-green-700',
     cardBorder: 'hover:border-teal-500 hover:ring-2 hover:ring-teal-500/20',
-    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
+    roles: [BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
     features: ['📦 أصناف التأسيس المعتمدة', '💰 حساب تكاليف الافتتاح', '📋 جرد أولي منظم']
   }
 ];

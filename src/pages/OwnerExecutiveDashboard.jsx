@@ -1,7 +1,5 @@
-import { Link } from 'react-router-dom';
 import React, { useState, useMemo, useCallback } from 'react';
 import {
-  Store,
   Lock,
   Eye,
   EyeOff,
@@ -447,7 +445,7 @@ export default function OwnerExecutiveDashboard() {
           <div className="flex items-center justify-between gap-2">
 
             {/* Logo & Brand Title */}
-            <Link to="/portal" className="flex items-center gap-2 shrink-0 hover:opacity-85 transition-opacity" title="العودة إلى بوابة الأنظمة">
+            <div className="flex items-center gap-2 shrink-0">
               <img
                 src={doraLogo}
                 alt="درة السيارة"
@@ -466,7 +464,7 @@ export default function OwnerExecutiveDashboard() {
                   درة السيارة • متابعة الأداء المالي والتشغيلي
                 </div>
               </div>
-            </Link>
+            </div>
 
             {/* Controls Section (Period, Mode Switcher, Actions) */}
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
@@ -531,14 +529,6 @@ export default function OwnerExecutiveDashboard() {
 
               {/* Quick Actions (Privacy + Lock) */}
               <div className="flex items-center gap-1 shrink-0">
-                <Link
-                  to="/portal"
-                  className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold flex items-center gap-1 border border-slate-700 transition-all ml-1"
-                  title="الانتقال إلى بوابة الأنظمة التشغيلية"
-                >
-                  <Store className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">بوابة الأنظمة</span>
-                </Link>
                 <button
                   onClick={() => setPrivacyMode(!privacyMode)}
                   className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all ${
