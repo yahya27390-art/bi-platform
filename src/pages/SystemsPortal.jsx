@@ -114,12 +114,18 @@ export default function SystemsPortal() {
             <ShinyText text="أين تود البدء اليوم؟" speed={3.5} shimmerColor="#3B82F6" className="text-blue-700 font-black" />
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-            تم تخصيص الأنظمة التالية وفقاً لصلاحيات حسابك المعتمدة. يمكنك التنقل بين الأنظمة في أي وقت من خلال زر «بوابة الأنظمة» في الشريط العلوي.
+            {availableSystems.length === 1
+              ? 'تم تخصيص لوحة القيادة التنفيذية والخزنة المالية حصرياً وفقاً لصلاحيات الإدارة العليا والمالك.'
+              : 'تم تخصيص الأنظمة التالية وفقاً لصلاحيات حسابك المعتمدة. يمكنك التنقل بين الأنظمة في أي وقت من خلال زر «بوابة الأنظمة» في الشريط العلوي.'}
           </p>
         </div>
 
         {/* ── Systems Grid (Enhanced with SpotlightCard & Animista) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+        <div className={
+          availableSystems.length === 1
+            ? "flex justify-center items-center py-2"
+            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
+        }>
           {availableSystems.map((sys, idx) => {
             const Icon = sys.icon;
             const isHovered = hoveredCard === sys.id;
@@ -132,7 +138,9 @@ export default function SystemsPortal() {
                 onMouseEnter={() => setHoveredCard(sys.id)}
                 onMouseLeave={() => setHoveredCard(null)}
                 onClick={() => handleLaunchSystem(sys.path)}
-                className="cursor-pointer group flex flex-col justify-between space-y-5 rounded-3xl border border-slate-200/90 hover:border-blue-400 p-6 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 animate-slide-in-bottom"
+                className={`cursor-pointer group flex flex-col justify-between space-y-5 rounded-3xl border border-slate-200/90 hover:border-blue-400 p-6 sm:p-7 transition-all duration-300 shadow-sm hover:shadow-2xl hover:-translate-y-1.5 animate-slide-in-bottom ${
+                  availableSystems.length === 1 ? 'w-full max-w-lg bg-white/95 backdrop-blur-sm' : ''
+                }`}
                 style={{ animationDelay: `${idx * 80}ms` }}
               >
                 <div className="space-y-4">
