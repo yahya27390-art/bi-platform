@@ -19,6 +19,7 @@ import OwnerExecutiveDashboard from './pages/OwnerExecutiveDashboard';
 import NewBranchRequisition from './pages/NewBranchRequisition';
 import CorporateQuotations from './pages/CorporateQuotations';
 import CustomerOrders from './pages/CustomerOrders';
+import CustomerOrdersReports from './pages/CustomerOrdersReports';
 import SystemsPortal from './pages/SystemsPortal';
 import BILogin from './auth/BILogin';
 import BIProtectedRoute from './auth/BIProtectedRoute';
@@ -95,7 +96,9 @@ export default function App() {
         <Route path="/corporate-quotes" element={<CorporateQuotations />} />
         <Route path="/quotes" element={<Navigate to="/corporate-quotes" replace />} />
         <Route path="/customer-orders" element={<CustomerOrders />} />
+        <Route path="/customer-orders/reports" element={<CustomerOrdersReports />} />
         <Route path="/orders" element={<Navigate to="/customer-orders" replace />} />
+        <Route path="/orders/reports" element={<Navigate to="/customer-orders/reports" replace />} />
         <Route path="/products" element={<Navigate to="/inventory/search" replace />} />
 
         {/* Media & Marketing */}

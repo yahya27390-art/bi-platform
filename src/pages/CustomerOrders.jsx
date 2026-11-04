@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   PackageCheck,
   Search,
@@ -27,6 +28,9 @@ import {
   RefreshCw,
   DollarSign,
   AlertCircle,
+  AlertTriangle,
+  TrendingUp,
+  Flame,
   Calendar,
   X,
   Send,
@@ -59,11 +63,13 @@ import {
   upsertCustomerOrder,
   updateCustomerOrderStatus,
   deleteCustomerOrder,
-  generateWhatsAppLink
+  generateWhatsAppLink,
+  getOrderDelayStatus
 } from '../lib/customerOrdersStore';
 
 export default function CustomerOrders() {
   const { user } = useBIAuth();
+  const navigate = useNavigate();
 
   // Branch isolation based on logged-in user
   // Khaled -> Main Branch only
@@ -230,7 +236,15 @@ export default function CustomerOrders() {
     const koreaOrders = visibleScopeOrders.filter((o) => o.orderType === 'KOREA').length;
     const localOrders = visibleScopeOrders.filter((o) => o.orderType !== 'KOREA').length;
     const totalDeposit = visibleScopeOrders.reduce((sum, o) => sum + (Number(o.deposit) || 0), 0);
-    return { total, activeOrders, underOrder, ordered, arrived, delivered, koreaOrders, localOrders, totalDeposit };
+
+    // Overdue calculations (48h without action, 7d local fulfillment, 25d Korea)
+    const overdue48h = visibleScopeOrders.filter((o) => {
+      const d = getOrderDelayStatus(o);
+      return d.isOverdue && d.type === 'INITIAL_48H';
+    }).length;
+    const totalOverdue = visibleScopeOrders.filter((o) => getOrderDelayStatus(o).isOverdue).length;
+
+    return { total, activeOrders, underOrder, ordered, arrived, delivered, koreaOrders, localOrders, totalDeposit, overdue48h, totalOverdue };
   }, [visibleScopeOrders]);
 
   // Filtered and sorted list based on search, status, branch, Korea type, and chronological order (newest to oldest)
@@ -240,10 +254,14 @@ export default function CustomerOrders() {
       if (orderTypeFilter === 'KOREA' && o.orderType !== 'KOREA') return false;
       if (orderTypeFilter === 'LOCAL' && o.orderType === 'KOREA') return false;
 
-      // Status filter & Archive separation
+      // Status filter & Overdue filter & Archive separation
       if (statusFilter === 'ALL') {
         // "جميع الحالات" / Default active view: only show ongoing/active orders, exclude DELIVERED
         if (o.status === 'DELIVERED') return false;
+      } else if (statusFilter === 'OVERDUE_48H') {
+        // "معلقة > 48 ساعة"
+        const delay = getOrderDelayStatus(o);
+        if (!delay.isOverdue) return false;
       } else if (statusFilter === 'DELIVERED' || statusFilter === 'ARCHIVE') {
         // "الأرشيف": only show delivered / shipped orders
         if (o.status !== 'DELIVERED') return false;
@@ -680,6 +698,18 @@ export default function CustomerOrders() {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Reports & Demand Intelligence Button (For Admin / Owner / Purchasing Manager) */}
+            {(!assignedBranch || user?.role === 'OWNER' || user?.role === 'PURCHASING_MANAGER' || user?.role === 'ADMIN') && (
+              <button
+                onClick={() => navigate('/customer-orders/reports')}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg shadow-purple-500/25 transition-all cursor-pointer active:scale-95"
+                title="مركز تقارير طلبات العملاء وتوصيات المخزون الدائم (للمشتريات والمالية)"
+              >
+                <TrendingUp className="w-4 h-4 text-purple-200" />
+                <span>تقارير القطع وتوصيات المخزون</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 setSyncStatus('saving');
@@ -763,7 +793,14 @@ export default function CustomerOrders() {
               <span>تحت الطلب (الأساسية)</span>
               <Clock className="w-4 h-4 text-amber-400" />
             </div>
-            <div className="text-xl sm:text-2xl font-black text-amber-400 mt-1">{stats.underOrder}</div>
+            <div className="flex items-baseline justify-between mt-1">
+              <span className="text-xl sm:text-2xl font-black text-amber-400">{stats.underOrder}</span>
+              {stats.overdue48h > 0 && (
+                <span className="px-1.5 py-0.2 rounded-md text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold animate-pulse" title="طلبات مر عليها أكثر من 48 ساعة دون إجراء">
+                  ⚠️ {stats.overdue48h} متأخرة
+                </span>
+              )}
+            </div>
             <div className="text-[10px] text-amber-300/60 mt-0.5">بانتظار التأكيد مع المورد</div>
           </div>
 
@@ -825,6 +862,36 @@ export default function CustomerOrders() {
           </div>
         </div>
       </div>
+
+      {/* ── 48h Overdue Action Required Notification Banner ── */}
+      {stats.overdue48h > 0 && (
+        <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-400/50 rounded-3xl p-4 sm:p-5 text-amber-950 shadow-md flex items-center justify-between gap-4 flex-wrap no-print animate-fade-in">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/25 border border-amber-400/60 flex items-center justify-center shrink-0 text-xl text-amber-800 shadow-xs">
+              <Clock className="w-5 h-5 text-amber-600 animate-spin" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-black text-sm sm:text-base text-amber-950">
+                  تنبيه متابعة: يوجد ({stats.overdue48h}) طلب عادي مر عليه أكثر من 48 ساعة دون تغيير الحالة
+                </h3>
+                <span className="text-[11px] bg-amber-200 text-amber-950 border border-amber-400/60 px-2.5 py-0.5 rounded-full font-bold">
+                  بانتظار طلبها من المورد
+                </span>
+              </div>
+              <p className="text-xs text-amber-900/90 mt-1">
+                تنبيه للموظف: يُرجى التواصل مع المورد المعتمد وتحديث حالة الطلب إلى (تم الطلب) لضمان عدم نسيان طلبات العملاء وسرعة التسليم.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setStatusFilter(statusFilter === 'OVERDUE_48H' ? 'ALL' : 'OVERDUE_48H')}
+            className="px-4 py-2 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black shadow-sm transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+          >
+            <span>{statusFilter === 'OVERDUE_48H' ? 'إلغاء التصفية' : 'عرض الطلبات المتأخرة فقط'}</span>
+          </button>
+        </div>
+      )}
 
       {/* ── Korea Orders Special Alert Banner (Shown when Korea tab is selected) ── */}
       {orderTypeFilter === 'KOREA' && (
@@ -979,6 +1046,25 @@ export default function CustomerOrders() {
               );
             })}
 
+            {/* ⚠️ Overdue > 48h Special Alert Filter Tab */}
+            {stats.totalOverdue > 0 && (
+              <button
+                onClick={() => setStatusFilter(statusFilter === 'OVERDUE_48H' ? 'ALL' : 'OVERDUE_48H')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border ${
+                  statusFilter === 'OVERDUE_48H'
+                    ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-md ring-2 ring-amber-400/40'
+                    : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 animate-pulse'
+                }`}
+                title="عرض الطلبات المتأخرة التي مر عليها أكثر من 48 ساعة دون إجراء"
+              >
+                <Clock className="w-3.5 h-3.5 text-amber-700" />
+                <span>معلّقة &gt; 48 ساعة</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-200/90 text-amber-950 font-black">
+                  {stats.totalOverdue}
+                </span>
+              </button>
+            )}
+
             {/* Separator */}
             <span className="text-slate-300 font-bold px-0.5">|</span>
 
@@ -1109,6 +1195,7 @@ export default function CustomerOrders() {
                 {filteredOrders.map((order) => {
                   const statusConfig = ORDER_STATUSES[order.status] || ORDER_STATUSES.UNDER_ORDER;
                   const isKorea = order.orderType === 'KOREA';
+                  const delay = getOrderDelayStatus(order);
                   const waLink = generateWhatsAppLink(order.customerPhone, order.customerName, order);
                   const totalItemsCount = (order.items || []).reduce((s, it) => s + (Number(it.qty) || 1), 0);
                   const totalSelling = (order.items || []).reduce(
@@ -1119,7 +1206,12 @@ export default function CustomerOrders() {
                   const remaining = Math.max(0, totalSelling - deposit);
 
                   return (
-                    <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr
+                      key={order.id}
+                      className={`transition-colors ${
+                        delay.isOverdue ? 'bg-amber-50/45 hover:bg-amber-50/70' : 'hover:bg-slate-50/80'
+                      }`}
+                    >
                       <td className="py-3 px-3.5 align-top whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <span className="font-mono font-black text-slate-900">
@@ -1138,6 +1230,17 @@ export default function CustomerOrders() {
                         <div className="text-[10px] text-slate-400 font-mono mt-0.5">
                           {order.orderDate || order.createdAt?.split('T')[0]}
                         </div>
+                        {delay.isOverdue && (
+                          <div className="mt-1">
+                            <span
+                              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${delay.badgeClass}`}
+                              title={delay.description}
+                            >
+                              <Clock className="w-2.5 h-2.5" />
+                              <span>{delay.label}</span>
+                            </span>
+                          </div>
+                        )}
                       </td>
 
                       <td className="py-3 px-3.5 align-top">
@@ -1283,6 +1386,7 @@ export default function CustomerOrders() {
           {filteredOrders.map((order) => {
             const statusConfig = ORDER_STATUSES[order.status] || ORDER_STATUSES.UNDER_ORDER;
             const isKorea = order.orderType === 'KOREA';
+            const delay = getOrderDelayStatus(order);
             const waLink = generateWhatsAppLink(order.customerPhone, order.customerName, order);
             const totalItemsCount = (order.items || []).reduce((s, it) => s + (Number(it.qty) || 1), 0);
             const totalSelling = (order.items || []).reduce(
@@ -1296,7 +1400,9 @@ export default function CustomerOrders() {
               <div
                 key={order.id}
                 className={`bg-white rounded-2xl p-4 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 border ${
-                  isKorea
+                  delay.isOverdue
+                    ? delay.cardHighlight
+                    : isKorea
                     ? 'border-blue-300 ring-1 ring-blue-200/50 hover:border-blue-400'
                     : 'border-slate-200 hover:border-slate-300'
                 }`}
@@ -1304,7 +1410,7 @@ export default function CustomerOrders() {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
                   <div className="space-y-0.5">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-mono font-black text-slate-900 text-xs">
                         #{order.orderNumber || order.id}
                       </span>
@@ -1315,6 +1421,15 @@ export default function CustomerOrders() {
                       ) : (
                         <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded font-bold">
                           🇸🇦 محلي
+                        </span>
+                      )}
+                      {delay.isOverdue && (
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold border flex items-center gap-1 ${delay.badgeClass}`}
+                          title={delay.description}
+                        >
+                          <Clock className="w-2.5 h-2.5" />
+                          <span>{delay.label}</span>
                         </span>
                       )}
                     </div>
@@ -1450,6 +1565,7 @@ export default function CustomerOrders() {
           {filteredOrders.map((order) => {
             const statusConfig = ORDER_STATUSES[order.status] || ORDER_STATUSES.UNDER_ORDER;
             const isKorea = order.orderType === 'KOREA';
+            const delay = getOrderDelayStatus(order);
             const waLink = generateWhatsAppLink(order.customerPhone, order.customerName, order);
             const totalItemsCount = (order.items || []).reduce((s, it) => s + (Number(it.qty) || 1), 0);
             const totalSelling = (order.items || []).reduce(
@@ -1463,7 +1579,9 @@ export default function CustomerOrders() {
               <div
                 key={order.id}
                 className={`bg-white rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4 border ${
-                  isKorea
+                  delay.isOverdue
+                    ? delay.cardHighlight
+                    : isKorea
                     ? 'border-blue-300 ring-1 ring-blue-200/60 hover:border-blue-400'
                     : 'border-slate-200 hover:border-slate-300'
                 }`}
@@ -1491,6 +1609,17 @@ export default function CustomerOrders() {
                       <span className="text-[11px] text-slate-400 font-mono">
                         {order.orderDate || order.createdAt?.split('T')[0]}
                       </span>
+
+                      {/* Overdue Alert Badge */}
+                      {delay.isOverdue && (
+                        <span
+                          className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold border flex items-center gap-1.5 ${delay.badgeClass}`}
+                          title={delay.description}
+                        >
+                          <Clock className="w-3 h-3 text-amber-600" />
+                          <span>{delay.label}</span>
+                        </span>
+                      )}
                     </div>
 
                     {/* Branch and Staff Metadata */}

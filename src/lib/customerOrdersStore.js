@@ -329,6 +329,74 @@ export function deleteCustomerOrder(orderId) {
 }
 
 /**
+ * Analyzes order timing and returns delay flags:
+ * - isOverdue: true if delayed
+ * - type: 'INITIAL_48H' (under order for >= 48 hours without action) | 'LOCAL_7D' (ordered locally >= 7 days) | 'KOREA_25D' (ordered from Korea >= 25 days)
+ */
+export function getOrderDelayStatus(order) {
+  if (!order || order.status === 'DELIVERED' || order.status === 'CANCELLED') {
+    return { isOverdue: false, reason: null, hours: 0, days: 0 };
+  }
+
+  const createdTime = order.createdAt ? new Date(order.createdAt).getTime() : 0;
+  const updatedTime = order.updatedAt ? new Date(order.updatedAt).getTime() : createdTime;
+  const refTime = updatedTime || createdTime || Date.now();
+  const diffMs = Math.max(0, Date.now() - refTime);
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+
+  // 1. Initial Action Delay (Unchanged from UNDER_ORDER for >= 48 hours)
+  if (order.status === 'UNDER_ORDER' && hours >= 48) {
+    return {
+      isOverdue: true,
+      type: 'INITIAL_48H',
+      label: `معلّق > 48 ساعة (${days > 0 ? `${days} يوم` : `${hours} ساعة`})`,
+      shortLabel: `> 48 ساعة`,
+      badgeClass: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-400/40 ring-1 ring-amber-400/30',
+      dotClass: 'bg-amber-500 animate-pulse',
+      cardHighlight: 'ring-2 ring-amber-400/60 border-amber-400 bg-amber-50/25',
+      hours,
+      days,
+      description: 'مر أكثر من 48 ساعة على تسجيل الطلب دون رفعه للمورد أو تغيير حالته إلى (تم الطلب)'
+    };
+  }
+
+  // 2. Korea Import Delay (Ordered but not arrived for >= 25 days)
+  if (order.orderType === 'KOREA' && order.status === 'ORDERED' && days >= 25) {
+    return {
+      isOverdue: true,
+      type: 'KOREA_25D',
+      label: `تأخر شحن كوريا (${days} يوم)`,
+      shortLabel: `تأخر كوريا`,
+      badgeClass: 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-400/40 ring-1 ring-rose-400/30',
+      dotClass: 'bg-rose-500 animate-pulse',
+      cardHighlight: 'ring-2 ring-rose-400/60 border-rose-400 bg-rose-50/25',
+      hours,
+      days,
+      description: 'مر أكثر من 25 يوماً على طلبية كوريا دون وصولها للفرع'
+    };
+  }
+
+  // 3. Local Supplier Fulfillment Delay (Ordered but not arrived for >= 7 days)
+  if (order.orderType !== 'KOREA' && order.status === 'ORDERED' && days >= 7) {
+    return {
+      isOverdue: true,
+      type: 'LOCAL_7D',
+      label: `تأخر توريد محلي (${days} يوم)`,
+      shortLabel: `تأخر توريد`,
+      badgeClass: 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-400/40 ring-1 ring-rose-400/30',
+      dotClass: 'bg-rose-500 animate-pulse',
+      cardHighlight: 'ring-2 ring-rose-400/60 border-rose-400 bg-rose-50/25',
+      hours,
+      days,
+      description: 'مر أكثر من 7 أيام على طلب القطعة من المورد دون وصولها للفرع'
+    };
+  }
+
+  return { isOverdue: false, reason: null, hours, days };
+}
+
+/**
  * Generate WhatsApp chat URL with contextual message
  */
 export function generateWhatsAppLink(phone, customerName, order) {
@@ -359,7 +427,20 @@ export function generateWhatsAppLink(phone, customerName, order) {
   }
 
   if (order?.status === 'ARRIVED') {
-    msg += `✅ نود إبلاغك بأن القطع وصلت الفرع وهي جاهزة للاستلام حالياً. نسعد بزيارتكم.`;
+    const totalSelling = (order?.items || []).reduce((sum, it) => sum + ((Number(it.sellingPrice) || 0) * (Number(it.qty) || 1)), 0);
+    const deposit = Number(order?.deposit) || 0;
+    const remaining = Math.max(0, totalSelling - deposit);
+
+    msg += `🎉 نود إبلاغكم بأن قطعتكم وصلت الفرع وجاهزة للاستلام حالياً!\n`;
+    if (order?.branch) {
+      msg += `📍 فرع الاستلام: ${order.branch}\n`;
+    }
+    if (totalSelling > 0) {
+      msg += `💵 إجمالي القيمة: ${totalSelling.toLocaleString('en-US')} ر.س\n`;
+      msg += `💳 العربون المدفوع: ${deposit.toLocaleString('en-US')} ر.س\n`;
+      msg += `💰 المتبقي للتحصيل عند الاستلام: ${remaining.toLocaleString('en-US')} ر.س\n`;
+    }
+    msg += `\nنسعد بزيارتكم الكريمة خلال ساعات العمل الرسمية لاستلام الطلب.\nشكراً لتعاملكم مع شركة درة السيارة ✨`;
   } else if (order?.status === 'ORDERED') {
     if (order?.orderType === 'KOREA') {
       msg += `🚢 تم تأكيد وشحن الطلبية من كوريا وهي قيد النقل الدولي، وسنبلغكم فور وصولها للمستودع والفرع.`;
