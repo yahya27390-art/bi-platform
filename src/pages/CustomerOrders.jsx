@@ -216,14 +216,19 @@ export default function CustomerOrders() {
       .slice(0, 10);
   }, [catalogSearch, allCatalogParts]);
 
-  // Base scope of orders visible to the user
+  // Base scope of orders visible to the user, scoped to current branch selection
   const visibleScopeOrders = useMemo(() => {
+    let list = orders;
     if (assignedBranch) {
-      // Strictly isolate to the user's branch
-      return orders.filter((o) => (o.branch || BRANCHES[0]) === assignedBranch);
+      // Strictly isolate to the logged-in branch employee
+      return list.filter((o) => (o.branch || BRANCHES[0]) === assignedBranch);
     }
-    return orders; // Admin sees all
-  }, [orders, assignedBranch]);
+    // For Admin / Owner: apply branchFilter so all pills, stats, and counts match the selected branch
+    if (isAdmin && branchFilter !== 'ALL') {
+      return list.filter((o) => (o.branch || BRANCHES[0]) === branchFilter);
+    }
+    return list;
+  }, [orders, assignedBranch, isAdmin, branchFilter]);
 
   // KPIs scoped to the user's visibility
   const stats = useMemo(() => {
@@ -986,12 +991,15 @@ export default function CustomerOrders() {
                 onChange={(e) => setBranchFilter(e.target.value)}
                 className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
               >
-                <option value="ALL">جميع الفروع الميدانية (الأدمن)</option>
-                {BRANCHES.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
+                <option value="ALL">جميع الفروع الميدانية ({orders.length})</option>
+                {BRANCHES.map((b) => {
+                  const bCount = orders.filter((o) => (o.branch || BRANCHES[0]) === b).length;
+                  return (
+                    <option key={b} value={b}>
+                      {b} ({bCount})
+                    </option>
+                  );
+                })}
               </select>
             ) : (
               <div className="bg-amber-50 border border-amber-300 rounded-xl px-3 py-2 text-xs font-bold text-amber-900 flex items-center gap-1.5">
