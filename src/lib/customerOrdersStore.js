@@ -4,6 +4,8 @@
  * Server: Hostinger bi.doracar.com (/api/customer_orders.php)
  */
 
+import { getSecureHeaders } from './apiSecurity';
+
 const STORAGE_KEY = 'dora_customer_orders_v1';
 
 export const ORDER_STATUSES = {
@@ -205,7 +207,10 @@ export function saveLocalCustomerOrders(orders) {
  */
 export async function syncCustomerOrdersFromServer() {
   try {
-    const res = await fetch(HOSTINGER_ORDERS_API, { cache: 'no-store' });
+    const res = await fetch(HOSTINGER_ORDERS_API, {
+      cache: 'no-store',
+      headers: getSecureHeaders()
+    });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.orders)) {
@@ -258,7 +263,7 @@ export function upsertCustomerOrder(order) {
   // Background server sync
   fetch(HOSTINGER_ORDERS_API, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getSecureHeaders(),
     body: JSON.stringify({ action: 'save', order: updated })
   }).catch(err => {
     console.warn('Background server order save error:', err);
@@ -300,7 +305,7 @@ export function updateCustomerOrderStatus(orderId, newStatus, staffName = 'مو�
   // Background server sync
   fetch(HOSTINGER_ORDERS_API, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getSecureHeaders(),
     body: JSON.stringify({ action: 'update_status', id: orderId, status: newStatus, staffName, note: note || '' })
   }).catch(err => {
     console.warn('Background server status update error:', err);
@@ -319,7 +324,7 @@ export function deleteCustomerOrder(orderId) {
 
   fetch(HOSTINGER_ORDERS_API, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getSecureHeaders(),
     body: JSON.stringify({ action: 'delete', id: orderId })
   }).catch(err => {
     console.warn('Background server delete error:', err);

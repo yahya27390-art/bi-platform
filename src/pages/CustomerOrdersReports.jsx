@@ -38,6 +38,7 @@ import {
   syncCustomerOrdersFromServer,
   getOrderDelayStatus
 } from '../lib/customerOrdersStore';
+import { sanitizeCsvCell } from '../lib/inventoryIntelligence';
 
 export default function CustomerOrdersReports() {
   const { user } = useBIAuth();
@@ -250,22 +251,22 @@ export default function CustomerOrdersReports() {
     ];
 
     const rows = sortedItems.map((it, idx) => [
-      idx + 1,
-      it.sku,
-      `"${it.name.replace(/"/g, '""')}"`,
-      it.totalRequests,
-      it.totalQty,
-      it.avgCost,
-      it.avgSellingPrice,
-      it.totalEstimatedValue,
-      it.branchesCount[BRANCHES[0]] || 0,
-      it.branchesCount[BRANCHES[1]] || 0,
-      it.branchesCount[BRANCHES[2]] || 0,
-      it.isStockingCandidate ? 'نعم - مرشح للمخزون' : 'طلب فردي',
-      it.isStockingCandidate ? it.recommendedStockQty : '—'
+      sanitizeCsvCell(idx + 1),
+      sanitizeCsvCell(it.sku),
+      sanitizeCsvCell(it.name),
+      sanitizeCsvCell(it.totalRequests),
+      sanitizeCsvCell(it.totalQty),
+      sanitizeCsvCell(it.avgCost),
+      sanitizeCsvCell(it.avgSellingPrice),
+      sanitizeCsvCell(it.totalEstimatedValue),
+      sanitizeCsvCell(it.branchesCount[BRANCHES[0]] || 0),
+      sanitizeCsvCell(it.branchesCount[BRANCHES[1]] || 0),
+      sanitizeCsvCell(it.branchesCount[BRANCHES[2]] || 0),
+      sanitizeCsvCell(it.isStockingCandidate ? 'نعم - مرشح للمخزون' : 'طلب فردي'),
+      sanitizeCsvCell(it.isStockingCandidate ? it.recommendedStockQty : '—')
     ]);
 
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const csvContent = '\uFEFF' + [headers.map(h => sanitizeCsvCell(h)).join(','), ...rows.map((r) => r.join(','))].join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -790,3 +791,4 @@ export default function CustomerOrdersReports() {
     </div>
   );
 }
+

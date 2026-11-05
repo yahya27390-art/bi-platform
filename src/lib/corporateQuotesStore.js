@@ -5,6 +5,8 @@
  * All item prices from Paper 2 are VAT-INCLUSIVE (شاملة ضريبة القيمة المضافة 15%)
  */
 
+import { getSecureHeaders } from './apiSecurity';
+
 const STORAGE_KEY = 'dora_corporate_quotations_v10';
 
 // Official Verified Data of Dorat Cars (from ZATCA VAT Registration Certificate)
@@ -246,7 +248,10 @@ const HOSTINGER_API_URL = typeof window !== 'undefined' && window.location.hostn
 
 async function fetchFromHostingerServer() {
   try {
-    const res = await fetch(HOSTINGER_API_URL, { cache: 'no-store' });
+    const res = await fetch(HOSTINGER_API_URL, {
+      cache: 'no-store',
+      headers: getSecureHeaders()
+    });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data.quotes) ? data.quotes : [];
@@ -260,7 +265,7 @@ async function saveToHostingerServer(quote) {
   try {
     const res = await fetch(HOSTINGER_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getSecureHeaders(),
       body: JSON.stringify({ action: 'save', quote })
     });
     if (!res.ok) return false;
@@ -276,7 +281,7 @@ async function deleteFromHostingerServer(id) {
   try {
     const res = await fetch(HOSTINGER_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getSecureHeaders(),
       body: JSON.stringify({ action: 'delete', id })
     });
     return res.ok;

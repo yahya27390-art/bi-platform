@@ -4,13 +4,22 @@ import { BI_ROLES, getBIPermissions, getBIRoleMeta, normalizeRole } from '../lib
 
 const BIAuthContext = createContext(null);
 
-// Authorized Management Accounts for Dora Cars BI Platform
+// Secure password hashing utility (SHA-256)
+async function hashSha256(str) {
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// Authorized Management Accounts for Dora Cars BI Platform (Secure Hash Protection)
 export const AUTH_ACCOUNTS = [
   {
     id: 'user-admin',
     username: 'admin',
     email: 'admin@doratcars.com',
-    password: 'dora#admin2026',
+    passwordHash: '28411a9c54e71c3ca741041d5646b9136fe53d495134fa8ed9607812a8fd87a2',
     name: 'يحيي محمد باشا',
     role: BI_ROLES.ADMIN,
     avatar: 'ي',
@@ -20,7 +29,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-owner',
     username: 'owner',
     email: 'owner@doratcars.com',
-    password: 'dora#owner2026',
+    passwordHash: '3d562a06cde7292821772eae9a3f57f789565dceca44ea87d00cdba4f7419ff8',
     name: 'فهد ناصر الجوعي',
     role: BI_ROLES.OWNER,
     avatar: 'ف',
@@ -30,7 +39,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-analyst',
     username: 'analyst',
     email: 'analyst@doratcars.com',
-    password: 'dora#analyst2026',
+    passwordHash: '868dac084ab9797da939599753ca2405ac2ea81364b50f67e5647320d48c4b6d',
     name: 'فريق تحليل الأعمال والبيانات',
     role: BI_ROLES.ANALYST,
     avatar: 'ت',
@@ -40,7 +49,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-mediabuyer',
     username: 'buyer',
     email: 'buyer@doratcars.com',
-    password: 'dora#buyer2026',
+    passwordHash: '2aeaf66dc41d828ee602ab827aface20ff99ceee00e91590cc5bb4870b7f8b83',
     name: 'مسؤول إدارة الحملات الإعلانية',
     role: BI_ROLES.MEDIA_BUYER,
     avatar: 'ح',
@@ -50,7 +59,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-viewer',
     username: 'viewer',
     email: 'viewer@doratcars.com',
-    password: 'dora#viewer2026',
+    passwordHash: '8376f9e76a93fa1deb08398f00e78f3bb78643f124fcbb00c78d8a8d08d89e0d',
     name: 'حساب استعراض ومراقبة عامة',
     role: BI_ROLES.VIEWER,
     avatar: 'م',
@@ -60,7 +69,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-inventory',
     username: 'inventory',
     email: 'inventory@doratcars.com',
-    password: 'dora#inventory2026',
+    passwordHash: 'ac64863e999f0c5cae279bd258756ff4e9383faf525d2997e58229d9780a07a1',
     name: 'مسؤول فحص وتقارير المخزون',
     role: BI_ROLES.INVENTORY_VIEWER,
     avatar: 'خ',
@@ -70,7 +79,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-saleh',
     username: 'doracars.saleh',
     email: 'saleh@doratcars.com',
-    password: 'dora#2026',
+    passwordHash: 'fbbafcb181c9aba28762a409e2bb390963de5eb783bdc735d0a8c1d8ec6a4a43',
     name: 'صالح المحيميد',
     role: BI_ROLES.PURCHASING_MANAGER,
     avatar: 'ص',
@@ -80,7 +89,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-khaled',
     username: 'doracars.khaled',
     email: 'khaled@doratcars.com',
-    password: 'dora#2026',
+    passwordHash: 'fbbafcb181c9aba28762a409e2bb390963de5eb783bdc735d0a8c1d8ec6a4a43',
     name: 'خالد الجوعي',
     role: BI_ROLES.PURCHASING_MANAGER,
     avatar: 'خ',
@@ -90,7 +99,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-fahad',
     username: 'doracars.fahad',
     email: 'fahad@doratcars.com',
-    password: 'dora#2026',
+    passwordHash: 'fbbafcb181c9aba28762a409e2bb390963de5eb783bdc735d0a8c1d8ec6a4a43',
     name: 'فهد ناصر الجوعي',
     role: BI_ROLES.OWNER,
     avatar: 'ف',
@@ -100,7 +109,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-abdulaziz',
     username: 'doracars.abdulaziz',
     email: 'abdulaziz@doratcars.com',
-    password: 'dora#2026',
+    passwordHash: 'fbbafcb181c9aba28762a409e2bb390963de5eb783bdc735d0a8c1d8ec6a4a43',
     name: 'عبد العزيز الجوعي',
     role: BI_ROLES.PURCHASING_MANAGER,
     avatar: 'ع',
@@ -110,7 +119,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-taha',
     username: 'doracars.taha',
     email: 'taha@doratcars.com',
-    password: 'dora#2026',
+    passwordHash: 'fbbafcb181c9aba28762a409e2bb390963de5eb783bdc735d0a8c1d8ec6a4a43',
     name: 'طه المحيميد',
     role: BI_ROLES.PURCHASING_MANAGER,
     avatar: 'ط',
@@ -120,7 +129,7 @@ export const AUTH_ACCOUNTS = [
     id: 'user-purchasing',
     username: 'doracars.purchasing',
     email: 'purchasing@doratcars.com',
-    password: 'dora#2026',
+    passwordHash: 'fbbafcb181c9aba28762a409e2bb390963de5eb783bdc735d0a8c1d8ec6a4a43',
     name: 'مسؤول المشتريات والطلبيات',
     role: BI_ROLES.PURCHASING_MANAGER,
     avatar: 'م',
@@ -133,8 +142,12 @@ export const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
 export const LAST_ACTIVE_KEY = 'bi_last_active_time';
 export const LOGOUT_REASON_KEY = 'bi_logout_reason';
 
-// Universal Master Passwords accepted for convenience and management emergency access
-const MASTER_PASSWORDS = ['dora2026', 'dora#2026', 'dora@2026'];
+// Cryptographically hashed master passwords
+const MASTER_PASSWORD_HASHES = new Set([
+  'd0e7c76466ce7a8746135539bd7781396830ba0f5ad18bc357a0b5b9d5296209',
+  'fbbafcb181c9aba28762a409e2bb390963de5eb783bdc735d0a8c1d8ec6a4a43',
+  '9acafb942a2e0a5df316137dc50ab9e8b4e2912f20cbb1fa9d88313f197f6db7'
+]);
 
 export function BIAuthProvider({ children }) {
   // STRICT GATEKEEPER: Default to null if not authenticated or expired!
@@ -297,10 +310,11 @@ export function BIAuthProvider({ children }) {
       );
 
       if (matched) {
+        const candidateHash = await hashSha256(cleanPass);
         const isPassValid =
-          matched.password === cleanPass ||
-          MASTER_PASSWORDS.includes(cleanPass) ||
-          (matched.username === 'doracars.fahad' && cleanPass === 'dora#owner2026');
+          matched.passwordHash === candidateHash ||
+          MASTER_PASSWORD_HASHES.has(candidateHash) ||
+          (matched.username === 'doracars.fahad' && candidateHash === '3d562a06cde7292821772eae9a3f57f789565dceca44ea87d00cdba4f7419ff8');
 
         if (isPassValid) {
           const authUser = {

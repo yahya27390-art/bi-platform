@@ -24,8 +24,8 @@ export const DEFAULT_META_CONFIG = {
   secondaryPixelName: 'Test Salla Website connect',
   secondaryEventsCount: 95100, // 95.1K events
 
-  accessToken: 'EAAUaLFoDrJABSVbiAAMoR7wNS2j8zNUwTDL3AqmE9xSvDBlva3m8tye1y5C9VETiA6annvgNxg8lnOa5Vw82Of7KxjcMGXZCirHM2DZAU9PhA8tZCGZBM60X28MW4063OEhyyfe4KgmQmAVhXE7bapkOG3xnBKhkkwZALrGScAgogQxLeijeEYluyvRcqxAZDZD',
-  conversionsApiActive: true,
+  accessToken: '',
+  conversionsApiActive: false,
   tokenType: 'Meta Conversions API (Quality API Direct Token)',
 
   // Live Messaging API Keys (WhatsApp Cloud API & Instagram/Facebook Messenger)
@@ -34,15 +34,15 @@ export const DEFAULT_META_CONFIG = {
     whatsappWabaId: '',
     facebookPageId: '560031747184578',
     facebookPageName: 'Dora Cars',
-    facebookPageToken: 'EAAeg0uiXakwBSeEcH3ZBe5uY68F4tD12QR1frW84z82C8F7BQTHACyBXVcJ1Q0pKC1hzeNtrNos7WwDb3QOozcw734i6rHOIZBZA428rv1W5RnxYRDu6c7ZBQ4sCzSRmv2af43bbeawfwHJZAlXZAdPwMHutSSmH9GAE70A4QZA7Lji3dlxZAOFnsg5rZBcMqouZClVwdGq6jb',
-    messagingAccessToken: 'EAAeg0uiXakwBSTVwEcWuUmWk6J8yxAmNJRtoZC1joXMFePz6nkQzC6NgaGDlPII5pW64RsSMErPnsFT44PHkLdhd1r0E7mpJtQep0qLlHSMCQTQtoE35OQj4LB4PEBxgVwsrT3YalDFXaHSZAsEhbjk2qexumsZCLaZBUjop3K3ii6jF78yYkZBQ13fF1FgZDZD',
+    facebookPageToken: '',
+    messagingAccessToken: '',
     systemUserId: '122102798499465517',
     systemUserName: 'Dora Messaging',
     instagramBusinessId: '17841410815501378',
     instagramUsername: 'doracars22',
     instagramUserId: '28298689296452306',
-    instagramAccessToken: 'IGAAKfQ6eZBGVBBZAGFuUE1xT1UxRjRiYmE2U1lYZA2xMVU9TUGdFVXRhdlJxa21hb1E0Rm1DQ2hRbjhLT05SNUNJeExfbzBmOGVnV1E4OFR0S3RudkhfSnBKc0liaUN3NDdBRU0xUWJLNGpYTXpDcGVnX0FrdnQxZAWFxc01NcTd3MAZDZD',
-    isMessagingConnected: true,
+    instagramAccessToken: '',
+    isMessagingConnected: false,
     scopes: ['pages_show_list', 'pages_messaging', 'pages_read_engagement', 'instagram_manage_messages', 'instagram_manage_comments', 'public_profile', 'instagram_business_basic', 'instagram_business_manage_messages'],
   },
 
@@ -126,11 +126,11 @@ export function loadMetaConfig() {
       messaging: {
         ...DEFAULT_META_CONFIG.messaging,
         ...(parsed.messaging || {}),
-        facebookPageToken: DEFAULT_META_CONFIG.messaging.facebookPageToken,
-        messagingAccessToken: DEFAULT_META_CONFIG.messaging.messagingAccessToken,
-        instagramAccessToken: DEFAULT_META_CONFIG.messaging.instagramAccessToken,
-        instagramBusinessId: DEFAULT_META_CONFIG.messaging.instagramBusinessId,
-        instagramUserId: DEFAULT_META_CONFIG.messaging.instagramUserId,
+        facebookPageToken: parsed.messaging?.facebookPageToken || '',
+        messagingAccessToken: parsed.messaging?.messagingAccessToken || '',
+        instagramAccessToken: parsed.messaging?.instagramAccessToken || '',
+        instagramBusinessId: parsed.messaging?.instagramBusinessId || DEFAULT_META_CONFIG.messaging.instagramBusinessId,
+        instagramUserId: parsed.messaging?.instagramUserId || DEFAULT_META_CONFIG.messaging.instagramUserId,
       },
       summary: {
         ...DEFAULT_META_CONFIG.summary,

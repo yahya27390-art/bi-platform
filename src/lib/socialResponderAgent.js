@@ -4,6 +4,7 @@
 
 import { loadMetaConfig } from './metaIntegration';
 import { loadTikTokConfig } from './tiktokIntegration';
+import { sanitizeCsvCell } from './inventoryIntelligence';
 
 // Cloudflare Worker Proxy URL - يحل مشكلة CORS لـ Meta Graph API
 // تم النشر على Cloudflare Workers بنجاح
@@ -952,23 +953,23 @@ export function exportCustomerTagsReportCSV(inbox = [], tagsMap = {}, notesMap =
       : `https://facebook.com/${msg.senderId}`;
 
     return [
-      `"${(msg.senderName || '').replace(/"/g, '""')}"`,
-      `"${(msg.senderId || '').replace(/"/g, '""')}"`,
-      `"${channel}"`,
-      `"${profileUrl}"`,
-      `"${phone}"`,
-      `"${carModel.replace(/"/g, '""')}"`,
-      `"${part.replace(/"/g, '""')}"`,
-      `"${vin}"`,
-      `"${tags.join(' | ')}"`,
-      `"${note.replace(/"/g, '""')}"`,
-      `"${msg.status === 'replied' ? 'تم الرد' : 'بانتظار رد'}"`,
-      `"${msg.rawTime || msg.timestamp || ''}"`
+      sanitizeCsvCell(msg.senderName || ''),
+      sanitizeCsvCell(msg.senderId || ''),
+      sanitizeCsvCell(channel),
+      sanitizeCsvCell(profileUrl),
+      sanitizeCsvCell(phone),
+      sanitizeCsvCell(carModel),
+      sanitizeCsvCell(part),
+      sanitizeCsvCell(vin),
+      sanitizeCsvCell(tags.join(' | ')),
+      sanitizeCsvCell(note),
+      sanitizeCsvCell(msg.status === 'replied' ? 'تم الرد' : 'بانتظار رد'),
+      sanitizeCsvCell(msg.rawTime || msg.timestamp || '')
     ].join(',');
   });
 
   const bom = '\uFEFF'; // UTF-8 BOM لضمان فتح اللغة العربية بسلاسة في Excel
-  const csvContent = bom + [headers.join(','), ...rows].join('\r\n');
+  const csvContent = bom + [headers.map(h => sanitizeCsvCell(h)).join(','), ...rows].join('\r\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

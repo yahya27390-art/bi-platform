@@ -13,10 +13,10 @@ const VAULT_SESSION_KEY = 'dora_owner_vault_unlocked';
 // Cryptographically secure SHA-256 hashes of approved authorization keys
 // No plain-text passwords or PINs are ever exposed in client code
 const AUTHORIZED_HASHES = new Set([
-  'b6e96f84258c1746306bd9e8f4cd9adbccfb35696c7cd4cc4212ff3eac574ff2', // 7799
-  '3d562a06cde7292821772eae9a3f57f789565dceca44ea87d00cdba4f7419ff8', // dora#owner2026
-  'd0e7c76466ce7a8746135539bd7781396830ba0f5ad18bc357a0b5b9d5296209', // dora2026
-  'fbbafcb181c9aba28762a409e2bb390963de5eb783bdc735d0a8c1d8ec6a4a43'  // dora#2026
+  'b6e96f84258c1746306bd9e8f4cd9adbccfb35696c7cd4cc4212ff3eac574ff2',
+  '3d562a06cde7292821772eae9a3f57f789565dceca44ea87d00cdba4f7419ff8',
+  'd0e7c76466ce7a8746135539bd7781396830ba0f5ad18bc357a0b5b9d5296209',
+  'fbbafcb181c9aba28762a409e2bb390963de5eb783bdc735d0a8c1d8ec6a4a43'
 ]);
 
 async function computeSha256(str) {
@@ -239,7 +239,7 @@ export default function OwnerSecurityGate({ onUnlock }) {
         {/* Footer info */}
         <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500 font-mono font-bold">
           <span>تشفير جلسة محلي ✓</span>
-          <span>الرمز: 7799</span>
+          <span>طبقة حماية مشفرة</span>
         </div>
       </div>
     </div>

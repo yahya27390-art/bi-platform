@@ -440,7 +440,7 @@ ${fileList}
 3. 🧠 **الذاكرة نشطة:** يمكنك قول "تذكر أن..." أو النقر على زر "حفظ في الذاكرة" لأي رسالة لأحفظها دائماً!`;
 }
 
-const OFFICIAL_GEMINI_KEY = atob('QVEuQWI4Uk42SmlzODhNNXQwNHJVSW9uVHFadzVxODk0OTRuUHR0WVRRcUZudFcycWN4MUE=');
+const OFFICIAL_GEMINI_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) || '';
 
 export default function PrivateCampaignLab() {
   // AI Agent Configuration State

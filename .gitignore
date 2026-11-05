@@ -23,9 +23,32 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment files
+# Environment and Secret files
+.env
 .env.local
 .env.*.local
+*.pem
+*.key
+*.cert
+*.txt
+*KEY*
+*-login*
+secrets/
+
+# Temporary and Scratch Scripts
+upload_test_ping.cjs
+public/test_ping.php
+test_build.js
+run_build.mjs
+do_build.mjs
+check_*.mjs
+inspect_*.mjs
+seed_*.mjs
+update_*.mjs
+fix_*.mjs
+parse_*.mjs
+start_*.mjs
+test_*.mjs
 
 # Local Archives & extraction
 *.rar

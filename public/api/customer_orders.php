@@ -3,15 +3,46 @@
  * Dorat Cars - Customer Special Orders Server API
  * Manages customer parts orders, supplier assignments, and lifecycle tracking.
  * Server: Hostinger (bi.doracar.com)
+ * Security Hardened: Strict CORS, Token Verification, Input Sanitization
  */
 
-header('Access-Control-Allow-Origin: *');
+// 1. Strict CORS Policy
+$allowedOrigins = [
+    'https://bi.doracar.com',
+    'https://doracar.com',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173'
+];
+
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowedOrigins, true)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Access-Control-Allow-Credentials: true');
+} else {
+    header('Access-Control-Allow-Origin: https://bi.doracar.com');
+}
+
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Dora-API-Key');
 header('Content-Type: application/json; charset=UTF-8');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
+    exit;
+}
+
+// 2. Security Token Verification
+$VALID_API_KEY = 'dora_sec_k9827f39a04b12c8e547d23a1098ef71';
+$headers = function_exists('getallheaders') ? getallheaders() : [];
+$clientKey = $headers['X-Dora-API-Key'] ?? $headers['x-dora-api-key'] ?? $_SERVER['HTTP_X_DORA_API_KEY'] ?? '';
+
+if (!$clientKey || !hash_equals($VALID_API_KEY, $clientKey)) {
+    http_response_code(401);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Unauthorized: Invalid or missing security token'
+    ]);
     exit;
 }
 
@@ -56,6 +87,14 @@ if ($method === 'GET') {
 
 if ($method === 'POST') {
     $input = file_get_contents('php://input');
+    
+    // Payload size guard: Max 10MB
+    if (strlen($input) > 10 * 1024 * 1024) {
+        http_response_code(413);
+        echo json_encode(['success' => false, 'error' => 'Payload too large']);
+        exit;
+    }
+
     $payload = json_decode($input, true);
 
     if (!$payload) {
@@ -100,7 +139,8 @@ if ($method === 'POST') {
                 $currentOrders[$idx]['statusHistory'][] = [
                     'status' => $newStatus,
                     'time' => $now,
-                    'by' => $payload['staffName'] ?? 'الموظف'
+                    'by' => htmlspecialchars($payload['staffName'] ?? 'الموظف', ENT_QUOTES, 'UTF-8'),
+                    'note' => htmlspecialchars($payload['note'] ?? '', ENT_QUOTES, 'UTF-8')
                 ];
                 $found = true;
                 break;
@@ -127,7 +167,7 @@ if ($method === 'POST') {
         $order['orderNumber'] = 'SO-' . date('ym') . '-' . sprintf('%03d', count($currentOrders) + 1);
     }
     if (empty($order['status'])) {
-        $order['status'] = 'UNDER_ORDER'; // الحالة الأساسية: تحت الطلب
+        $order['status'] = 'UNDER_ORDER';
     }
     if (empty($order['orderDate'])) {
         $order['orderDate'] = date('Y-m-d');
