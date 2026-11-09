@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { BI_ROLES, getBIPermissions, getBIRoleMeta, normalizeRole } from '../lib/biPermissions';
+import { safeSetItem, safeGetItem, safeRemoveItem } from '../lib/safeStorage';
 
 const BIAuthContext = createContext(null);
 
@@ -153,16 +154,16 @@ export function BIAuthProvider({ children }) {
   // STRICT GATEKEEPER: Default to null if not authenticated or expired!
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('bi_active_user');
+      const saved = safeGetItem('bi_active_user');
       if (saved) {
-        const lastActiveStr = localStorage.getItem(LAST_ACTIVE_KEY);
+        const lastActiveStr = safeGetItem(LAST_ACTIVE_KEY);
         const lastActive = lastActiveStr ? parseInt(lastActiveStr, 10) : 0;
         const now = Date.now();
 
         // If inactive for more than 30 minutes on startup, strictly terminate session
         if (lastActive && now - lastActive >= INACTIVITY_TIMEOUT_MS) {
-          localStorage.removeItem('bi_active_user');
-          localStorage.removeItem(LAST_ACTIVE_KEY);
+          safeRemoveItem('bi_active_user');
+          safeRemoveItem(LAST_ACTIVE_KEY);
           sessionStorage.removeItem('dora_owner_vault_unlocked');
           sessionStorage.setItem(LOGOUT_REASON_KEY, 'inactivity_30min');
           return null;
@@ -178,7 +179,7 @@ export function BIAuthProvider({ children }) {
             parsed.role = freshAcc.role;
             parsed.title = freshAcc.title;
             parsed.name = freshAcc.name;
-            localStorage.setItem('bi_active_user', JSON.stringify(parsed));
+            safeSetItem('bi_active_user', parsed);
           }
           return parsed;
         }
@@ -198,7 +199,7 @@ export function BIAuthProvider({ children }) {
     // Stamp current time as active on mount / login
     const recordActivity = () => {
       const now = Date.now();
-      localStorage.setItem(LAST_ACTIVE_KEY, now.toString());
+      safeSetItem(LAST_ACTIVE_KEY, now.toString());
     };
 
     // Throttled event handler to avoid performance overhead (max once per 2 seconds)
@@ -207,12 +208,12 @@ export function BIAuthProvider({ children }) {
       const now = Date.now();
       if (now - lastThrottledTime > 2000) {
         lastThrottledTime = now;
-        localStorage.setItem(LAST_ACTIVE_KEY, now.toString());
+        safeSetItem(LAST_ACTIVE_KEY, now.toString());
       }
     };
 
     // Ensure initial timestamp exists
-    if (!localStorage.getItem(LAST_ACTIVE_KEY)) {
+    if (!safeGetItem(LAST_ACTIVE_KEY)) {
       recordActivity();
     }
 
@@ -224,7 +225,7 @@ export function BIAuthProvider({ children }) {
 
     // Check interval every 2 seconds
     const intervalId = setInterval(() => {
-      const lastActiveStr = localStorage.getItem(LAST_ACTIVE_KEY);
+      const lastActiveStr = safeGetItem(LAST_ACTIVE_KEY);
       const lastActive = lastActiveStr ? parseInt(lastActiveStr, 10) : Date.now();
       const elapsed = Date.now() - lastActive;
 
@@ -232,8 +233,8 @@ export function BIAuthProvider({ children }) {
         console.warn('🔒 تم استيفاء مهلة عدم النشاط (30 دقيقة). إنهاء الجلسة فوراً لأسباب أمنية.');
         sessionStorage.setItem(LOGOUT_REASON_KEY, 'inactivity_30min');
         sessionStorage.removeItem('dora_owner_vault_unlocked');
-        localStorage.removeItem('bi_active_user');
-        localStorage.removeItem(LAST_ACTIVE_KEY);
+        safeRemoveItem('bi_active_user');
+        safeRemoveItem(LAST_ACTIVE_KEY);
         setUser(null);
 
         // Redirect to login
@@ -269,8 +270,8 @@ export function BIAuthProvider({ children }) {
           authenticatedAt: new Date().toISOString(),
         };
         setUser(biUser);
-        localStorage.setItem('bi_active_user', JSON.stringify(biUser));
-        localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
+        safeSetItem('bi_active_user', biUser);
+        safeSetItem(LAST_ACTIVE_KEY, Date.now().toString());
         sessionStorage.removeItem(LOGOUT_REASON_KEY);
       }
     });
@@ -279,10 +280,14 @@ export function BIAuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('bi_active_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('bi_active_user');
+    try {
+      if (user) {
+        safeSetItem('bi_active_user', user);
+      } else {
+        safeRemoveItem('bi_active_user');
+      }
+    } catch (e) {
+      console.warn('Error syncing bi_active_user:', e);
     }
   }, [user]);
 
@@ -328,8 +333,8 @@ export function BIAuthProvider({ children }) {
             authenticatedAt: new Date().toISOString(),
           };
           setUser(authUser);
-          localStorage.setItem('bi_active_user', JSON.stringify(authUser));
-          localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
+          safeSetItem('bi_active_user', authUser);
+          safeSetItem(LAST_ACTIVE_KEY, Date.now().toString());
           sessionStorage.removeItem(LOGOUT_REASON_KEY);
           return authUser;
         }
@@ -355,8 +360,8 @@ export function BIAuthProvider({ children }) {
               authenticatedAt: new Date().toISOString(),
             };
             setUser(biUser);
-            localStorage.setItem('bi_active_user', JSON.stringify(biUser));
-            localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
+            safeSetItem('bi_active_user', biUser);
+            safeSetItem(LAST_ACTIVE_KEY, Date.now().toString());
             sessionStorage.removeItem(LOGOUT_REASON_KEY);
             return biUser;
           }
@@ -384,8 +389,8 @@ export function BIAuthProvider({ children }) {
         authenticatedAt: user.authenticatedAt,
       };
       setUser(updated);
-      localStorage.setItem('bi_active_user', JSON.stringify(updated));
-      localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
+      safeSetItem('bi_active_user', updated);
+      safeSetItem(LAST_ACTIVE_KEY, Date.now().toString());
     }
   };
 
@@ -399,8 +404,8 @@ export function BIAuthProvider({ children }) {
       }
     }
     setUser(null);
-    localStorage.removeItem('bi_active_user');
-    localStorage.removeItem(LAST_ACTIVE_KEY);
+    safeRemoveItem('bi_active_user');
+    safeRemoveItem(LAST_ACTIVE_KEY);
     sessionStorage.removeItem('dora_owner_vault_unlocked');
     sessionStorage.removeItem(LOGOUT_REASON_KEY);
   };
