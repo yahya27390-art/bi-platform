@@ -30,6 +30,7 @@ const NAV_ITEMS = [
   { label: 'تقارير المخزون التخصصية', icon: FileSpreadsheet, path: '/inventory/reports', isInventory: true },
   { label: 'مقارنة أسعار الموردين', icon: Scale, path: '/inventory/supplier-comparison', isInventory: true },
   { label: 'نواقص طلبات الفروع', icon: ClipboardList, path: '/inventory/branch-shortages', isInventory: true },
+  { label: 'مطابقة كشوف الموردين', icon: FileSpreadsheet, path: '/reconciliation/', isExternal: true, isInventory: true },
   { label: 'طلبية وافتتاح فرع جديد', icon: Store, path: '/inventory/new-branch', isInventory: true, altPaths: ['/new-branch'] },
   { label: 'عروض أسعار الشركات B2B', icon: FileText, path: '/corporate-quotes', isInventory: true, altPaths: ['/quotes'] },
   { label: 'إدارة طلبات العملاء الخاصة', icon: PackageCheck, path: '/customer-orders', isInventory: true, altPaths: ['/orders'] },
@@ -96,11 +97,15 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
       <nav className="flex-1 w-full flex flex-col items-center space-y-2 overflow-y-auto px-2">
         {visibleNavItems.map((item) => {
           const active = isActive(item);
+          const Component = item.isExternal ? 'a' : Link;
+          const linkProps = item.isExternal
+            ? { href: item.path, onClick: onCloseMobile }
+            : { to: item.path, onClick: onCloseMobile };
+
           return (
-            <Link
+            <Component
               key={item.path}
-              to={item.path}
-              onClick={onCloseMobile}
+              {...linkProps}
               className={cn(
                 'w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 group relative',
                 active
@@ -144,7 +149,7 @@ export default function BISidebar({ mobileOpen, onCloseMobile }) {
                 {/* Pointer arrow */}
                 <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-1 border-4 border-transparent border-l-[#0F172A]" />
               </div>
-            </Link>
+            </Component>
           );
         })}
       </nav>

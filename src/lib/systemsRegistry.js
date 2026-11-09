@@ -107,6 +107,22 @@ export const PLATFORM_SYSTEMS = [
     features: ['📦 أصناف التأسيس المعتمدة', '💰 حساب تكاليف الافتتاح', '📋 جرد أولي منظم']
   },
   {
+    id: 'supplier-reconciliation',
+    title: 'نظام مطابقة وتسوية كشوف حسابات الموردين',
+    shortTitle: 'مطابقة الموردين والمحاسبة',
+    tag: 'محاسبة • مطابقة ذكية',
+    badgeClass: 'bg-indigo-500/15 text-indigo-700 border-indigo-400/30',
+    dotClass: 'bg-indigo-500',
+    description: 'المطابقة الآلية لكشوف حسابات الموردين (Excel و PDF) مع نظام درة السيارة الداخلي، تسوية الفروقات وتلاشي الهللات، فك شفرة النصوص العربية وتصدير تقارير الاعتماد الرسمية.',
+    path: '/reconciliation/',
+    isExternalOrSubApp: true,
+    icon: FileSpreadsheet,
+    accentGradient: 'from-blue-600 via-indigo-600 to-slate-900',
+    cardBorder: 'hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/20',
+    roles: [BI_ROLES.OWNER, BI_ROLES.ADMIN, BI_ROLES.PURCHASING_MANAGER],
+    features: ['📑 مطابقة PDF و Excel', '⚡ خوارزمية ذكية للمبالغ الثابتة', '⚖️ كشف الفواتير المعلقة فوراً', '📄 تقرير A4 رسمي للاعتماد']
+  },
+  {
     id: 'bi-overview',
     title: 'تحليل المبيعات والفروع والحملات الإعلانية',
     shortTitle: 'التحليلات والمبيعات',

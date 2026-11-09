@@ -27,7 +27,11 @@ export default function SystemsPortal() {
   const assignedBranch = getUserAssignedBranch(user);
   const staffTitle = getUserBranchStaffTitle(user);
 
-  const handleLaunchSystem = (path) => {
+  const handleLaunchSystem = (path, isExternalOrSubApp) => {
+    if (isExternalOrSubApp || path.startsWith('/reconciliation') || path.startsWith('http')) {
+      window.location.href = path;
+      return;
+    }
     navigate(path);
   };
 
@@ -137,7 +141,7 @@ export default function SystemsPortal() {
                 borderColor="rgba(37, 99, 235, 0.4)"
                 onMouseEnter={() => setHoveredCard(sys.id)}
                 onMouseLeave={() => setHoveredCard(null)}
-                onClick={() => handleLaunchSystem(sys.path)}
+                onClick={() => handleLaunchSystem(sys.path, sys.isExternalOrSubApp)}
                 className={`cursor-pointer group flex flex-col justify-between space-y-5 rounded-3xl border border-slate-200/90 hover:border-blue-400 p-6 sm:p-7 transition-all duration-300 shadow-sm hover:shadow-2xl hover:-translate-y-1.5 animate-slide-in-bottom ${
                   availableSystems.length === 1 ? 'w-full max-w-lg bg-white/95 backdrop-blur-sm' : ''
                 }`}
